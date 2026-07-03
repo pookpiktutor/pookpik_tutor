@@ -711,11 +711,450 @@ async function dispatch(funcName, args, chain) {
         break;
       }
 
+      // ── Presence / Heartbeat ─────────────────────────────────────────────
+      case 'pingActiveUser': {
+        const [pingUsername] = args;
+        // Store/update presence in Firestore
+        if (pingUsername) {
+          const presenceRef = doc(db, 'presence', pingUsername);
+          await setDoc(presenceRef, { username: pingUsername, lastSeen: serverTimestamp() }, { merge: true });
+          // Return list of users active within last 45 seconds
+          const presenceSnap = await getDocs(collection(db, 'presence'));
+          const cutoff = Date.now() - 45000;
+          const activeUsers = [];
+          presenceSnap.docs.forEach(d => {
+            const data = d.data();
+            const ts = data.lastSeen && data.lastSeen.toMillis ? data.lastSeen.toMillis() : 0;
+            if (ts > cutoff) activeUsers.push(d.id);
+          });
+          result = activeUsers;
+        } else {
+          result = [];
+        }
+        break;
+      }
+
+      // ── Grade Sheets / Courses ────────────────────────────────────────────
+      case 'getAllCoursesFromGradeSheets': {
+        // Return all unique course names from gradeSheets collection
+        const gsSnap = await getDocs(collection(db, 'gradeSheets'));
+        const courseSet = new Set();
+        gsSnap.docs.forEach(d => {
+          const data = d.data();
+          if (Array.isArray(data.courses)) {
+            data.courses.forEach(c => {
+              if (c && c.name) courseSet.add(c.name);
+            });
+          }
+        });
+        result = [...courseSet].sort();
+        break;
+      }
+
+      // ── Student Registration (CRUD) ───────────────────────────────────────
+      case 'addStudentRegistration': {
+        const [studentData, logUser] = args;
+        const newId = `std_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+        await setDoc(doc(db, 'students', newId), {
+          ...studentData,
+          id: newId,
+          createdAt: serverTimestamp()
+        });
+        try {
+          await addDoc(collection(db, 'activityLogs'), {
+            user: logUser || 'System',
+            action: 'เพิ่มนักเรียนใหม่',
+            details: `นักเรียน: ${studentData.name || ''}`,
+            timestamp: serverTimestamp()
+          });
+        } catch(e) {}
+        result = { success: true, id: newId };
+        break;
+      }
+
+      case 'updateStudentRegistration': {
+        const [stdUpdateData, updLogUser] = args;
+        const stdId = stdUpdateData.id;
+        if (!stdId) { result = { success: false, error: 'Missing student ID' }; break; }
+        await setDoc(doc(db, 'students', stdId), { ...stdUpdateData }, { merge: true });
+        try {
+          await addDoc(collection(db, 'activityLogs'), {
+            user: updLogUser || 'System',
+            action: 'แก้ไขข้อมูลนักเรียน',
+            details: `นักเรียน: ${stdUpdateData.name || stdId}`,
+            timestamp: serverTimestamp()
+          });
+        } catch(e) {}
+        result = { success: true };
+        break;
+      }
+
+      case 'deleteStudentRegistration': {
+        const [delStdId, delStdLogUser] = args;
+        if (!delStdId) { result = { success: false, error: 'Missing student ID' }; break; }
+        await deleteDoc(doc(db, 'students', delStdId));
+        try {
+          await addDoc(collection(db, 'activityLogs'), {
+            user: delStdLogUser || 'System',
+            action: 'ลบข้อมูลนักเรียน',
+            details: `ID: ${delStdId}`,
+            timestamp: serverTimestamp()
+          });
+        } catch(e) {}
+        result = { success: true };
+        break;
+      }
+
+      case 'deleteCourseColumn': {
+        const [grade, branch, sheetName, colIndex, courseName, colLogUser] = args;
+        // In Firebase, course columns are managed inside gradeSheets documents
+        const gsDocId = `${grade}_${branch || '1'}`;
+        const gsRef = doc(db, 'gradeSheets', gsDocId);
+        const gsSnap2 = await getDoc(gsRef);
+        if (gsSnap2.exists()) {
+          const data = gsSnap2.data();
+          const courses = Array.isArray(data.courses) ? data.courses.filter(c => c.name !== courseName) : [];
+          await updateDoc(gsRef, { courses });
+        }
+        try {
+          await addDoc(collection(db, 'activityLogs'), {
+            user: colLogUser || 'System',
+            action: 'ลบคอลัมน์คอร์สเรียน',
+            details: `ชีต: ${sheetName}, คอร์ส: ${courseName}`,
+            timestamp: serverTimestamp()
+          });
+        } catch(e) {}
+        result = { success: true };
+        break;
+      }
+
+      // ── Revenue / Class Log Updates ───────────────────────────────────────
+      case 'updateRevenues': {
+        const [revUpdates, revLogUser] = args;
+        if (!Array.isArray(revUpdates)) { result = { success: false, error: 'Invalid updates array' }; break; }
+        const batch = writeBatch(db);
+        for (const up of revUpdates) {
+          if (up.id) {
+            const ref = doc(db, 'students', up.id);
+            const updateData = {};
+            if (up.paymentChannel !== undefined) updateData.paymentChannel = up.paymentChannel;
+            if (up.isChecked !== undefined) updateData.isChecked = up.isChecked ? 1 : 0;
+            batch.update(ref, updateData);
+          }
+        }
+        await batch.commit();
+        try {
+          await addDoc(collection(db, 'activityLogs'), {
+            user: revLogUser || 'System',
+            action: 'บันทึกสถานะการชำระเงินรายรับ',
+            details: `อัปเดต ${revUpdates.length} รายการ`,
+            timestamp: serverTimestamp()
+          });
+        } catch(e) {}
+        result = { success: true };
+        break;
+      }
+
+      case 'getClassLogs': {
+        const [filterDate, clLogUser] = args;
+        const clSnap = await getDocs(collection(db, 'classLogs'));
+        let logs = clSnap.docs.map(d => ({ ...d.data(), id: d.id }));
+        if (filterDate) {
+          logs = logs.filter(log => {
+            if (!log.date) return false;
+            const d = log.date.toString().substring(0, 10);
+            const f = filterDate.toString().substring(0, 10);
+            return d === f;
+          });
+        }
+        logs.sort((a, b) => {
+          const da = a.date || '';
+          const db2 = b.date || '';
+          if (da !== db2) return db2.localeCompare(da);
+          return (a.timeStart || '').localeCompare(b.timeStart || '');
+        });
+        result = logs;
+        break;
+      }
+
+      // ── Teachers DB ───────────────────────────────────────────────────────
+      case 'getTeachersDB': {
+        const teachers = await getAll('teachers');
+        result = teachers.map(t => ({
+          nickname: t.nickname || t.name || '',
+          fullName: t.fullName || '',
+          school: t.school || '',
+          phone: t.phone || '',
+          subjects: t.subjects || '',
+          bank: t.bank || '',
+          accountNumber: t.accountNumber || '',
+          compensation: t.compensation || 150,
+          teacherId: t.teacherId || t.id || ''
+        }));
+        break;
+      }
+
+      case 'saveTeacherProfile': {
+        const [teacherData, tpLogUser] = args;
+        const tId = teacherData.teacherId || teacherData.id || `teacher_${Date.now()}`;
+        await setDoc(doc(db, 'teachers', tId), { ...teacherData, teacherId: tId }, { merge: true });
+        try {
+          await addDoc(collection(db, 'activityLogs'), {
+            user: tpLogUser || 'System',
+            action: 'บันทึกข้อมูลครู',
+            details: `ครู: ${teacherData.nickname || tId}`,
+            timestamp: serverTimestamp()
+          });
+        } catch(e) {}
+        result = { success: true };
+        break;
+      }
+
+      // ── Employee / User Management ────────────────────────────────────────
+      case 'getUsersDB': {
+        const emps = await getAll('employees');
+        // Return as array of arrays like original GAS [[username, password, role, nickname, ...]]
+        result = emps.map(e => [
+          e.username || e.id || '',
+          e.password || '',
+          e.role || 'Staff',
+          e.nickname || '',
+          e.fullName || '',
+          e.phone || '',
+          e.profilePic || ''
+        ]);
+        break;
+      }
+
+      case 'changeEmployeePasswordByAdmin': {
+        const [empUsername, newPass, adminLogUser] = args;
+        const empRef = doc(db, 'employees', empUsername);
+        await updateDoc(empRef, { password: newPass });
+        try {
+          await addDoc(collection(db, 'activityLogs'), {
+            user: adminLogUser || 'System',
+            action: 'แก้ไขรหัสผ่านพนักงาน',
+            details: `ผู้ใช้: ${empUsername}`,
+            timestamp: serverTimestamp()
+          });
+        } catch(e) {}
+        result = { success: true };
+        break;
+      }
+
+      case 'changeUserPasswordOwn': {
+        const [ownUsername, currentPass, ownNewPass] = args;
+        const ownRef = doc(db, 'employees', ownUsername);
+        const ownSnap = await getDoc(ownRef);
+        if (!ownSnap.exists()) {
+          result = { success: false, error: 'ไม่พบข้อมูลผู้ใช้งาน' };
+          break;
+        }
+        const ownData = ownSnap.data();
+        if (ownData.password !== currentPass) {
+          result = { success: false, error: 'รหัสผ่านปัจจุบันไม่ถูกต้อง' };
+          break;
+        }
+        await updateDoc(ownRef, { password: ownNewPass });
+        result = { success: true };
+        break;
+      }
+
+      // ── Manager Logs ──────────────────────────────────────────────────────
+      case 'addManagerLog': {
+        const [managerLog, managerLogUser] = args;
+        const logType = managerLog.type || 'checkin';
+        
+        if (logType === 'checkout') {
+          // Find existing doc for same manager + date and update it
+          const mgSnap = await getDocs(query(
+            collection(db, 'managerLogs'),
+            where('managerName', '==', managerLog.managerName),
+            where('date', '==', managerLog.date)
+          ));
+          if (!mgSnap.empty) {
+            const existingDoc = mgSnap.docs[0];
+            await updateDoc(doc(db, 'managerLogs', existingDoc.id), {
+              otOut: managerLog.otOut || '',
+              workOut: managerLog.workOut || '',
+              updatedAt: serverTimestamp()
+            });
+          } else {
+            await addDoc(collection(db, 'managerLogs'), {
+              ...managerLog,
+              timestamp: serverTimestamp()
+            });
+          }
+        } else {
+          await addDoc(collection(db, 'managerLogs'), {
+            ...managerLog,
+            timestamp: serverTimestamp()
+          });
+        }
+        try {
+          await addDoc(collection(db, 'activityLogs'), {
+            user: managerLogUser || 'System',
+            action: logType === 'checkout' ? 'บันทึกเวลาออกงาน' : 'บันทึกเวลาเข้างาน',
+            details: `ผู้จัดการ: ${managerLog.managerName || ''}`,
+            timestamp: serverTimestamp()
+          });
+        } catch(e) {}
+        result = { success: true };
+        break;
+      }
+
+      // ── Student History ───────────────────────────────────────────────────
+      case 'getStudentHistoryData': {
+        const [histName, histNickname, histLogUser] = args;
+        const allStudents = await getAll('students');
+        const courses = allStudents.filter(s => {
+          return s.name === histName || (histNickname && s.nickname === histNickname);
+        }).map(s => ({
+          id: s.id,
+          name: s.name || '',
+          nickname: s.nickname || '',
+          courseName: s.round || s.grade || '',
+          carriedForward: s.carriedForwardFee || 0,
+          full: s.tuitionFee || 0,
+          paid: s.paidAmount || 0,
+          outstanding: (s.tuitionFee || 0) - (s.paidAmount || 0),
+          paymentDate: s.paymentDate || '',
+          paymentChannel: s.paymentChannel || '',
+          staff: s.staff || '',
+          hours: s.classHours || '',
+          hoursLeft: s.classHoursLeft || '',
+          classType: s.classType || ''
+        }));
+
+        // Get matching class logs
+        const clSnap2 = await getDocs(collection(db, 'classLogs'));
+        const classes = [];
+        clSnap2.docs.forEach(d => {
+          const data = d.data();
+          const subject = data.subject || '';
+          const nameMatch = (histNickname && subject.includes(histNickname)) || (histName && subject.includes(histName));
+          if (nameMatch) {
+            classes.push({
+              subject: data.subject || '',
+              teacherRegular: data.teacherRegular || '',
+              teacherSub: data.teacherSub || '',
+              timeStart: data.timeStart || '',
+              timeEnd: data.timeEnd || '',
+              note: data.note || '',
+              isPresentLive: data.isPresentLive || 0,
+              isPresentOnline: data.isPresentOnline || 0,
+              isLeave: data.isLeave || 0,
+              isAbsent: data.isAbsent || 0,
+              isMakeup: data.isMakeup || 0,
+              hours: data.hours || '',
+              date: data.date || '',
+              roomBranch: data.roomBranch || ''
+            });
+          }
+        });
+        classes.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        result = { success: true, courses, classes };
+        break;
+      }
+
+      case 'getMultipleStudentsCourses': {
+        const [mainGroupStudents] = args;
+        if (!Array.isArray(mainGroupStudents) || mainGroupStudents.length === 0) {
+          result = {};
+          break;
+        }
+        // Build map from gradeSheets — student ID to enrolled course names
+        const resultMap = {};
+        const gsSnap3 = await getDocs(collection(db, 'gradeSheets'));
+        const gradeSheetData = {};
+        gsSnap3.docs.forEach(d => {
+          gradeSheetData[d.id] = d.data();
+        });
+
+        mainGroupStudents.forEach(s => {
+          if (!s.id) return;
+          const classType = s.classType || '';
+          if (classType.includes('เดี่ยว') || classType.includes('ย่อย')) {
+            resultMap[s.id] = [];
+            return;
+          }
+          let suffix = '1';
+          const branchLearn = s.branchLearn || '';
+          if (branchLearn.includes('สาขา2') || branchLearn.includes('2')) suffix = '2';
+          else if (branchLearn.includes('สาขา3') || branchLearn.includes('3')) suffix = '3';
+
+          const gsKey = `${s.grade}_${suffix}`;
+          const gsData = gradeSheetData[gsKey];
+          if (gsData && Array.isArray(gsData.students)) {
+            const stdEntry = gsData.students.find(st => st.name === s.name);
+            if (stdEntry && Array.isArray(stdEntry.courses)) {
+              resultMap[s.id] = stdEntry.courses.map(c => typeof c === 'string' ? c : (c.name || ''));
+            } else {
+              resultMap[s.id] = [];
+            }
+          } else {
+            resultMap[s.id] = [];
+          }
+        });
+        result = resultMap;
+        break;
+      }
+
+      // ── Evaluation Update ─────────────────────────────────────────────────
+      case 'updateEvaluation': {
+        const [evalData, evalLogUser] = args;
+        const evalId = evalData.evalId;
+        if (!evalId) { result = { success: false, error: 'Missing evalId' }; break; }
+        const evalRef = doc(db, 'evaluations', evalId);
+        await updateDoc(evalRef, {
+          date: evalData.date,
+          teacher: evalData.teacher,
+          strengths: evalData.strengths,
+          improvements: evalData.improvements,
+          recommendations: evalData.comments || evalData.recommendations || '',
+          scores: evalData.scores || (evalData.score ? { overall: evalData.score } : {}),
+          updatedAt: serverTimestamp()
+        });
+        try {
+          await addDoc(collection(db, 'activityLogs'), {
+            user: evalLogUser || 'System',
+            action: 'อัปเดตใบประเมินนักเรียน',
+            details: `ID: ${evalId}`,
+            timestamp: serverTimestamp()
+          });
+        } catch(e) {}
+        result = { success: true };
+        break;
+      }
+
+      // ── Room Settings Update ──────────────────────────────────────────────
+      case 'updateRoomSettings': {
+        const [roomBranch, roomName, ipad, zoom, roomLogUser] = args;
+        const rooms2 = await getAll('rooms');
+        const existing2 = rooms2.find(r => r.branch === roomBranch && r.roomName === roomName);
+        if (existing2) {
+          await updateDoc(doc(db, 'rooms', existing2.id), { ipad: ipad || '', zoom: zoom || '' });
+        } else {
+          await addDoc(collection(db, 'rooms'), { branch: roomBranch, roomName, ipad: ipad || '', zoom: zoom || '' });
+        }
+        try {
+          await addDoc(collection(db, 'activityLogs'), {
+            user: roomLogUser || 'System',
+            action: 'ตั้งค่าห้องเรียน',
+            details: `ห้อง: ${roomName} (iPad: ${ipad}, Zoom: ${zoom})`,
+            timestamp: serverTimestamp()
+          });
+        } catch(e) {}
+        result = { success: true };
+        break;
+      }
+
       // ── Fallback ──────────────────────────────────────────────────────────
       default: {
         console.warn(`[Bridge] Unimplemented GAS function: ${funcName}`, args);
         result = { success: false, error: `Function '${funcName}' not yet implemented in Firebase bridge.` };
       }
+
     }
     if (chain._success) chain._success(result);
   } catch (err) {
