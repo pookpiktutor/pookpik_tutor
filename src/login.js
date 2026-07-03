@@ -5,7 +5,7 @@ import { auth } from "./firebase.js";
 onAuthStateChanged(auth, (user) => {
   if (user) {
     // Redirect to main panel
-    window.location.href = "/dashboard.html";
+    window.location.href = "dashboard.html";
   }
 });
 

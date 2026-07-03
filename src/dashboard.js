@@ -6,7 +6,7 @@ import { importDataToFirestore } from "./migrator.js";
 // Verify Authentication
 onAuthStateChanged(auth, (user) => {
   if (!user) {
-    window.location.href = "/index.html";
+    window.location.href = "index.html";
   } else {
     document.getElementById("user-display").innerText = `เข้าใช้งานโดยผู้ใช้: ${user.email}`;
     loadDashboardStats();
@@ -18,7 +18,7 @@ const btnLogout = document.getElementById("btn-logout");
 if (btnLogout) {
   btnLogout.addEventListener("click", () => {
     signOut(auth).then(() => {
-      window.location.href = "/index.html";
+      window.location.href = "index.html";
     });
   });
 }
