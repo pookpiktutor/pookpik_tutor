@@ -2,9 +2,9 @@
 // Loads Firebase, creates google.script.run bridge, then boots the full app
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+// Firebase Auth (kept for signOut only)
 import { 
   getAuth, 
-  signInWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged 
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -141,6 +141,8 @@ async function dispatch(funcName, args, chain) {
       // ── Auth ──────────────────────────────────────────────────────────────
       case 'verifyLogin': {
         const [username, password] = args;
+        console.log('[Login] Attempting:', username);
+
         if (!username || !password) {
           result = { success: false, error: 'กรุณากรอก Username และรหัสผ่าน' };
           break;
@@ -148,44 +150,90 @@ async function dispatch(funcName, args, chain) {
         const cleanUser = username.toString().trim().toLowerCase();
         const cleanPass = password.toString().trim();
 
-        // First try: look up by document ID (username as doc ID)
-        let empSnap = await getDoc(doc(db, 'employees', cleanUser));
+        // ── Fetch employee via Firestore REST API (no auth required, bypasses Security Rules) ──
+        const PID = 'pookpik-tutor';
+        const APIKEY = 'AIzaSyDR73jjl4afmMVGgCWLXDmKeocmghGX1W4';
 
-        // Second try: query by username field if doc ID didn't match
-        if (!empSnap.exists()) {
-          const q = query(collection(db, 'employees'), where('username', '==', cleanUser));
-          const qSnap = await getDocs(q);
-          if (!qSnap.empty) empSnap = qSnap.docs[0];
+        function parseRestDoc(fields) {
+          const out = {};
+          for (const [k, v] of Object.entries(fields)) {
+            out[k] = v.stringValue !== undefined ? v.stringValue
+                   : v.integerValue !== undefined ? v.integerValue
+                   : v.doubleValue !== undefined ? v.doubleValue
+                   : v.booleanValue !== undefined ? v.booleanValue : '';
+          }
+          return out;
         }
 
-        // Third try: try original-cased username as doc ID
-        if (!empSnap || !empSnap.exists()) {
-          empSnap = await getDoc(doc(db, 'employees', username.toString().trim()));
+        async function restGetEmployee(docId) {
+          try {
+            const url = `https://firestore.googleapis.com/v1/projects/${PID}/databases/(default)/documents/employees/${encodeURIComponent(docId)}?key=${APIKEY}`;
+            const r = await fetch(url);
+            if (!r.ok) return null;
+            const j = await r.json();
+            return j.fields ? parseRestDoc(j.fields) : null;
+          } catch(e) { return null; }
         }
 
-        if (!empSnap || !empSnap.exists()) {
-          result = { success: false, error: 'ไม่พบชื่อผู้ใช้ในระบบ' };
+        async function restQueryEmployee(usernameVal) {
+          try {
+            const url = `https://firestore.googleapis.com/v1/projects/${PID}/databases/(default)/documents:runQuery?key=${APIKEY}`;
+            const body = { structuredQuery: { from: [{ collectionId: 'employees' }], where: { fieldFilter: { field: { fieldPath: 'username' }, op: 'EQUAL', value: { stringValue: usernameVal } } }, limit: 1 } };
+            const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (!r.ok) return null;
+            const j = await r.json();
+            return (j[0]?.document?.fields) ? parseRestDoc(j[0].document.fields) : null;
+          } catch(e) { return null; }
+        }
+
+        let profile = null;
+
+        // Try REST by doc ID (lowercase)
+        profile = await restGetEmployee(cleanUser);
+        console.log('[Login] REST by cleanUser:', profile ? 'FOUND' : 'not found');
+
+        // Try REST by original-case username
+        if (!profile) {
+          profile = await restGetEmployee(username.toString().trim());
+          console.log('[Login] REST by original username:', profile ? 'FOUND' : 'not found');
+        }
+
+        // Try REST query by username field
+        if (!profile) {
+          profile = await restQueryEmployee(cleanUser);
+          console.log('[Login] REST query by username field:', profile ? 'FOUND' : 'not found');
+        }
+
+        // SDK fallback (works if Firestore rules allow reads)
+        if (!profile) {
+          try {
+            let s = await getDoc(doc(db, 'employees', cleanUser));
+            if (!s.exists()) s = await getDoc(doc(db, 'employees', username.toString().trim()));
+            if (s.exists()) { profile = s.data(); console.log('[Login] SDK fallback: FOUND'); }
+          } catch(e) { console.warn('[Login] SDK fallback error:', e.message); }
+        }
+
+        if (!profile) {
+          console.warn('[Login] User not found:', username);
+          result = { success: false, error: 'ไม่พบชื่อผู้ใช้ในระบบ (username: ' + username + ')' };
           break;
         }
 
-        const profile = empSnap.data();
         const storedPass = (profile.password || '').toString().trim();
+        console.log('[Login] Password stored length:', storedPass.length, '| input length:', cleanPass.length);
 
-        // Check password (plain text comparison, same as original GAS system)
         if (storedPass !== cleanPass) {
           result = { success: false, error: 'รหัสผ่านไม่ถูกต้อง' };
           break;
         }
 
-        // Log activity
-        try {
-          await addDoc(collection(db, 'activityLogs'), {
-            user: profile.username || username,
-            action: 'เข้าสู่ระบบ',
-            details: `เข้าสู่ระบบสำเร็จ`,
-            timestamp: serverTimestamp()
-          });
-        } catch(e) {}
+        // Log activity (non-blocking)
+        addDoc(collection(db, 'activityLogs'), {
+          user: profile.username || username,
+          action: 'เข้าสู่ระบบ',
+          details: 'เข้าสู่ระบบสำเร็จ',
+          timestamp: serverTimestamp()
+        }).catch(() => {});
 
         result = {
           success: true,
@@ -200,6 +248,7 @@ async function dispatch(funcName, args, chain) {
             accountNumber: profile.accountNumber || ''
           }
         };
+        console.log('[Login] SUCCESS:', result.user.username, '| Role:', result.user.role);
         break;
       }
 
