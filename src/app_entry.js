@@ -141,24 +141,68 @@ async function dispatch(funcName, args, chain) {
       // ── Auth ──────────────────────────────────────────────────────────────
       case 'verifyLogin': {
         const [username, password] = args;
-        const email = username.includes('@') ? username : `${username}@pookpiktutor.com`;
-        const pwd = password.length >= 6 ? password : `${password}123456`;
-        const cred = await signInWithEmailAndPassword(auth, email, pwd);
-        // Fetch extra profile from Firestore
-        const profileSnap = await getDoc(doc(db, 'employees', username));
-        const profile = profileSnap.exists() ? profileSnap.data() : {};
+        if (!username || !password) {
+          result = { success: false, error: 'กรุณากรอก Username และรหัสผ่าน' };
+          break;
+        }
+        const cleanUser = username.toString().trim().toLowerCase();
+        const cleanPass = password.toString().trim();
+
+        // First try: look up by document ID (username as doc ID)
+        let empSnap = await getDoc(doc(db, 'employees', cleanUser));
+
+        // Second try: query by username field if doc ID didn't match
+        if (!empSnap.exists()) {
+          const q = query(collection(db, 'employees'), where('username', '==', cleanUser));
+          const qSnap = await getDocs(q);
+          if (!qSnap.empty) empSnap = qSnap.docs[0];
+        }
+
+        // Third try: try original-cased username as doc ID
+        if (!empSnap || !empSnap.exists()) {
+          empSnap = await getDoc(doc(db, 'employees', username.toString().trim()));
+        }
+
+        if (!empSnap || !empSnap.exists()) {
+          result = { success: false, error: 'ไม่พบชื่อผู้ใช้ในระบบ' };
+          break;
+        }
+
+        const profile = empSnap.data();
+        const storedPass = (profile.password || '').toString().trim();
+
+        // Check password (plain text comparison, same as original GAS system)
+        if (storedPass !== cleanPass) {
+          result = { success: false, error: 'รหัสผ่านไม่ถูกต้อง' };
+          break;
+        }
+
+        // Log activity
+        try {
+          await addDoc(collection(db, 'activityLogs'), {
+            user: profile.username || username,
+            action: 'เข้าสู่ระบบ',
+            details: `เข้าสู่ระบบสำเร็จ`,
+            timestamp: serverTimestamp()
+          });
+        } catch(e) {}
+
         result = {
           success: true,
           user: {
-            username,
-            email,
-            nickname: profile.nickname || username,
+            username: profile.username || username,
+            nickname: profile.nickname || profile.username || username,
+            fullName: profile.fullName || '',
             role: profile.role || 'Staff',
-            profilePic: profile.profilePic || null
+            profilePic: profile.profilePic || null,
+            phone: profile.phone || '',
+            bank: profile.bank || '',
+            accountNumber: profile.accountNumber || ''
           }
         };
         break;
       }
+
 
       case 'getUserProfile': {
         const [uname] = args;
