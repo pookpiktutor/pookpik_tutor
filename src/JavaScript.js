@@ -5042,8 +5042,8 @@ function loadModalClasses(callback) {
   const countSpan = document.getElementById('class_modal_today_count');
   
   if (!dateVal || !roomVal) {
-    listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.85rem;">กรุณาเลือกวันที่เรียนและห้องเรียน</div>';
-    countSpan.innerText = '0';
+    if (listContainer) listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.85rem;">กรุณาเลือกวันที่เรียนและห้องเรียน</div>';
+    if (countSpan) countSpan.innerText = '0';
     return;
   }
   
@@ -5169,12 +5169,13 @@ function renderModalClassesList() {
   const listContainer = document.getElementById('class_modal_today_items');
   const countSpan = document.getElementById('class_modal_today_count');
   
-  countSpan.innerText = modalState.classes.length;
+  if (countSpan) countSpan.innerText = modalState.classes.length;
   if (modalState.classes.length === 0) {
-    listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.85rem;">ไม่มีคลาสเรียนในวันนี้</div>';
+    if (listContainer) listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.85rem;">ไม่มีคลาสเรียนในวันนี้</div>';
     return;
   }
   
+  if (!listContainer) return;
   listContainer.innerHTML = '';
   
   const sorted = [...modalState.classes].sort((a, b) => (a.timeStart || '').localeCompare(b.timeStart || ''));
@@ -6120,18 +6121,23 @@ function renderTeacherProfilesTable(teachers) {
 }
 
 function switchTeacherSubTab(tabName) {
-  document.getElementById('tab_t_profiles').classList.remove('active');
-  document.getElementById('tab_t_calc').classList.remove('active');
-  document.getElementById('teacher_subpanel_profiles').style.display = 'none';
-  document.getElementById('teacher_subpanel_calc').style.display = 'none';
+  var tabProfiles = document.getElementById('tab_t_profiles');
+  var tabCalc = document.getElementById('tab_t_calc');
+  var panelProfiles = document.getElementById('teacher_subpanel_profiles');
+  var panelCalc = document.getElementById('teacher_subpanel_calc');
+
+  if (tabProfiles) tabProfiles.classList.remove('active');
+  if (tabCalc) tabCalc.classList.remove('active');
+  if (panelProfiles) panelProfiles.style.display = 'none';
+  if (panelCalc) panelCalc.style.display = 'none';
   
   if (tabName === 'profiles') {
-    document.getElementById('tab_t_profiles').classList.add('active');
-    document.getElementById('teacher_subpanel_profiles').style.display = 'block';
+    if (tabProfiles) tabProfiles.classList.add('active');
+    if (panelProfiles) panelProfiles.style.display = 'block';
     loadTeacherProfiles();
   } else {
-    document.getElementById('tab_t_calc').classList.add('active');
-    document.getElementById('teacher_subpanel_calc').style.display = 'block';
+    if (tabCalc) tabCalc.classList.add('active');
+    if (panelCalc) panelCalc.style.display = 'block';
   }
 }
 

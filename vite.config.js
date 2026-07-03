@@ -7,7 +7,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html'
-      }
+      },
+      // JavaScript.js is loaded dynamically at runtime, not bundled
+      external: []
     }
   },
   server: {
