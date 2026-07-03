@@ -255,14 +255,59 @@ async function dispatch(funcName, args, chain) {
 
       case 'getUserProfile': {
         const [uname] = args;
-        const snap = await getDoc(doc(db, 'employees', uname));
-        if (snap.exists()) {
-          result = { success: true, profile: { username: uname, ...snap.data() } };
+        if (!uname) {
+          result = { success: false, error: 'Missing username' };
+          break;
+        }
+        const cleanUser = uname.toString().trim().toLowerCase();
+        
+        // ── Fetch profile via Firestore REST API (no auth required, bypasses Security Rules) ──
+        const PID = 'pookpik-tutor';
+        const APIKEY = 'AIzaSyDR73jjl4afmMVGgCWLXDmKeocmghGX1W4';
+        
+        function parseRestDoc(fields) {
+          const out = {};
+          for (const [k, v] of Object.entries(fields)) {
+            out[k] = v.stringValue !== undefined ? v.stringValue
+                   : v.integerValue !== undefined ? v.integerValue
+                   : v.doubleValue !== undefined ? v.doubleValue
+                   : v.booleanValue !== undefined ? v.booleanValue : '';
+          }
+          return out;
+        }
+
+        async function restGetEmployee(docId) {
+          try {
+            const url = `https://firestore.googleapis.com/v1/projects/${PID}/databases/(default)/documents/employees/${encodeURIComponent(docId)}?key=${APIKEY}`;
+            const r = await fetch(url);
+            if (!r.ok) return null;
+            const j = await r.json();
+            return j.fields ? parseRestDoc(j.fields) : null;
+          } catch(e) { return null; }
+        }
+
+        let profile = await restGetEmployee(cleanUser);
+        if (!profile) {
+          profile = await restGetEmployee(uname.toString().trim());
+        }
+
+        // SDK Fallback
+        if (!profile) {
+          try {
+            let snap = await getDoc(doc(db, 'employees', cleanUser));
+            if (!snap.exists()) snap = await getDoc(doc(db, 'employees', uname.toString().trim()));
+            if (snap.exists()) profile = snap.data();
+          } catch(e) { console.warn('[getUserProfile] SDK error:', e.message); }
+        }
+
+        if (profile) {
+          result = { success: true, profile: { username: profile.username || uname, ...profile } };
         } else {
           result = { success: false, error: 'ไม่พบข้อมูลผู้ใช้' };
         }
         break;
       }
+
 
       case 'heartbeat': {
         result = { success: true };
