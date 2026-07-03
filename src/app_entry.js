@@ -102,26 +102,33 @@ function buildChain(methodName) {
 // We need a two-step proxy – first call builds a chain object, second call invokes.
 // Overwrite window.google.script.run with the two-step proxy:
 window.google.script.run = new Proxy({}, {
-  get(_, firstProp) {
-    // If this is withSuccessHandler or withFailureHandler, return a chain builder
-    if (firstProp === 'withSuccessHandler' || firstProp === 'withFailureHandler') {
-      const chain = { _success: null, _failure: null };
-      const handler = (cb) => {
-        chain[firstProp === 'withSuccessHandler' ? '_success' : '_failure'] = cb;
-        // Return a proxy that handles the next property (method name or another handler)
-        return new Proxy({}, {
-          get(_, nextProp) {
-            if (nextProp === 'withSuccessHandler') return (cb2) => { chain._success = cb2; return this; };
-            if (nextProp === 'withFailureHandler') return (cb2) => { chain._failure = cb2; return this; };
-            // nextProp is the actual function name
-            return (...args) => dispatch(nextProp, args, chain);
-          }
-        });
-      };
-      return handler;
+  get(_, propName) {
+    // If calling directly (e.g., google.script.run.getGeneralSettings())
+    if (propName !== 'withSuccessHandler' && propName !== 'withFailureHandler') {
+      return (...args) => dispatch(propName, args, { _success: null, _failure: null });
     }
-    // Direct call without handler: google.script.run.someFunc(args)
-    return (...args) => dispatch(firstProp, args, { _success: null, _failure: null });
+
+    // Builder pattern for handlers
+    const context = { _success: null, _failure: null };
+    
+    const handlerProxy = new Proxy(context, {
+      get(target, method) {
+        if (method === 'withSuccessHandler') {
+          return (cb) => { target._success = cb; return handlerProxy; };
+        }
+        if (method === 'withFailureHandler') {
+          return (cb) => { target._failure = cb; return handlerProxy; };
+        }
+        // It's the actual function call at the end of the chain
+        return (...args) => dispatch(method, args, target);
+      }
+    });
+
+    if (propName === 'withSuccessHandler') {
+      return (cb) => { context._success = cb; return handlerProxy; };
+    } else {
+      return (cb) => { context._failure = cb; return handlerProxy; };
+    }
   }
 });
 
