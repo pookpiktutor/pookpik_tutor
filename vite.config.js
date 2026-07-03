@@ -13,5 +13,7 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true
-  }
+  },
+  // Treat JavaScript.js and Styles.css as static assets (not processed by Vite)
+  assetsInclude: ['**/*.css']
 })
