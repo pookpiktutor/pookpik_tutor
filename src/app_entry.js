@@ -372,10 +372,145 @@ async function dispatch(funcName, args, chain) {
 
       case 'getRoundSummary': {
         const [round, branch] = args;
-        // Stub: return empty summary
-        result = { success: true, summary: {}, categories: [] };
+        try {
+          const stats = {};
+          const categories = [];
+
+          const grades = [
+            { name: 'อนุบาล', privateSheet: 'เดี่ยว อนุบาล', groupPrefix: 'อนุบาล' },
+            { name: 'ป.1', privateSheet: 'เดี่ยว ป.1', groupPrefix: 'ป.1' },
+            { name: 'ป.2', privateSheet: 'เดี่ยว ป.2', groupPrefix: 'ป.2' },
+            { name: 'ป.3', privateSheet: 'เดี่ยว ป.3', groupPrefix: 'ป.3' },
+            { name: 'ป.4', privateSheet: 'เดี่ยว ป.4', groupPrefix: 'ป.4' },
+            { name: 'ป.5', privateSheet: 'เดี่ยว ป.5', groupPrefix: 'ป.5' },
+            { name: 'ป.6', privateSheet: 'เดี่ยว ป.6', groupPrefix: 'ป.6' },
+            { name: 'ม.1', privateSheet: 'เดี่ยว ม.1', groupPrefix: 'ม.1' },
+            { name: 'ม.2', privateSheet: 'เดี่ยว ม.2', groupPrefix: 'ม.2' },
+            { name: 'ม.3', privateSheet: 'เดี่ยว ม.3', groupPrefix: 'ม.3' },
+            { name: 'ม.4', privateSheet: 'เดี่ยว ม.4', groupPrefix: 'ม.4' },
+            { name: 'ม.5', privateSheet: 'เดี่ยว ม.5', groupPrefix: 'ม.5' },
+            { name: 'ม.6', privateSheet: 'เดี่ยว ม.6', groupPrefix: 'ม.6' },
+            { name: 'ย่อย 2-3', privateSheet: 'ย่อย 2-3', isSubgroup: true },
+            { name: 'ย่อย 4-5', privateSheet: 'ย่อย 4-5', isSubgroup: true },
+            { name: 'ย่อย 6-10', privateSheet: 'ย่อย 6-10', isSubgroup: true }
+          ];
+
+          const branches = [
+            { name: 'สาขา1', label: 'สาขา 1 แยกPMY' },
+            { name: 'สาขา2', label: 'สาขา 2 ข้างโรงเรียนระยองวิทยาคม' },
+            { name: 'สาขา3', label: 'สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ' }
+          ];
+
+          // Fetch Firestore Data
+          const stdSnap = await getDocs(collection(db, 'students'));
+          const students = stdSnap.docs.map(d => d.data());
+
+          const gsSnap = await getDocs(collection(db, 'gradeSheets'));
+          const gradeSheets = {};
+          gsSnap.docs.forEach(d => {
+            gradeSheets[d.id] = d.data();
+          });
+
+          grades.forEach(gradeObj => {
+            branches.forEach(branchObj => {
+              const key = `${gradeObj.name}|${branchObj.name}`;
+              
+              let singlePaidAmount = 0;
+              let singleDebtAmount = 0;
+              let singleAndSubgroupCount = 0;
+              
+              let regularGroupCount = 0;
+              let groupFullAmount = 0;
+              let groupPaidAmount = 0;
+              let groupDebtAmount = 0;
+              let overFiveCount = 0;
+
+              // 1. Calculate Single and Subgroups
+              students.forEach(s => {
+                const classType = s.classType || '';
+                const isPrivate = classType.includes('เดี่ยว') || classType.includes('ย่อย');
+                if (!isPrivate) return;
+
+                const matchGrade = s.grade === gradeObj.name || classType === gradeObj.privateSheet;
+                const matchBranch = s.branchLearn === branchObj.label || s.branchLearn === branchObj.name;
+
+                if (matchGrade && matchBranch) {
+                  singleAndSubgroupCount++;
+                  const tuition = parseFloat(s.tuitionFee) || 0;
+                  const paid = parseFloat(s.paidAmount) || 0;
+                  singlePaidAmount += paid;
+                  singleDebtAmount += Math.max(0, tuition - paid);
+                  
+                  if (gradeObj.isSubgroup && tuition > 5000) {
+                    overFiveCount++;
+                  }
+                }
+              });
+
+              // 2. Calculate Group Sheets
+              if (!gradeObj.isSubgroup) {
+                const bSuffix = branchObj.name === 'สาขา1' ? '1' : branchObj.name === 'สาขา2' ? '2' : '3';
+                const gsDocId = `${gradeObj.groupPrefix}_${bSuffix}`;
+                const sheet = gradeSheets[gsDocId];
+                if (sheet) {
+                  // Sum courses values
+                  let coursePriceSum = 0;
+                  if (Array.isArray(sheet.courses)) {
+                    sheet.courses.forEach(c => {
+                      coursePriceSum += parseFloat(c.price) || 0;
+                    });
+                  }
+
+                  if (Array.isArray(sheet.students)) {
+                    sheet.students.forEach(st => {
+                      regularGroupCount++;
+                      
+                      const tuition = coursePriceSum; 
+                      // Group student payment details logic
+                      let paid = 0;
+                      // Try matching with main student collection details
+                      const matchMeta = students.find(s => s.name === st.name);
+                      if (matchMeta) {
+                        paid = parseFloat(matchMeta.paidAmount) || 0;
+                      }
+
+                      groupFullAmount += tuition;
+                      groupPaidAmount += paid;
+                      groupDebtAmount += Math.max(0, tuition - paid);
+
+                      if (tuition > 5000) {
+                        overFiveCount++;
+                      }
+                    });
+                  }
+                }
+              }
+
+              stats[key] = {
+                grade: gradeObj.name,
+                branch: branchObj.name,
+                singlePaidAmount: singlePaidAmount,
+                singleDebtAmount: singleDebtAmount,
+                singleAndSubgroupCount: singleAndSubgroupCount,
+                regularGroupCount: regularGroupCount,
+                groupFullAmount: groupFullAmount,
+                groupPaidAmount: groupPaidAmount,
+                groupDebtAmount: groupDebtAmount,
+                overFiveCount: overFiveCount,
+                notes: []
+              };
+
+              categories.push({ grade: gradeObj.name, branch: branchObj.name });
+            });
+          });
+
+          result = { success: true, summary: stats, categories };
+        } catch (e) {
+          result = { success: false, error: e.message };
+        }
         break;
       }
+
 
       // ── Students ──────────────────────────────────────────────────────────
       case 'getStudentsList': {
