@@ -496,14 +496,90 @@ async function dispatch(funcName, args, chain) {
 
       // ── Daily Grid / Rooms ────────────────────────────────────────────────
       case 'getDailyGridData': {
-        const [date, branch] = args;
-        const roomsSnap = await getDocs(query(collection(db, 'rooms'), where('branch', '==', branch)));
-        const rooms = roomsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const classSnap = await getDocs(query(collection(db, 'classLogs'), where('date', '==', date)));
-        const classes = classSnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(c => c.roomBranch && c.roomBranch.includes(branch));
-        result = { success: true, rooms, classes };
+        const [date, logUser] = args;
+        
+        try {
+          // Fetch all rooms (client filters them by active branch)
+          const roomsSnap = await getDocs(collection(db, 'rooms'));
+          const rooms = roomsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+          // Fetch class logs for this specific date
+          const classSnap = await getDocs(collection(db, 'classLogs'));
+          const classes = classSnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(c => c.date === date);
+
+          // Get day name in Thai to calculate enrollments
+          let thaiDay = '';
+          try {
+            const thaiDayNames = ['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์'];
+            let dt;
+            if (date && date.includes('/')) {
+              const parts = date.split('/');
+              if (parts.length === 3) {
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const year = parseInt(parts[2], 10);
+                dt = new Date(year, month, day);
+              }
+            } else if (date && date.includes('-')) {
+              dt = new Date(date);
+            }
+            if (dt) thaiDay = thaiDayNames[dt.getDay()] || '';
+          } catch(e) {}
+
+          // Generate enrollment count mapping
+          const courseNames = [...new Set(classes.map(c => c.subject).filter(Boolean))];
+          const enrollments = {};
+          courseNames.forEach(c => { enrollments[c] = 0; });
+          
+          try {
+            const stdSnap = await getDocs(collection(db, 'students'));
+            const students = stdSnap.docs.map(d => d.data());
+            
+            // Standard registrations count
+            const gsSnap = await getDocs(collection(db, 'gradeSheets'));
+            const gradeSheets = {};
+            gsSnap.docs.forEach(d => {
+              gradeSheets[d.id] = d.data();
+            });
+
+            courseNames.forEach(courseName => {
+              let count = 0;
+              Object.values(gradeSheets).forEach(sheet => {
+                if (Array.isArray(sheet.students)) {
+                  sheet.students.forEach(st => {
+                    if (Array.isArray(st.courses)) {
+                      st.courses.forEach(c => {
+                        const cName = typeof c === 'string' ? c : (c.name || '');
+                        if (cName.trim() === courseName.trim()) {
+                          count++;
+                        }
+                      });
+                    }
+                  });
+                }
+              });
+
+              students.forEach(s => {
+                const cName = s.round || s.grade || '';
+                if (cName.trim() === courseName.trim()) {
+                  const classType = s.classType || '';
+                  if (classType.includes('เดี่ยว') || classType.includes('ย่อย')) count++;
+                }
+              });
+
+              enrollments[courseName] = count;
+            });
+          } catch(e) {
+            console.warn('Daily enrollment calculation warning:', e);
+          }
+
+          result = { success: true, rooms, classes, enrollments, thaiDay };
+        } catch (err) {
+          result = { success: false, error: err.message };
+        }
         break;
       }
+
 
       case 'getMonthlyGridData': {
         const [year, month, dayOfWeek, logUser] = args;
