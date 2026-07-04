@@ -1,7 +1,8 @@
 // app_entry.js - Main Application Entry Point
 // Connects directly to Google Apps Script Web App for database operations
 
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzAhczl5KpkIr2fbg7SECviPrelww_yBPeW_LC8wUPrrPCCbqjumGb1n6PAfLQjBHRxmw/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzQXACkihNd39CZQNl8RBS1a8iox-GpnkB27GaAN9II6hnVhBpRKJ8wyukTu0eS2SZncQ/exec";
+
 
 
 // ─── google.script.run Bridge ─────────────────────────────────────────────────
