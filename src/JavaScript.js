@@ -3982,12 +3982,13 @@ function autoCalculateHoursFromPaid() {
 
 // Monthly View State
 let monthlyViewState = {
-  mode: 'monthly', // 'daily' or 'monthly'
+  mode: 'daily', // 'daily' or 'monthly'
   selectedYear: new Date().getFullYear(),
   selectedMonth: new Date().getMonth() + 1, // 1-based
   selectedDow: new Date().getDay(), // 0=Sun, 1=Mon ... 6=Sat
   monthlyData: null
 };
+
 
 const thaiDayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
 const thaiMonthNames = ['', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];

@@ -329,14 +329,40 @@ async function dispatch(funcName, args, chain) {
       case 'getGeneralSettings': {
         const settingsSnap = await getDoc(doc(db, 'settings', 'general'));
         const s = settingsSnap.exists() ? settingsSnap.data() : {};
+        
+        let rooms = s.rooms || [];
+        if (rooms.length === 0) {
+          try {
+            const rSnap = await getDocs(collection(db, 'rooms'));
+            rooms = rSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          } catch(e) {}
+        }
+        
+        let teachers = s.teachers || [];
+        if (teachers.length === 0) {
+          try {
+            const tSnap = await getDocs(collection(db, 'teachers'));
+            teachers = tSnap.docs.map(d => d.data().nickname || d.data().name).filter(Boolean);
+          } catch(e) {}
+        }
+
+        let schools = s.schools || [];
+        if (schools.length === 0) {
+          try {
+            const tSnap = await getDocs(collection(db, 'teachers'));
+            schools = [...new Set(tSnap.docs.map(d => d.data().school).filter(Boolean))];
+          } catch(e) {}
+        }
+
         result = {
-          teachers: s.teachers || [],
-          schools: s.schools || [],
+          teachers: teachers,
+          schools: schools,
           paymentChannels: s.paymentChannels || ['เงินสด', 'โอนผ่านธนาคาร', 'พร้อมเพย์', 'รูดบัตร'],
-          rooms: s.rooms || []
+          rooms: rooms
         };
         break;
       }
+
 
       case 'saveGeneralSettings': {
         const [settings] = args;
