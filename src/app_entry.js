@@ -1786,16 +1786,61 @@ onAuthStateChanged(auth, user => {
 
 // ─── Override handleLogout to also sign out from Firebase ────────────────────
 const _origHandleLogout = window.handleLogout;
-window.handleLogout = function() {
+window.handleLogout = function(silent = false) {
+  if (silent) {
+    signOut(auth).catch(e => console.error(e));
+    localStorage.removeItem('pookpik_session');
+    localStorage.removeItem('last_active_time');
+    if (window.state) { window.state.currentUser = null; }
+    if (window.showLoginScreen) window.showLoginScreen();
+    if (window.showToast) window.showToast('เซสชันหมดอายุเนื่องจากไม่มีความเคลื่อนไหวเกิน 1 ชั่วโมง', 'warning');
+    return;
+  }
   const confirmed = confirm('คุณต้องการออกจากระบบใช่หรือไม่?');
   if (confirmed) {
     signOut(auth).catch(e => console.error(e));
     localStorage.removeItem('pookpik_session');
+    localStorage.removeItem('last_active_time');
     if (window.state) { window.state.currentUser = null; }
     if (window.showLoginScreen) window.showLoginScreen();
     if (window.showToast) window.showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
   }
 };
+
+// ─── Auto Logout Logic: 1 Hour of Inactivity ──────────────────────────────────
+function updateActivityTime() {
+  localStorage.setItem('last_active_time', Date.now().toString());
+}
+
+// Track user interactions to reset the inactivity timer
+window.addEventListener('click', updateActivityTime);
+window.addEventListener('mousemove', updateActivityTime);
+window.addEventListener('keydown', updateActivityTime);
+window.addEventListener('scroll', updateActivityTime);
+window.addEventListener('touchstart', updateActivityTime);
+
+// Initial state updates
+updateActivityTime();
+
+// Interval to check inactivity every 10 seconds
+setInterval(() => {
+  const session = localStorage.getItem('pookpik_session');
+  if (!session) return; // Not logged in, skip check
+
+  const lastActive = parseInt(localStorage.getItem('last_active_time') || '0');
+  if (!lastActive) {
+    updateActivityTime();
+    return;
+  }
+
+  const ONE_HOUR = 60 * 60 * 1000; // 1 hour in ms
+  const timeElapsed = Date.now() - lastActive;
+
+  if (timeElapsed > ONE_HOUR) {
+    console.log('[Auth] Session expired due to 1 hour of inactivity. Logging out...');
+    window.handleLogout(true); // Silent/auto logout
+  }
+}, 10000);
 
 // Helper: calculate time diff in hours (e.g. "1.5" or "8:00")
 function getHourDiff(startHHMM, endHHMM) {
@@ -1821,4 +1866,5 @@ s.src = '/pookpik_tutor/src/JavaScript.js';
 s.onload = () => console.log('[App] JavaScript.js loaded and ready');
 s.onerror = (e) => console.error('[App] Failed to load JavaScript.js', e);
 document.head.appendChild(s);
+
 
