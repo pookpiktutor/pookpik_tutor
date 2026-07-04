@@ -541,27 +541,35 @@ async function dispatch(funcName, args, chain) {
       // ── Students ──────────────────────────────────────────────────────────
       case 'getStudentsList': {
         const students = await getAll('students');
-        result = students.map(s => ({
-          id: s.id,
-          name: s.name || '',
-          nickname: s.nickname || '',
-          school: s.school || '',
-          contact: s.phone || s.contact || '',
-          lineName: s.lineName || '',
-          branchLearn: s.branchLearn || '',
-          branchPay: s.branchPay || '',
-          grade: s.grade || '',
-          classType: s.classType || 'กลุ่มหลัก',
-          full: s.tuitionFee || 0,
-          outstanding: (s.tuitionFee || 0) - (s.paidAmount || 0),
-          paymentDate: s.paymentDate || '',
-          round: s.round || '',
-          classHours: s.classHours || 0,
-          classHoursLeft: s.classHoursLeft || 0,
-          classSection: s.classSection || ''
-        }));
+        result = students.map(s => {
+          const full = parseFloat(s.tuitionFee) || 0;
+          const paid = parseFloat(s.paidAmount) || 0;
+          const outstanding = Math.max(0, full - paid);
+          
+          return {
+            id: s.id,
+            name: s.name || '',
+            nickname: s.nickname || '',
+            school: s.school || '',
+            contact: s.phone || s.contact || '',
+            lineName: s.lineName || s.lineProfile || '',
+            branchLearn: s.branchLearn || '',
+            branchPay: s.branchPay || '',
+            grade: s.grade || '',
+            classType: s.classType || 'กลุ่มหลัก',
+            full: full,
+            paid: paid,
+            outstanding: outstanding,
+            paymentDate: s.paymentDate || '',
+            round: s.round || s.roundLearn || '',
+            classHours: parseFloat(s.classHours || s.studyHours) || 0,
+            classHoursLeft: parseFloat(s.classHoursLeft || s.remainingHours) || 0,
+            classSection: s.classSection || s.subroom || ''
+          };
+        });
         break;
       }
+
 
       case 'addStudent': {
         const [studentData] = args;
