@@ -4400,10 +4400,7 @@ function renderMonthlyGrid(data) {
 }
 
 function loadDailyGrid(isSilent = false) {
-  if (monthlyViewState.mode === 'monthly') { // We enforce monthly view always now
-    loadMonthlyGrid(isSilent);
-    return;
-  }
+
   const dateInput = document.getElementById('daily_grid_filter_date').value;
   const sheetDate = convertDateToSheet(dateInput);
   
@@ -4456,7 +4453,7 @@ function renderDailyAttendanceSummary() {
   branches.forEach(b => {
     stats[b] = {};
     timeSlots.forEach(slot => {
-      stats[b][slot.label] = { live: 0, online: 0, leave: 0, absent: 0, makeup: 0, enrolled: 0 };
+      stats[b][slot.label] = { live: 0, online: 0, leave: 0, absent: 0, makeup: 0, enrolled: 0, studentNames: [] };
     });
   });
   
@@ -4480,8 +4477,15 @@ function renderDailyAttendanceSummary() {
         stats[logBranch][slot.label].makeup += parseInt(log.isMakeup) || 0;
         
         const courseName = log.subject;
-        const enrolledCount = (state.enrollments && state.enrollments[courseName]) || 0;
-        stats[logBranch][slot.label].enrolled += enrolledCount;
+        const enrolledStudents = (state.enrollments && state.enrollments[courseName]) || [];
+        if (Array.isArray(enrolledStudents)) {
+          stats[logBranch][slot.label].enrolled += enrolledStudents.length;
+          enrolledStudents.forEach(name => {
+            if (stats[logBranch][slot.label].studentNames.indexOf(name) === -1) {
+              stats[logBranch][slot.label].studentNames.push(name);
+            }
+          });
+        }
       }
     });
   });
@@ -4545,11 +4549,16 @@ function renderDailyAttendanceSummary() {
       }
     });
     
-    // Calculate total enrolled students for this branch (all slots)
-    let totalEnrolledBranch = 0;
+    // Calculate unique total enrolled students for this branch (all slots combined)
+    const branchUniqueStudents = [];
     timeSlots.forEach(sl => {
-      totalEnrolledBranch += stats[b][sl.label].enrolled || 0;
+      stats[b][sl.label].studentNames.forEach(name => {
+        if (branchUniqueStudents.indexOf(name) === -1) {
+          branchUniqueStudents.push(name);
+        }
+      });
     });
+    const totalEnrolledBranch = branchUniqueStudents.length;
     html += `
       <td style="padding: 5px 10px; border-left: 2px solid var(--border-color); font-weight: 800; font-size: 0.72rem; color: #00838f; background: rgba(0,131,143,0.04); vertical-align: middle; white-space: nowrap;">
         📋 รวม ${totalEnrolledBranch} นร.
@@ -4558,6 +4567,7 @@ function renderDailyAttendanceSummary() {
     
     html += `</tr>`;
   });
+
   
   html += `
         </tbody>
