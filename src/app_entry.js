@@ -1,7 +1,7 @@
 // app_entry.js - Main Application Entry Point
 // Connects directly to Google Apps Script Web App for database operations
 
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzQXACkihNd39CZQNl8RBS1a8iox-GpnkB27GaAN9II6hnVhBpRKJ8wyukTu0eS2SZncQ/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA/exec";
 
 
 
