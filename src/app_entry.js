@@ -865,22 +865,179 @@ async function dispatch(funcName, args, chain) {
 
       // ── Low Balance / Banners ─────────────────────────────────────────────
       case 'getLowBalancePrivateStudents': {
-        const snap = await getDocs(collection(db, 'privateStudents'));
+        const snap = await getDocs(collection(db, 'students'));
         const students = snap.docs.map(d => d.data()).filter(s => {
-          const remaining = (s.paidAmount || 0) - (s.usedAmount || 0);
-          return remaining < 700;
-        });
+          const classType = s.classType || '';
+          const isPrivate = classType.includes('เดี่ยว') || classType.includes('ย่อย');
+          if (!isPrivate) return false;
+          
+          const note = s.note || '';
+          if (note.includes('เรียนครบแล้ว')) return false;
+
+          const paidVal = parseFloat(s.paidAmount) || 0;
+          return (paidVal > 0 && paidVal < 700) || paidVal < 0;
+        }).map(s => ({
+          name: s.name || '',
+          nickname: s.nickname || '',
+          courseName: s.round || s.grade || '',
+          hoursLeftStr: s.classHoursLeft || '',
+          remainingMoney: parseFloat(s.paidAmount) || 0,
+          sheetName: s.classType || ''
+        }));
         result = { success: true, students };
         break;
       }
 
       case 'getTeacherLeaveInfo': {
-        const today = new Date().toISOString().split('T')[0];
-        const snap = await getDocs(query(collection(db, 'classLogs'), where('date', '==', today)));
-        const leaves = snap.docs.map(d => d.data()).filter(l => l.note && l.note.includes('ครูลา'));
+        // Fetch all classLogs from Firestore
+        const snap = await getDocs(collection(db, 'classLogs'));
+        const today = new Date().toLocaleDateString('en-GB'); // d/M/yyyy matching Utilities.formatDate
+        const parts = today.split('/');
+        const day = parseInt(parts[0]);
+        const month = parseInt(parts[1]);
+        const year = parts[2];
+        const formattedToday = `${day}/${month}/${year}`;
+        
+        const leaves = [];
+        const seen = new Set();
+        
+        snap.docs.forEach(doc => {
+          const c = doc.data();
+          const note = c.note || '';
+          if (!note.includes('ครูลา')) return;
+          
+          const dateVal = c.date || '';
+          const teacherName = c.teacherRegular || '';
+          const subject = c.subject || '';
+          const key = `${teacherName}|${subject}|${dateVal}`;
+          
+          if (seen.has(key)) return;
+          seen.add(key);
+          
+          leaves.push({
+            teacher: teacherName,
+            subject: subject,
+            timeStart: c.timeStart || '',
+            timeEnd: c.timeEnd || '',
+            teacherSub: c.teacherSub || '',
+            room: c.roomBranch || '',
+            date: dateVal,
+            isToday: (dateVal === formattedToday || dateVal === today)
+          });
+        });
+        
+        // Sort: today first
+        leaves.sort((a, b) => (b.isToday ? 1 : 0) - (a.isToday ? 1 : 0));
+        
         result = { success: true, leaves };
         break;
       }
+
+      case 'getClassStudentCounts': {
+        const [courseNames] = args;
+        const counts = {};
+        if (!Array.isArray(courseNames)) {
+          result = { success: false, error: 'Invalid courseNames' };
+          break;
+        }
+
+        courseNames.forEach(c => { counts[c] = 0; });
+        
+        try {
+          const stdSnap = await getDocs(collection(db, 'students'));
+          const students = stdSnap.docs.map(d => d.data());
+          
+          const gsSnap = await getDocs(collection(db, 'gradeSheets'));
+          const gradeSheets = {};
+          gsSnap.docs.forEach(d => {
+            gradeSheets[d.id] = d.data();
+          });
+
+          courseNames.forEach(courseName => {
+            let count = 0;
+            // First check standard registrations in gradeSheets
+            Object.values(gradeSheets).forEach(sheet => {
+              if (Array.isArray(sheet.students)) {
+                sheet.students.forEach(st => {
+                  if (Array.isArray(st.courses)) {
+                    st.courses.forEach(c => {
+                      const cName = typeof c === 'string' ? c : (c.name || '');
+                      if (cName.trim() === courseName.trim()) {
+                        count++;
+                      }
+                    });
+                  }
+                });
+              }
+            });
+
+            // Also check student profiles tuition details matching the course
+            students.forEach(s => {
+              const cName = s.round || s.grade || '';
+              if (cName.trim() === courseName.trim()) {
+                const classType = s.classType || '';
+                const isPrivate = classType.includes('เดี่ยว') || classType.includes('ย่อย');
+                if (isPrivate) count++;
+              }
+            });
+
+            counts[courseName] = count;
+          });
+
+          result = { success: true, counts };
+        } catch (e) {
+          result = { success: false, error: e.message };
+        }
+        break;
+      }
+
+      case 'getManagerOTLogs': {
+        const [logUser] = args;
+        try {
+          const snap = await getDocs(collection(db, 'managerLogs'));
+          const logs = snap.docs.map(d => {
+            const row = d.data();
+            const otInStr = row.otIn || '';
+            const otOutStr = row.otOut || '';
+            const workInStr = row.workIn || '';
+            const workOutStr = row.workOut || '';
+            
+            let workHoursVal = row.workHours || '';
+            let otHoursVal = row.otHours || '';
+            
+            if (workInStr && workOutStr && !workHoursVal) {
+              workHoursVal = getHourDiff(workInStr, workOutStr);
+            }
+            if (otInStr && otOutStr && !otHoursVal) {
+              otHoursVal = getHourDiff(otInStr, otOutStr);
+            }
+
+            return {
+              id: d.id,
+              managerName: row.managerName || '',
+              otIn: otInStr,
+              otOut: otOutStr,
+              workIn: workInStr,
+              workOut: workOutStr,
+              otDetail: row.otDetail || '',
+              isPresent: row.isPresent || 0,
+              isAbsent: row.isAbsent || 0,
+              otHours: otHoursVal,
+              workHours: workHoursVal,
+              date: row.date || '',
+              lat: row.lat || '',
+              lng: row.lng || '',
+              photoInUrl: row.photoInUrl || '',
+              photoOutUrl: row.photoOutUrl || ''
+            };
+          });
+          result = logs;
+        } catch (e) {
+          result = { success: false, error: e.message };
+        }
+        break;
+      }
+
 
       // ── Evaluation Forms ──────────────────────────────────────────────────
       case 'getEvaluationForm': {
@@ -1425,6 +1582,23 @@ window.handleLogout = function() {
   }
 };
 
+// Helper: calculate time diff in hours (e.g. "1.5" or "8:00")
+function getHourDiff(startHHMM, endHHMM) {
+  try {
+    const sp = startHHMM.split(':');
+    const ep = endHHMM.split(':');
+    const startMins = parseInt(sp[0]) * 60 + parseInt(sp[1]);
+    const endMins = parseInt(ep[0]) * 60 + parseInt(ep[1]);
+    let diff = endMins - startMins;
+    if (diff < 0) diff += 24 * 60;
+    const h = Math.floor(diff / 60);
+    const m = diff % 60;
+    return h + ':' + String(m).padStart(2, '0');
+  } catch(e) {
+    return '';
+  }
+}
+
 // ─── Load original JavaScript.js as a plain script (non-module) ───────────────
 // Since JavaScript.js uses global functions and vars, it must load as classic script
 const s = document.createElement('script');
@@ -1432,3 +1606,4 @@ s.src = '/pookpik_tutor/src/JavaScript.js';
 s.onload = () => console.log('[App] JavaScript.js loaded and ready');
 s.onerror = (e) => console.error('[App] Failed to load JavaScript.js', e);
 document.head.appendChild(s);
+
