@@ -1388,6 +1388,221 @@ async function dispatch(funcName, args, chain) {
         break;
       }
 
+      // ── Additional GAS Mapped Actions ─────────────────────────────────────
+      case 'toggleTeacherConfirmInSheet': {
+        const [rowIndex, isChecked] = args;
+        const ref = doc(db, 'classLogs', String(rowIndex));
+        await updateDoc(ref, { teacherConfirmed: isChecked ? 1 : 0 });
+        result = { success: true };
+        break;
+      }
+
+      case 'addNewCoursesBatch': {
+        const [grade, branch, courseList, colLogUser] = args;
+        const gsDocId = `${grade}_${branch || '1'}`;
+        const gsRef = doc(db, 'gradeSheets', gsDocId);
+        const gsSnap = await getDoc(gsRef);
+        if (gsSnap.exists()) {
+          const current = gsSnap.data().courses || [];
+          courseList.forEach(c => {
+            current.push({
+              name: c.courseName,
+              price: parseFloat(c.price) || 0,
+              dayTime: c.dayTime || ''
+            });
+          });
+          await updateDoc(gsRef, { courses: current });
+        }
+        result = { success: true };
+        break;
+      }
+
+      case 'getPrivateSheetData': {
+        const [sheetName] = args;
+        const snap = await getDocs(collection(db, 'students'));
+        const students = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(s => {
+          const classType = s.classType || '';
+          if (sheetName === 'ALL') {
+            return classType.includes('เดี่ยว') || classType.includes('ย่อย');
+          }
+          return classType === sheetName;
+        });
+        result = { success: true, sheetName, students };
+        break;
+      }
+
+      case 'updateClassAbsenceAndAttendance': {
+        const [rowIndex, type, checked, colLogUser] = args;
+        const ref = doc(db, 'classLogs', String(rowIndex));
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const c = snap.data();
+          let isPresentLive = parseInt(c.isPresentLive) || 0;
+          let isPresentOnline = parseInt(c.isPresentOnline) || 0;
+          let isLeave = parseInt(c.isLeave) || 0;
+
+          if (type === 'studentLeave') {
+            if (checked) {
+              isPresentLive = 0;
+              isPresentOnline = 0;
+              isLeave = 1;
+            } else {
+              isLeave = 0;
+              if (isPresentLive === 0 && isPresentOnline === 0) {
+                isPresentLive = 1;
+              }
+            }
+          }
+          await updateDoc(ref, { isPresentLive, isPresentOnline, isLeave });
+        }
+        result = { success: true };
+        break;
+      }
+
+      case 'toggleClassAbsentInSheet': {
+        const [rowIndex, type, isChecked] = args;
+        const ref = doc(db, 'classLogs', String(rowIndex));
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const c = snap.data();
+          let note = c.note || '';
+          let isLeave = parseInt(c.isLeave) || 0;
+
+          if (type === 'nong') {
+            if (isChecked) {
+              if (!note.includes('น้องลา')) {
+                note = (note ? note + ' ' : '') + 'น้องลา';
+              }
+              isLeave = 1;
+              await updateDoc(ref, { note, isLeave, isPresentLive: 0, isPresentOnline: 0, isMakeup: 0 });
+            } else {
+              note = note.replace(/น้องลา/g, '').trim();
+              isLeave = 0;
+              await updateDoc(ref, { note, isLeave });
+            }
+          }
+        }
+        result = { success: true };
+        break;
+      }
+
+      case 'updateStudentPaymentDetails': {
+        const [stdId, paymentData, colLogUser] = args;
+        const ref = doc(db, 'students', stdId);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const currentPaid = parseFloat(snap.data().paidAmount) || 0;
+          const additionalPaid = parseFloat(paymentData.paid) || 0;
+          await updateDoc(ref, {
+            paidAmount: currentPaid + additionalPaid,
+            paymentDate: paymentData.paymentDate || new Date().toLocaleDateString('en-GB'),
+            paymentChannel: paymentData.paymentChannel || 'กสิกร บัญชีบริษัท',
+            staff: paymentData.staff || ''
+          });
+        }
+        result = { success: true };
+        break;
+      }
+
+      case 'getStudentDetailedCourses': {
+        const [studentName, nickname, grade, branchLearn, classType, colLogUser] = args;
+        const snap = await getDocs(collection(db, 'students'));
+        const detailed = [];
+        snap.docs.forEach(doc => {
+          const s = doc.data();
+          if (s.name === studentName || (nickname && s.nickname === nickname)) {
+            detailed.push({
+              courseName: s.round || s.grade || '',
+              price: parseFloat(s.tuitionFee) || 0,
+              dayTime: s.note || '',
+              classType: s.classType || 'กลุ่มหลัก'
+            });
+          }
+        });
+        result = detailed;
+        break;
+      }
+
+      case 'getTeacherCoursesAndStudents': {
+        const [logUser] = args;
+        const isTeacher = (logUser && (logUser.startsWith('tutor_') || logUser.startsWith('ครู')));
+        
+        const clSnap = await getDocs(collection(db, 'classLogs'));
+        const teacherCoursesMap = {};
+        
+        clSnap.docs.forEach(doc => {
+          const c = doc.data();
+          const isAssigned = !isTeacher || 
+            (c.teacherRegular && c.teacherRegular.toLowerCase().includes(logUser.toLowerCase())) ||
+            (c.teacherSub && c.teacherSub.toLowerCase().includes(logUser.toLowerCase()));
+            
+          if (isAssigned && c.subject) {
+            const courseKey = c.subject.trim();
+            teacherCoursesMap[courseKey] = {
+              courseName: courseKey,
+              roomBranch: c.roomBranch || '',
+              students: []
+            };
+          }
+        });
+
+        const courses = Object.keys(teacherCoursesMap);
+        if (courses.length === 0) {
+          result = [];
+          break;
+        }
+
+        const stdSnap = await getDocs(collection(db, 'students'));
+        const studentsList = stdSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        courses.forEach(courseName => {
+          const enrolledStudents = [];
+          studentsList.forEach(s => {
+            const roundName = s.round || '';
+            const gradeName = s.grade || '';
+            const matchesCourse = roundName.toLowerCase().includes(courseName.toLowerCase()) || gradeName.toLowerCase().includes(courseName.toLowerCase());
+            if (matchesCourse) {
+              enrolledStudents.push({
+                id: s.id,
+                name: s.name || '',
+                nickname: s.nickname || '',
+                grade: s.grade || s.classType || '',
+                branch: s.branchLearn || ''
+              });
+            }
+          });
+          teacherCoursesMap[courseName].students = enrolledStudents;
+        });
+
+        result = Object.keys(teacherCoursesMap).map(k => teacherCoursesMap[k]);
+        break;
+      }
+
+      case 'getEvaluationsList': {
+        const [logUser] = args;
+        const snap = await getDocs(collection(db, 'evaluations'));
+        const list = snap.docs.map(d => ({ evalId: d.id, ...d.data() }));
+        // Filter evaluations list depending on role if necessary (otherwise show all matching GAS structure)
+        result = list.map(item => ({
+          evalId: item.evalId,
+          timestamp: item.createdAt || '',
+          studentName: item.studentName || '',
+          nickname: item.nickname || '',
+          grade: item.grade || '',
+          branch: item.branch || '',
+          date: item.date || '',
+          subject: item.subject || '',
+          teacher: item.teacher || '',
+          scores: item.scores || { attention: '5', understanding: '5', homework: '5' },
+          strengths: item.strengths || '',
+          improvements: item.improvements || '',
+          recommendations: item.recommendations || item.comments || '',
+          evaluatedBy: item.evaluatedBy || item.teacher || ''
+        }));
+        break;
+      }
+
+
       // ── Student History ───────────────────────────────────────────────────
       case 'getStudentHistoryData': {
         const [histName, histNickname, histLogUser] = args;
