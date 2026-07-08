@@ -2747,6 +2747,431 @@ function addSubgroupCourseRow(value = '') {
 
 function handleClassTypeChange() {
   const classType = document.getElementById('student_class_type').value;
+  
+  // Elements
+  const subgroupSizeGroup = document.getElementById('subgroup_size_group');
+  const courseGradeGroup = document.getElementById('course_grade_group');
+  const courseTextContainer = document.getElementById('course_text_container');
+  const courseGroupContainerWrapper = document.getElementById('course_group_container_wrapper');
+  const courseCheckboxesWrapper = document.getElementById('course_checkboxes_wrapper');
+  
+  const singleStudentContainer = document.getElementById('single_student_container');
+  const singlePaymentContainer = document.getElementById('single_payment_container');
+  const subgroupDynamicContainer = document.getElementById('subgroup_dynamic_container');
+  
+  if (classType === 'กลุ่มหลัก') {
+    courseGradeGroup.style.display = 'block';
+    subgroupSizeGroup.style.display = 'none';
+    
+    courseTextContainer.style.display = 'none';
+    if(courseGroupContainerWrapper) courseGroupContainerWrapper.style.display = 'flex';
+    courseCheckboxesWrapper.style.display = 'grid';
+    
+    singleStudentContainer.style.display = 'block';
+    singlePaymentContainer.style.display = 'block';
+    subgroupDynamicContainer.style.display = 'none';
+    subgroupDynamicContainer.innerHTML = '';
+    
+    document.getElementById('student_name').required = true;
+    document.getElementById('student_nickname').required = true;
+    
+    handleGradeBranchChange();
+  } else {
+    courseTextContainer.style.display = 'flex';
+    if(courseGroupContainerWrapper) courseGroupContainerWrapper.style.display = 'none';
+    courseCheckboxesWrapper.style.display = 'none';
+    
+    if (classType === 'เดี่ยว') {
+      courseGradeGroup.style.display = 'none';
+      subgroupSizeGroup.style.display = 'none';
+      
+      singleStudentContainer.style.display = 'block';
+      singlePaymentContainer.style.display = 'block';
+      subgroupDynamicContainer.style.display = 'none';
+      subgroupDynamicContainer.innerHTML = '';
+      
+      document.getElementById('student_name').required = true;
+      document.getElementById('student_nickname').required = true;
+      
+    } else if (classType === 'กลุ่มย่อย') {
+      courseGradeGroup.style.display = 'none';
+      subgroupSizeGroup.style.display = 'block';
+      
+      if (!state.selectedStudent) {
+        // HIDE single containers
+        singleStudentContainer.style.display = 'none';
+        singlePaymentContainer.style.display = 'none';
+        subgroupDynamicContainer.style.display = 'block';
+        
+        document.getElementById('student_name').required = false;
+        document.getElementById('student_nickname').required = false;
+        
+        let count = 3;
+        const sizeVal = document.getElementById('student_subgroup_size').value;
+        if (sizeVal.includes('4-5')) count = 5;
+        else if (sizeVal.includes('6-10')) count = 10;
+        
+        let html = '';
+        for (let i = 1; i <= count; i++) {
+          html += `
+          <div class="subgroup-student-block" data-index="${i}" style="margin-bottom: 30px; border: 2px solid var(--color-primary); border-radius: var(--radius-md); overflow: hidden;">
+            <div style="background: var(--color-primary); color: white; padding: 10px 15px; font-weight: bold; font-size: 1.1rem;">
+              นักเรียนคนที่ ${i}
+            </div>
+            <div style="padding: 15px; background: rgba(255,255,255,0.8);">
+              
+              <div class="section-title-group" style="margin-top:0;">
+                <div class="section-label">ข้อมูลส่วนตัว & ติดต่อ</div>
+              </div>
+              <div class="form-grid-3" style="margin-bottom: 20px;">
+                <div class="form-group">
+                  <label class="form-label">ระดับชั้นเรียน</label>
+                  <select class="form-select sg-grade">
+                    <option value="อนุบาล">อนุบาล</option>
+                    <option value="ป.1">ประถมศึกษาปีที่ 1 (ป.1)</option>
+                    <option value="ป.2">ประถมศึกษาปีที่ 2 (ป.2)</option>
+                    <option value="ป.3">ประถมศึกษาปีที่ 3 (ป.3)</option>
+                    <option value="ป.4">ประถมศึกษาปีที่ 4 (ป.4)</option>
+                    <option value="ป.5">ประถมศึกษาปีที่ 5 (ป.5)</option>
+                    <option value="ป.6">ประถมศึกษาปีที่ 6 (ป.6)</option>
+                    <option value="ม.1">มัธยมศึกษาปีที่ 1 (ม.1)</option>
+                    <option value="ม.2">มัธยมศึกษาปีที่ 2 (ม.2)</option>
+                    <option value="ม.3">มัธยมศึกษาปีที่ 3 (ม.3)</option>
+                    <option value="ม.4">มัธยมศึกษาปีที่ 4 (ม.4)</option>
+                    <option value="ม.5">มัธยมศึกษาปีที่ 5 (ม.5)</option>
+                    <option value="ม.6">มัธยมศึกษาปีที่ 6 (ม.6)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">ชื่อ-นามสกุลนักเรียน</label>
+                  <input type="text" class="form-input sg-name" placeholder="ชื่อจริง นามสกุลจริง">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">ชื่อเล่น</label>
+                  <input type="text" class="form-input sg-nickname" placeholder="ชื่อเล่น">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">ชื่อโรงเรียน</label>
+                  <input type="text" class="form-input sg-school" placeholder="พิมพ์ชื่อโรงเรียน...">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">ทับ (Section)</label>
+                  <input type="text" class="form-input sg-class-section" placeholder="เช่น ป.2/69">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">เบอร์ติดต่อผู้ปกครอง</label>
+                  <input type="text" class="form-input sg-contact" placeholder="เบอร์โทรศัพท์" oninput="formatPhoneAsYouType(this)">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">ชื่อโปรไฟล์ไลน์ (Line Name)</label>
+                  <input type="text" class="form-input sg-line-name" placeholder="เช่น แม่ ณดา ป.2/69">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">ID Line</label>
+                  <input type="text" class="form-input sg-line-id" placeholder="ไอดีไลน์">
+                </div>
+              </div>
+
+              <div class="section-title-group">
+                <div class="section-label">ข้อมูลการชำระเงิน</div>
+              </div>
+              <div class="form-grid-3" style="margin-bottom: 20px;">
+                <div class="form-group">
+                  <label class="form-label">ยอดจริง (ค่าเรียนเต็ม)</label>
+                  <input type="number" class="form-input sg-full" placeholder="0" oninput="calculateSgOutstanding(this)">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">ยอดจ่ายรวม (บาท)</label>
+                  <input type="number" class="form-input highlight-input sg-paid" placeholder="0" readonly>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">ยอดคงค้าง (บาท)</label>
+                  <input type="number" class="form-input sg-outstanding" placeholder="0" readonly style="background-color: #fee2e2; border-color: #fca5a5; font-weight: bold; color: #b91c1c;">
+                </div>
+              </div>
+              
+              <!-- 3 Installments -->
+              <div style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                  <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">บันทึกแบ่งชำระ (3 ครั้ง)</h4>
+                </div>
+                `;
+          
+          for (let r = 1; r <= 3; r++) {
+            html += `
+                <div class="installment-row" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; background: rgba(0,0,0,0.02); padding: 10px; border-radius: 6px;">
+                  <div>
+                    <label style="font-size: 0.7rem; color: #64748b;">ครั้งที่ ${r}: วันที่ชำระ</label>
+                    <input type="date" class="form-input sg-pay-r${r}-date" style="padding: 4px; font-size: 0.8rem;">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.7rem; color: #64748b;">จำนวนเงิน</label>
+                    <input type="number" class="form-input sg-pay-r${r}-amount" style="padding: 4px; font-size: 0.8rem;" placeholder="0" oninput="calculateSgOutstanding(this)">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.7rem; color: #64748b;">ช่องทาง</label>
+                    <select class="form-select sg-pay-r${r}-channel" style="padding: 4px; font-size: 0.8rem;">
+                      <option value="">- เลือก -</option>
+                      <option value="เงินสด">เงินสด</option>
+                      <option value="โอนเงิน">โอนเงิน</option>
+                      <option value="บัตรเครดิต">บัตรเครดิต</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.7rem; color: #64748b;">พนักงานที่รับเงิน</label>
+                    <input type="text" class="form-input sg-pay-r${r}-staff" style="padding: 4px; font-size: 0.8rem;" placeholder="ชื่อพนักงาน">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.7rem; color: #64748b;">เวลา (Time)</label>
+                    <input type="time" class="form-input sg-pay-r${r}-time" style="padding: 4px; font-size: 0.8rem;">
+                  </div>
+                </div>
+            `;
+          }
+          html += `</div></div></div>`;
+        }
+        subgroupDynamicContainer.innerHTML = html;
+        
+      } else {
+        // Edit mode for Subgroup member
+        singleStudentContainer.style.display = 'block';
+        singlePaymentContainer.style.display = 'block';
+        subgroupDynamicContainer.style.display = 'none';
+        subgroupDynamicContainer.innerHTML = '';
+        document.getElementById('student_name').required = true;
+        document.getElementById('student_nickname').required = true;
+      }
+    }
+    
+    // calculateMainGroupFee(); // Should handle missing elements now
+    updateCombinedRound();
+  }
+}
+
+function calculateSgOutstanding(element) {
+  const block = element.closest('.subgroup-student-block');
+  if (!block) return;
+  const full = parseFloat(block.querySelector('.sg-full').value) || 0;
+  const p1 = parseFloat(block.querySelector('.sg-pay-r1-amount').value) || 0;
+  const p2 = parseFloat(block.querySelector('.sg-pay-r2-amount').value) || 0;
+  const p3 = parseFloat(block.querySelector('.sg-pay-r3-amount').value) || 0;
+  const totalPaid = p1 + p2 + p3;
+  block.querySelector('.sg-paid').value = totalPaid;
+  block.querySelector('.sg-outstanding').value = full - totalPaid;
+}
+
+function handleGradeBranchChange() {
+  const classTypeSelect = document.getElementById('student_class_type');
+  const classType = classTypeSelect.value;
+  
+  let grade = document.getElementById('student_grade').value;
+  if (classType === 'กลุ่มหลัก') {
+    grade = document.getElementById('student_course_grade').value;
+    document.getElementById('student_grade').value = grade; // Sync back to personal grade
+  }
+  
+  if (classType !== 'กลุ่มหลัก') {
+    if (classType === 'เดี่ยว') {
+      const courseName = document.getElementById('student_round_text').value.toLowerCase().trim();
+      const isEx = courseName.endsWith('ex') || courseName.includes('ex');
+      let price = 2000;
+      if (['ม.4', 'ม.5', 'ม.6'].includes(grade) || isEx) {
+        price = 2500;
+      }
+      document.getElementById('student_full').value = price;
+      document.getElementById('calculated_fee_display').innerText = price.toLocaleString();
+      if (!state.selectedStudent) {
+        document.getElementById('student_paid').value = price;
+      }
+    }
+    return;
+  }
+  
+  const branch = document.getElementById('student_branch_learn').value;
+  
+  const container = document.getElementById('course_checkboxes_container');
+  container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">กำลังค้นหาวิชาเรียน...</span>';
+  
+  google.script.run
+    .withSuccessHandler(courses => {
+      if (Array.isArray(courses) && courses.length > 0) {
+        let html = '';
+        courses.forEach(c => {
+          html += `
+            <div class="course-item-row" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px; background: #fff; border-radius: 6px; border: 1px solid rgba(74, 93, 85, 0.2);">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; margin: 0;">
+                <input type="checkbox" class="course-checkbox" value="${c.courseName}" data-price="${c.price}" data-total-sessions="${c.totalSessions || 10}" onchange="calculateMainGroupFee(); toggleSessionInput(this)">
+                <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-main);">${c.courseName} ${c.dayTime ? '(' + c.dayTime + ')' : ''} (฿${c.price})</span>
+              </label>
+              <div class="session-input-wrapper" style="display: flex; align-items: center; gap: 4px;">
+                <input type="number" class="course-sessions-input" style="width: 50px; padding: 2px 4px; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: 4px; text-align: center;" 
+                       min="1" max="100" value="${c.totalSessions || 10}" data-total="${c.totalSessions || 10}" 
+                       disabled oninput="calculateMainGroupFee()" onchange="calculateMainGroupFee()">
+                <span style="font-size: 0.75rem; color: var(--text-muted);">ครั้ง</span>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+        
+        if (state.selectedStudent) {
+          const selectedList = state.selectedStudent.selectedCourses || [];
+          if (selectedList.length > 0) {
+            document.querySelectorAll('.course-checkbox').forEach(cb => {
+              cb.checked = false;
+              toggleSessionInput(cb);
+            });
+            
+            selectedList.forEach(item => {
+              let courseName = '';
+              let sessions = 10;
+              if (item && typeof item === 'object') {
+                courseName = item.courseName;
+                sessions = item.sessions;
+              } else {
+                courseName = item;
+              }
+              
+              if (courseName) {
+                const cb = document.querySelector(`.course-checkbox[value="${courseName}"]`);
+                if (cb) {
+                  cb.checked = true;
+                  toggleSessionInput(cb);
+                  const row = cb.closest('.course-item-row');
+                  if (row) {
+                    const input = row.querySelector('.course-sessions-input');
+                    if (input) {
+                      input.value = sessions;
+                    }
+                  }
+                }
+              }
+            });
+            
+            const pChannel = state.selectedStudent.paymentChannel || '';
+            if (state.selectedStudent.isCard) {
+              document.getElementById('pay_mode_card').checked = true;
+            } else if (pChannel === 'เงินสด' || pChannel === 'สด') {
+              document.getElementById('pay_mode_cash').checked = true;
+            } else {
+              document.getElementById('pay_mode_transfer').checked = true;
+            }
+            
+            calculateMainGroupFee();
+          } else {
+            loadStudentRegisteredCourses(state.selectedStudent.name, grade, branch);
+          }
+        } else {
+          calculateMainGroupFee();
+        }
+      } else {
+        container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">ไม่พบรายวิชาเรียนในสเปรดชีตชั้นนี้</span>';
+        document.getElementById('calculated_fee_display').innerText = '0';
+        document.getElementById('student_full').value = '0';
+      }
+    })
+    .getGradeCourses(grade, branch, getLogUser());
+}
+
+function toggleSessionInput(cb) {
+  const row = cb.closest('.course-item-row');
+  if (!row) return;
+  const input = row.querySelector('.course-sessions-input');
+  if (input) {
+    input.disabled = !cb.checked;
+    if (!cb.checked) {
+      input.value = input.getAttribute('data-total');
+    }
+  }
+}
+
+// Asynchronously load the student's checked courses from the grade sheet row
+function loadStudentRegisteredCourses(studentName, grade, branch) {
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res && res.success && Array.isArray(res.students)) {
+        const stdRow = res.students.find(s => s.name === studentName);
+        
+        // Restore payment mode radio buttons
+        if (stdRow) {
+          if (stdRow.isCard === 1) {
+            document.getElementById('pay_mode_card').checked = true;
+          } else if (state.selectedStudent && (state.selectedStudent.paymentChannel === 'เงินสด' || state.selectedStudent.paymentChannel === 'สด')) {
+            document.getElementById('pay_mode_cash').checked = true;
+          } else {
+            document.getElementById('pay_mode_transfer').checked = true;
+          }
+        }
+        
+        if (stdRow && stdRow.courseValues) {
+          document.querySelectorAll('.course-checkbox').forEach(cb => {
+            cb.checked = false;
+            toggleSessionInput(cb);
+          });
+          for (const colIndex in stdRow.courseValues) {
+            const val = stdRow.courseValues[colIndex];
+            if (val !== '' && val !== null && val !== undefined) {
+              const course = res.courses.find(c => c.colIndex == colIndex);
+              if (course) {
+                const cb = document.querySelector(`.course-checkbox[value="${course.courseName}"]`);
+                if (cb) {
+                  cb.checked = true;
+                  toggleSessionInput(cb);
+                  
+                  // Find sessions input next to checkbox
+                  const row = cb.closest('.course-item-row');
+                  if (row) {
+                    const input = row.querySelector('.course-sessions-input');
+                    if (input) {
+                      const num = parseFloat(val);
+                      if (num === 30 || num === 50) {
+                        input.value = course.totalSessions;
+                      } else {
+                        input.value = num;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          calculateMainGroupFee();
+        }
+      }
+    })
+    .getGradeSheetData(grade, branch, getLogUser());
+}
+
+// Triggered when Class Type changes: set layout or autofill prices & hours
+function clearSubgroupCourses() {
+  const container = document.getElementById('subgroup_courses_list');
+  container.innerHTML = `
+    <div class="subgroup-course-item" style="display: flex; gap: 8px; align-items: center; width: 100%;">
+      <input type="text" id="student_round_text" class="form-input subgroup-course-input" placeholder="ตัวอย่าง: ณดา(ลินลดา) อ.2 เดี่ยวคณิต 1" style="flex: 1;" oninput="updateCombinedRound()">
+    </div>
+  `;
+  document.getElementById('add_course_input_btn').style.display = 'block';
+}
+
+function addSubgroupCourseRow(value = '') {
+  const container = document.getElementById('subgroup_courses_list');
+  const div = document.createElement('div');
+  div.className = 'subgroup-course-item';
+  div.style.display = 'flex';
+  div.style.gap = '8px';
+  div.style.alignItems = 'center';
+  div.style.width = '100%';
+  
+  div.innerHTML = `
+    <input type="text" class="form-input subgroup-course-input" placeholder="ตัวอย่าง: ณดา(ลินลดา) อ.2 เดี่ยวคณิต 1" style="flex: 1;" value="${value}" oninput="updateCombinedRound()">
+    <button type="button" class="btn btn-danger" onclick="this.parentElement.remove(); updateCombinedRound();" style="padding: 4px 8px; font-size: 0.72rem; height: auto;">ลบ</button>
+  `;
+  container.appendChild(div);
+  updateCombinedRound();
+}
+
+function handleClassTypeChange() {
+  const classType = document.getElementById('student_class_type').value;
   const grade = document.getElementById('student_grade').value;
   
   if (classType === 'กลุ่มหลัก') {
@@ -3031,83 +3456,121 @@ function saveStudent(e) {
   const studentId = document.getElementById('student_id').value;
   const classTypeVal = document.getElementById('student_class_type').value;
   
-  // Collect subgroup member names for new subgroup registrations
   const subgroupStudentList = [];
+  
   if (classTypeVal === 'กลุ่มย่อย' && !studentId) {
-    const nameInputs = document.querySelectorAll('.subgroup-member-name');
-    const nickInputs = document.querySelectorAll('.subgroup-member-nickname');
-    for (let i = 0; i < nameInputs.length; i++) {
-      const nameVal = nameInputs[i].value.trim();
-      const nickVal = nickInputs[i] ? nickInputs[i].value.trim() : '';
+    const blocks = document.querySelectorAll('.subgroup-student-block');
+    blocks.forEach(block => {
+      const nameVal = block.querySelector('.sg-name').value.trim();
       if (nameVal) {
-        subgroupStudentList.push({ name: nameVal, nickname: nickVal });
+        subgroupStudentList.push({
+          name: nameVal,
+          nickname: block.querySelector('.sg-nickname').value.trim(),
+          grade: block.querySelector('.sg-grade').value,
+          school: block.querySelector('.sg-school').value.trim(),
+          classSection: block.querySelector('.sg-class-section').value.trim(),
+          contact: block.querySelector('.sg-contact').value.trim(),
+          lineName: block.querySelector('.sg-line-name').value.trim(),
+          lineId: block.querySelector('.sg-line-id').value.trim(),
+          
+          full: parseFloat(block.querySelector('.sg-full').value) || 0,
+          paid: parseFloat(block.querySelector('.sg-paid').value) || 0,
+          
+          payRound1_date: convertDateToSheet(block.querySelector('.sg-pay-r1-date').value),
+          payRound1_amount: parseFloat(block.querySelector('.sg-pay-r1-amount').value) || 0,
+          payRound1_channel: block.querySelector('.sg-pay-r1-channel').value,
+          payRound1_staff: block.querySelector('.sg-pay-r1-staff').value.trim(),
+          payRound1_time: block.querySelector('.sg-pay-r1-time').value.trim(),
+          
+          payRound2_date: convertDateToSheet(block.querySelector('.sg-pay-r2-date').value),
+          payRound2_amount: parseFloat(block.querySelector('.sg-pay-r2-amount').value) || 0,
+          payRound2_channel: block.querySelector('.sg-pay-r2-channel').value,
+          payRound2_staff: block.querySelector('.sg-pay-r2-staff').value.trim(),
+          payRound2_time: block.querySelector('.sg-pay-r2-time').value.trim(),
+          
+          payRound3_date: convertDateToSheet(block.querySelector('.sg-pay-r3-date').value),
+          payRound3_amount: parseFloat(block.querySelector('.sg-pay-r3-amount').value) || 0,
+          payRound3_channel: block.querySelector('.sg-pay-r3-channel').value,
+          payRound3_staff: block.querySelector('.sg-pay-r3-staff').value.trim(),
+          payRound3_time: block.querySelector('.sg-pay-r3-time').value.trim()
+        });
       }
-    }
+    });
+    
     if (subgroupStudentList.length === 0) {
-      showToast('กรุณากรอกชื่อนักเรียนอย่างน้อย 1 คนในกลุ่มย่อย', 'error');
+      showToast('กรุณากรอกข้อมูลนักเรียนอย่างน้อย 1 คนในกลุ่มย่อย', 'error');
       return;
     }
   }
   
+  // Create studentData base
   const studentData = {
     id: studentId,
-    name: subgroupStudentList.length > 0 ? subgroupStudentList[0].name : document.getElementById('student_name').value.trim(),
-    nickname: subgroupStudentList.length > 0 ? subgroupStudentList[0].nickname : document.getElementById('student_nickname').value.trim(),
-    school: document.getElementById('student_school').value,
-    contact: document.getElementById('student_contact').value.trim(),
+    // For single student
+    name: document.getElementById('student_name') ? document.getElementById('student_name').value.trim() : '',
+    nickname: document.getElementById('student_nickname') ? document.getElementById('student_nickname').value.trim() : '',
+    school: document.getElementById('student_school') ? document.getElementById('student_school').value : '',
+    grade: document.getElementById('student_grade') ? document.getElementById('student_grade').value : '',
+    classSection: document.getElementById('student_class_section') ? document.getElementById('student_class_section').value.trim() : '',
+    contact: document.getElementById('student_contact') ? document.getElementById('student_contact').value.trim() : '',
+    lineName: document.getElementById('student_line_name') ? document.getElementById('student_line_name').value.trim() : '',
+    lineId: document.getElementById('student_line_id') ? document.getElementById('student_line_id').value.trim() : '',
+    
+    // Shared fields
     branchLearn: document.getElementById('student_branch_learn').value,
     branchPay: document.getElementById('student_branch_pay').value,
-    full: parseFloat(document.getElementById('student_full').value) || 0,
-    paid: parseFloat(document.getElementById('student_paid').value) || 0,
-    paymentDate: document.getElementById('student_pay_date').value.trim(),
-    paymentChannel: document.getElementById('student_pay_channel').value.trim(),
-    staff: document.getElementById('student_staff').value.trim(),
-    round: document.getElementById('student_round').value,
-    paymentTimeNote: document.getElementById('student_time_note').value.trim(),
-    extraNote: document.getElementById('student_extra_note').value.trim(),
     subgroupCourses: Array.from(document.querySelectorAll('.subgroup-course-input')).map(inp => inp.value.trim()).filter(val => val !== ''),
     subgroupCoursesSize: document.getElementById('student_subgroup_size').value,
-    subgroupStudentList: subgroupStudentList,
     
-    // Installment fields
-    payRound1_amount: parseFloat(document.getElementById('pay_r1_amount').value) || 0,
-    payRound1_date: convertDateToSheet(document.getElementById('pay_r1_date').value),
-    payRound1_channel: document.getElementById('pay_r1_channel').value,
-    payRound1_staff: document.getElementById('pay_r1_staff').value.trim(),
-    payRound1_time: document.getElementById('pay_r1_time').value.trim(),
+    // Single payment
+    full: document.getElementById('student_full') ? parseFloat(document.getElementById('student_full').value) || 0 : 0,
+    paid: document.getElementById('student_paid') ? parseFloat(document.getElementById('student_paid').value) || 0 : 0,
     
-    payRound2_amount: parseFloat(document.getElementById('pay_r2_amount').value) || 0,
-    payRound2_date: convertDateToSheet(document.getElementById('pay_r2_date').value),
-    payRound2_channel: document.getElementById('pay_r2_channel').value,
-    payRound2_staff: document.getElementById('pay_r2_staff').value.trim(),
-    payRound2_time: document.getElementById('pay_r2_time').value.trim(),
+    payRound1_amount: document.getElementById('pay_r1_amount') ? parseFloat(document.getElementById('pay_r1_amount').value) || 0 : 0,
+    payRound1_date: document.getElementById('pay_r1_date') ? convertDateToSheet(document.getElementById('pay_r1_date').value) : '',
+    payRound1_channel: document.getElementById('pay_r1_channel') ? document.getElementById('pay_r1_channel').value : '',
+    payRound1_staff: document.getElementById('pay_r1_staff') ? document.getElementById('pay_r1_staff').value.trim() : '',
+    payRound1_time: document.getElementById('pay_r1_time') ? document.getElementById('pay_r1_time').value.trim() : '',
     
-    payRound3_amount: parseFloat(document.getElementById('pay_r3_amount').value) || 0,
-    payRound3_date: convertDateToSheet(document.getElementById('pay_r3_date').value),
-    payRound3_channel: document.getElementById('pay_r3_channel').value,
-    payRound3_staff: document.getElementById('pay_r3_staff').value.trim(),
-    payRound3_time: document.getElementById('pay_r3_time').value.trim(),
+    payRound2_amount: document.getElementById('pay_r2_amount') ? parseFloat(document.getElementById('pay_r2_amount').value) || 0 : 0,
+    payRound2_date: document.getElementById('pay_r2_date') ? convertDateToSheet(document.getElementById('pay_r2_date').value) : '',
+    payRound2_channel: document.getElementById('pay_r2_channel') ? document.getElementById('pay_r2_channel').value : '',
+    payRound2_staff: document.getElementById('pay_r2_staff') ? document.getElementById('pay_r2_staff').value.trim() : '',
+    payRound2_time: document.getElementById('pay_r2_time') ? document.getElementById('pay_r2_time').value.trim() : '',
     
-    payRound4_amount: parseFloat(document.getElementById('pay_r4_amount').value) || 0,
-    payRound4_date: convertDateToSheet(document.getElementById('pay_r4_date').value),
-    payRound4_channel: document.getElementById('pay_r4_channel').value,
-    payRound4_staff: document.getElementById('pay_r4_staff').value.trim(),
-    payRound4_time: document.getElementById('pay_r4_time').value.trim(),
+    payRound3_amount: document.getElementById('pay_r3_amount') ? parseFloat(document.getElementById('pay_r3_amount').value) || 0 : 0,
+    payRound3_date: document.getElementById('pay_r3_date') ? convertDateToSheet(document.getElementById('pay_r3_date').value) : '',
+    payRound3_channel: document.getElementById('pay_r3_channel') ? document.getElementById('pay_r3_channel').value : '',
+    payRound3_staff: document.getElementById('pay_r3_staff') ? document.getElementById('pay_r3_staff').value.trim() : '',
+    payRound3_time: document.getElementById('pay_r3_time') ? document.getElementById('pay_r3_time').value.trim() : '',
     
-    // Advanced fields
-    grade: document.getElementById('student_grade').value,
-    classSection: document.getElementById('student_class_section').value.trim(),
-    lineName: document.getElementById('student_line_name').value.trim(),
-    lineId: document.getElementById('student_line_id').value.trim(),
-    carriedForwardFee: parseFloat(document.getElementById('student_carried_forward').value) || 0,
-    classHours: document.getElementById('student_hours').value.trim(),
-    classHoursLeft: document.getElementById('student_hours_left').value.trim(),
+    payRound4_amount: document.getElementById('pay_r4_amount') ? parseFloat(document.getElementById('pay_r4_amount').value) || 0 : 0,
+    payRound4_date: document.getElementById('pay_r4_date') ? convertDateToSheet(document.getElementById('pay_r4_date').value) : '',
+    payRound4_channel: document.getElementById('pay_r4_channel') ? document.getElementById('pay_r4_channel').value : '',
+    payRound4_staff: document.getElementById('pay_r4_staff') ? document.getElementById('pay_r4_staff').value.trim() : '',
+    payRound4_time: document.getElementById('pay_r4_time') ? document.getElementById('pay_r4_time').value.trim() : '',
+    
+    // Notes
+    paymentTimeNote: document.getElementById('student_time_note') ? document.getElementById('student_time_note').value.trim() : '',
+    extraNote: document.getElementById('student_extra_note') ? document.getElementById('student_extra_note').value.trim() : '',
+    classHours: document.getElementById('student_hours') ? document.getElementById('student_hours').value.trim() : '',
+    classHoursLeft: document.getElementById('student_hours_left') ? document.getElementById('student_hours_left').value.trim() : '',
+    carriedForwardFee: document.getElementById('student_carried_forward') ? parseFloat(document.getElementById('student_carried_forward').value) || 0 : 0,
+    
+    round: document.getElementById('student_round') ? document.getElementById('student_round').value : '',
+    
+    isCard: document.getElementById('pay_mode_card') ? document.getElementById('pay_mode_card').checked : false,
+    
+    // Subgroup flags
+    subgroupStudents: subgroupStudentList,
+    isSubgroupNewLogic: subgroupStudentList.length > 0,
+    
     classType: (function() {
       const type = document.getElementById('student_class_type').value;
       if (type === 'กลุ่มย่อย') return document.getElementById('student_subgroup_size').value;
       return type;
     })(),
-    isCard: document.getElementById('pay_mode_card').checked,
+    
     selectedCourses: Array.from(document.querySelectorAll('.course-checkbox:checked')).map(cb => {
       const row = cb.closest('.course-item-row');
       const input = row ? row.querySelector('.course-sessions-input') : null;
