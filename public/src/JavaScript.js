@@ -9076,7 +9076,7 @@ function submitStudentEvaluation(event) {
       const val = input.value.trim();
       if (val) {
         filledCount++;
-        if (val.length <= 70) {
+        if (val.length <= 60) {
           invalidLength = true;
         }
         items.push(val);
@@ -9087,7 +9087,7 @@ function submitStudentEvaluation(event) {
       return { valid: false, error: `หัวข้อ "${nameTh}" ต้องตอบมากกว่า 3 ข้อขึ้นไป (อย่างน้อย 4 ข้อ)` };
     }
     if (invalidLength) {
-      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาวตัวอักษรมากกว่า 70 ตัวอักษรขึ้นไป` };
+      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาวตัวอักษรมากกว่า 60 ตัวอักษรขึ้นไป` };
     }
     
     const formattedStr = items.map((val, idx) => `${idx + 1}. ${val}`).join('\n');
@@ -9367,7 +9367,7 @@ function saveAdminEvaluationEdit(e) {
       const val = input.value.trim();
       if (val) {
         items.push(val);
-        if (val.length < 70) {
+        if (val.length < 60) {
           invalidLength = true;
         }
       } else {
@@ -9379,7 +9379,7 @@ function saveAdminEvaluationEdit(e) {
       return { valid: false, error: `หัวข้อ "${nameTh}" ต้องตอบมากกว่า 3 ข้อขึ้นไป (อย่างน้อย 4 ข้อ)` };
     }
     if (invalidLength) {
-      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาวตัวอักษรมากกว่า 70 ตัวอักษรขึ้นไป` };
+      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาวตัวอักษรมากกว่า 60 ตัวอักษรขึ้นไป` };
     }
     
     const formattedStr = items.map((val, idx) => `${idx + 1}. ${val}`).join('\n');
