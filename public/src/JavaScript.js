@@ -94,13 +94,13 @@ function checkSession() {
     try {
       state.currentUser = JSON.parse(session);
       // Hide login overlay immediately to prevent locking the screen on load
-      document.getElementById('login_overlay').style.display = 'none';
+      if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'none';
       
       const isTeacher = (state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู');
       
       if (isTeacher) {
-        document.getElementById('app_shell').style.display = 'none';
-        document.getElementById('teacher_app_shell').style.display = 'flex';
+        if(document.getElementById('app_shell')) document.getElementById('app_shell').style.display = 'none';
+        if(document.getElementById('teacher_app_shell')) document.getElementById('teacher_app_shell').style.display = 'flex';
         
         // Fetch full profile info to display correct details in the sidebar
         google.script.run
@@ -142,8 +142,8 @@ function checkSession() {
         initTeacherFilterDates();
         loadTeacherDailySchedule();
       } else {
-        document.getElementById('teacher_app_shell').style.display = 'none';
-        document.getElementById('app_shell').style.display = 'flex';
+        if(document.getElementById('teacher_app_shell')) document.getElementById('teacher_app_shell').style.display = 'none';
+        if(document.getElementById('app_shell')) document.getElementById('app_shell').style.display = 'flex';
         
         // Update displayed name
         const displayName = String(state.currentUser.nickname || state.currentUser.username || '');
@@ -175,9 +175,9 @@ function checkSession() {
 }
 
 function showLoginScreen() {
-  document.getElementById('login_overlay').style.display = 'flex';
-  document.getElementById('app_shell').style.display = 'none';
-  document.getElementById('teacher_app_shell').style.display = 'none';
+  if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'flex';
+  if(document.getElementById('app_shell')) document.getElementById('app_shell').style.display = 'none';
+  if(document.getElementById('teacher_app_shell')) document.getElementById('teacher_app_shell').style.display = 'none';
 }
 
 function handleLogin(e) {
@@ -196,7 +196,7 @@ function handleLogin(e) {
       setLoading(false);
       if (res && res.success) {
         localStorage.setItem('pookpik_session', JSON.stringify(res.user));
-        document.getElementById('login_overlay').style.display = 'none';
+        if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'none';
         showToast('เข้าสู่ระบบเสร็จสิ้น!', 'success');
         checkSession();
       } else {
