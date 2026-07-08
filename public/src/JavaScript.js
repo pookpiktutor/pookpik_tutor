@@ -79,6 +79,16 @@ function initIdleTimer() {
 }
 
 function checkSession() {
+  // Check URL parameters first (like LINE OA)
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlUser = urlParams.get("logUser");
+  if (urlUser) {
+    localStorage.setItem('pookpik_session', JSON.stringify({
+      username: urlUser,
+      role: urlUser.toLowerCase().includes('admin') ? 'Administrator' : (urlUser.toLowerCase().includes('staff') ? 'Staff' : 'Teacher')
+    }));
+  }
+
   const session = localStorage.getItem('pookpik_session');
   if (session) {
     try {
