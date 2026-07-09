@@ -3135,7 +3135,6 @@ function getTeacherCoursesAndStudents(logUser) {
           }
         }
       }
-    }
     
     const result = [];
     courseKeys.forEach(key => {
@@ -6260,12 +6259,7 @@ function matchCourseName(dlSubject, studCourse) {
   return cleanDl.indexOf(cleanStud) !== -1 || cleanStud.indexOf(cleanDl) !== -1;
 }
 
-function matchCourseNameIgnoringRound(dlSubject, studCourse) {
-  if (!dlSubject || !studCourse) return false;
-  const cleanDl = dlSubject.toLowerCase().replace(/\s+/g, '').trim().replace(/\d+$/, '');
-  const cleanStud = studCourse.toLowerCase().replace(/\s+/g, '').trim().replace(/\d+$/, '');
-  return cleanDl === cleanStud || cleanDl.indexOf(cleanStud) !== -1 || cleanStud.indexOf(cleanDl) !== -1;
-}
+// Duplicate matchCourseNameIgnoringRound removed to avoid redeclaration error
 
 function recalculateSubjectHours(subject) {
   const db = getDb();
