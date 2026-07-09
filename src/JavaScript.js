@@ -49,53 +49,7 @@ let state = {
   selectedPrivateStudent: null
 };
 
-// Initialize Application
-function initializeApp() {
-  // Check Login Session first
-  checkSession();
 
-  // Setup character counting for evaluation forms
-  function setupCharCounting() {
-    const inputs = document.querySelectorAll('.eval-strength-item, .eval-improvement-item, .eval-recommendation-item');
-    inputs.forEach(input => {
-      // Find if we already added a count span
-      let countSpan = input.nextElementSibling;
-      if (!countSpan || !countSpan.classList.contains('char-count-display')) {
-         countSpan = document.createElement('span');
-         countSpan.classList.add('char-count-display');
-         countSpan.style.fontSize = '0.75rem';
-         countSpan.style.color = '#888';
-         countSpan.style.minWidth = '45px';
-         countSpan.style.textAlign = 'right';
-         
-         // Insert after input
-         if (input.parentNode) {
-             input.parentNode.insertBefore(countSpan, input.nextSibling);
-         }
-      }
-      
-      function updateCount() {
-         const count = input.value.length;
-         countSpan.innerText = count + '/60';
-         if (count > 0 && count < 60 && input.placeholder.includes('60')) {
-             countSpan.style.color = 'red';
-         } else {
-             countSpan.style.color = '#888';
-         }
-      }
-      
-      input.addEventListener('input', updateCount);
-      updateCount(); // Init
-    });
-  }
-  setupCharCounting();
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-  initializeApp();
-}
 
 // ----------------------------------------------------
 // Authentication & Sessions
@@ -9808,3 +9762,51 @@ window.openStudentModal = function(id = null) {
     document.getElementById('student_modal').classList.add('active');
   }
 };
+
+// Initialize Application
+function initializeApp() {
+  // Check Login Session first
+  checkSession();
+
+  // Setup character counting for evaluation forms
+  function setupCharCounting() {
+    const inputs = document.querySelectorAll('.eval-strength-item, .eval-improvement-item, .eval-recommendation-item');
+    inputs.forEach(input => {
+      // Find if we already added a count span
+      let countSpan = input.nextElementSibling;
+      if (!countSpan || !countSpan.classList.contains('char-count-display')) {
+         countSpan = document.createElement('span');
+         countSpan.classList.add('char-count-display');
+         countSpan.style.fontSize = '0.75rem';
+         countSpan.style.color = '#888';
+         countSpan.style.minWidth = '45px';
+         countSpan.style.textAlign = 'right';
+         
+         // Insert after input
+         if (input.parentNode) {
+             input.parentNode.insertBefore(countSpan, input.nextSibling);
+         }
+      }
+      
+      function updateCount() {
+         const count = input.value.length;
+         countSpan.innerText = count + '/60';
+         if (count > 0 && count < 60 && input.placeholder.includes('60')) {
+             countSpan.style.color = 'red';
+         } else {
+             countSpan.style.color = '#888';
+         }
+      }
+      
+      input.addEventListener('input', updateCount);
+      updateCount(); // Init
+    });
+  }
+  setupCharCounting();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}
