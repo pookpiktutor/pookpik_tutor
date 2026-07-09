@@ -1150,6 +1150,18 @@
                 </select>
               </div>
               
+              <!-- Course checkboxes for กลุ่มหลัก (loaded dynamically) -->
+              <div class="form-group form-group-full-3" id="course_checkboxes_wrapper" style="display: none;">
+                <label class="form-label" style="font-weight: 700; color: var(--color-primary-hover);">เลือกคอร์สเรียน (กลุ่มหลัก)</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <div style="font-size: 0.85rem; color: var(--text-muted);">กดเลือกวิชาที่ต้องการลงทะเบียน</div>
+                  <div style="font-size: 1.1rem; font-weight: bold; color: var(--color-primary);">
+                    ค่าเรียนรวม: <span id="calculated_fee_display">0</span> บาท
+                  </div>
+                </div>
+                <div id="course_checkboxes_container" style="display: flex; flex-direction: column; gap: 6px;"></div>
+              </div>
+
               <div class="form-group form-group-full-3">
                 <label class="form-label">ชื่อคอร์ส / รอบการเรียน</label>
                 <input type="text" id="shared_course_name" class="form-input" placeholder="ตัวอย่าง: คอร์สปิดเทอม คณิต-วิทย์ ป.5">

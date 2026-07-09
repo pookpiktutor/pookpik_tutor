@@ -2505,7 +2505,8 @@ function renderStudentsTable() {
 // Helper: Check if classType represents a main group course (either legacy name or selected grade option)
 function isMainGroup(classType) {
   if (!classType) return false;
-  return classType.includes('กลุ่มหลัก') || ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'].includes(classType);
+  const cleanVal = classType.toString().trim();
+  return cleanVal.includes('หลัก') || cleanVal.includes('ѡ') || ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'].some(g => cleanVal.includes(g));
 }
 
 // Helper: Update combined round string from round components
@@ -2597,29 +2598,35 @@ function calculateMainGroupFee() {
   }
   
   // Check if "รูดบัตร" payment mode is checked
-  const payModeCard = document.getElementById('pay_mode_card');
+  const payModeCard = document.getElementById('pay_mode_card_0') || document.getElementById('pay_mode_card');
   if (payModeCard && payModeCard.checked) {
     total *= 1.03;
   }
   
   // Check if Unpaid ("ยังไม่ชำระ") payment mode is checked
-  const payModeUnpaid = document.getElementById('pay_mode_unpaid');
+  const payModeUnpaid = document.getElementById('pay_mode_unpaid_0') || document.getElementById('pay_mode_unpaid');
   if (payModeUnpaid && payModeUnpaid.checked) {
-    for (let r = 1; r <= 4; r++) {
-      document.getElementById(`pay_r${r}_amount`).value = '';
+    for (let r = 1; r <= 3; r++) {
+      const el = document.getElementById(`pay_r${r}_amount_0`) || document.getElementById(`pay_r${r}_amount`);
+      if (el) el.value = '';
     }
   }
   
   const roundedTotal = Math.round(total);
-  document.getElementById('calculated_fee_display').innerText = roundedTotal.toLocaleString();
-  document.getElementById('student_full').value = roundedTotal;
+  const feeDisplay = document.getElementById('calculated_fee_display');
+  if (feeDisplay) feeDisplay.innerText = roundedTotal.toLocaleString();
+  const fullEl = document.getElementById('student_full_0') || document.getElementById('student_full');
+  if (fullEl) fullEl.value = roundedTotal;
   
   // Auto-fill installment 1 if it is a new student
   if (!state.selectedStudent) {
-    if (payModeUnpaid && payModeUnpaid.checked) {
-      document.getElementById('pay_r1_amount').value = '';
-    } else {
-      document.getElementById('pay_r1_amount').value = roundedTotal;
+    const r1El = document.getElementById('pay_r1_amount_0') || document.getElementById('pay_r1_amount');
+    if (r1El) {
+      if (payModeUnpaid && payModeUnpaid.checked) {
+        r1El.value = '';
+      } else {
+        r1El.value = roundedTotal;
+      }
     }
   }
   
