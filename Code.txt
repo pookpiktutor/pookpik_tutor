@@ -6419,7 +6419,8 @@ function getStudentHistoryData(name, nickname, logUser) {
         const stdName = row[1] ? row[1].toString().trim() : '';
         const stdNick = row[2] ? row[2].toString().trim() : '';
         
-        if (stdName === name || (nickname && stdNick === nickname)) {
+        // ค้นหาด้วยชื่อ-นามสกุลเต็มเป็นหลัก (exact match)
+        if (stdName === name) {
           allStudents.push({
             id: row[0] ? row[0].toString().trim() : '',
             name: stdName,
@@ -6442,13 +6443,20 @@ function getStudentHistoryData(name, nickname, logUser) {
     
     const classSheet = db.getSheetByName('Data Learn');
     const matchedClasses = [];
+    
+    // รวบรวม nicknames ที่ได้จาก StatusDB เพื่อใช้ค้นหาใน Data Learn
+    const matchedNicknames = [...new Set(
+      allStudents.map(s => s.nickname).filter(n => n && n.length > 0)
+    )];
+    
     if (classSheet) {
       const cData = classSheet.getDataRange().getValues();
       for (let i = 1; i < cData.length; i++) {
         const row = cData[i];
         const subject = row[0] ? row[0].toString().trim() : '';
         
-        const nameMatch = (nickname && subject.indexOf(nickname) !== -1) || (name && subject.indexOf(name) !== -1);
+        const nameMatch = matchedNicknames.some(n => subject.indexOf(n) !== -1) ||
+                          (name && subject.indexOf(name) !== -1);
         if (nameMatch) {
           matchedClasses.push({
             subject: subject,
