@@ -50,7 +50,7 @@ let state = {
 };
 
 // Initialize Application
-document.addEventListener('DOMContentLoaded', () => {
+function initializeApp() {
   // Check Login Session first
   checkSession();
 
@@ -89,8 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   setupCharCounting();
+}
 
-});
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}
 
 // ----------------------------------------------------
 // Authentication & Sessions
