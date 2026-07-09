@@ -3083,15 +3083,23 @@ function getTeacherCoursesAndStudents(logUser) {
       
       for (let key of courseKeys) {
         const cInfo = teacherCoursesMap[key];
-        const targetCourseName = cInfo.courseName.toLowerCase();
-        const targetDayTime = cInfo.dayTimeStr ? cInfo.dayTimeStr.toLowerCase() : '';
+        const targetCourseName = cInfo.courseName.toLowerCase().trim();
+        const targetDayTime = cInfo.dayTimeStr ? cInfo.dayTimeStr.toLowerCase().trim() : '';
         
         for (let c = 4; c < courseRow.length; c++) {
           const cellCourse = (courseRow[c] || '').toString().toLowerCase().trim();
           const cellDayTime = (dayTimeRow[c] || '').toString().toLowerCase().trim();
           
-          if (cellCourse && cellCourse.includes(targetCourseName)) {
-            if (!targetDayTime || (cellDayTime && cellDayTime.includes(targetDayTime)) || (targetDayTime && targetDayTime.includes(cellDayTime))) {
+          let isMatch = false;
+          if (cellCourse === targetCourseName) {
+            isMatch = true;
+          } else if (cellCourse && (cellCourse.includes(targetCourseName) || targetCourseName.includes(cellCourse))) {
+            if (!targetDayTime || (cellDayTime && cellDayTime.includes(targetDayTime)) || (targetDayTime && targetDayTime.includes(cellDayTime)) || cellCourse.includes(targetDayTime)) {
+              isMatch = true;
+            }
+          }
+          
+          if (isMatch) {
                
                for (let r = 3; r < data.length; r++) {
                   const val = data[r][c];
@@ -3123,7 +3131,7 @@ function getTeacherCoursesAndStudents(logUser) {
                      }
                   }
                }
-            }
+             }
           }
         }
       }
@@ -4141,7 +4149,7 @@ function addNewCourseColumn(grade, branch, courseName, price, dayTime, sessions,
     const lastCol = sheet.getLastColumn();
     const targetCol = lastCol + 1;
     
-    sheet.getRange(1, targetCol).setValue(courseName);
+    sheet.getRange(1, targetCol).setValue(courseName + (dayTime ? ' ' + dayTime.trim() : ''));
     sheet.getRange(2, targetCol).setValue(price);
     sheet.getRange(3, targetCol).setValue(dayTime || ''); 
     sheet.getRange(4, targetCol).setValue(parseInt(sessions) || 10); 
@@ -4170,7 +4178,7 @@ function addNewCoursesBatch(grade, branch, courseList, logUser) {
     // Write each course in adjacent columns
     courseList.forEach((c, idx) => {
       const targetCol = lastCol + 1 + idx;
-      sheet.getRange(1, targetCol).setValue(c.courseName);
+      sheet.getRange(1, targetCol).setValue(c.courseName + (c.dayTime ? ' ' + c.dayTime.trim() : ''));
       sheet.getRange(2, targetCol).setValue(c.price);
       sheet.getRange(3, targetCol).setValue(c.dayTime || '');
       sheet.getRange(4, targetCol).setValue(parseInt(c.sessions) || 10);
