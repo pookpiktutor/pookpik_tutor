@@ -1381,7 +1381,11 @@ function matchRoomAndBranch(roomBranch, roomName, branchName) {
   const cleanB = branchName.toLowerCase().trim();
   
   if (cleanRN.includes('ออนไลน์') || cleanRN.includes('online')) {
-    return cleanRB.includes('ออนไลน์') || cleanRB.includes('online');
+    const isOnlineRoom = cleanRB.includes('ออนไลน์') || cleanRB.includes('online');
+    if (!isOnlineRoom) return false;
+    const normRB = cleanRB.replace(/\s+/g, '');
+    const normB = cleanB.replace(/\s+/g, '');
+    return normRB.includes(normB);
   }
   
   const escapedRN = cleanRN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
