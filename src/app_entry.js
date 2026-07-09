@@ -1,6 +1,6 @@
 // app_entry.js - Main Application Entry Point
 // Connects directly to Google Apps Script Web App for database operations
-import * as FB from './firebase_backend.js';
+// No Firebase dependency - all data goes through GAS
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA/exec";
 
