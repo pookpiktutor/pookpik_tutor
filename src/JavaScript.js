@@ -1,3 +1,12 @@
+
+function safeSetValue(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+}
+function safeSetText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = val;
+}
 // Version 64.0.0: ปรับตารางคลาสเรียน การตัดชื่อคอร์ส ป้องกันคอร์สล้นขอบ และอัปเดตช่องทางชำระเงิน
 // Global State
 let modalState = {
@@ -131,13 +140,13 @@ function checkSession() {
     try {
       state.currentUser = JSON.parse(session);
       // Hide login overlay immediately to prevent locking the screen on load
-      document.getElementById('login_overlay').style.display = 'none';
+      if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'none';
       
       const isTeacher = (state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู');
       
       if (isTeacher) {
-        document.getElementById('app_shell').style.display = 'none';
-        document.getElementById('teacher_app_shell').style.display = 'flex';
+        if(document.getElementById('app_shell')) document.getElementById('app_shell').style.display = 'none';
+        if(document.getElementById('teacher_app_shell')) document.getElementById('teacher_app_shell').style.display = 'flex';
         
         // Fetch full profile info to display correct details in the sidebar
         google.script.run
@@ -168,19 +177,19 @@ function checkSession() {
         
         const avatarLettersEl = document.getElementById('teacher_avatar_letters');
         if (state.currentUser.profilePic) {
-          avatarLettersEl.innerHTML = `<img src="${state.currentUser.profilePic}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
-          avatarLettersEl.style.background = 'transparent';
+          if (avatarLettersEl) avatarLettersEl.innerHTML = `<img src="${state.currentUser.profilePic}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+          if (avatarLettersEl) avatarLettersEl.style.background = 'transparent';
         } else {
-          avatarLettersEl.innerText = displayName.substring(0, 2).toUpperCase();
-          avatarLettersEl.style.background = 'var(--color-brown)';
+          if (avatarLettersEl) avatarLettersEl.innerText = displayName.substring(0, 2).toUpperCase();
+          if (avatarLettersEl) avatarLettersEl.style.background = 'var(--color-brown)';
         }
         
         // Load default dates for teacher filter
         initTeacherFilterDates();
         loadTeacherDailySchedule();
       } else {
-        document.getElementById('teacher_app_shell').style.display = 'none';
-        document.getElementById('app_shell').style.display = 'flex';
+        if(document.getElementById('teacher_app_shell')) document.getElementById('teacher_app_shell').style.display = 'none';
+        if(document.getElementById('app_shell')) document.getElementById('app_shell').style.display = 'flex';
         
         // Update displayed name
         const displayName = String(state.currentUser.nickname || state.currentUser.username || '');
@@ -189,11 +198,11 @@ function checkSession() {
         
         const avatarLettersEl = document.getElementById('avatar_letters');
         if (state.currentUser.profilePic) {
-          avatarLettersEl.innerHTML = `<img src="${state.currentUser.profilePic}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
-          avatarLettersEl.style.background = 'transparent';
+          if (avatarLettersEl) avatarLettersEl.innerHTML = `<img src="${state.currentUser.profilePic}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+          if (avatarLettersEl) avatarLettersEl.style.background = 'transparent';
         } else {
-          avatarLettersEl.innerText = displayName.substring(0, 2).toUpperCase();
-          avatarLettersEl.style.background = 'var(--color-brown)';
+          if (avatarLettersEl) avatarLettersEl.innerText = displayName.substring(0, 2).toUpperCase();
+          if (avatarLettersEl) avatarLettersEl.style.background = 'var(--color-brown)';
         }
         
         // Bootstrap App Data
@@ -212,9 +221,9 @@ function checkSession() {
 }
 
 function showLoginScreen() {
-  document.getElementById('login_overlay').style.display = 'flex';
-  document.getElementById('app_shell').style.display = 'none';
-  document.getElementById('teacher_app_shell').style.display = 'none';
+  if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'flex';
+  if(document.getElementById('app_shell')) document.getElementById('app_shell').style.display = 'none';
+  if(document.getElementById('teacher_app_shell')) document.getElementById('teacher_app_shell').style.display = 'none';
 }
 
 function handleLogin(e) {
@@ -233,9 +242,20 @@ function handleLogin(e) {
       setLoading(false);
       if (res && res.success) {
         localStorage.setItem('pookpik_session', JSON.stringify(res.user));
-        document.getElementById('login_overlay').style.display = 'none';
-        showToast('เข้าสู่ระบบเสร็จสิ้น!', 'success');
+        if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'none';
+        showToast('เข้าสู่ระบบสำเร็จ!', 'success');
         checkSession();
+      } else {
+        showToast(res.error || 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง', 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message, 'error');
+    })
+    .verifyLogin(user, pass);
+}
+
 
   // Setup character counting for evaluation forms
   function setupCharCounting() {
@@ -272,17 +292,6 @@ function handleLogin(e) {
     });
   }
   setupCharCounting();
-
-      } else {
-        showToast('ล็อกอินล้มเหลว: ' + res.error, 'error');
-      }
-    })
-    .withFailureHandler(err => {
-      setLoading(false);
-      showToast('การเชื่อมต่อผิดพลาด: ' + err.message, 'error');
-    })
-    .verifyLogin(user, pass);
-}
 
 function handleLogout() {
   if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
@@ -346,10 +355,10 @@ function initTeacherFilterDates() {
 }
 
 function switchTeacherPanel(panelId) {
-  document.getElementById('teacher_daily_schedule_panel').style.display = 'none';
-  document.getElementById('teacher_monthly_salary_panel').style.display = 'none';
+  if(document.getElementById('teacher_daily_schedule_panel')) document.getElementById('teacher_daily_schedule_panel').style.display = 'none';
+  if(document.getElementById('teacher_monthly_salary_panel')) document.getElementById('teacher_monthly_salary_panel').style.display = 'none';
   if (document.getElementById('evaluation_form_panel')) {
-    document.getElementById('evaluation_form_panel').style.display = 'none';
+    if(document.getElementById('evaluation_form_panel')) document.getElementById('evaluation_form_panel').style.display = 'none';
   }
   
   // Remove active from all matching nav elements (desktop sidebar & mobile bottom nav)
@@ -396,7 +405,7 @@ function switchTeacherPanel(panelId) {
 
 function loadTeacherDailySchedule() {
   if (!state.currentUser) return;
-  const teacherName = state.currentUser.username;
+  const teacherName = state.currentUser.name;
   const nickname = state.currentUser.nickname;
   
   const startVal = document.getElementById('teacher_filter_start_date').value;
@@ -545,7 +554,7 @@ function loadTeacherDailySchedule() {
       setLoading(false);
       showToast('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: ' + err.message, 'error');
     })
-    .getClassLogsForTeacher(teacherName, nickname);
+    .getTeacherRoomSchedule(state.currentUser.username, nickname, startVal, endVal);
 }
 
 function getCustomMonthRange(year, month) {
@@ -1492,9 +1501,9 @@ function checkLowBalanceStudents() {
       if (res && res.success && res.students && res.students.length > 0) {
         const studentLinks = res.students.map(s => {
           const formattedMoney = Math.round(s.remainingMoney);
-          const escapedName = s.name.replace(/'/g, "\\'");
-          const escapedCourse = s.courseName.replace(/'/g, "\\'");
-          const escapedSheet = s.sheetName.replace(/'/g, "\\'");
+          const escapedName = s.name.replace(/'/g, "\'");
+          const escapedCourse = s.courseName.replace(/'/g, "\'");
+          const escapedSheet = s.sheetName.replace(/'/g, "\'");
           return `<span style="display: block; width: 100%; box-sizing: border-box; border: 1px solid #fecaca; background: #fff5f5; border-radius: 4px; padding: 2px 4px; font-size: 0.68rem; cursor: pointer; transition: all 0.2s; text-align: center; line-height: 1.3;" 
             title="คลิกเพื่อลงยอดชำระเงินของ ${s.name} - ${s.courseName}"
             onmouseover="this.style.background='#fee2e2'; this.style.borderColor='#f87171'; this.style.transform='scale(1.02)';"
@@ -2106,7 +2115,7 @@ function switchPanel(panelName) {
   } else if (panelName === 'teacher_profiles') {
     loadTeacherProfiles();
   } else if (panelName === 'teacher_payroll') {
-    document.getElementById('calc_result_card').style.display = 'none';
+    if(document.getElementById('calc_result_card')) document.getElementById('calc_result_card').style.display = 'none';
     const staffBanner = document.getElementById('staff_yearly_summary_banner');
     if (staffBanner) staffBanner.style.display = 'none';
     const role = state.currentUser ? (state.currentUser.role || 'Staff').toString().trim() : 'Staff';
@@ -2611,38 +2620,55 @@ function calculateMainGroupFee() {
 // Dynamic course checkboxes loader when grade or branch changes for main group
 function handleGradeBranchChange() {
   const classTypeSelect = document.getElementById('student_class_type');
+  if (!classTypeSelect) return;
   const classType = classTypeSelect.value;
   
-  let grade = document.getElementById('student_grade').value;
-  if (classType === 'กลุ่มหลัก') {
-    grade = document.getElementById('student_course_grade').value;
-    document.getElementById('student_grade').value = grade; // Sync back to personal grade
+  const gradeEl = document.getElementById('student_grade');
+  if (!gradeEl) return;
+  let grade = gradeEl.value;
+  
+  const courseGradeEl = document.getElementById('student_course_grade');
+  if (classType !== 'กลุ่มหลัก' && courseGradeEl) {
+    grade = courseGradeEl.value;
+    gradeEl.value = grade; // Sync back
   }
   
   if (classType !== 'กลุ่มหลัก') {
     if (classType === 'เดี่ยว') {
-      const courseName = document.getElementById('student_round_text').value.toLowerCase().trim();
+      const courseNameEl = document.getElementById('student_round_text');
+      const courseName = courseNameEl ? courseNameEl.value.toLowerCase().trim() : '';
       const isEx = courseName.endsWith('ex') || courseName.includes('ex');
       let price = 2000;
       if (['ม.4', 'ม.5', 'ม.6'].includes(grade) || isEx) {
         price = 2500;
       }
-      document.getElementById('student_full').value = price;
-      document.getElementById('calculated_fee_display').innerText = price.toLocaleString();
-      if (!state.selectedStudent) {
-        document.getElementById('student_paid').value = price;
+      
+      const fullEl = document.getElementById('student_full_0');
+      if (fullEl) fullEl.value = price;
+      
+      const displayEl = document.getElementById('calculated_fee_display');
+      if (displayEl) displayEl.innerText = price.toLocaleString();
+      
+      const paidEl = document.getElementById('student_paid_0');
+      if (paidEl && !state.selectedStudent) {
+        paidEl.value = price;
       }
     }
     return;
   }
   
-  const branch = document.getElementById('student_branch_learn').value;
+  const branchEl = document.getElementById('student_branch_learn');
+  if (!branchEl) return;
+  const branch = branchEl.value;
   
   const container = document.getElementById('course_checkboxes_container');
-  container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">กำลังค้นหาวิชาเรียน...</span>';
+  if (container) {
+    container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">กำลังโหลดวิชาเรียน...</span>';
+  }
   
   google.script.run
     .withSuccessHandler(courses => {
+      if (!container) return;
       if (Array.isArray(courses) && courses.length > 0) {
         let html = '';
         courses.forEach(c => {
@@ -2698,12 +2724,16 @@ function handleGradeBranchChange() {
             });
             
             const pChannel = state.selectedStudent.paymentChannel || '';
+            const cardRadio = document.getElementById('pay_mode_card_0');
+            const cashRadio = document.getElementById('pay_mode_cash_0');
+            const transferRadio = document.getElementById('pay_mode_transfer_0');
+            
             if (state.selectedStudent.isCard) {
-              document.getElementById('pay_mode_card').checked = true;
+              if (cardRadio) cardRadio.checked = true;
             } else if (pChannel === 'เงินสด' || pChannel === 'สด') {
-              document.getElementById('pay_mode_cash').checked = true;
+              if (cashRadio) cashRadio.checked = true;
             } else {
-              document.getElementById('pay_mode_transfer').checked = true;
+              if (transferRadio) transferRadio.checked = true;
             }
             
             calculateMainGroupFee();
@@ -2714,9 +2744,11 @@ function handleGradeBranchChange() {
           calculateMainGroupFee();
         }
       } else {
-        container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">ไม่พบรายวิชาเรียนในสเปรดชีตชั้นนี้</span>';
-        document.getElementById('calculated_fee_display').innerText = '0';
-        document.getElementById('student_full').value = '0';
+        container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">ไม่พบข้อมูลวิชาเรียนในระดับชั้นนี้</span>';
+        const displayEl = document.getElementById('calculated_fee_display');
+        if (displayEl) displayEl.innerText = '0';
+        const fullEl = document.getElementById('student_full_0');
+        if (fullEl) fullEl.value = '0';
       }
     })
     .getGradeCourses(grade, branch, getLogUser());
@@ -2744,11 +2776,11 @@ function loadStudentRegisteredCourses(studentName, grade, branch) {
         // Restore payment mode radio buttons
         if (stdRow) {
           if (stdRow.isCard === 1) {
-            document.getElementById('pay_mode_card').checked = true;
+            if(document.getElementById('pay_mode_card')) document.getElementById('pay_mode_card').checked = true;
           } else if (state.selectedStudent && (state.selectedStudent.paymentChannel === 'เงินสด' || state.selectedStudent.paymentChannel === 'สด')) {
-            document.getElementById('pay_mode_cash').checked = true;
+            if(document.getElementById('pay_mode_cash')) document.getElementById('pay_mode_cash').checked = true;
           } else {
-            document.getElementById('pay_mode_transfer').checked = true;
+            if(document.getElementById('pay_mode_transfer')) document.getElementById('pay_mode_transfer').checked = true;
           }
         }
         
@@ -2799,7 +2831,7 @@ function clearSubgroupCourses() {
       <input type="text" id="student_round_text" class="form-input subgroup-course-input" placeholder="ตัวอย่าง: ณดา(ลินลดา) อ.2 เดี่ยวคณิต 1" style="flex: 1;" oninput="updateCombinedRound()">
     </div>
   `;
-  document.getElementById('add_course_input_btn').style.display = 'block';
+  if(document.getElementById('add_course_input_btn')) document.getElementById('add_course_input_btn').style.display = 'block';
 }
 
 function addSubgroupCourseRow(value = '') {
@@ -2820,103 +2852,7 @@ function addSubgroupCourseRow(value = '') {
 }
 
 function handleClassTypeChange() {
-  const classType = document.getElementById('student_class_type').value;
-  const grade = document.getElementById('student_grade').value;
-  
-  if (classType === 'กลุ่มหลัก') {
-    document.getElementById('course_grade_group').style.display = 'block';
-    document.getElementById('subgroup_size_group').style.display = 'none';
-    
-    document.getElementById('course_text_container').style.display = 'none';
-    document.getElementById('course_group_container').style.display = 'flex';
-    document.getElementById('course_checkboxes_wrapper').style.display = 'grid';
-    
-    // Restore normal name fields
-    document.getElementById('subgroup_students_container').style.display = 'none';
-    document.getElementById('student_name').required = true;
-    document.getElementById('student_nickname').required = true;
-    document.getElementById('student_name').closest('.form-group').style.opacity = '1';
-    document.getElementById('student_nickname').closest('.form-group').style.opacity = '1';
-    document.getElementById('student_name').placeholder = 'ชื่อจริง นามสกุลจริง';
-    document.getElementById('student_nickname').placeholder = 'ชื่อเล่น';
-    document.getElementById('student_name').disabled = false;
-    document.getElementById('student_nickname').disabled = false;
-    
-    handleGradeBranchChange();
-  } else {
-    document.getElementById('course_text_container').style.display = 'flex';
-    document.getElementById('course_group_container').style.display = 'none';
-    document.getElementById('course_checkboxes_wrapper').style.display = 'none';
-    
-    if (classType === 'เดี่ยว') {
-      document.getElementById('course_grade_group').style.display = 'none';
-      document.getElementById('subgroup_size_group').style.display = 'none';
-      
-      // Restore normal name fields
-      document.getElementById('subgroup_students_container').style.display = 'none';
-      document.getElementById('student_name').required = true;
-      document.getElementById('student_nickname').required = true;
-      document.getElementById('student_name').closest('.form-group').style.opacity = '1';
-      document.getElementById('student_nickname').closest('.form-group').style.opacity = '1';
-      document.getElementById('student_name').placeholder = 'ชื่อจริง นามสกุลจริง';
-      document.getElementById('student_nickname').placeholder = 'ชื่อเล่น';
-      document.getElementById('student_name').disabled = false;
-      document.getElementById('student_nickname').disabled = false;
-    } else if (classType === 'กลุ่มย่อย') {
-      document.getElementById('course_grade_group').style.display = 'none';
-      document.getElementById('subgroup_size_group').style.display = 'block';
-      
-      // Render multiple name fields if it is a NEW registration
-      if (!state.selectedStudent) {
-        let count = 3;
-        const sizeVal = document.getElementById('student_subgroup_size').value;
-        if (sizeVal.includes('4-5')) count = 5;
-        else if (sizeVal.includes('6-10')) count = 10;
-        
-        let html = '';
-        for (let i = 1; i <= count; i++) {
-          html += `
-            <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 10px; padding: 8px; background: rgba(255,255,255,0.7); border-radius: 8px; border: 1px solid #cbd5e1;">
-              <div>
-                <label class="form-label" style="font-size:0.75rem; margin-bottom:2px; color:#334155;">นักเรียนคนที่ ${i} (ชื่อจริง-นามสกุล) *</label>
-                <input type="text" class="form-input subgroup-member-name" placeholder="ชื่อจริง นามสกุลจริง" required>
-              </div>
-              <div>
-                <label class="form-label" style="font-size:0.75rem; margin-bottom:2px; color:#334155;">ชื่อเล่น *</label>
-                <input type="text" class="form-input subgroup-member-nickname" placeholder="ชื่อเล่น" required>
-              </div>
-            </div>
-          `;
-        }
-        document.getElementById('subgroup_students_fields_list').innerHTML = html;
-        document.getElementById('subgroup_students_container').style.display = 'block';
-        
-        // Deactivate primary name/nickname inputs
-        document.getElementById('student_name').required = false;
-        document.getElementById('student_nickname').required = false;
-        document.getElementById('student_name').closest('.form-group').style.opacity = '0.5';
-        document.getElementById('student_nickname').closest('.form-group').style.opacity = '0.5';
-        document.getElementById('student_name').placeholder = 'โปรดระบุชื่อทุกคนที่ช่องด้านล่าง';
-        document.getElementById('student_nickname').placeholder = 'โปรดระบุชื่อทุกคนที่ช่องด้านล่าง';
-        document.getElementById('student_name').disabled = true;
-        document.getElementById('student_nickname').disabled = true;
-      } else {
-        // Mode edit: Edit single individual record
-        document.getElementById('subgroup_students_container').style.display = 'none';
-        document.getElementById('student_name').required = true;
-        document.getElementById('student_nickname').required = true;
-        document.getElementById('student_name').closest('.form-group').style.opacity = '1';
-        document.getElementById('student_nickname').closest('.form-group').style.opacity = '1';
-        document.getElementById('student_name').placeholder = 'ชื่อจริง นามสกุลจริง';
-        document.getElementById('student_nickname').placeholder = 'ชื่อเล่น';
-        document.getElementById('student_name').disabled = false;
-        document.getElementById('student_nickname').disabled = false;
-      }
-    }
-    
-    calculateMainGroupFee();
-    updateCombinedRound();
-  }
+  window.handleClassTypeChange();
 }
 
 function closeAllModals() {
@@ -2930,169 +2866,11 @@ function closeAllModals() {
 }
 
 function showAddStudentModal() {
-  closeAllModals();
-  state.selectedStudent = null;
-  document.getElementById('student_modal_title').innerText = 'ลงทะเบียนเรียน (แบบละเอียด)';
-  document.getElementById('student_form').reset();
-  document.getElementById('pay_mode_transfer').checked = true;
-  
-  document.getElementById('student_pay_date').value = '';
-  document.getElementById('student_pay_channel').value = '';
-  document.getElementById('student_staff').value = '';
-  document.getElementById('student_time_note').value = '';
-  document.getElementById('student_id').value = '';
-  document.getElementById('student_carried_forward').value = '0';
-  
-  // Set default classType to กลุ่มหลัก
-  document.getElementById('student_class_type').value = 'กลุ่มหลัก';
-  document.getElementById('student_course_grade').value = 'ป.1';
-  document.getElementById('round_select').value = 'MIDTERM 1';
-  document.getElementById('round_year').value = '/2569';
-  
-  // Clear 4-round installments
-  for (let r = 1; r <= 4; r++) {
-    document.getElementById(`pay_r${r}_amount`).value = '';
-    document.getElementById(`pay_r${r}_date`).value = '';
-    document.getElementById(`pay_r${r}_channel`).value = '';
-    document.getElementById(`pay_r${r}_staff`).value = '';
-    document.getElementById(`pay_r${r}_time`).value = '';
-  }
-  
-  handleClassTypeChange();
-  
-  document.getElementById('student_modal').classList.add('active');
+  openStudentModal();
 }
 
 function showEditStudentModal(id) {
-  closeAllModals();
-  const student = state.students.find(s => s.id === id);
-  if (!student) return;
-  
-  state.selectedStudent = student;
-  document.getElementById('student_modal_title').innerText = 'แก้ไขการลงทะเบียนเรียน';
-  document.getElementById('student_form').reset();
-  
-  document.getElementById('student_id').value = student.id;
-  document.getElementById('student_name').value = student.name;
-  document.getElementById('student_nickname').value = student.nickname;
-  document.getElementById('student_school').value = student.school;
-  document.getElementById('student_contact').value = formatPhone(student.contact);
-  document.getElementById('student_branch_learn').value = student.branchLearn;
-  document.getElementById('student_branch_pay').value = student.branchPay;
-  document.getElementById('student_full').value = student.full;
-  
-  // Set read-only summary fields
-  document.getElementById('student_paid').value = student.paid || 0;
-  document.getElementById('student_pay_date').value = student.paymentDate || '';
-  document.getElementById('student_pay_channel').value = student.paymentChannel || '';
-  document.getElementById('student_staff').value = student.staff || '';
-  document.getElementById('student_time_note').value = student.paymentTimeNote || '';
-  document.getElementById('student_extra_note').value = student.extraNote;
-  
-  // Restore payment mode radio buttons
-  const pChannel = student.paymentChannel || '';
-  if (student.isCard || pChannel === 'รูดบัตร') {
-    document.getElementById('pay_mode_card').checked = true;
-  } else if (pChannel === 'เงินสด' || pChannel === 'สด') {
-    document.getElementById('pay_mode_cash').checked = true;
-  } else if (pChannel === 'ยังไม่ชำระเงิน' || pChannel === 'ยังไม่ชำระ') {
-    document.getElementById('pay_mode_unpaid').checked = true;
-  } else {
-    document.getElementById('pay_mode_transfer').checked = true;
-  }
-  
-  // Set 4-round installments
-  for (let r = 1; r <= 4; r++) {
-    document.getElementById(`pay_r${r}_amount`).value = student[`payRound${r}_amount`] || '';
-    document.getElementById(`pay_r${r}_date`).value = convertDateFromSheet(student[`payRound${r}_date`]) || '';
-    document.getElementById(`pay_r${r}_channel`).value = student[`payRound${r}_channel`] || '';
-    document.getElementById(`pay_r${r}_staff`).value = student[`payRound${r}_staff`] || '';
-    document.getElementById(`pay_r${r}_time`).value = cleanTimeStr(student[`payRound${r}_time`]);
-  }
-  
-  // Advanced fields
-  document.getElementById('student_grade').value = student.grade;
-  document.getElementById('student_class_section').value = student.classSection;
-  document.getElementById('student_line_name').value = student.lineName;
-  document.getElementById('student_line_id').value = student.lineId;
-  document.getElementById('student_carried_forward').value = student.carriedForwardFee;
-  document.getElementById('student_hours').value = cleanTimeStr(student.classHours);
-  document.getElementById('student_hours_left').value = cleanTimeStr(student.classHoursLeft);
-  
-  // Map legacy classType values to UI classType dropdown
-  let uiClassType = 'กลุ่มหลัก';
-  const dbClassType = student.classType || '';
-  const grade = student.grade || 'ป.1';
-  
-  if (dbClassType.includes('เดี่ยว')) {
-    uiClassType = 'เดี่ยว';
-    document.getElementById('student_class_type').value = 'เดี่ยว';
-  } else if (dbClassType.includes('ย่อย') || dbClassType.includes('กลุ่มย่อย')) {
-    uiClassType = 'กลุ่มย่อย';
-    document.getElementById('student_class_type').value = 'กลุ่มย่อย';
-    
-    let subSize = 'กลุ่มย่อย 2-3 คน';
-    if (dbClassType.includes('4-5')) subSize = 'กลุ่มย่อย 4-5 คน';
-    else if (dbClassType.includes('6-10')) subSize = 'กลุ่มย่อย 6-10 คน';
-    document.getElementById('student_subgroup_size').value = subSize;
-  } else {
-    uiClassType = 'กลุ่มหลัก';
-    document.getElementById('student_class_type').value = 'กลุ่มหลัก';
-    document.getElementById('student_course_grade').value = grade;
-  }
-  
-  // Set UI course/round fields
-  if (uiClassType === 'กลุ่มหลัก') {
-    let baseRound = 'MIDTERM 1';
-    let yearSuffix = '/2569';
-    const dbRound = student.round || '';
-    const roundsList = ['MIDTERM 1', 'MIDTERM 2', 'FINAL 1', 'FINAL 2', 'ปิดเทอม ต.ค.', 'Summer'];
-    let matched = false;
-    for (const r of roundsList) {
-      if (dbRound.startsWith(r)) {
-        baseRound = r;
-        yearSuffix = dbRound.substring(r.length);
-        matched = true;
-        break;
-      }
-    }
-    if (!matched) {
-      baseRound = 'MIDTERM 1';
-      yearSuffix = dbRound ? ' ' + dbRound : '/2569';
-    }
-    document.getElementById('round_select').value = baseRound;
-    document.getElementById('round_year').value = yearSuffix;
-    
-    document.getElementById('course_text_container').style.display = 'none';
-    document.getElementById('course_group_container').style.display = 'flex';
-    document.getElementById('course_checkboxes_wrapper').style.display = 'grid';
-    
-    handleGradeBranchChange();
-  } else {
-    clearSubgroupCourses();
-    document.getElementById('student_round_text').value = student.round || '';
-    document.getElementById('add_course_input_btn').style.display = 'none';
-    
-    document.getElementById('course_text_container').style.display = 'flex';
-    document.getElementById('course_group_container').style.display = 'none';
-    document.getElementById('course_checkboxes_wrapper').style.display = 'none';
-  }
-  
-  document.getElementById('calculated_fee_display').innerText = student.full.toLocaleString();
-  document.getElementById('student_round').value = student.round;
-  
-  // Always hide subgroup students container in edit mode
-  document.getElementById('subgroup_students_container').style.display = 'none';
-  document.getElementById('student_name').required = true;
-  document.getElementById('student_nickname').required = true;
-  document.getElementById('student_name').closest('.form-group').style.opacity = '1';
-  document.getElementById('student_nickname').closest('.form-group').style.opacity = '1';
-  document.getElementById('student_name').placeholder = 'ชื่อจริง นามสกุลจริง';
-  document.getElementById('student_nickname').placeholder = 'ชื่อเล่น';
-  document.getElementById('student_name').disabled = false;
-  document.getElementById('student_nickname').disabled = false;
-  
-  document.getElementById('student_modal').classList.add('active');
+  openStudentModal(id);
 }
 
 function closeStudentModal() {
@@ -3100,143 +2878,7 @@ function closeStudentModal() {
 }
 
 function saveStudent(e) {
-  e.preventDefault();
-  updateCombinedRound();
-  const studentId = document.getElementById('student_id').value;
-  const classTypeVal = document.getElementById('student_class_type').value;
-  
-  // Collect subgroup member names for new subgroup registrations
-  const subgroupStudentList = [];
-  if (classTypeVal === 'กลุ่มย่อย' && !studentId) {
-    const nameInputs = document.querySelectorAll('.subgroup-member-name');
-    const nickInputs = document.querySelectorAll('.subgroup-member-nickname');
-    for (let i = 0; i < nameInputs.length; i++) {
-      const nameVal = nameInputs[i].value.trim();
-      const nickVal = nickInputs[i] ? nickInputs[i].value.trim() : '';
-      if (nameVal) {
-        subgroupStudentList.push({ name: nameVal, nickname: nickVal });
-      }
-    }
-    if (subgroupStudentList.length === 0) {
-      showToast('กรุณากรอกชื่อนักเรียนอย่างน้อย 1 คนในกลุ่มย่อย', 'error');
-      return;
-    }
-  }
-  
-  const studentData = {
-    id: studentId,
-    name: subgroupStudentList.length > 0 ? subgroupStudentList[0].name : document.getElementById('student_name').value.trim(),
-    nickname: subgroupStudentList.length > 0 ? subgroupStudentList[0].nickname : document.getElementById('student_nickname').value.trim(),
-    school: document.getElementById('student_school').value,
-    contact: document.getElementById('student_contact').value.trim(),
-    branchLearn: document.getElementById('student_branch_learn').value,
-    branchPay: document.getElementById('student_branch_pay').value,
-    full: parseFloat(document.getElementById('student_full').value) || 0,
-    paid: parseFloat(document.getElementById('student_paid').value) || 0,
-    paymentDate: document.getElementById('student_pay_date').value.trim(),
-    paymentChannel: document.getElementById('student_pay_channel').value.trim(),
-    staff: document.getElementById('student_staff').value.trim(),
-    round: document.getElementById('student_round').value,
-    paymentTimeNote: document.getElementById('student_time_note').value.trim(),
-    extraNote: document.getElementById('student_extra_note').value.trim(),
-    subgroupCourses: Array.from(document.querySelectorAll('.subgroup-course-input')).map(inp => inp.value.trim()).filter(val => val !== ''),
-    subgroupCoursesSize: document.getElementById('student_subgroup_size').value,
-    subgroupStudentList: subgroupStudentList,
-    
-    // Installment fields
-    payRound1_amount: parseFloat(document.getElementById('pay_r1_amount').value) || 0,
-    payRound1_date: convertDateToSheet(document.getElementById('pay_r1_date').value),
-    payRound1_channel: document.getElementById('pay_r1_channel').value,
-    payRound1_staff: document.getElementById('pay_r1_staff').value.trim(),
-    payRound1_time: document.getElementById('pay_r1_time').value.trim(),
-    
-    payRound2_amount: parseFloat(document.getElementById('pay_r2_amount').value) || 0,
-    payRound2_date: convertDateToSheet(document.getElementById('pay_r2_date').value),
-    payRound2_channel: document.getElementById('pay_r2_channel').value,
-    payRound2_staff: document.getElementById('pay_r2_staff').value.trim(),
-    payRound2_time: document.getElementById('pay_r2_time').value.trim(),
-    
-    payRound3_amount: parseFloat(document.getElementById('pay_r3_amount').value) || 0,
-    payRound3_date: convertDateToSheet(document.getElementById('pay_r3_date').value),
-    payRound3_channel: document.getElementById('pay_r3_channel').value,
-    payRound3_staff: document.getElementById('pay_r3_staff').value.trim(),
-    payRound3_time: document.getElementById('pay_r3_time').value.trim(),
-    
-    payRound4_amount: parseFloat(document.getElementById('pay_r4_amount').value) || 0,
-    payRound4_date: convertDateToSheet(document.getElementById('pay_r4_date').value),
-    payRound4_channel: document.getElementById('pay_r4_channel').value,
-    payRound4_staff: document.getElementById('pay_r4_staff').value.trim(),
-    payRound4_time: document.getElementById('pay_r4_time').value.trim(),
-    
-    // Advanced fields
-    grade: document.getElementById('student_grade').value,
-    classSection: document.getElementById('student_class_section').value.trim(),
-    lineName: document.getElementById('student_line_name').value.trim(),
-    lineId: document.getElementById('student_line_id').value.trim(),
-    carriedForwardFee: parseFloat(document.getElementById('student_carried_forward').value) || 0,
-    classHours: document.getElementById('student_hours').value.trim(),
-    classHoursLeft: document.getElementById('student_hours_left').value.trim(),
-    classType: (function() {
-      const type = document.getElementById('student_class_type').value;
-      if (type === 'กลุ่มย่อย') return document.getElementById('student_subgroup_size').value;
-      return type;
-    })(),
-    isCard: document.getElementById('pay_mode_card').checked,
-    selectedCourses: Array.from(document.querySelectorAll('.course-checkbox:checked')).map(cb => {
-      const row = cb.closest('.course-item-row');
-      const input = row ? row.querySelector('.course-sessions-input') : null;
-      const totalSessions = parseInt(cb.getAttribute('data-total-sessions')) || 10;
-      const sessions = input ? (parseInt(input.value) || totalSessions) : totalSessions;
-      return {
-        courseName: cb.value,
-        sessions: sessions
-      };
-    })
-  };
-  
-  if (studentId && state.selectedStudent) {
-    studentData.originalName = state.selectedStudent.name;
-    studentData.originalRound = state.selectedStudent.round;
-  }
-  
-  setLoading(true, 'กำลังลงข้อมูลลงทะเบียนเรียนพร้อมระบบบันทึก Audit Log...');
-  const user = getLogUser();
-  
-  if (studentId) {
-    google.script.run
-      .withSuccessHandler(res => {
-        setLoading(false);
-        if (res && res.success) {
-          showToast('แก้ไขข้อมูลและเชื่อมโยงชีทแยกชั้นเรียนเสร็จสิ้น!', 'success');
-          closeStudentModal();
-          loadStudents();
-        } else {
-          showToast('บันทึกผิดพลาด: ' + res.error, 'error');
-        }
-      })
-      .withFailureHandler(err => {
-        setLoading(false);
-        showToast('การเชื่อมต่อผิดพลาด: ' + err.message, 'error');
-      })
-      .updateStudentRegistration(studentData, user);
-  } else {
-    google.script.run
-      .withSuccessHandler(res => {
-        setLoading(false);
-        if (res && res.success) {
-          showToast('ลงทะเบียนและส่งข้อมูลเชื่อมระบบชีตวิชากลุ่มหลักสำเร็จ!', 'success');
-          closeStudentModal();
-          loadStudents();
-        } else {
-          showToast('ลงทะเบียนเรียนผิดพลาด: ' + res.error, 'error');
-        }
-      })
-      .withFailureHandler(err => {
-        setLoading(false);
-        showToast('การเชื่อมต่อผิดพลาด: ' + err.message, 'error');
-      })
-      .addStudentRegistration(studentData, user);
-  }
+  window.saveStudent(e);
 }
 
 function deleteStudent(id) {
@@ -4837,7 +4479,7 @@ function quickAddClassLogMonthly(roomLabel, dateStr) {
 function showAddRoomModal() {
   closeAllModals();
   document.getElementById('room_modal_title').innerText = 'เพิ่มห้องเรียนใหม่';
-  document.getElementById('room_add_fields').style.display = 'block';
+  if(document.getElementById('room_add_fields')) document.getElementById('room_add_fields').style.display = 'block';
   
   // Pre-select current active branch tab filter (or default to สาขา1)
   const currentBranch = state.activeBranchFilter || 'สาขา1';
@@ -4855,7 +4497,7 @@ function showAddRoomModal() {
 function showEditRoomModal(branch, roomName, ipad, zoom) {
   closeAllModals();
   document.getElementById('room_modal_title').innerText = 'ตั้งค่าห้องเรียน (IPAD & Zoom)';
-  document.getElementById('room_add_fields').style.display = 'none';
+  if(document.getElementById('room_add_fields')) document.getElementById('room_add_fields').style.display = 'none';
   
   document.getElementById('room_edit_branch').value = branch;
   document.getElementById('room_edit_name').value = roomName;
@@ -5206,7 +4848,7 @@ function showAddClassLogModal() {
   
   document.getElementById('class_modal_title').innerText = 'บันทึกชั่วโมงสอนคลาสใหม่';
   document.getElementById('class_submit_btn').innerText = '💾 บันทึกข้อมูลคลาสเรียน';
-  document.getElementById('class_submit_btn').style.background = '#10b981';
+  if(document.getElementById('class_submit_btn')) document.getElementById('class_submit_btn').style.background = '#10b981';
   document.getElementById('class_modal').classList.add('active');
 }
 
@@ -5225,7 +4867,7 @@ function showEditClassLogModal(rowIndex) {
   modalState.editingIndex = rowIndex; // Use rowIndex as active editing ID
   document.getElementById('class_modal_title').innerText = 'แก้ไขคลาสเรียน';
   document.getElementById('class_submit_btn').innerText = '✓ อัปเดตคลาสเรียน';
-  document.getElementById('class_submit_btn').style.background = '#3b82f6';
+  if(document.getElementById('class_submit_btn')) document.getElementById('class_submit_btn').style.background = '#3b82f6';
   
   document.getElementById('class_row_index').value = log.rowIndex || '';
   document.getElementById('class_subject').value = log.subject;
@@ -5248,8 +4890,8 @@ function showEditClassLogModal(rowIndex) {
   updateClassKidsSum();
   
   document.getElementById('class_is_recurring').checked = false;
-  document.getElementById('class_recurring_wrapper').style.display = 'none';
-  document.getElementById('class_recurring_end_container').style.display = 'none';
+  if(document.getElementById('class_recurring_wrapper')) document.getElementById('class_recurring_wrapper').style.display = 'none';
+  if(document.getElementById('class_recurring_end_container')) document.getElementById('class_recurring_end_container').style.display = 'none';
   
   document.getElementById('class_modal').classList.add('active');
 }
@@ -5257,7 +4899,7 @@ function showEditClassLogModal(rowIndex) {
 function closeClassLogModal() {
   document.getElementById('class_modal').classList.remove('active');
   document.getElementById('class_is_recurring').checked = false;
-  document.getElementById('class_recurring_end_container').style.display = 'none';
+  if(document.getElementById('class_recurring_end_container')) document.getElementById('class_recurring_end_container').style.display = 'none';
 }
 
 function renderModalClassesList() {
@@ -5402,7 +5044,7 @@ function editLocalClass(index) {
   modalState.editingIndex = index;
   document.getElementById('class_modal_title').innerText = 'แก้ไขคลาสเรียน (ชั่วคราว)';
   document.getElementById('class_submit_btn').innerText = '✓ อัปเดตคลาสในรายการ';
-  document.getElementById('class_submit_btn').style.background = '#3b82f6';
+  if(document.getElementById('class_submit_btn')) document.getElementById('class_submit_btn').style.background = '#3b82f6';
   
   document.getElementById('class_row_index').value = log.rowIndex || '';
   document.getElementById('class_subject').value = log.subject;
@@ -5425,8 +5067,8 @@ function editLocalClass(index) {
   updateClassKidsSum();
   
   document.getElementById('class_is_recurring').checked = false;
-  document.getElementById('class_recurring_wrapper').style.display = 'none';
-  document.getElementById('class_recurring_end_container').style.display = 'none';
+  if(document.getElementById('class_recurring_wrapper')) document.getElementById('class_recurring_wrapper').style.display = 'none';
+  if(document.getElementById('class_recurring_end_container')) document.getElementById('class_recurring_end_container').style.display = 'none';
 }
 
 function deleteLocalClass(index) {
@@ -5458,7 +5100,7 @@ function clearClassForm() {
   modalState.editingIndex = -1;
   document.getElementById('class_modal_title').innerText = 'บันทึกชั่วโมงสอนคลาสใหม่';
   document.getElementById('class_submit_btn').innerText = 'ใส่ในรายการคลาส ➔';
-  document.getElementById('class_submit_btn').style.background = 'var(--color-primary)';
+  if(document.getElementById('class_submit_btn')) document.getElementById('class_submit_btn').style.background = 'var(--color-primary)';
   
   document.getElementById('class_row_index').value = '';
   document.getElementById('class_subject').value = '';
@@ -5477,8 +5119,8 @@ function clearClassForm() {
   document.getElementById('class_kids_sum').value = 0;
   
   document.getElementById('class_is_recurring').checked = false;
-  document.getElementById('class_recurring_wrapper').style.display = 'block';
-  document.getElementById('class_recurring_end_container').style.display = 'none';
+  if(document.getElementById('class_recurring_wrapper')) document.getElementById('class_recurring_wrapper').style.display = 'block';
+  if(document.getElementById('class_recurring_end_container')) document.getElementById('class_recurring_end_container').style.display = 'none';
 }
 
 function toggleClassAbsence(rowIndex, type, checkbox) {
@@ -6244,7 +5886,7 @@ function showAddEmployeeModal() {
   document.getElementById('emp_nickname').value = '';
   document.getElementById('emp_fullname').value = '';
   document.getElementById('emp_phone').value = '';
-  document.getElementById('add_employee_modal').style.display = 'flex';
+  if(document.getElementById('add_employee_modal')) document.getElementById('add_employee_modal').style.display = 'flex';
 }
 
 function submitAddEmployee(e) {
@@ -6316,7 +5958,7 @@ function showEditEmployeePasswordModal(username) {
   closeAllModals();
   document.getElementById('edit_emp_username').value = username;
   document.getElementById('edit_emp_password').value = '';
-  document.getElementById('edit_employee_password_modal').style.display = 'flex';
+  if(document.getElementById('edit_employee_password_modal')) document.getElementById('edit_employee_password_modal').style.display = 'flex';
 }
 
 function submitEditEmployeePassword(e) {
@@ -6419,8 +6061,8 @@ function handleStaffPayrollFilterChange() {
   const teacher = teacherSelect.value;
   
   if (!teacher || teacher.includes('เลือกครู')) {
-    document.getElementById('staff_yearly_summary_banner').style.display = 'none';
-    document.getElementById('calc_result_card').style.display = 'none';
+    if(document.getElementById('staff_yearly_summary_banner')) document.getElementById('staff_yearly_summary_banner').style.display = 'none';
+    if(document.getElementById('calc_result_card')) document.getElementById('calc_result_card').style.display = 'none';
     showToast('กรุณาระบุชื่อครูเพื่อประมวลผล', 'warning');
     return;
   }
@@ -6434,8 +6076,8 @@ function handleStaffPayrollFilterChange() {
   
   setLoading(true, 'กำลังคำนวณรายได้คุณครูทั้งหมด 12 เดือน...');
   
-  document.getElementById('staff_yearly_summary_banner').style.display = 'none';
-  document.getElementById('calc_result_card').style.display = 'none';
+  if(document.getElementById('staff_yearly_summary_banner')) document.getElementById('staff_yearly_summary_banner').style.display = 'none';
+  if(document.getElementById('calc_result_card')) document.getElementById('calc_result_card').style.display = 'none';
   
   // Reset yearly values
   document.getElementById('staff_yearly_total_pay').innerText = '฿0';
@@ -6472,7 +6114,7 @@ function handleStaffPayrollFilterChange() {
       document.getElementById('staff_yearly_total_hours').innerText = (Math.round(yearlyHours * 100) / 100).toLocaleString() + ' ชม.';
       document.getElementById('staff_yearly_total_classes').innerText = yearlyClasses.toLocaleString() + ' คลาส';
       
-      document.getElementById('staff_yearly_summary_banner').style.display = 'block';
+      if(document.getElementById('staff_yearly_summary_banner')) document.getElementById('staff_yearly_summary_banner').style.display = 'block';
       
       // Load selected month
       handleStaffPayrollMonthChange();
@@ -6512,7 +6154,7 @@ function handleStaffPayrollMonthChange() {
     const formattedSumHours = `${sumHoursPart} ชม. ${sumMinPart} นาที`;
 
     // Render detail
-    document.getElementById('calc_result_card').style.display = 'block';
+    if(document.getElementById('calc_result_card')) document.getElementById('calc_result_card').style.display = 'block';
     
     const formatIsoDateToThai = (isoDateStr) => {
       if (!isoDateStr) return '';
@@ -7011,7 +6653,7 @@ function renderManagerLogsTable() {
       // Photo thumbnail helper
       const photoThumb = (url) => {
         if (!url) return '<span style="color: var(--text-muted);">-</span>';
-        return '<a href="' + url + '" target="_blank"><img src="' + url + '" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-color); cursor: pointer;" onerror="this.parentElement.innerHTML=\'❌\'"></a>';
+        return '<a href="' + url + '" target="_blank"><img src="' + url + '" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-color); cursor: pointer;" onerror="this.parentElement.innerHTML=&#39;❌&#39;"></a>';
       };
       
       const statusBadge = log.isPresent 
@@ -7577,7 +7219,7 @@ function renderStudentHistory(name, nickname, courses, classes) {
         <td style="text-align: center; font-weight: 600; ${remainingMins <= 0 ? 'color: var(--color-danger);' : ''}">${hoursLeftStr}</td>
         <td>${formatDateTimeToThaiLong(c.paymentDate) || '-'}</td>
         <td style="text-align: center;">
-          <button class="btn btn-primary btn-icon" onclick="payFromHistory('${name.replace(/'/g, "\\'")}', '${c.courseName.replace(/'/g, "\\'")}')" title="ลงยอดเงินชำระ">🪙</button>
+          <button class="btn btn-primary btn-icon" onclick="payFromHistory('${name.replace(/'/g, "\'")}', '${c.courseName.replace(/'/g, "\'")}')" title="ลงยอดเงินชำระ">🪙</button>
         </td>
       `;
       coursesTbody.appendChild(tr);
@@ -8660,7 +8302,7 @@ function openProfileModal() {
         document.getElementById('profile_curr_pass').value = '';
         document.getElementById('profile_new_pass').value = '';
         document.getElementById('profile_confirm_pass').value = '';
-        document.getElementById('profile_confirm_pass_group').style.display = 'none';
+        if(document.getElementById('profile_confirm_pass_group')) document.getElementById('profile_confirm_pass_group').style.display = 'none';
         
         // Set up preview
         const imgEl = document.getElementById('profile_pic_preview_img');
@@ -8859,20 +8501,20 @@ function updateSessionAndSidebar(nickname, profilePic) {
       const avatarLettersEl = document.getElementById('teacher_avatar_letters');
       if (profilePic) {
         avatarLettersEl.innerHTML = `<img src="${profilePic}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
-        avatarLettersEl.style.background = 'transparent';
+        if (avatarLettersEl) avatarLettersEl.style.background = 'transparent';
       } else {
-        avatarLettersEl.innerText = displayName.substring(0, 2).toUpperCase();
-        avatarLettersEl.style.background = 'var(--color-brown)';
+        if (avatarLettersEl) avatarLettersEl.innerText = displayName.substring(0, 2).toUpperCase();
+        if (avatarLettersEl) avatarLettersEl.style.background = 'var(--color-brown)';
       }
     } else {
       document.getElementById('current_user_display').innerText = displayName;
       const avatarLettersEl = document.getElementById('avatar_letters');
       if (profilePic) {
         avatarLettersEl.innerHTML = `<img src="${profilePic}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
-        avatarLettersEl.style.background = 'transparent';
+        if (avatarLettersEl) avatarLettersEl.style.background = 'transparent';
       } else {
-        avatarLettersEl.innerText = displayName.substring(0, 2).toUpperCase();
-        avatarLettersEl.style.background = 'var(--color-brown)';
+        if (avatarLettersEl) avatarLettersEl.innerText = displayName.substring(0, 2).toUpperCase();
+        if (avatarLettersEl) avatarLettersEl.style.background = 'var(--color-brown)';
       }
     }
   }
@@ -8985,7 +8627,7 @@ function initEvaluationForm() {
           setLoading(false);
           showToast('ไม่สามารถดึงข้อมูลคอร์สครู: ' + err.message, 'error');
         })
-        .getTeacherCoursesAndStudents(getLogUser());
+        .getTeacherCoursesAndStudents(state.currentUser ? state.currentUser.username : getLogUser());
     })
     .withFailureHandler(function(err) {
       console.error('Failed to load evaluations list:', err);
@@ -9073,7 +8715,7 @@ function onEvalCourseChange() {
   renderEvalCriteriaGrid(templateType);
   
   // All templates now use the split feedback (Strengths, Improvements, Recommendations)
-  document.getElementById('split_feedback_container').style.display = 'flex';
+  if(document.getElementById('split_feedback_container')) document.getElementById('split_feedback_container').style.display = 'flex';
   const singleFb = document.getElementById('single_feedback_container');
   if (singleFb) singleFb.style.display = 'none';
 }
@@ -9646,3 +9288,507 @@ function renderAdminEvaluationsDashboard(evals) {
     container.appendChild(section);
   });
 }
+
+
+
+// --- DYNAMIC REGISTRATION LOGIC ---
+
+const PAYMENT_CHANNELS = [
+  "กรุงไทย พีปิ๊ก",
+  "กรุงเทพ พีปิ๊ก",
+  "SCB พี่ปิ๊ก",
+  "กรุงศรี พี่ปิ๊ก",
+  "TTB",
+  "กสิกร พี่ปิ๊ก",
+  "SCB คุณยาย",
+  "กรุงศรี คุณตา",
+  "กรุงศรี บัญชีบริษัท",
+  "กสิกร บัญชีบริษัท(กด)",
+  "กสิกร บัญชีบริษัท(สแกน)",
+  "TTB บัญชีบริษัท(กด)",
+  "TTB บัญชีบริษัท(สแกน)",
+  "เงินสด",
+  "พี่ปิ๊ก โอน",
+  "พี่ต้น โอน"
+];
+
+function generateStudentBlock(idx) {
+  const channelOptions = PAYMENT_CHANNELS.map(c => `<option value="${c}">${c}</option>`).join('');
+  
+  return `
+    <div class="student-block" data-idx="${idx}" style="border: 2px solid var(--border-color); padding: 15px; margin-bottom: 20px; border-radius: 8px; background: #fff;">
+      <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; color: var(--color-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        นักเรียนคนที่ ${idx + 1}
+      </div>
+      
+      <div class="section-title-group">
+        <div class="section-label">ข้อมูลส่วนตัวนักเรียน & ติดต่อ</div>
+      </div>
+      <div class="form-grid-3" style="margin-bottom: 20px;">
+        <div class="form-group">
+          <label class="form-label">ชื่อ-นามสกุลนักเรียน</label>
+          <input type="text" id="student_name_${idx}" class="form-input" placeholder="ชื่อจริง นามสกุลจริง" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อเล่น</label>
+          <input type="text" id="student_nickname_${idx}" class="form-input" placeholder="ชื่อเล่น" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อโรงเรียน</label>
+          <input type="text" id="student_school_${idx}" class="form-input" list="student_school_list" placeholder="พิมพ์ชื่อโรงเรียน..." required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ทับ (Section)</label>
+          <input type="text" id="student_class_section_${idx}" class="form-input" placeholder="เช่น ป.2/69, ม.5ex1" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">เบอร์ติดต่อผู้ปกครอง</label>
+          <input type="text" id="student_contact_${idx}" class="form-input" placeholder="เบอร์โทรศัพท์" required oninput="formatPhoneAsYouType(this)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อโปรไฟล์ไลน์ (Line Name)</label>
+          <input type="text" id="student_line_name_${idx}" class="form-input" placeholder="เช่น แม่ ณดา ป.2/69">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ID Line</label>
+          <input type="text" id="student_line_id_${idx}" class="form-input" placeholder="ไอดีไลน์">
+        </div>
+      </div>
+
+      <div class="section-title-group">
+        <div class="section-label">ข้อมูลการชำระเงิน & ชั่วโมงเรียน</div>
+      </div>
+      
+      <div class="form-grid-3" style="margin-bottom: 20px;">
+        <div class="form-group form-group-full-3">
+          <label class="form-label">รูปแบบการชำระเงิน</label>
+          <div style="display: flex; gap: 20px; align-items: center; background: #f8fafc; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_cash_${idx}" value="cash" checked onchange="calculateBlockOutstanding(${idx})"> เงินสด / โอน
+            </label>
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_card_${idx}" value="card" onchange="calculateBlockOutstanding(${idx})"> บัตรเครดิต
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">ยอดจริง (ค่าเรียนเต็ม)</label>
+          <input type="number" id="student_full_${idx}" class="form-input" placeholder="0" oninput="calculateBlockOutstanding(${idx})" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ยอดจ่ายรวม (บาท)</label>
+          <input type="number" id="student_paid_${idx}" class="form-input highlight-input" placeholder="0" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ยอดคงค้าง (บาท)</label>
+          <input type="number" id="student_outstanding_${idx}" class="form-input" placeholder="0" readonly style="background-color: #fee2e2; border-color: #fca5a5; font-weight: bold; color: #b91c1c;">
+        </div>
+        <div class="form-group" id="card_fee_group_${idx}" style="display:none;">
+          <label class="form-label" style="color:var(--color-primary);">ค่าธรรมเนียมรูดบัตร (3%)</label>
+          <input type="number" id="student_card_fee_${idx}" class="form-input" placeholder="0" readonly style="background-color: #f0fdf4; border-color: #bbf7d0; color: #15803d; font-weight:bold;">
+        </div>
+        <div class="form-group" id="total_with_card_group_${idx}" style="display:none;">
+          <label class="form-label" style="color:var(--color-primary);">ยอดรวมค่ารูดบัตร</label>
+          <input type="number" id="student_total_with_card_${idx}" class="form-input" placeholder="0" readonly style="background-color: #f0fdf4; border-color: #bbf7d0; color: #15803d; font-weight:bold;">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">หมายเหตุการชำระเงิน/เวลา</label>
+          <input type="text" id="student_time_note_${idx}" class="form-input" placeholder="เช่น ชำระสิ้นเดือน, เรียน 17.00-19.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">หมายเหตุอื่นๆ (Admin)</label>
+          <input type="text" id="student_extra_note_${idx}" class="form-input" placeholder="เช่น ขอใบเสร็จ, ย้ายรอบ">
+        </div>
+        
+        <div class="form-group form-group-full-3" style="background: rgba(245, 158, 11, 0.05); padding: 12px; border-radius: var(--radius-md); border: 1px dashed #f59e0b; margin-top: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <label class="form-label" style="color: #d97706; margin-bottom: 0;">มียอดยกมา (ย้ายคอร์ส / เรียนไม่ครบ)</label>
+            <label class="switch">
+              <input type="checkbox" id="has_carried_forward_${idx}" onchange="toggleCarriedForwardBlock(${idx})">
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div id="carried_forward_group_${idx}" style="display: none; grid-template-columns: 1fr; gap: 15px;">
+            <div>
+              <label class="form-label" style="font-size: 0.8rem;">จำนวนเงินที่ยกมา (นำไปหักลบกับยอดจริง)</label>
+              <input type="number" id="student_carried_forward_${idx}" class="form-input" placeholder="0" oninput="calculateBlockOutstanding(${idx})" value="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 10px;">
+          <label class="form-label">ชั่วโมงเรียนทั้งหมด</label>
+          <input type="text" id="student_hours_${idx}" class="form-input" placeholder="เช่น 20 ชม.">
+        </div>
+        <div class="form-group" style="margin-top: 10px;">
+          <label class="form-label">ชั่วโมงเรียนคงเหลือ</label>
+          <input type="text" id="student_hours_left_${idx}" class="form-input" placeholder="เช่น 15 ชม.">
+        </div>
+      </div>
+
+      <div style="margin-top: 10px; margin-bottom: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">บันทึกแบ่งชำระ (กรอกเฉพาะรอบที่จ่ายแล้ว)</h4>
+        </div>
+        
+        ${[1, 2, 3].map(r => `
+        <div class="installment-row" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; background: rgba(0,0,0,0.02); padding: 10px; border-radius: 6px;">
+          <div>
+            <label style="font-size: 0.7rem; color: #64748b;">ครั้งที่ ${r}: วันที่ชำระ</label>
+            <input type="date" id="pay_r${r}_date_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;">
+          </div>
+          <div>
+            <label style="font-size: 0.7rem; color: #64748b;">จำนวนเงิน</label>
+            <input type="number" id="pay_r${r}_amount_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;" placeholder="0" oninput="calculateBlockOutstanding(${idx})">
+          </div>
+          <div>
+            <label style="font-size: 0.7rem; color: #64748b;">ช่องทาง</label>
+            <select id="pay_r${r}_channel_${idx}" class="form-select" style="padding: 4px; font-size: 0.8rem;">
+              <option value="">- เลือก -</option>
+              ${channelOptions}
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 0.7rem; color: #64748b;">พนักงานที่รับเงิน</label>
+            <input type="text" id="pay_r${r}_staff_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;" placeholder="ชื่อพนักงาน">
+          </div>
+          <div>
+            <label style="font-size: 0.7rem; color: #64748b;">เวลา (Time)</label>
+            <input type="time" id="pay_r${r}_time_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;">
+          </div>
+        </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+window.handleClassTypeChange = function() {
+  const classType = document.getElementById('student_class_type').value;
+  const sizeGroup = document.getElementById('subgroup_size_group');
+  const checkboxGroup = document.getElementById('course_checkboxes_wrapper');
+  
+  // Reset
+  sizeGroup.style.display = 'none';
+  if(checkboxGroup) checkboxGroup.style.display = 'none';
+  
+  let numBlocks = 1;
+  
+  if (classType === 'กลุ่มหลัก') {
+    if(checkboxGroup) checkboxGroup.style.display = 'grid';
+    numBlocks = 1;
+  } else if (classType === 'กลุ่มย่อย') {
+    sizeGroup.style.display = 'block';
+    const size = document.getElementById('student_subgroup_size').value;
+    if (size.includes('2-3')) numBlocks = 3;
+    else if (size.includes('4-5')) numBlocks = 5;
+    else if (size.includes('6-10')) numBlocks = 10;
+  } else if (classType === 'เดี่ยว') {
+    numBlocks = 1;
+  }
+  
+  renderStudentBlocks(numBlocks);
+  handleGradeBranchChange();
+};
+
+window.renderStudentBlocks = function(numBlocks) {
+  const container = document.getElementById('dynamic_students_container');
+  let html = '';
+  for(let i=0; i<numBlocks; i++) {
+    html += generateStudentBlock(i);
+  }
+  container.innerHTML = html;
+};
+
+window.toggleCarriedForwardBlock = function(idx) {
+  const checked = document.getElementById(`has_carried_forward_${idx}`).checked;
+  const group = document.getElementById(`carried_forward_group_${idx}`);
+  if(checked) {
+    group.style.display = 'grid';
+  } else {
+    group.style.display = 'none';
+    document.getElementById(`student_carried_forward_${idx}`).value = 0;
+    calculateBlockOutstanding(idx);
+  }
+};
+
+window.calculateBlockOutstanding = function(idx) {
+  const fullEl = document.getElementById(`student_full_${idx}`);
+  const r1El = document.getElementById(`pay_r1_amount_${idx}`);
+  const r2El = document.getElementById(`pay_r2_amount_${idx}`);
+  const r3El = document.getElementById(`pay_r3_amount_${idx}`);
+  const paidEl = document.getElementById(`student_paid_${idx}`);
+  const outstandingEl = document.getElementById(`student_outstanding_${idx}`);
+  const carriedForwardEl = document.getElementById(`student_carried_forward_${idx}`);
+  
+  const isCard = document.getElementById(`pay_mode_card_${idx}`).checked;
+  
+  const cardFeeGroup = document.getElementById(`card_fee_group_${idx}`);
+  const totalWithCardGroup = document.getElementById(`total_with_card_group_${idx}`);
+  const cardFeeEl = document.getElementById(`student_card_fee_${idx}`);
+  const totalWithCardEl = document.getElementById(`student_total_with_card_${idx}`);
+  
+  if(!fullEl) return;
+  
+  const full = parseFloat(fullEl.value) || 0;
+  const r1 = parseFloat(r1El.value) || 0;
+  const r2 = parseFloat(r2El.value) || 0;
+  const r3 = parseFloat(r3El.value) || 0;
+  const carriedForward = parseFloat(carriedForwardEl.value) || 0;
+  
+  let targetAmount = full - carriedForward;
+  let totalPaid = r1 + r2 + r3;
+  let outstanding = 0;
+  
+  if (isCard) {
+    const fee = targetAmount * 0.03;
+    const totalWithCard = targetAmount + fee;
+    outstanding = totalWithCard - totalPaid;
+    
+    cardFeeGroup.style.display = 'block';
+    totalWithCardGroup.style.display = 'block';
+    cardFeeEl.value = fee.toFixed(2);
+    totalWithCardEl.value = totalWithCard.toFixed(2);
+  } else {
+    outstanding = targetAmount - totalPaid;
+    cardFeeGroup.style.display = 'none';
+    totalWithCardGroup.style.display = 'none';
+    cardFeeEl.value = '';
+    totalWithCardEl.value = '';
+  }
+  
+  paidEl.value = totalPaid;
+  outstandingEl.value = outstanding;
+};
+
+// Replace original saveStudent
+window.saveStudent = function(e) {
+  e.preventDefault();
+  
+  const blocks = document.querySelectorAll('.student-block');
+  if(blocks.length === 0) return;
+  
+  const classType = document.getElementById('student_class_type').value;
+  const subgroupSize = classType === 'กลุ่มย่อย' ? document.getElementById('student_subgroup_size').value : '';
+  const grade = document.getElementById('student_grade').value;
+  const branchLearn = document.getElementById('student_branch_learn').value;
+  const branchPay = document.getElementById('student_branch_pay').value;
+  
+  // Shared course logic
+  let courseStr = "";
+  if (classType === 'กลุ่มหลัก') {
+    const selectedCheckboxes = document.querySelectorAll('.course-checkbox:checked');
+    if (selectedCheckboxes.length > 0) {
+      courseStr = Array.from(selectedCheckboxes).map(cb => cb.value).join(', ');
+    } else {
+      showToast('กรุณาเลือกวิชาเรียนอย่างน้อย 1 วิชา (กลุ่มหลัก)', 'error');
+      return;
+    }
+  } else {
+    courseStr = document.getElementById('shared_course_name').value.trim();
+    if(!courseStr) {
+      showToast('กรุณาระบุชื่อคอร์ส', 'error');
+      return;
+    }
+  }
+  
+  const studentDataArray = [];
+  
+  blocks.forEach(block => {
+    const idx = block.getAttribute('data-idx');
+    const name = document.getElementById(`student_name_${idx}`).value.trim();
+    if(!name) return; // skip empty slots in a subgroup
+    
+    // Check if Edit mode (we only edit 1 student at a time, so student_id is shared but only valid for blocks.length=1)
+    const studentId = document.getElementById('student_id') ? document.getElementById('student_id').value : '';
+    
+    const obj = {
+      id: studentId,
+      Date: new Date().toISOString().split('T')[0], // Defaults to today, backend handles server timestamp if needed
+      Grade: grade,
+      StudentName: name,
+      Nickname: document.getElementById(`student_nickname_${idx}`).value.trim(),
+      School: document.getElementById(`student_school_${idx}`).value.trim(),
+      ClassSection: document.getElementById(`student_class_section_${idx}`).value.trim(),
+      Contact: document.getElementById(`student_contact_${idx}`).value.trim(),
+      LineName: document.getElementById(`student_line_name_${idx}`).value.trim(),
+      LineID: document.getElementById(`student_line_id_${idx}`).value.trim(),
+      BranchLearn: branchLearn,
+      BranchPay: branchPay,
+      ClassType: classType,
+      SubgroupSize: subgroupSize,
+      Course: courseStr,
+      
+      PayMode: document.getElementById(`pay_mode_card_${idx}`).checked ? 'card' : 'cash',
+      FullAmount: document.getElementById(`student_full_${idx}`).value,
+      PaidAmount: document.getElementById(`student_paid_${idx}`).value,
+      Outstanding: document.getElementById(`student_outstanding_${idx}`).value,
+      CarriedForward: document.getElementById(`has_carried_forward_${idx}`).checked ? document.getElementById(`student_carried_forward_${idx}`).value : 0,
+      
+      TimeNote: document.getElementById(`student_time_note_${idx}`).value.trim(),
+      ExtraNote: document.getElementById(`student_extra_note_${idx}`).value.trim(),
+      Hours: document.getElementById(`student_hours_${idx}`).value.trim(),
+      HoursLeft: document.getElementById(`student_hours_left_${idx}`).value.trim(),
+      
+      PayRound1Date: document.getElementById(`pay_r1_date_${idx}`).value,
+      PayRound1Amount: document.getElementById(`pay_r1_amount_${idx}`).value,
+      PayRound1Channel: document.getElementById(`pay_r1_channel_${idx}`).value,
+      PayRound1Staff: document.getElementById(`pay_r1_staff_${idx}`).value,
+      PayRound1Time: document.getElementById(`pay_r1_time_${idx}`).value,
+      
+      PayRound2Date: document.getElementById(`pay_r2_date_${idx}`).value,
+      PayRound2Amount: document.getElementById(`pay_r2_amount_${idx}`).value,
+      PayRound2Channel: document.getElementById(`pay_r2_channel_${idx}`).value,
+      PayRound2Staff: document.getElementById(`pay_r2_staff_${idx}`).value,
+      PayRound2Time: document.getElementById(`pay_r2_time_${idx}`).value,
+      
+      PayRound3Date: document.getElementById(`pay_r3_date_${idx}`).value,
+      PayRound3Amount: document.getElementById(`pay_r3_amount_${idx}`).value,
+      PayRound3Channel: document.getElementById(`pay_r3_channel_${idx}`).value,
+      PayRound3Staff: document.getElementById(`pay_r3_staff_${idx}`).value,
+      PayRound3Time: document.getElementById(`pay_r3_time_${idx}`).value
+    };
+    studentDataArray.push(obj);
+  });
+  
+  if (studentDataArray.length === 0) {
+    showToast('กรุณากรอกข้อมูลนักเรียนอย่างน้อย 1 คน', 'error');
+    return;
+  }
+  
+  setLoading(true, 'กำลังบันทึกข้อมูล...');
+  
+  // Custom recursive function to save sequentially without modifying backend
+  let currentIndex = 0;
+  function saveNext() {
+    if (currentIndex >= studentDataArray.length) {
+      setLoading(false);
+      showToast('บันทึกข้อมูลสำเร็จทั้งหมด!', 'success');
+      closeStudentModal();
+      if (typeof window.loadGridData === 'function') {
+        window.loadGridData();
+      }
+      return;
+    }
+    
+    setLoading(true, `กำลังบันทึกข้อมูลนักเรียนคนที่ ${currentIndex + 1}/${studentsToSave.length}...`);
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res && res.success) {
+          currentIndex++;
+          saveNext(); // Save the next one
+        } else {
+          setLoading(false);
+          showToast(`เกิดข้อผิดพลาดคนที่ ${currentIndex + 1}: ` + (res ? res.message : 'ไม่ทราบสาเหตุ'), 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        setLoading(false);
+        showToast(`Error คนที่ ${currentIndex + 1}: ` + err.message, 'error');
+      })
+      .addStudentRegistration(studentDataArray[currentIndex], getLogUser());
+  }
+  
+  saveNext(); // Start the loop
+};
+
+// Ensure modal reset logic resets the dynamic blocks
+const originalOpenStudentModal = window.openStudentModal;
+window.openStudentModal = function(id = null) {
+  // If editing an existing student, we must render exactly 1 block
+  if (id) {
+    renderStudentBlocks(1);
+    document.getElementById('student_class_type').disabled = true; // Lock class type when editing
+    document.getElementById('student_id').value = id;
+    document.getElementById('student_modal_title').innerText = 'แก้ไขข้อมูลนักเรียน';
+    
+    // The previous populate logic needs to be rewritten to fill `_0` ids
+    setLoading(true, 'กำลังโหลดข้อมูล...');
+    google.script.run
+      .withSuccessHandler(res => {
+        setLoading(false);
+        if (res && res.success && res.data) {
+          const data = res.data;
+          
+          document.getElementById('student_class_type').value = data.ClassType || 'กลุ่มหลัก';
+          handleClassTypeChange(); // This sets it back to 1 block visually if we unlock, but we leave it as 1 block for edit
+          
+          document.getElementById('student_grade').value = data.Grade || 'ป.1';
+          document.getElementById('student_branch_learn').value = data.BranchLearn || 'สาขา1';
+          document.getElementById('student_branch_pay').value = data.BranchPay || 'สาขา1';
+          
+          if (data.ClassType === 'กลุ่มหลัก') {
+            // Check the checkboxes - handled by handleGradeBranchChange which we need to patch if needed
+            // But for simple edit, it's easier to just set shared_course_name
+          }
+          document.getElementById('shared_course_name').value = data.Course || '';
+          
+          // Populate Block 0
+          document.getElementById('student_name_0').value = data.StudentName || '';
+          document.getElementById('student_nickname_0').value = data.Nickname || '';
+          document.getElementById('student_school_0').value = data.School || '';
+          document.getElementById('student_class_section_0').value = data.ClassSection || '';
+          document.getElementById('student_contact_0').value = data.Contact || '';
+          document.getElementById('student_line_name_0').value = data.LineName || '';
+          document.getElementById('student_line_id_0').value = data.LineID || '';
+          
+          document.getElementById(data.PayMode === 'card' ? 'pay_mode_card_0' : 'pay_mode_cash_0').checked = true;
+          
+          document.getElementById('student_full_0').value = data.FullAmount || '';
+          document.getElementById('student_paid_0').value = data.PaidAmount || '';
+          document.getElementById('student_outstanding_0').value = data.Outstanding || '';
+          
+          if (data.CarriedForward && parseFloat(data.CarriedForward) > 0) {
+            document.getElementById('has_carried_forward_0').checked = true;
+            toggleCarriedForwardBlock(0);
+            document.getElementById('student_carried_forward_0').value = data.CarriedForward;
+          }
+          
+          document.getElementById('student_time_note_0').value = data.TimeNote || '';
+          document.getElementById('student_extra_note_0').value = data.ExtraNote || '';
+          document.getElementById('student_hours_0').value = data.Hours || '';
+          document.getElementById('student_hours_left_0').value = data.HoursLeft || '';
+          
+          document.getElementById('pay_r1_date_0').value = data.PayRound1Date || '';
+          document.getElementById('pay_r1_amount_0').value = data.PayRound1Amount || '';
+          document.getElementById('pay_r1_channel_0').value = data.PayRound1Channel || '';
+          document.getElementById('pay_r1_staff_0').value = data.PayRound1Staff || '';
+          document.getElementById('pay_r1_time_0').value = data.PayRound1Time || '';
+          
+          document.getElementById('pay_r2_date_0').value = data.PayRound2Date || '';
+          document.getElementById('pay_r2_amount_0').value = data.PayRound2Amount || '';
+          document.getElementById('pay_r2_channel_0').value = data.PayRound2Channel || '';
+          document.getElementById('pay_r2_staff_0').value = data.PayRound2Staff || '';
+          document.getElementById('pay_r2_time_0').value = data.PayRound2Time || '';
+          
+          document.getElementById('pay_r3_date_0').value = data.PayRound3Date || '';
+          document.getElementById('pay_r3_amount_0').value = data.PayRound3Amount || '';
+          document.getElementById('pay_r3_channel_0').value = data.PayRound3Channel || '';
+          document.getElementById('pay_r3_staff_0').value = data.PayRound3Staff || '';
+          document.getElementById('pay_r3_time_0').value = data.PayRound3Time || '';
+          
+          calculateBlockOutstanding(0);
+          
+          document.getElementById('student_modal').classList.add('active');
+        } else {
+          showToast('ไม่พบข้อมูลนักเรียน', 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        setLoading(false);
+        showToast('Error: ' + err.message, 'error');
+      })
+      .getStudentData(id);
+  } else {
+    // Add mode
+    document.getElementById('student_id').value = '';
+    document.getElementById('student_form').reset();
+    document.getElementById('student_modal_title').innerText = 'ลงทะเบียนนักเรียน (แบบละเอียด)';
+    document.getElementById('student_class_type').disabled = false;
+    document.getElementById('student_class_type').value = 'กลุ่มหลัก';
+    handleClassTypeChange(); // Triggers renderStudentBlocks(1)
+    document.getElementById('student_modal').classList.add('active');
+  }
+};

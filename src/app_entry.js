@@ -1,5 +1,6 @@
 // app_entry.js - Main Application Entry Point
 // Connects directly to Google Apps Script Web App for database operations
+import * as FB from './firebase_backend.js';
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA/exec";
 
@@ -68,29 +69,21 @@ window.google.script.run = new Proxy({}, {
 
 // ─── Dispatch function: sends a request to the Google Apps Script Web App ───
 async function dispatch(funcName, args, chain) {
-  console.log(`[GAS Bridge] Calling: ${funcName}`, args);
+  console.log(`[GAS Bridge] Calling ${funcName} on Google Sheets...`, args);
   try {
-    // Send request via JSONP or POST. Since GAS allows CORS GET/POST with Redirects:
-    // We send payload as query string or POST body. For simplicity and robustness, we use POST.
     const response = await fetch(WEB_APP_URL, {
       method: "POST",
-      mode: "cors",
       headers: {
-        "Content-Type": "text/plain;charset=utf-8" // Avoid preflight request problems in GAS Web App
+        "Content-Type": "text/plain;charset=utf-8"
       },
       body: JSON.stringify({
         functionName: funcName,
         arguments: args
       })
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
+    const text = await response.text();
+    const result = JSON.parse(text);
     console.log(`[GAS Bridge] Response for ${funcName}:`, result);
-
     if (chain._success) {
       chain._success(result);
     }
@@ -98,8 +91,6 @@ async function dispatch(funcName, args, chain) {
     console.error(`[GAS Bridge] Error in ${funcName}:`, err);
     if (chain._failure) {
       chain._failure(err);
-    } else if (chain._success) {
-      chain._success({ success: false, error: err.message });
     }
   }
 }
@@ -158,7 +149,7 @@ setInterval(() => {
 
 // ─── Load original JavaScript.js as a plain script (non-module) ───────────────
 const s = document.createElement('script');
-s.src = '/pookpik_tutor/src/JavaScript.js';
+s.src = './src/JavaScript.js?v=' + Date.now();
 s.onload = () => console.log('[App] JavaScript.js loaded and ready with GAS backend');
 s.onerror = (e) => console.error('[App] Failed to load JavaScript.js', e);
 document.head.appendChild(s);
