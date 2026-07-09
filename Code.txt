@@ -6405,6 +6405,86 @@ function convertDateToIso(dateStr) {
   return y + '-' + m + '-' + d;
 }
 
+function getTeacherRoomSchedule(teacherName, nickname, startVal, endVal) {
+  try {
+    const start = startVal ? new Date(startVal + 'T00:00:00') : null;
+    const end = endVal ? new Date(endVal + 'T23:59:59') : null;
+    
+    // 1. Get correct teacher nickname from TeachersDB
+    const teachersList = getTeachersDB(null);
+    let matchedTeacherNick = (nickname || teacherName || '').toString().trim();
+    
+    if (teacherName) {
+      const cleanName = teacherName.toString().toLowerCase().trim();
+      const match = teachersList.find(t => {
+        const tId = (t.teacherId || '').toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
+        return (tId !== '' && tId === cleanName) || tNick === cleanName;
+      });
+      if (match) {
+        matchedTeacherNick = match.nickname;
+      }
+    }
+    
+    const cleanNickTarget = matchedTeacherNick.toLowerCase();
+    
+    // 2. Fetch ClassLogs and filter
+    const classLogs = getClassLogs('all');
+    const classes = [];
+    
+    classLogs.forEach(c => {
+      // Check teacher match (regular or sub)
+      const tReg = (c.teacherRegular || '').toLowerCase();
+      const tSub = (c.teacherSub || '').toLowerCase();
+      
+      let match = false;
+      if (cleanNickTarget && (tReg.includes(cleanNickTarget) || tSub.includes(cleanNickTarget))) {
+        match = true;
+      }
+      
+      if (!match) return;
+      
+      // Check date range
+      if (start && end && c.date) {
+        const parts = c.date.split('/');
+        if (parts.length === 3) {
+          let y = parseInt(parts[2]);
+          if (y > 2400) y -= 543;
+          const cDate = new Date(y, parseInt(parts[1]) - 1, parseInt(parts[0]));
+          if (cDate < start || cDate > end) return;
+        } else {
+          return;
+        }
+      }
+      
+      classes.push({
+        id: c.rowIndex,
+        date: c.date || "",
+        timeStart: c.timeStart || "",
+        timeEnd: c.timeEnd || "",
+        subject: c.subject || "",
+        teacherRegular: c.teacherRegular || "",
+        teacherSub: c.teacherSub || "",
+        roomBranchInfo: c.roomBranch || "",
+        memo: c.note || "",
+        presentCount: c.isPresentLive || 0,
+        onlineCount: c.isPresentOnline || 0,
+        leaveCount: c.isLeave || 0,
+        absentCount: c.isAbsent || 0,
+        makeUpCount: c.isMakeup || 0,
+        extraCount: c.isOrange || 0,
+        hours: c.hours || 0,
+        roomBranch: c.roomBranch || "",
+        rowIndex: c.rowIndex
+      });
+    });
+    
+    return classes;
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
 function getStudentHistoryData(name, nickname, logUser) {
   if (logUser) checkTeacherBlock(logUser);
   try {
