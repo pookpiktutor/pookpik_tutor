@@ -9534,6 +9534,93 @@ window.calculateBlockOutstanding = function(idx) {
 };
 
 // Replace original saveStudent
+
+// Background registration queue system
+let saveStudentQueue = [];
+let isSavingStudent = false;
+
+function updateBackgroundQueueIndicator() {
+  let indicator = document.getElementById('bg_queue_indicator');
+  if (saveStudentQueue.length > 0 || isSavingStudent) {
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.id = 'bg_queue_indicator';
+      indicator.style.position = 'fixed';
+      indicator.style.bottom = '20px';
+      indicator.style.right = '20px';
+      indicator.style.background = 'rgba(15, 23, 42, 0.95)';
+      indicator.style.color = '#fff';
+      indicator.style.padding = '12px 18px';
+      indicator.style.borderRadius = '30px';
+      indicator.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.4)';
+      indicator.style.zIndex = '9999';
+      indicator.style.fontSize = '0.85rem';
+      indicator.style.display = 'flex';
+      indicator.style.alignItems = 'center';
+      indicator.style.gap = '10px';
+      indicator.style.fontWeight = '500';
+      indicator.style.backdropFilter = 'blur(10px)';
+      indicator.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+      indicator.style.transition = 'all 0.3s ease';
+      document.body.appendChild(indicator);
+    }
+    const currentTask = isSavingStudent ? 1 : 0;
+    const remaining = saveStudentQueue.length - currentTask;
+    const countText = (remaining > 0) ? ` (กำลังบันทึก 1 รายการ, เหลือในคิว ${remaining} รายการ)` : " (กำลังบันทึกรายการสุดท้าย)";
+    indicator.innerHTML = `
+      <span style="width: 14px; height: 14px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin 1s linear infinite;"></span>
+      <span>กำลังบันทึกข้อมูลนักเรียนในเบื้องหลัง${countText}</span>
+    `;
+    
+    if (!document.getElementById('spin_style')) {
+      const style = document.createElement('style');
+      style.id = 'spin_style';
+      style.innerHTML = '@keyframes spin { to { transform: rotate(360deg); } }';
+      document.head.appendChild(style);
+    }
+  } else {
+    if (indicator) {
+      indicator.remove();
+    }
+  }
+}
+
+function processSaveStudentQueue() {
+  if (isSavingStudent) return;
+  if (saveStudentQueue.length === 0) {
+    updateBackgroundQueueIndicator();
+    return;
+  }
+  
+  isSavingStudent = true;
+  updateBackgroundQueueIndicator();
+  
+  const item = saveStudentQueue[0];
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      isSavingStudent = false;
+      if (res && res.success) {
+        showToast(`บันทึกข้อมูลของ ${item.studentData.StudentName} สำเร็จ!`, 'success');
+        saveStudentQueue.shift(); // Remove the completed task
+        if (typeof window.loadGridData === 'function') {
+          window.loadGridData();
+        }
+      } else {
+        showToast(`เกิดข้อผิดพลาดในการบันทึกของ ${item.studentData.StudentName}: ` + (res ? res.message : 'ไม่ทราบสาเหตุ'), 'error');
+        saveStudentQueue.shift();
+      }
+      processSaveStudentQueue();
+    })
+    .withFailureHandler(err => {
+      isSavingStudent = false;
+      showToast(`การเชื่อมต่อขัดข้องในการบันทึกของ ${item.studentData.StudentName}: ${err.message}`, 'error');
+      saveStudentQueue.shift();
+      processSaveStudentQueue();
+    })
+    .addStudentRegistration(item.studentData, item.logUser);
+}
+
 window.saveStudent = function(e) {
   e.preventDefault();
   
@@ -9628,40 +9715,17 @@ window.saveStudent = function(e) {
     return;
   }
   
-  setLoading(true, 'กำลังบันทึกข้อมูล...');
+  // Add to background queue
+  studentDataArray.forEach(studentData => {
+    saveStudentQueue.push({
+      studentData: studentData,
+      logUser: getLogUser()
+    });
+  });
   
-  // Custom recursive function to save sequentially without modifying backend
-  let currentIndex = 0;
-  function saveNext() {
-    if (currentIndex >= studentDataArray.length) {
-      setLoading(false);
-      showToast('บันทึกข้อมูลสำเร็จทั้งหมด!', 'success');
-      closeStudentModal();
-      if (typeof window.loadGridData === 'function') {
-        window.loadGridData();
-      }
-      return;
-    }
-    
-    setLoading(true, `กำลังบันทึกข้อมูลนักเรียนคนที่ ${currentIndex + 1}/${studentsToSave.length}...`);
-    google.script.run
-      .withSuccessHandler(res => {
-        if (res && res.success) {
-          currentIndex++;
-          saveNext(); // Save the next one
-        } else {
-          setLoading(false);
-          showToast(`เกิดข้อผิดพลาดคนที่ ${currentIndex + 1}: ` + (res ? res.message : 'ไม่ทราบสาเหตุ'), 'error');
-        }
-      })
-      .withFailureHandler(err => {
-        setLoading(false);
-        showToast(`Error คนที่ ${currentIndex + 1}: ` + err.message, 'error');
-      })
-      .addStudentRegistration(studentDataArray[currentIndex], getLogUser());
-  }
-  
-  saveNext(); // Start the loop
+  closeStudentModal();
+  showToast(`เพิ่มรายชื่อนักเรียน ${studentDataArray.length} คนเข้าคิวบันทึกในเบื้องหลังเรียบร้อยแล้ว`, 'info');
+  processSaveStudentQueue();
 };
 
 // Ensure modal reset logic resets the dynamic blocks
