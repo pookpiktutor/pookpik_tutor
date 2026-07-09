@@ -272,10 +272,10 @@ function initTeacherFilterDates() {
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth() + 1;
-  const day = today.getDate();
+  const lastDay = new Date(year, month, 0).getDate(); // Get last day of current month
   
   const startStr = `${year}-${month < 10 ? '0' + month : month}-01`;
-  const endStr = `${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`;
+  const endStr = `${year}-${month < 10 ? '0' + month : month}-${lastDay < 10 ? '0' + lastDay : lastDay}`;
   
   document.getElementById('teacher_filter_start_date').value = startStr;
   document.getElementById('teacher_filter_end_date').value = endStr;
@@ -469,7 +469,13 @@ function loadTeacherDailySchedule() {
           }
           
           const isTeacherLeave = c.note && c.note.includes('ครูลา');
-          if (c.teacherConfirmed) {
+          const hasStudentLeave = (parseInt(c.leaveCount) || 0) > 0;
+          
+          if (hasStudentLeave) {
+            card.style.backgroundColor = 'rgb(254, 226, 226)';
+            card.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+            card.style.borderWidth = '2px';
+          } else if (c.teacherConfirmed) {
             card.style.backgroundColor = 'rgba(25, 135, 84, 0.08)';
             card.style.borderColor = 'rgba(25, 135, 84, 0.3)';
           } else if (isTeacherLeave) {
@@ -491,6 +497,7 @@ function loadTeacherDailySchedule() {
                 <span class="teacher-card-badge ${roleClass}" style="font-size: 0.7rem; padding: 2px 8px;">${roleLabel}</span>
                 <span class="teacher-card-badge hours" style="font-size: 0.7rem; padding: 2px 8px;">⏳ ${formatHoursMinutes(c.hours)}</span>
                 <span class="teacher-card-badge students" style="font-size: 0.7rem; padding: 2px 8px;">👥 นักเรียน ${totalKids} คน</span>
+                ${hasStudentLeave ? `<span class="teacher-card-badge" style="font-size: 0.7rem; padding: 2px 8px; background: #ef4444; color: #fff; font-weight: bold; margin-left: 4px;">🚨 น้องลา ${c.leaveCount} คน</span>` : ''}
               </div>
             </div>
             ${noteHtml}
