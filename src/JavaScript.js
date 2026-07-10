@@ -392,9 +392,12 @@ function loadTeacherDailySchedule() {
       const end = new Date(endVal + 'T23:59:59');
       
       const filtered = logs.filter(c => {
+        if (!c.date) return false;
         const parts = c.date.split('/');
         if (parts.length !== 3) return false;
-        const cDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        let y = parseInt(parts[2]);
+        if (y > 2400) y -= 543; // แปลง พ.ศ. → ค.ศ.
+        const cDate = new Date(y, parseInt(parts[1]) - 1, parseInt(parts[0]));
         return cDate >= start && cDate <= end;
       });
       
@@ -449,14 +452,16 @@ function loadTeacherDailySchedule() {
         const dayClasses = groupedByDate[dateStr].slice(0, 3);
         
         dayClasses.forEach(c => {
-          const isReg = c.teacherRegular.toLowerCase().trim() === nickname.toLowerCase().trim() || c.teacherRegular.toLowerCase().trim() === teacherName.toLowerCase().trim();
+          const isReg = (c.teacherRegular || '').toLowerCase().trim() === (nickname || '').toLowerCase().trim() || (c.teacherRegular || '').toLowerCase().trim() === (teacherName || '').toLowerCase().trim();
           const roleClass = isReg ? 'regular' : 'sub';
           const roleLabel = isReg ? 'ครูประจำ' : `สอนแทน (${c.teacherRegular})`;
           
+          // รองรับ field จาก getClassLogsForTeacher (isLeave) และ getTeacherRoomSchedule (leaveCount)
+          const leaveCount = parseInt(c.leaveCount) || parseInt(c.isLeave) || 0;
           const totalKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
           
           // Clean roomBranch: strip Zoom details
-          let displayBranch = (c.roomBranch || '').toString().trim();
+          let displayBranch = (c.roomBranch || c.roomBranchInfo || '').toString().trim();
           // Remove Zoom 001, Zoom 002, etc. (case insensitive)
           displayBranch = displayBranch.replace(/Zoom\s*\S*/i, '').replace(/\s+/g, ' ').trim();
           
@@ -464,12 +469,13 @@ function loadTeacherDailySchedule() {
           card.className = 'teacher-card';
           
           let noteHtml = '';
-          if (c.note && c.note.trim() !== '' && c.note.trim() !== '-') {
-            noteHtml = `<div class="teacher-card-note" style="font-size: 0.72rem; padding: 6px 10px;">📝 <b>หมายเหตุ:</b> ${c.note}</div>`;
+          const noteText = (c.note || c.memo || '').toString().trim();
+          if (noteText !== '' && noteText !== '-') {
+            noteHtml = `<div class="teacher-card-note" style="font-size: 0.72rem; padding: 6px 10px;">📝 <b>หมายเหตุ:</b> ${noteText}</div>`;
           }
           
-          const isTeacherLeave = c.note && c.note.includes('ครูลา');
-          const hasStudentLeave = (parseInt(c.leaveCount) || 0) > 0;
+          const isTeacherLeave = noteText.includes('ครูลา');
+          const hasStudentLeave = leaveCount > 0;
           
           if (hasStudentLeave) {
             card.style.backgroundColor = 'rgb(254, 226, 226)';
@@ -497,13 +503,13 @@ function loadTeacherDailySchedule() {
                 <span class="teacher-card-badge ${roleClass}" style="font-size: 0.7rem; padding: 2px 8px;">${roleLabel}</span>
                 <span class="teacher-card-badge hours" style="font-size: 0.7rem; padding: 2px 8px;">⏳ ${formatHoursMinutes(c.hours)}</span>
                 <span class="teacher-card-badge students" style="font-size: 0.7rem; padding: 2px 8px;">👥 นักเรียน ${totalKids} คน</span>
-                ${hasStudentLeave ? `<span class="teacher-card-badge" style="font-size: 0.7rem; padding: 2px 8px; background: #ef4444; color: #fff; font-weight: bold; margin-left: 4px;">🚨 น้องลา ${c.leaveCount} คน</span>` : ''}
+                ${hasStudentLeave ? `<span class="teacher-card-badge" style="font-size: 0.7rem; padding: 2px 8px; background: #ef4444; color: #fff; font-weight: bold; margin-left: 4px;">🚨 น้องลา ${leaveCount} คน</span>` : ''}
               </div>
             </div>
             ${noteHtml}
             <div style="border-top: 1px dashed rgba(0,0,0,0.1); margin-top: 6px; padding-top: 6px; display: flex; align-items: center; justify-content: space-between; gap: 6px;">
               <label style="display: flex; align-items: center; gap: 5px; font-size: 0.74rem; cursor: pointer; font-weight: 600; color: var(--color-danger);">
-                <input type="checkbox" class="teacher-kru-leave-chk" data-row="${c.rowIndex}" ${(c.note && c.note.includes('ครูลา')) ? 'checked' : ''} onchange="handleTeacherLeaveToggle(${c.rowIndex}, this)" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--color-danger);">
+                <input type="checkbox" class="teacher-kru-leave-chk" data-row="${c.rowIndex}" ${noteText.includes('ครูลา') ? 'checked' : ''} onchange="handleTeacherLeaveToggle(${c.rowIndex}, this)" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--color-danger);">
                 👨🏫 ครูลา
               </label>
               <label style="display: flex; align-items: center; gap: 5px; font-size: 0.74rem; cursor: pointer; font-weight: 600; color: var(--color-success);">
@@ -518,9 +524,11 @@ function loadTeacherDailySchedule() {
     })
     .withFailureHandler(err => {
       setLoading(false);
-      showToast('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: ' + err.message, 'error');
+      const container = document.getElementById('teacher_schedule_container');
+      if (container) container.innerHTML = `<div style="text-align:center;color:var(--color-error);padding:40px">ไม่สามารถโหลดตารางสอนได้: ${err ? err.message : 'เกิดข้อผิดพลาด'}</div>`;
+      showToast('ดึงข้อมูลตารางสอนล้มเหลว: ' + (err ? err.message : 'เกิดข้อผิดพลาด'), 'error');
     })
-    .getTeacherRoomSchedule(state.currentUser.username, nickname, startVal, endVal);
+    .getClassLogsForTeacher(state.currentUser.username, nickname);
 }
 
 function getCustomMonthRange(year, month) {
