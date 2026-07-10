@@ -3909,7 +3909,8 @@ function renderMonthlyGrid(data) {
           makeup += parseInt(c.isMakeup) || 0;
           
           const courseName = c.subject;
-          const enrolledCount = (state.enrollments && state.enrollments[courseName]) || 0;
+          const enrollData = (state.enrollments && state.enrollments[courseName]);
+          const enrolledCount = Array.isArray(enrollData) ? enrollData.length : (parseInt(enrollData) || 0);
           enrolled += enrolledCount;
         }
       });
@@ -3952,7 +3953,9 @@ function renderMonthlyGrid(data) {
     weekClasses.forEach(c => {
       if (c.subject && !seenCourses.has(c.subject)) {
         seenCourses.add(c.subject);
-        totalEnrolledWeek += (state.enrollments && state.enrollments[c.subject]) || 0;
+        const enrollData = (state.enrollments && state.enrollments[c.subject]);
+        const enrolledCount = Array.isArray(enrollData) ? enrollData.length : (parseInt(enrollData) || 0);
+        totalEnrolledWeek += enrolledCount;
       }
     });
     html += `<td style="padding: 8px 4px; border-right: 1px solid var(--border-color); font-weight: 800; font-size: 0.72rem; color: #00838f;">📋 ${totalEnrolledWeek} นร.</td>`;
