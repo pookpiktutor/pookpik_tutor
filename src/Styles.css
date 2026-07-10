@@ -1061,22 +1061,16 @@ body {
 
 
 .custom-table {
-
-  min-width: 900px;
-
-  width: max-content;
-
+  width: 100%;
   border-collapse: collapse;
-
   text-align: left;
-
 }
 
 
 
 .custom-table th {
 
-  padding: 6px 10px;
+  padding: 4px 6px;
 
   font-weight: 600;
 
@@ -1106,7 +1100,7 @@ body {
 
 .custom-table td {
 
-  padding: 6px 10px;
+  padding: 4px 6px;
 
   border-bottom: 1px solid var(--border-color);
 
@@ -1116,9 +1110,23 @@ body {
 
   vertical-align: middle;
 
+  white-space: nowrap;
+
 }
 
 
+
+.revenue-logs-table th,
+.revenue-logs-table td {
+  padding: 3px 4px !important;
+  font-size: 0.8rem !important;
+}
+
+.revenue-logs-table select {
+  font-size: 0.78rem !important;
+  padding: 2px 4px !important;
+  height: auto !important;
+}
 
 .custom-table tr:last-child td {
 
@@ -3845,7 +3853,7 @@ body {
 
   .custom-table th, .custom-table td {
 
-    padding: 8px 6px !important;
+    padding: 4px 4px !important;
 
   }
 

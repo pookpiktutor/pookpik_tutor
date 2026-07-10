@@ -2776,8 +2776,63 @@ function getRoundSummary(round, branch) {
   }
 }
 
+/**
+ * One-time migration: append day/time from Row 3 into Row 1 header
+ * for existing grade-sheet columns that don't already include it.
+ * Uses a ScriptProperty flag so it only runs once per spreadsheet.
+ */
+function migrateExistingGradeSheetHeaders() {
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const flag = props.getProperty('HEADER_MIGRATION_DONE');
+    if (flag === 'true') return; // already migrated
+
+    const db = getDb();
+    const sheets = db.getSheets();
+
+    sheets.forEach(sheet => {
+      const name = sheet.getName();
+      const match = name.match(/^(.+)\/([1-3])$/);
+      if (!match) return;
+
+      const lastCol = sheet.getLastColumn();
+      if (lastCol < 16) return;
+
+      const numCols = lastCol - 15;
+      const row1 = sheet.getRange(1, 16, 1, numCols).getValues()[0];
+      const row3 = sheet.getRange(3, 16, 1, numCols).getValues()[0];
+
+      let changed = false;
+      for (let c = 0; c < numCols; c++) {
+        const headerVal = row1[c] ? row1[c].toString().trim() : '';
+        const dayTimeVal = row3[c] ? row3[c].toString().trim() : '';
+
+        if (!headerVal || !dayTimeVal) continue;
+
+        // Skip if the header already contains the day/time text
+        if (headerVal.indexOf(dayTimeVal) !== -1) continue;
+
+        row1[c] = headerVal + ' ' + dayTimeVal;
+        changed = true;
+      }
+
+      if (changed) {
+        sheet.getRange(1, 16, 1, numCols).setValues([row1]);
+      }
+    });
+
+    props.setProperty('HEADER_MIGRATION_DONE', 'true');
+  } catch (e) {
+    // Migration failure is non-fatal; log and continue
+    Logger.log('migrateExistingGradeSheetHeaders error: ' + e.message);
+  }
+}
+
 function getAllCoursesFromGradeSheets() {
   try {
+    // Run one-time header migration (day/time → Row 1)
+    migrateExistingGradeSheetHeaders();
+
     const db = getDb();
     const sheets = db.getSheets();
     const courses = [];
@@ -3037,7 +3092,16 @@ function getTeacherCoursesAndStudents(logUser) {
           
           let fullCourseName = courseKey;
           let dayTimeStr = '';
-          if (dayName && timeStart) {
+          
+          var hasDay = /(จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์)/.test(courseKey);
+          var hasTime = /\d+[:.]\d+/.test(courseKey);
+          
+          if (hasDay && hasTime) {
+            fullCourseName = courseKey;
+            if (dayName && timeStart) {
+              dayTimeStr = dayName + ' ' + timeStart + '-' + timeEnd;
+            }
+          } else if (dayName && timeStart) {
             dayTimeStr = dayName + ' ' + timeStart + '-' + timeEnd;
             fullCourseName = courseKey + ' ' + dayTimeStr;
           }
@@ -5515,6 +5579,14 @@ function getClassLogsForTeacher(teacherName, nickname) {
 function formatSubjectWithDayTime(subject, dateStr, timeStart, timeEnd) {
   if (!subject) return '';
   var subjectName = subject.toString().trim();
+  
+  // Check if subject already contains day and time info to avoid double appending
+  var hasDay = /(จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์)/.test(subjectName);
+  var hasTime = /\d+[:.]\d+/.test(subjectName);
+  if (hasDay && hasTime) {
+    return subjectName;
+  }
+  
   var dayName = '';
   if (dateStr) {
     var parts = dateStr.toString().split('/');
@@ -5561,6 +5633,11 @@ function addClassLog(log, logUser) {
     const resolvedTeacherSub = resolveId(log.teacherSub);
     log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd);
     
+    const iPresentLive = log.isPresentLive ? parseInt(log.isPresentLive) || 0 : 0;
+    const iPresentOnline = log.isPresentOnline ? parseInt(log.isPresentOnline) || 0 : 0;
+    const iMakeup = log.isMakeup ? parseInt(log.isMakeup) || 0 : 0;
+    const numKids = iPresentLive + iPresentOnline + iMakeup;
+    
     const rowData = [
       log.subject,
       resolvedTeacherRegular,
@@ -5568,15 +5645,17 @@ function addClassLog(log, logUser) {
       log.timeStart,
       log.timeEnd,
       log.note || '',
-      log.isPresentLive ? parseInt(log.isPresentLive) || 0 : 0,
-      log.isPresentOnline ? parseInt(log.isPresentOnline) || 0 : 0,
+      iPresentLive,
+      iPresentOnline,
       log.isLeave ? parseInt(log.isLeave) || 0 : 0,
       log.isAbsent ? parseInt(log.isAbsent) || 0 : 0,
-      log.isMakeup ? parseInt(log.isMakeup) || 0 : 0,
+      iMakeup,
       log.isOrange ? parseInt(log.isOrange) || 0 : 0,
       log.hours || '',
       log.date || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'd/M/yyyy'),
-      log.roomBranch || ''
+      log.roomBranch || '',
+      0,        // teacherConfirmed (column P)
+      numKids   // numKids (column Q) = iPresentLive + iPresentOnline + iMakeup
     ];
     
     sheet.appendRow(rowData);
@@ -5611,7 +5690,8 @@ function updateClassLog(rowIndex, log, logUser) {
     if (!sheet) throw new Error('Data Learn sheet not found');
     
     // Read old log values first to revert them
-    const rowVals = sheet.getRange(rowIndex, 1, 1, 15).getValues()[0];
+    // Read old log values first to revert them
+    const rowVals = sheet.getRange(rowIndex, 1, 1, 17).getValues()[0];
     const oldLog = {
       subject: rowVals[0] ? rowVals[0].toString().trim() : '',
       teacherRegular: rowVals[1] ? rowVals[1].toString().trim() : '',
@@ -5647,6 +5727,12 @@ function updateClassLog(rowIndex, log, logUser) {
     const resolvedTeacherSub = resolveId(log.teacherSub);
     log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd);
     
+    const iPresentLive = log.isPresentLive ? parseInt(log.isPresentLive) || 0 : 0;
+    const iPresentOnline = log.isPresentOnline ? parseInt(log.isPresentOnline) || 0 : 0;
+    const iMakeup = log.isMakeup ? parseInt(log.isMakeup) || 0 : 0;
+    const numKids = iPresentLive + iPresentOnline + iMakeup;
+    const currentConfirmed = rowVals[15] ? (parseInt(rowVals[15]) || 0) : 0;
+
     const rowValues = [
       [
         log.subject,
@@ -5655,19 +5741,21 @@ function updateClassLog(rowIndex, log, logUser) {
         log.timeStart,
         log.timeEnd,
         log.note || '',
-        log.isPresentLive ? parseInt(log.isPresentLive) || 0 : 0,
-        log.isPresentOnline ? parseInt(log.isPresentOnline) || 0 : 0,
+        iPresentLive,
+        iPresentOnline,
         log.isLeave ? parseInt(log.isLeave) || 0 : 0,
         log.isAbsent ? parseInt(log.isAbsent) || 0 : 0,
-        log.isMakeup ? parseInt(log.isMakeup) || 0 : 0,
+        iMakeup,
         log.isOrange ? parseInt(log.isOrange) || 0 : 0,
         log.hours || '',
         log.date,
-        log.roomBranch || ''
+        log.roomBranch || '',
+        currentConfirmed,
+        numKids
       ]
     ];
     
-    sheet.getRange(rowIndex, 1, 1, 15).setValues(rowValues);
+    sheet.getRange(rowIndex, 1, 1, 17).setValues(rowValues);
     
     try {
       recalculateSubjectHours(oldLog.subject);
@@ -7428,4 +7516,70 @@ function exportAllDataToJson() {
   };
   
   return JSON.stringify(jsonData);
+}
+
+function migrateExistingDataLearnSubjects() {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('Data Learn');
+    if (!sheet) return { success: false, error: 'Sheet Data Learn not found' };
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return { success: true, message: 'No rows to migrate' };
+    
+    const range = sheet.getRange(2, 1, lastRow - 1, 15); // Columns A to O
+    const values = range.getValues();
+    
+    const thaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+    let count = 0;
+    
+    for (let i = 0; i < values.length; i++) {
+      const row = values[i];
+      let subject = row[0] ? row[0].toString().trim() : '';
+      const start = row[3] ? row[3].toString().trim() : '';
+      const end = row[4] ? row[4].toString().trim() : '';
+      const dateVal = row[13];
+      
+      if (!subject || !start || !end || !dateVal) continue;
+      
+      // Parse the date (could be a Date object or string dd/mm/yyyy)
+      let dateObj = null;
+      if (dateVal instanceof Date) {
+        dateObj = dateVal;
+      } else {
+        const dateStr = dateVal.toString().trim();
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          let y = parseInt(parts[2]);
+          if (y > 2400) y -= 543;
+          dateObj = new Date(y, parseInt(parts[1]) - 1, parseInt(parts[0]));
+        }
+      }
+      
+      if (!dateObj || isNaN(dateObj.getTime())) continue;
+      
+      const dayName = thaiDays[dateObj.getDay()];
+      const suffix = `${dayName} ${start}-${end}`;
+      
+      // If the subject doesn't already contain this day name + time
+      if (subject.indexOf(suffix) === -1) {
+        let alreadyHas = false;
+        thaiDays.forEach(d => {
+          if (subject.indexOf(d) !== -1 && (subject.indexOf(':') !== -1 || subject.indexOf('-') !== -1)) {
+            alreadyHas = true;
+          }
+        });
+        
+        if (!alreadyHas) {
+          const newSubject = `${subject} ${suffix}`;
+          sheet.getRange(i + 2, 1).setValue(newSubject);
+          count++;
+        }
+      }
+    }
+    
+    return { success: true, count: count };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 }

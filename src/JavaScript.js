@@ -9349,7 +9349,10 @@ function generateStudentBlock(idx) {
           <label class="form-label">รูปแบบการชำระเงิน</label>
           <div style="display: flex; gap: 20px; align-items: center; background: #f8fafc; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
             <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="radio" name="pay_mode_${idx}" id="pay_mode_cash_${idx}" value="cash" checked onchange="calculateBlockOutstanding(${idx})"> เงินสด / โอน
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_cash_${idx}" value="cash" checked onchange="calculateBlockOutstanding(${idx})"> สด
+            </label>
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_transfer_${idx}" value="transfer" onchange="calculateBlockOutstanding(${idx})"> โอน
             </label>
             <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
               <input type="radio" name="pay_mode_${idx}" id="pay_mode_card_${idx}" value="card" onchange="calculateBlockOutstanding(${idx})"> บัตรเครดิต
@@ -9693,7 +9696,7 @@ window.saveStudent = function(e) {
       SubgroupSize: subgroupSize,
       Course: courseStr,
       
-      PayMode: document.getElementById(`pay_mode_card_${idx}`).checked ? 'card' : 'cash',
+      PayMode: document.getElementById(`pay_mode_card_${idx}`).checked ? 'card' : (document.getElementById(`pay_mode_transfer_${idx}`).checked ? 'transfer' : 'cash'),
       FullAmount: document.getElementById(`student_full_${idx}`).value,
       PaidAmount: document.getElementById(`student_paid_${idx}`).value,
       Outstanding: document.getElementById(`student_outstanding_${idx}`).value,
@@ -9783,7 +9786,14 @@ window.openStudentModal = function(id = null) {
           document.getElementById('student_line_name_0').value = data.LineName || '';
           document.getElementById('student_line_id_0').value = data.LineID || '';
           
-          document.getElementById(data.PayMode === 'card' ? 'pay_mode_card_0' : 'pay_mode_cash_0').checked = true;
+          const loadedPayMode = data.PayMode || 'cash';
+          if (loadedPayMode === 'card') {
+            document.getElementById('pay_mode_card_0').checked = true;
+          } else if (loadedPayMode === 'transfer') {
+            document.getElementById('pay_mode_transfer_0').checked = true;
+          } else {
+            document.getElementById('pay_mode_cash_0').checked = true;
+          }
           
           document.getElementById('student_full_0').value = data.FullAmount || '';
           document.getElementById('student_paid_0').value = data.PaidAmount || '';

@@ -123,5 +123,23 @@ export async function importDataToFirestore(jsonData) {
     console.log(`Class logs (${count} rows) imported successfully.`);
   }
 
+  // 5. Users
+  if (jsonData.users && jsonData.users.length > 0) {
+    const batch = writeBatch(db);
+    const colRef = collection(db, "users");
+    jsonData.users.forEach((u) => {
+      const docRef = doc(colRef, u.Username || "unknown");
+      batch.set(docRef, {
+        Username: u.Username || "",
+        Password: u.Password || "",
+        Name: u.Name || "",
+        Role: u.Role || "",
+        Branch: u.Branch || ""
+      });
+    });
+    await batch.commit();
+    console.log("Users imported successfully.");
+  }
+
   console.log("Migration complete!");
 }

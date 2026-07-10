@@ -675,7 +675,7 @@
             <!-- Sub panel: Revenue List -->
             <div id="revenue_subpanel_list">
               <div class="glass-panel table-responsive">
-                <table class="custom-table">
+                <table class="custom-table revenue-logs-table">
                   <thead>
                     <tr>
                       <th>ชื่อ</th>
@@ -1190,108 +1190,288 @@
           </button>
         </div>
         <div class="modal-body">
-          <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; width: 100%;">
-            <!-- Left Side: Form -->
-            <form id="class_form" onsubmit="saveClassLog(event)" style="flex: 1.3; min-width: 300px; margin: 0; padding: 0; background: transparent; border: none; box-shadow: none;">
-              <input type="hidden" id="class_row_index">
-              
-              <div class="form-grid">
+          <form id="class_form" onsubmit="saveClassLog(event)" style="width: 100%; margin: 0; padding: 0; background: transparent; border: none; box-shadow: none;">
+            <input type="hidden" id="class_row_index">
+
+            <!-- Shared: Room/Branch -->
+            <div class="form-grid" style="margin-bottom: 12px;">
               <div class="form-group form-group-full">
-                <label class="form-label">วิชาเรียน / นักเรียนที่เรียน</label>
-                <input type="text" id="class_subject" class="form-input" list="class_subject_list" placeholder="ตัวอย่าง: ณดา ป.2 เดี่ยวอังกฤษ" required>
-                <datalist id="class_subject_list"></datalist>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">ครูผู้สอนหลัก</label>
-                <select id="class_teacher_reg" class="form-select"></select>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">ครูผู้สอนแทน (ถ้ามี)</label>
-                <select id="class_teacher_sub" class="form-select"></select>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">เวลาเริ่มสอน</label>
-                <input type="time" id="class_time_start" class="form-input" onchange="calculateClassHours()" required>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">เวลาเสร็จสิ้น</label>
-                <input type="time" id="class_time_end" class="form-input" onchange="calculateClassHours()" required>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">ชั่วโมงสอน (ชม.)</label>
-                <input type="text" id="class_hours" class="form-input" placeholder="เช่น 2:00" required>
-              </div>
-              
-               <div class="form-group">
-                <label class="form-label">วันที่เรียน</label>
-                <input type="date" id="class_date" class="form-input" onchange="loadModalClasses()" required>
-              </div>
-              
-              <div class="form-group form-group-full" id="class_recurring_wrapper" style="margin-bottom:0;">
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: var(--text-main);">
-                  <input type="checkbox" id="class_is_recurring" onchange="toggleRecurringDate()"> บันทึกซ้ำรายสัปดาห์ (ทุกวันเดิมของสัปดาห์)
-                </label>
-                <div id="class_recurring_end_container" style="display: none; margin-top: 8px;">
-                  <label class="form-label">สิ้นสุดวันที่</label>
-                  <input type="date" id="class_recurring_end_date" class="form-input">
-                </div>
-              </div>
-              
-              <div class="form-group">
                 <label class="form-label">ห้องเรียน / สาขา / iPad</label>
                 <input type="text" id="class_room" list="rooms_datalist" class="form-input" placeholder="เช่น ห้อง 01 สาขา 1 IPAD 001 Zoom 001" required>
                 <datalist id="rooms_datalist"></datalist>
               </div>
+            </div>
 
-              <!-- Student attendance numbers (5 columns + 1 sum column) -->
-              <div class="form-group form-group-full">
-                <label class="form-label" style="margin-bottom: 4px;">จำนวนเด็กนักเรียน (สด  ออน  ลา  ขาด  ชด)</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%;">
-                  <div class="form-group">
-                    <label class="form-label" style="font-size: 0.72rem; text-transform: none; color: var(--color-success);">🟢 สด</label>
-                    <input type="number" id="class_kids_live" class="form-input" value="0" min="0" oninput="updateClassKidsSum()">
+            <!-- Tab Buttons -->
+            <div style="display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; align-items: center;">
+              <button type="button" class="btn class-tab-btn active" id="class_tab_btn_0" onclick="switchClassTab(0)" style="padding: 6px 16px; font-size: 0.82rem; border-radius: 8px 8px 0 0; font-weight: 600;">📘 คลาส 1</button>
+              <button type="button" class="btn class-tab-btn" id="class_tab_btn_1" onclick="switchClassTab(1)" style="padding: 6px 16px; font-size: 0.82rem; border-radius: 8px 8px 0 0;">📗 คลาส 2</button>
+              <button type="button" class="btn class-tab-btn" id="class_tab_btn_2" onclick="switchClassTab(2)" style="padding: 6px 16px; font-size: 0.82rem; border-radius: 8px 8px 0 0;">📙 คลาส 3</button>
+              <button type="button" class="btn class-tab-btn" id="class_tab_btn_3" onclick="switchClassTab(3)" style="padding: 6px 16px; font-size: 0.82rem; border-radius: 8px 8px 0 0;">📕 คลาส 4</button>
+              <button type="button" class="btn btn-secondary" id="copy_from_class1_btn" onclick="copyClassLogFromFirst()" style="padding: 5px 12px; font-size: 0.75rem; margin-left: auto; border-radius: 6px; background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd;">📋 คัดลอกจากคลาส 1</button>
+            </div>
+
+            <!-- Tab Contents: 4 sets of class fields -->
+            <div id="class_tabs_container">
+
+              <!-- ===== CLASS SET 0 ===== -->
+              <div class="class-tab-content" id="class_tab_0" style="display: block;">
+                <div class="form-grid">
+                  <div class="form-group form-group-full">
+                    <label class="form-label">วิชาเรียน / นักเรียนที่เรียน</label>
+                    <input type="text" id="class_subject_0" class="form-input" list="class_subject_list_0" placeholder="ตัวอย่าง: ณดา ป.2 เดี่ยวอังกฤษ">
+                    <datalist id="class_subject_list_0"></datalist>
                   </div>
                   <div class="form-group">
-                    <label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #3b82f6;">🔵 ออน</label>
-                    <input type="number" id="class_kids_online" class="form-input" value="0" min="0" oninput="updateClassKidsSum()">
+                    <label class="form-label">ครูผู้สอนหลัก</label>
+                    <select id="class_teacher_reg_0" class="form-select"></select>
                   </div>
                   <div class="form-group">
-                    <label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #f59e0b;">🟡 ลา</label>
-                    <input type="number" id="class_kids_leave" class="form-input" value="0" min="0" oninput="updateClassKidsSum()">
+                    <label class="form-label">ครูผู้สอนแทน (ถ้ามี)</label>
+                    <select id="class_teacher_sub_0" class="form-select"></select>
                   </div>
                   <div class="form-group">
-                    <label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #ef4444;">🔴 ขาด</label>
-                    <input type="number" id="class_kids_absent" class="form-input" value="0" min="0">
+                    <label class="form-label">เวลาเริ่มสอน</label>
+                    <input type="time" id="class_time_start_0" class="form-input" onchange="calculateClassHours(0)">
                   </div>
                   <div class="form-group">
-                    <label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #c095e7;">🟣 ชด</label>
-                    <input type="number" id="class_kids_makeup" class="form-input" value="0" min="0">
+                    <label class="form-label">เวลาเสร็จสิ้น</label>
+                    <input type="time" id="class_time_end_0" class="form-input" onchange="calculateClassHours(0)">
                   </div>
                   <div class="form-group">
-                    <label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #64748b;">🔢 รวม (สด+ออน+ลา)</label>
-                    <input type="number" id="class_kids_sum" class="form-input" value="0" readonly disabled style="background-color: var(--bg-primary); cursor: not-allowed; font-weight: bold;">
+                    <label class="form-label">วันที่เรียน</label>
+                    <input type="date" id="class_date_0" class="form-input" onchange="loadModalClasses()">
                   </div>
-                  <input type="hidden" id="class_kids_orange" value="0">
+                  <div class="form-group" id="class_recurring_wrapper_0" style="display: flex; align-items: center; justify-content: flex-start; height: 100%;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: var(--text-main); margin: 0; padding-top: 14px;">
+                      <input type="checkbox" id="class_is_recurring_0" onchange="toggleRecurringDate(0)"> บันทึกซ้ำรายสัปดาห์ (ทุกวันเดิมของสัปดาห์)
+                    </label>
+                    <div id="class_recurring_end_container_0" style="display: none; margin-top: 8px; width: 100%;">
+                      <label class="form-label">สิ้นสุดวันที่</label>
+                      <input type="date" id="class_recurring_end_date_0" class="form-input">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ชั่วโมงสอน (ชม.)</label>
+                    <input type="text" id="class_hours_0" class="form-input" placeholder="เช่น 2:00">
+                  </div>
+                  <div class="form-group">
+                    <!-- spacing alignment box -->
+                  </div>
+                  <!-- Student attendance -->
+                  <div class="form-group form-group-full">
+                    <label class="form-label" style="margin-bottom: 4px;">จำนวนเด็กนักเรียน (สด  ออน  ลา  ขาด  ชด)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%;">
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: var(--color-success);">🟢 สด</label><input type="number" id="class_kids_live_0" class="form-input" value="0" min="0" oninput="updateClassKidsSum(0)"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #3b82f6;">🔵 ออน</label><input type="number" id="class_kids_online_0" class="form-input" value="0" min="0" oninput="updateClassKidsSum(0)"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #f59e0b;">🟡 ลา</label><input type="number" id="class_kids_leave_0" class="form-input" value="0" min="0" oninput="updateClassKidsSum(0)"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #ef4444;">🔴 ขาด</label><input type="number" id="class_kids_absent_0" class="form-input" value="0" min="0"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #c095e7;">🟣 ชด</label><input type="number" id="class_kids_makeup_0" class="form-input" value="0" min="0"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #64748b;">🔢 รวม (สด+ออน+ลา)</label><input type="number" id="class_kids_sum_0" class="form-input" value="0" readonly disabled style="background-color: var(--bg-primary); cursor: not-allowed; font-weight: bold;"></div>
+                      <input type="hidden" id="class_kids_orange_0" value="0">
+                    </div>
+                  </div>
+                  <div class="form-group form-group-full">
+                    <label class="form-label">หมายเหตุการเรียน</label>
+                    <input type="text" id="class_note_0" class="form-input" placeholder="รายละเอียดคลาสเรียน">
+                  </div>
                 </div>
               </div>
-              
-              <div class="form-group form-group-full">
-                <label class="form-label">หมายเหตุการเรียน</label>
-                <input type="text" id="class_note" class="form-input" placeholder="รายละเอียดคลาสเรียน">
+
+              <!-- ===== CLASS SET 1 ===== -->
+              <div class="class-tab-content" id="class_tab_1" style="display: none;">
+                <div class="form-grid">
+                  <div class="form-group form-group-full">
+                    <label class="form-label">วิชาเรียน / นักเรียนที่เรียน</label>
+                    <input type="text" id="class_subject_1" class="form-input" list="class_subject_list_1" placeholder="ตัวอย่าง: ณดา ป.2 เดี่ยวอังกฤษ">
+                    <datalist id="class_subject_list_1"></datalist>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ครูผู้สอนหลัก</label>
+                    <select id="class_teacher_reg_1" class="form-select"></select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ครูผู้สอนแทน (ถ้ามี)</label>
+                    <select id="class_teacher_sub_1" class="form-select"></select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">เวลาเริ่มสอน</label>
+                    <input type="time" id="class_time_start_1" class="form-input" onchange="calculateClassHours(1)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">เวลาเสร็จสิ้น</label>
+                    <input type="time" id="class_time_end_1" class="form-input" onchange="calculateClassHours(1)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">วันที่เรียน</label>
+                    <input type="date" id="class_date_1" class="form-input">
+                  </div>
+                  <div class="form-group" id="class_recurring_wrapper_1" style="display: flex; align-items: center; justify-content: flex-start; height: 100%;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: var(--text-main); margin: 0; padding-top: 14px;">
+                      <input type="checkbox" id="class_is_recurring_1" onchange="toggleRecurringDate(1)"> บันทึกซ้ำรายสัปดาห์ (ทุกวันเดิมของสัปดาห์)
+                    </label>
+                    <div id="class_recurring_end_container_1" style="display: none; margin-top: 8px; width: 100%;">
+                      <label class="form-label">สิ้นสุดวันที่</label>
+                      <input type="date" id="class_recurring_end_date_1" class="form-input">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ชั่วโมงสอน (ชม.)</label>
+                    <input type="text" id="class_hours_1" class="form-input" placeholder="เช่น 2:00">
+                  </div>
+                  <div class="form-group">
+                    <!-- spacing alignment box -->
+                  </div>
+                  <div class="form-group form-group-full">
+                    <label class="form-label" style="margin-bottom: 4px;">จำนวนเด็กนักเรียน (สด  ออน  ลา  ขาด  ชด)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%;">
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: var(--color-success);">🟢 สด</label><input type="number" id="class_kids_live_1" class="form-input" value="0" min="0" oninput="updateClassKidsSum(1)"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #3b82f6;">🔵 ออน</label><input type="number" id="class_kids_online_1" class="form-input" value="0" min="0" oninput="updateClassKidsSum(1)"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #f59e0b;">🟡 ลา</label><input type="number" id="class_kids_leave_1" class="form-input" value="0" min="0" oninput="updateClassKidsSum(1)"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #ef4444;">🔴 ขาด</label><input type="number" id="class_kids_absent_1" class="form-input" value="0" min="0"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #c095e7;">🟣 ชด</label><input type="number" id="class_kids_makeup_1" class="form-input" value="0" min="0"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #64748b;">🔢 รวม (สด+ออน+ลา)</label><input type="number" id="class_kids_sum_1" class="form-input" value="0" readonly disabled style="background-color: var(--bg-primary); cursor: not-allowed; font-weight: bold;"></div>
+                      <input type="hidden" id="class_kids_orange_1" value="0">
+                    </div>
+                  </div>
+                  <div class="form-group form-group-full">
+                    <label class="form-label">หมายเหตุการเรียน</label>
+                    <input type="text" id="class_note_1" class="form-input" placeholder="รายละเอียดคลาสเรียน">
+                  </div>
+                </div>
               </div>
-            </div>
-            
+
+              <!-- ===== CLASS SET 2 ===== -->
+              <div class="class-tab-content" id="class_tab_2" style="display: none;">
+                <div class="form-grid">
+                  <div class="form-group form-group-full">
+                    <label class="form-label">วิชาเรียน / นักเรียนที่เรียน</label>
+                    <input type="text" id="class_subject_2" class="form-input" list="class_subject_list_2" placeholder="ตัวอย่าง: ณดา ป.2 เดี่ยวอังกฤษ">
+                    <datalist id="class_subject_list_2"></datalist>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ครูผู้สอนหลัก</label>
+                    <select id="class_teacher_reg_2" class="form-select"></select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ครูผู้สอนแทน (ถ้ามี)</label>
+                    <select id="class_teacher_sub_2" class="form-select"></select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">เวลาเริ่มสอน</label>
+                    <input type="time" id="class_time_start_2" class="form-input" onchange="calculateClassHours(2)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">เวลาเสร็จสิ้น</label>
+                    <input type="time" id="class_time_end_2" class="form-input" onchange="calculateClassHours(2)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">วันที่เรียน</label>
+                    <input type="date" id="class_date_2" class="form-input">
+                  </div>
+                  <div class="form-group" id="class_recurring_wrapper_2" style="display: flex; align-items: center; justify-content: flex-start; height: 100%;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: var(--text-main); margin: 0; padding-top: 14px;">
+                      <input type="checkbox" id="class_is_recurring_2" onchange="toggleRecurringDate(2)"> บันทึกซ้ำรายสัปดาห์ (ทุกวันเดิมของสัปดาห์)
+                    </label>
+                    <div id="class_recurring_end_container_2" style="display: none; margin-top: 8px; width: 100%;">
+                      <label class="form-label">สิ้นสุดวันที่</label>
+                      <input type="date" id="class_recurring_end_date_2" class="form-input">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ชั่วโมงสอน (ชม.)</label>
+                    <input type="text" id="class_hours_2" class="form-input" placeholder="เช่น 2:00">
+                  </div>
+                  <div class="form-group">
+                    <!-- spacing alignment box -->
+                  </div>
+                  <div class="form-group form-group-full">
+                    <label class="form-label" style="margin-bottom: 4px;">จำนวนเด็กนักเรียน (สด  ออน  ลา  ขาด  ชด)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%;">
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: var(--color-success);">🟢 สด</label><input type="number" id="class_kids_live_2" class="form-input" value="0" min="0" oninput="updateClassKidsSum(2)"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #3b82f6;">🔵 ออน</label><input type="number" id="class_kids_online_2" class="form-input" value="0" min="0" oninput="updateClassKidsSum(2)"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #f59e0b;">🟡 ลา</label><input type="number" id="class_kids_leave_2" class="form-input" value="0" min="0" oninput="updateClassKidsSum(2)"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #ef4444;">🔴 ขาด</label><input type="number" id="class_kids_absent_2" class="form-input" value="0" min="0"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #c095e7;">🟣 ชด</label><input type="number" id="class_kids_makeup_2" class="form-input" value="0" min="0"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #64748b;">🔢 รวม (สด+ออน+ลา)</label><input type="number" id="class_kids_sum_2" class="form-input" value="0" readonly disabled style="background-color: var(--bg-primary); cursor: not-allowed; font-weight: bold;"></div>
+                      <input type="hidden" id="class_kids_orange_2" value="0">
+                    </div>
+                  </div>
+                  <div class="form-group form-group-full">
+                    <label class="form-label">หมายเหตุการเรียน</label>
+                    <input type="text" id="class_note_2" class="form-input" placeholder="รายละเอียดคลาสเรียน">
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===== CLASS SET 3 ===== -->
+              <div class="class-tab-content" id="class_tab_3" style="display: none;">
+                <div class="form-grid">
+                  <div class="form-group form-group-full">
+                    <label class="form-label">วิชาเรียน / นักเรียนที่เรียน</label>
+                    <input type="text" id="class_subject_3" class="form-input" list="class_subject_list_3" placeholder="ตัวอย่าง: ณดา ป.2 เดี่ยวอังกฤษ">
+                    <datalist id="class_subject_list_3"></datalist>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ครูผู้สอนหลัก</label>
+                    <select id="class_teacher_reg_3" class="form-select"></select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ครูผู้สอนแทน (ถ้ามี)</label>
+                    <select id="class_teacher_sub_3" class="form-select"></select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">เวลาเริ่มสอน</label>
+                    <input type="time" id="class_time_start_3" class="form-input" onchange="calculateClassHours(3)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">เวลาเสร็จสิ้น</label>
+                    <input type="time" id="class_time_end_3" class="form-input" onchange="calculateClassHours(3)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">วันที่เรียน</label>
+                    <input type="date" id="class_date_3" class="form-input">
+                  </div>
+                  <div class="form-group" id="class_recurring_wrapper_3" style="display: flex; align-items: center; justify-content: flex-start; height: 100%;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: var(--text-main); margin: 0; padding-top: 14px;">
+                      <input type="checkbox" id="class_is_recurring_3" onchange="toggleRecurringDate(3)"> บันทึกซ้ำรายสัปดาห์ (ทุกวันเดิมของสัปดาห์)
+                    </label>
+                    <div id="class_recurring_end_container_3" style="display: none; margin-top: 8px; width: 100%;">
+                      <label class="form-label">สิ้นสุดวันที่</label>
+                      <input type="date" id="class_recurring_end_date_3" class="form-input">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ชั่วโมงสอน (ชม.)</label>
+                    <input type="text" id="class_hours_3" class="form-input" placeholder="เช่น 2:00">
+                  </div>
+                  <div class="form-group">
+                    <!-- spacing alignment box -->
+                  </div>
+                  <div class="form-group form-group-full">
+                    <label class="form-label" style="margin-bottom: 4px;">จำนวนเด็กนักเรียน (สด  ออน  ลา  ขาด  ชด)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%;">
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: var(--color-success);">🟢 สด</label><input type="number" id="class_kids_live_3" class="form-input" value="0" min="0" oninput="updateClassKidsSum(3)"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #3b82f6;">🔵 ออน</label><input type="number" id="class_kids_online_3" class="form-input" value="0" min="0" oninput="updateClassKidsSum(3)"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #f59e0b;">🟡 ลา</label><input type="number" id="class_kids_leave_3" class="form-input" value="0" min="0" oninput="updateClassKidsSum(3)"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #ef4444;">🔴 ขาด</label><input type="number" id="class_kids_absent_3" class="form-input" value="0" min="0"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #c095e7;">🟣 ชด</label><input type="number" id="class_kids_makeup_3" class="form-input" value="0" min="0"></div>
+                      <div class="form-group"><label class="form-label" style="font-size: 0.72rem; text-transform: none; color: #64748b;">🔢 รวม (สด+ออน+ลา)</label><input type="number" id="class_kids_sum_3" class="form-input" value="0" readonly disabled style="background-color: var(--bg-primary); cursor: not-allowed; font-weight: bold;"></div>
+                      <input type="hidden" id="class_kids_orange_3" value="0">
+                    </div>
+                  </div>
+                  <div class="form-group form-group-full">
+                    <label class="form-label">หมายเหตุการเรียน</label>
+                    <input type="text" id="class_note_3" class="form-input" placeholder="รายละเอียดคลาสเรียน">
+                  </div>
+                </div>
+              </div></div><!-- end class_tabs_container -->
+
             <div class="form-footer" style="margin-top: 20px; display: flex; gap: 8px; width: 100%;">
               <button type="button" class="btn btn-secondary" onclick="closeClassLogModal()" style="background: #e2e8f0; color: #475569; width: 100%; font-size: 0.9rem; padding: 10px 16px;">ยกเลิก</button>
               <button type="submit" class="btn btn-primary" id="class_submit_btn" style="width: 100%; font-size: 0.9rem; padding: 10px 16px; background: #10b981; color: white; font-weight: bold;">💾 บันทึกข้อมูลคลาสเรียน</button>
             </div>
           </form>
-          
         </div>
       </div>
     </div>
