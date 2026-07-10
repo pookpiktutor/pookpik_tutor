@@ -7681,3 +7681,75 @@ function migrateAllGradeSheetsHeaders() {
     }
   });
 }
+
+function getStudentData(id) {
+  try {
+    const sheet = getDb().getSheetByName('StatusDB');
+    if (!sheet) throw new Error('StatusDB sheet not found');
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return { success: false, error: 'No data in StatusDB' };
+    
+    const data = sheet.getDataRange().getValues();
+    let row = null;
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] && data[i][0].toString().trim() === id.toString().trim()) {
+        row = data[i];
+        break;
+      }
+    }
+    
+    // Fallback name search if ID is temp or changed
+    if (!row) {
+      for (let i = 1; i < data.length; i++) {
+        const studentName = data[i][1] ? data[i][1].toString().trim() : '';
+        if (id.toString().toLowerCase().includes(studentName.toLowerCase()) && studentName.length > 0) {
+          row = data[i];
+          break;
+        }
+      }
+    }
+    
+    if (!row) {
+      return { success: false, error: 'ไม่พบข้อมูลนักเรียนชื่อนี้ในฐานข้อมูล' };
+    }
+    
+    const result = {
+      id: row[0] ? row[0].toString().trim() : '',
+      StudentName: row[1] ? row[1].toString().trim() : '',
+      Nickname: row[2] ? row[2].toString().trim() : '',
+      School: row[3] ? row[3].toString().trim() : '',
+      Contact: row[4] ? row[4].toString().trim() : '',
+      BranchLearn: row[5] ? row[5].toString().trim() : '',
+      BranchPay: row[6] ? row[6].toString().trim() : '',
+      TimeNote: row[7] ? row[7].toString().trim() : '',
+      ExtraNote: row[8] ? row[8].toString().trim() : '',
+      PaidAmount: parseFloat(row[9]) || 0,
+      FullAmount: parseFloat(row[10]) || 0,
+      Outstanding: parseFloat(row[11]) || 0,
+      PaymentDate: row[12] ? row[12].toString().trim() : '',
+      PaymentChannel: row[13] ? row[13].toString().trim() : '',
+      Staff: row[14] ? row[14].toString().trim() : '',
+      Course: row[15] ? row[15].toString().trim() : '',
+      Grade: row[16] ? row[16].toString().trim() : '',
+      ClassSection: row[17] ? row[17].toString().trim() : '',
+      LineName: row[18] ? row[18].toString().trim() : '',
+      LineID: row[19] ? row[19].toString().trim() : '',
+      CarriedForward: parseFloat(row[20]) || 0,
+      Hours: row[21] ? row[21].toString().trim() : '',
+      HoursLeft: row[22] ? row[22].toString().trim() : '',
+      ClassType: row[23] ? row[23].toString().trim() : 'เดี่ยว'
+    };
+    
+    // Installments mappings
+    result.PayRound1Date = row[12] ? row[12].toString().trim() : '';
+    result.PayRound1Amount = parseFloat(row[9]) || 0;
+    result.PayRound1Channel = row[13] ? row[13].toString().trim() : '';
+    result.PayRound1Staff = row[14] ? row[14].toString().trim() : '';
+    result.PayRound1Time = row[7] ? row[7].toString().trim() : '';
+    
+    return { success: true, data: result };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
