@@ -2440,14 +2440,16 @@ function getGeneralSettings() {
       "กรุงศรี พี่ปิ๊ก",
       "TTB",
       "กสิกร พี่ปิ๊ก",
-      "กสิกร บัญชีบริษัท",
       "SCB คุณยาย",
       "กรุงศรี คุณตา",
-      "ออมสิน ยาย",
-      "กรุงไทย ยาย",
-      "กรุงเทพ ยาย",
-      "โอนผิดบัญชี",
-      "ยังไม่ชำระเงิน"
+      "กรุงศรี บัญชีบริษัท",
+      "กสิกร บัญชีบริษัท(กด)",
+      "กสิกร บัญชีบริษัท(สแกน)",
+      "TTB บัญชีบริษัท(กด)",
+      "TTB บัญชีบริษัท(สแกน)",
+      "เงินสด",
+      "พี่ปิ๊ก โอน",
+      "พี่ต้น โอน"
     ];
     
     const db = getDb();
@@ -3572,7 +3574,7 @@ function syncStudentToStatusDB(std) {
     std.full,
     std.outstanding,
     std.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy'),
-    std.paymentChannel || 'กสิกร บัญชีบริษัท',
+    std.paymentChannel || 'กสิกร บัญชีบริษัท(สแกน)',
     std.staff || '',
     std.round,
     std.grade,
@@ -6747,7 +6749,7 @@ function updateStudentPaymentDetails(id, paymentData, logUser) {
     
     const paidAmount = parseFloat(paymentData.paid) || 0;
     const paymentDate = paymentData.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy');
-    const paymentChannel = paymentData.paymentChannel || 'กสิกร บัญชีบริษัท';
+    const paymentChannel = paymentData.paymentChannel || 'กสิกร บัญชีบริษัท(สแกน)';
     const staff = paymentData.staff || '';
     
     const currentPaid = parseFloat(statusSheet.getRange(rowIndex, 10).getValue()) || 0;
