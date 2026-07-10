@@ -1347,9 +1347,9 @@ function cleanTimeStr(timeStr) {
       // ignore
     }
   }
-  const match = str.match(/(\d{1,2}):(\d{1,2})/);
+  const match = str.match(/(\d{1,2})[:.](\d{2})/);
   if (match) {
-    return `${match[1].padStart(2, '0')}:${match[2].padStart(2, '0')}`;
+    return `${match[1].padStart(2, '0')}:${match[2]}`;
   }
   return str;
 }
@@ -1530,7 +1530,7 @@ function checkTeacherLeaves() {
           const borderColor = isToday ? '#f59e0b' : '#fbd58d';
           const bgColor = isToday ? '#fef3c7' : '#fffbeb';
           return `<span style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 2px 4px; font-size: 0.68rem; text-align: center; line-height: 1.4;">
-            ${dateBadge}👨‍🏫 <strong>ครู ${l.teacher} ลา</strong> — ${l.subject} (${cleanTimeStr(l.timeStart)}-${cleanTimeStr(l.timeEnd)})${l.teacherSub ? ` ครูแทน: ${l.teacherSub}` : ' ⚠️ไม่มีครูแทน'}
+            ${dateBadge}👨‍🏫 <strong>ครู ${l.teacher} ลา</strong> — ${formatSubjectName(l.subject)} (${cleanTimeStr(l.timeStart)}-${cleanTimeStr(l.timeEnd)})${l.teacherSub ? ` ครูแทน: ${l.teacherSub}` : ' ⚠️ไม่มีครูแทน'}
           </span>`;
         });
         const todayCount = res.leaves.filter(l => l.isToday).length;
