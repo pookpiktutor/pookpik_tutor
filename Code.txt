@@ -6629,20 +6629,27 @@ function getStudentHistoryData(name, nickname, logUser) {
     const classSheet = db.getSheetByName('Data Learn');
     const matchedClasses = [];
     
-    // รวบรวม nicknames ที่ได้จาก StatusDB เพื่อใช้ค้นหาใน Data Learn
-    const matchedNicknames = [...new Set(
-      allStudents.map(s => s.nickname).filter(n => n && n.length > 0)
-    )];
+    // ดึงรายการชื่อคอร์สทั้งหมดของนักเรียนคนนี้ (ซึ่งกรองด้วยชื่อ-นามสกุลตรงกันแล้ว)
+    const enrolledCourseNames = allStudents.map(s => s.courseName.toLowerCase().trim()).filter(c => c.length > 0);
     
     if (classSheet) {
       const cData = classSheet.getDataRange().getValues();
       for (let i = 1; i < cData.length; i++) {
         const row = cData[i];
         const subject = row[0] ? row[0].toString().trim() : '';
+        const subjectClean = subject.toLowerCase().trim();
         
-        const nameMatch = matchedNicknames.some(n => subject.indexOf(n) !== -1) ||
-                          (name && subject.indexOf(name) !== -1);
-        if (nameMatch) {
+        // เช็คว่าวิชาใน Data Learn ตรงกับคอร์สที่ลงทะเบียนจริง
+        let isCourseMatch = enrolledCourseNames.some(cName => {
+          return subjectClean === cName || subjectClean.indexOf(cName) !== -1 || cName.indexOf(subjectClean) !== -1;
+        });
+        
+        // Fallback exact name matching
+        if (!isCourseMatch && name) {
+          isCourseMatch = subjectClean.indexOf(name.toLowerCase().trim()) !== -1;
+        }
+        
+        if (isCourseMatch) {
           matchedClasses.push({
             subject: subject,
             teacherRegular: row[1] ? row[1].toString().trim() : '',
