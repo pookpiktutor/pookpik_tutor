@@ -5195,21 +5195,33 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
           return name.toString().toLowerCase().trim().replace(/^ครู/, '').trim();
         };
         
+        const targetNames = [];
+        if (resolvedNickname) targetNames.push(cleanName(resolvedNickname));
+        if (teacherProfile.fullName) targetNames.push(cleanName(teacherProfile.fullName));
+        if (teacherProfile.teacherId) targetNames.push(cleanName(teacherProfile.teacherId));
+        if (teacher) targetNames.push(cleanName(teacher));
+        
         const tRegClean = cleanName(c.teacherRegular);
         const tSubClean = cleanName(c.teacherSub);
-        const teacherTargetClean = cleanName(resolvedNickname);
+        
+        const isTargetMatch = function(checkName) {
+          if (!checkName) return false;
+          return targetNames.some(tName => 
+            checkName === tName || checkName.includes(tName) || tName.includes(checkName)
+          );
+        };
         
         let matches = false;
         let role = '';
         
         if (tRegClean !== '' && tSubClean !== '') {
-          if (tSubClean !== '' && (tSubClean.includes(teacherTargetClean) || teacherTargetClean.includes(tSubClean))) {
+          if (tSubClean !== '' && isTargetMatch(tSubClean)) {
             matches = true;
             role = `สอนแทน ${c.teacherRegular}`;
           }
         } else {
           const checkName = tRegClean !== '' ? tRegClean : tSubClean;
-          if (checkName !== '' && (checkName.includes(teacherTargetClean) || teacherTargetClean.includes(checkName))) {
+          if (checkName !== '' && isTargetMatch(checkName)) {
             const isLeave = c.note ? c.note.toLowerCase().includes('ครูลา') : false;
             if (!isLeave) {
               matches = true;
@@ -5220,7 +5232,10 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         
         if (!matches) return;
         
-        const numKids = c.numKids || 0;
+        let numKids = c.numKids || 0;
+        if (numKids === 0) {
+          numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
+        }
         if (numKids < 1) return;
         
         let hoursVal = parseHoursStrToMinutes(c.hours) / 60;
