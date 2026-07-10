@@ -5595,9 +5595,20 @@ function getClassLogsForTeacher(teacherName, nickname) {
 }
 
 
+function cleanSubjectNameString(subjectStr) {
+  if (!subjectStr) return '';
+  var clean = subjectStr.toString();
+  // Strip out long date strings like "Sat Dec 30 1899..."
+  clean = clean.replace(/[A-Za-z]{3}\s+[A-Za-z]{3}\s+\d+\s+(1899|1900)[^-\n]*/gi, '');
+  // Clean dangling dashes/spaces
+  clean = clean.replace(/-\s*$/, '');
+  clean = clean.replace(/\s+-/g, ' -');
+  return clean.replace(/\s+/g, ' ').trim();
+}
+
 function formatSubjectWithDayTime(subject, dateStr, timeStart, timeEnd) {
   if (!subject) return '';
-  var subjectName = subject.toString().trim();
+  var subjectName = cleanSubjectNameString(subject);
   
   // Check if subject already contains day and time info to avoid double appending
   var hasDay = /(จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์)/.test(subjectName);
@@ -5618,12 +5629,38 @@ function formatSubjectWithDayTime(subject, dateStr, timeStart, timeEnd) {
       dayName = days[date.getDay()];
     }
   }
-  var timeStr = (timeStart && timeEnd) ? (timeStart + '-' + timeEnd) : '';
-  var dayTimeStr = (dayName + ' ' + timeStr).trim();
+  
+  var cleanTime = function(t) {
+    if (!t) return '';
+    if (t instanceof Date) {
+      return Utilities.formatDate(t, 'Asia/Bangkok', 'HH:mm');
+    }
+    var str = t.toString().trim();
+    if (str.includes('GMT') || str.includes('1899') || str.includes('1900') || str.length > 15) {
+      try {
+        var d = new Date(str);
+        if (!isNaN(d.getTime())) {
+          return Utilities.formatDate(d, 'Asia/Bangkok', 'HH:mm');
+        }
+      } catch(e) {}
+      var match = str.match(/(\d{1,2})[:.](\d{2})/);
+      if (match) {
+        return match[1].padStart(2, '0') + ':' + match[2];
+      }
+    }
+    return str.replace('.', ':');
+  };
+  
+  var startClean = cleanTime(timeStart);
+  var endClean = cleanTime(timeEnd);
+  var timeStr = (startClean && endClean) ? (startClean + ' ' + startClean + '-' + endClean) : '';
+  
+  // Remove duplicate time parts if day name already exists
+  var dayTimeStr = (dayName + ' ' + (startClean && endClean ? (startClean + '-' + endClean) : '')).trim();
   if (dayTimeStr && !subjectName.includes(dayTimeStr)) {
     subjectName = subjectName + ' ' + dayTimeStr;
   }
-  return subjectName;
+  return cleanSubjectNameString(subjectName);
 }
 
 function addClassLog(log, logUser) {
@@ -7275,7 +7312,7 @@ function getTeacherLeaveToday(logUser) {
       }
       
       let teacherName = (data[i][1] || '').toString().trim();
-      const subject = (data[i][0] || '').toString().trim();
+      const subject = cleanSubjectNameString((data[i][0] || '').toString().trim());
       const key = teacherName + '|' + subject + '|' + dateValStr;
       
       if (seen.has(key)) continue;

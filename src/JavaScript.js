@@ -1269,7 +1269,13 @@ function formatDateTimeToThaiLong(dateStr) {
 
 function formatSubjectName(subject) {
   if (!subject) return '';
-  const str = subject.toString().trim();
+  let str = subject.toString();
+  // Strip out long date strings like "Sat Dec 30 1899..."
+  str = str.replace(/[A-Za-z]{3}\s+[A-Za-z]{3}\s+\d+\s+(1899|1900)[^-\n]*/gi, '');
+  str = str.replace(/-\s*$/, '');
+  str = str.replace(/\s+-/g, ' -');
+  str = str.replace(/\s+/g, ' ').trim();
+
   const regex = /\b(midterm|final|test|mock|summer|oct|รอบ|เทอม|สอบ)|\b[mf][1-2]\/\d+|\b\d+\/\d{2,4}/i;
   const match = str.match(regex);
   if (match) {
