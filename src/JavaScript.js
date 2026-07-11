@@ -644,7 +644,7 @@ function loadTeacherYearlySalary() {
         if (monthRes && monthRes.success) {
           yearlyPay += monthRes.totalPay || 0;
           yearlyHours += monthRes.totalHours || 0;
-          yearlyClasses += monthRes.classes ? monthRes.classes.length : 0;
+          yearlyClasses += monthRes.totalClasses || 0;
         }
       }
       
@@ -731,7 +731,7 @@ function renderTeacherSalaryDetail(res) {
   
   document.getElementById('teacher_salary_net_pay').innerText = 'รายได้สุทธิ: ฿' + (res.totalPay || 0).toLocaleString();
   document.getElementById('teacher_salary_total_hours').innerText = (res.totalHours || 0).toLocaleString() + ' ชม.';
-  document.getElementById('teacher_salary_total_classes').innerText = (res.classes ? res.classes.length : 0).toLocaleString() + ' คลาส';
+  document.getElementById('teacher_salary_total_classes').innerText = (res.totalClasses || 0).toLocaleString() + ' คลาส';
   
   const tbody = document.getElementById('teacher_salary_classes_tbody');
   tbody.innerHTML = '';
@@ -1174,6 +1174,12 @@ function cleanTimeForInput(timeStr) {
   return '';
 }
 
+function stripGarbageDate(str) {
+  if (!str) return '';
+  let s = str.toString();
+  return s.replace(/(?:[A-Za-z]{3}\s+[A-Za-z]{3}\s+\d+\s+(?:1899|1900)[^\)]*\)?\s*-?\s*)+/gi, '').trim();
+}
+
 function formatDateTimeToThaiLong(dateStr) {
   if (!dateStr) return '';
   const dateStrLower = dateStr.toString().toLowerCase();
@@ -1270,11 +1276,14 @@ function formatDateTimeToThaiLong(dateStr) {
 function formatSubjectName(subject) {
   if (!subject) return '';
   let str = subject.toString();
-  // Strip out long date strings like "Sat Dec 30 1899..."
-  str = str.replace(/[A-Za-z]{3}\s+[A-Za-z]{3}\s+\d+\s+(1899|1900)[^-\n]*/gi, '');
-  str = str.replace(/-\s*$/, '');
-  str = str.replace(/\s+-/g, ' -');
-  str = str.replace(/\s+/g, ' ').trim();
+  // Strip out long date strings like "Sat Dec 30 1899 18:00:00 GMT+0642 (Indochina Time)"
+  const dateRegex = /\b(?:Sun|Mon|Tue|Wed|Thu|Fri|Sat)\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s+\d{4}\s+\d{2}:\d{2}:\d{2}[^-\n]*/gi;
+  str = str.replace(dateRegex, '');
+  
+  // Clean dangling dashes and extra spaces
+  str = str.replace(/\s*-\s*(?=-|$)/g, '');
+  str = str.replace(/^-|-$|^\s+|\s+$/g, '');
+  str = str.replace(/\s{2,}/g, ' ').trim();
 
   const regex = /\b(midterm|final|test|mock|summer|oct|รอบ|เทอม|สอบ)|\b[mf][1-2]\/\d+|\b\d+\/\d{2,4}/i;
   const match = str.match(regex);
@@ -1741,6 +1750,9 @@ function refreshClassSubjectDatalist() {
     .withSuccessHandler(courses => {
       if (Array.isArray(courses)) {
         populateDatalist('class_subject_list', courses);
+        for (let i = 0; i < 4; i++) {
+          populateDatalist('class_subject_list_' + i, courses);
+        }
       }
     })
     .getAllCoursesFromGradeSheets();
@@ -4860,37 +4872,62 @@ function showEditClassLogModal(rowIndex) {
     return;
   }
   
-  const log = state.classLogs.find(l => l.rowIndex === rowIndex);
-  if (!log) return;
-  
-  clearClassForm();
-  modalState.editingIndex = rowIndex;
-  document.getElementById('class_modal_title').innerText = 'แก้ไขคลาสเรียน';
-  document.getElementById('class_submit_btn').innerText = '✓ อัปเดตคลาสเรียน';
-  if(document.getElementById('class_submit_btn')) document.getElementById('class_submit_btn').style.background = '#3b82f6';
-  document.getElementById('class_row_index').value = log.rowIndex || '';
-  
-  // Populate tab 0 (edit mode uses only 1 class at a time)
-  const g = id => document.getElementById(id + '_0');
-  if (g('class_subject')) g('class_subject').value = log.subject || '';
-  if (g('class_teacher_reg')) g('class_teacher_reg').value = log.teacherRegular || '';
-  if (g('class_teacher_sub')) g('class_teacher_sub').value = log.teacherSub || '';
-  if (g('class_time_start')) g('class_time_start').value = cleanTimeStr(log.timeStart);
-  if (g('class_time_end')) g('class_time_end').value = cleanTimeStr(log.timeEnd);
-  if (g('class_hours')) g('class_hours').value = cleanTimeStr(log.hours);
-  if (g('class_date')) g('class_date').value = convertDateFromSheet(log.date);
-  if (g('class_note')) g('class_note').value = log.note || '';
-  if (g('class_kids_live')) g('class_kids_live').value = log.isPresentLive || 0;
-  if (g('class_kids_online')) g('class_kids_online').value = log.isPresentOnline || 0;
-  if (g('class_kids_leave')) g('class_kids_leave').value = log.isLeave || 0;
-  if (g('class_kids_absent')) g('class_kids_absent').value = log.isAbsent || 0;
-  if (g('class_kids_makeup')) g('class_kids_makeup').value = log.isMakeup || 0;
-  if (g('class_kids_orange')) g('class_kids_orange').value = log.isOrange || 0;
-  updateClassKidsSum(0);
+  let log = (state.classLogs || []).find(l => String(l.rowIndex) === String(rowIndex));
+  if (!log && state.dailyGridData && Array.isArray(state.dailyGridData.classes)) {
+    log = state.dailyGridData.classes.find(l => String(l.rowIndex) === String(rowIndex));
+  }
 
-  document.getElementById('class_room').value = log.roomBranch || '';
-  switchClassTab(0);
-  document.getElementById('class_modal').classList.add('active');
+  function populateModalWithLog(data) {
+    clearClassForm();
+    modalState.editingIndex = rowIndex;
+    document.getElementById('class_modal_title').innerText = 'แก้ไขคลาสเรียน';
+    document.getElementById('class_submit_btn').innerText = '✓ อัปเดตคลาสเรียน';
+    if(document.getElementById('class_submit_btn')) document.getElementById('class_submit_btn').style.background = '#3b82f6';
+    document.getElementById('class_row_index').value = data.rowIndex || '';
+    
+    // Populate tab 0 (edit mode uses only 1 class at a time)
+    const g = id => document.getElementById(id + '_0');
+    if (g('class_subject')) g('class_subject').value = data.subject || '';
+    if (g('class_teacher_reg')) g('class_teacher_reg').value = data.teacherRegular || '';
+    if (g('class_teacher_sub')) g('class_teacher_sub').value = data.teacherSub || '';
+    if (g('class_time_start')) g('class_time_start').value = cleanTimeStr(data.timeStart);
+    if (g('class_time_end')) g('class_time_end').value = cleanTimeStr(data.timeEnd);
+    if (g('class_hours')) g('class_hours').value = cleanTimeStr(data.hours);
+    if (g('class_date')) g('class_date').value = convertDateFromSheet(data.date);
+    if (g('class_note')) g('class_note').value = data.note || '';
+    if (g('class_kids_live')) g('class_kids_live').value = data.isPresentLive || 0;
+    if (g('class_kids_online')) g('class_kids_online').value = data.isPresentOnline || 0;
+    if (g('class_kids_leave')) g('class_kids_leave').value = data.isLeave || 0;
+    if (g('class_kids_absent')) g('class_kids_absent').value = data.isAbsent || 0;
+    if (g('class_kids_makeup')) g('class_kids_makeup').value = data.isMakeup || 0;
+    if (g('class_kids_orange')) g('class_kids_orange').value = data.isOrange || 0;
+    updateClassKidsSum(0);
+
+    document.getElementById('class_room').value = data.roomBranch || '';
+    switchClassTab(0);
+    document.getElementById('class_modal').classList.add('active');
+  }
+
+  if (log) {
+    populateModalWithLog(log);
+  } else {
+    // Fetch fallback from server
+    setLoading(true, 'กำลังดึงข้อมูลคลาสเรียนจากเซิร์ฟเวอร์...');
+    google.script.run
+      .withSuccessHandler(res => {
+        setLoading(false);
+        if (res && res.success && res.data) {
+          populateModalWithLog(res.data);
+        } else {
+          showToast('ไม่พบข้อมูลคลาสเรียน: ' + (res ? res.error : 'unknown'), 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        setLoading(false);
+        showToast('ดึงข้อมูลล้มเหลว: ' + err.message, 'error');
+      })
+      .getClassLogByRow(rowIndex);
+  }
 }
 
 function closeClassLogModal() {
@@ -5370,32 +5407,6 @@ function handleTeacherLeaveToggle(rowIndex, checkbox) {
     .toggleClassAbsentInSheet(rowIndex, 'kru', checkbox.checked);
 }
 
-function updateClassKidsSum() {
-  const live = parseInt(document.getElementById('class_kids_live').value) || 0;
-  const online = parseInt(document.getElementById('class_kids_online').value) || 0;
-  const leave = parseInt(document.getElementById('class_kids_leave').value) || 0;
-  document.getElementById('class_kids_sum').value = live + online + leave;
-}
-
-function calculateClassHours() {
-  const start = document.getElementById('class_time_start').value;
-  const end = document.getElementById('class_time_end').value;
-  if (!start || !end) return;
-  
-  const sParts = start.split(':');
-  const eParts = end.split(':');
-  
-  const sMin = parseInt(sParts[0]) * 60 + parseInt(sParts[1]);
-  const eMin = parseInt(eParts[0]) * 60 + parseInt(eParts[1]);
-  
-  if (eMin > sMin) {
-    const diffMin = eMin - sMin;
-    const hr = Math.floor(diffMin / 60);
-    const min = diffMin % 60;
-    const formatted = `${hr}:${min < 10 ? '0' + min : min}`;
-    document.getElementById('class_hours').value = formatted;
-  }
-}
 
 function saveClassLog(e) {
   e.preventDefault();
@@ -6255,7 +6266,7 @@ function handleStaffPayrollFilterChange() {
         if (monthRes && monthRes.success) {
           yearlyPay += monthRes.totalPay || 0;
           yearlyHours += monthRes.totalHours || 0;
-          yearlyClasses += monthRes.classes ? monthRes.classes.length : 0;
+          yearlyClasses += monthRes.totalClasses || 0;
         }
       }
       
@@ -6322,7 +6333,7 @@ function handleStaffPayrollMonthChange() {
     
     document.getElementById('calc_result_total_pay').innerText = 'รายได้สุทธิ: ฿' + (monthRes.totalPay || 0).toLocaleString();
     document.getElementById('calc_result_total_hours').innerText = formattedSumHours;
-    document.getElementById('calc_result_total_classes').innerText = (monthRes.classes ? monthRes.classes.length : 0).toLocaleString() + ' คลาส';
+    document.getElementById('calc_result_total_classes').innerText = (monthRes.totalClasses || 0).toLocaleString() + ' คลาส';
     
     const tbody = document.getElementById('calc_details_tbody');
     tbody.innerHTML = '';
@@ -6339,7 +6350,7 @@ function handleStaffPayrollMonthChange() {
       tr.innerHTML = `
         <td style="white-space: nowrap;">${formatDateToThai(c.date)}</td>
         <td style="white-space: nowrap;"><div style="font-weight:600;">${c.subject}</div></td>
-        <td style="white-space: nowrap;">${c.room || '-'}</td>
+        <td style="white-space: nowrap;">${(c.room || '-').replace(/\s*zoom\s*\d*/gi, '').trim() || '-'}</td>
         <td style="white-space: nowrap; font-weight: 600; color: var(--color-primary-hover);">${formatHoursMinutes(c.hours)}</td>
         <td style="text-align: center; white-space: nowrap;">${c.numKids} คน</td>
         <td style="text-align: right; white-space: nowrap;">฿${c.rate.toLocaleString()}</td>
@@ -7397,8 +7408,8 @@ function renderStudentHistory(name, nickname, courses, classes) {
       const teacherText = c.teacherSub ? `${c.teacherRegular} <span style="font-size:0.75rem; color:var(--text-muted);">(สอนแทน: ${c.teacherSub})</span>` : c.teacherRegular;
       
       tr.innerHTML = `
-        <td>${formatDateTimeToThaiLong(c.date) || '-'}</td>
-        <td>${cleanTimeStr(c.timeStart)} - ${cleanTimeStr(c.timeEnd)} (${formatHoursMinutes(c.hours)})</td>
+        <td>${formatDateTimeToThaiLong(stripGarbageDate(c.date)) || stripGarbageDate(c.date) || '-'}</td>
+        <td>${cleanTimeStr(stripGarbageDate(c.timeStart))} - ${cleanTimeStr(stripGarbageDate(c.timeEnd))} (${formatHoursMinutes(c.hours)})</td>
         <td>
           <div style="font-weight: 600;">${c.subject}</div>
           <div style="font-size: 0.75rem; color: var(--text-muted);">${c.roomBranch || '-'}</div>
@@ -8965,18 +8976,18 @@ function submitStudentEvaluation(event) {
       const val = input.value.trim();
       if (val) {
         filledCount++;
-        if (val.length <= 60) {
+        if (val.length < 60) {
           invalidLength = true;
         }
         items.push(val);
       }
     });
     
-    if (filledCount <= 3) {
-      return { valid: false, error: `หัวข้อ "${nameTh}" ต้องตอบมากกว่า 3 ข้อขึ้นไป (อย่างน้อย 4 ข้อ)` };
+    if (filledCount < 4) {
+      return { valid: false, error: `หัวข้อ "${nameTh}" ต้องตอบอย่างน้อย 4 ข้อขึ้นไป` };
     }
     if (invalidLength) {
-      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาวตัวอักษรมากกว่า 60 ตัวอักษรขึ้นไป` };
+      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาว 60 ตัวอักษรขึ้นไป` };
     }
     
     const formattedStr = items.map((val, idx) => `${idx + 1}. ${val}`).join('\n');
