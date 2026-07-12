@@ -9404,14 +9404,14 @@ function loadAdminEvaluationsDashboard(isSilent = false) {
   
   google.script.run
     .withSuccessHandler(res => {
-      if (res.error) {
+      if (res && res.error) {
         if (!isSilent) {
           container.innerHTML = `<div style="color:red; text-align:center; padding: 20px;">พบข้อผิดพลาด: ${res.error}</div>`;
         }
         return;
       }
       
-      window._adminEvalsCache = res;
+      window._adminEvalsCache = res.evals || res || [];
       renderAdminEvaluationsDashboard(res);
     })
     .withFailureHandler(err => {
@@ -9419,12 +9419,15 @@ function loadAdminEvaluationsDashboard(isSilent = false) {
         container.innerHTML = `<div style="color:red; text-align:center; padding: 20px;">พบข้อผิดพลาด: ${err.message}</div>`;
       }
     })
-    .getEvaluationsList(null); // Fetch all evaluations
+    .getAdminEvalStats(); // Fetch evaluations and course enrollment counts
 }
 
-function renderAdminEvaluationsDashboard(evals) {
+function renderAdminEvaluationsDashboard(res) {
   const container = document.getElementById('admin_evaluation_dashboard_container');
   container.innerHTML = '';
+  
+  const evals = Array.isArray(res) ? res : (res.evals || []);
+  const counts = Array.isArray(res) ? {} : (res.counts || {});
   
   if (!evals || evals.length === 0) {
     container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); background: white; border-radius: 8px;">ยังไม่มีการประเมินนักเรียน</div>';
@@ -9452,8 +9455,22 @@ function renderAdminEvaluationsDashboard(evals) {
     
     // Course Header
     const header = document.createElement('div');
-    header.style.cssText = 'font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; color: var(--color-primary-hover); margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px;';
-    header.innerHTML = `<span>📚</span> ${course} <span class="badge badge-info" style="font-size: 0.75rem;">ประเมินแล้ว ${grouped[course].length} คน</span>`;
+    header.style.cssText = 'font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; color: var(--color-primary-hover); margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;';
+    
+    const totalStudents = counts[course] || 0;
+    const evaluated = grouped[course].length;
+    let badgeHtml = '';
+    if (totalStudents > 0) {
+      if (evaluated >= totalStudents) {
+        badgeHtml = `<span class="badge badge-success" style="font-size: 0.75rem;">ครบแล้ว (${evaluated} คน)</span>`;
+      } else {
+        badgeHtml = `<span class="badge badge-warning" style="font-size: 0.75rem;">เหลือ ${totalStudents - evaluated} คน (ทำแล้ว ${evaluated}/${totalStudents})</span>`;
+      }
+    } else {
+      badgeHtml = `<span class="badge badge-info" style="font-size: 0.75rem;">ประเมินแล้ว ${evaluated} คน</span>`;
+    }
+    
+    header.innerHTML = `<span>📚</span> ${course} ${badgeHtml}`;
     section.appendChild(header);
     
     const tableContainer = document.createElement('div');
@@ -9464,13 +9481,8 @@ function renderAdminEvaluationsDashboard(evals) {
     table.innerHTML = `
       <thead>
         <tr>
-          <th>นักเรียน</th>
-          <th style="text-align:center;">คะแนน</th>
-          <th>ผู้ประเมิน</th>
-          <th>วันที่</th>
-          <th>จุดเด่น</th>
-          <th>ควรพัฒนา</th>
-          <th>จัดการ</th>
+          <th>รายชื่อนักเรียนที่ประเมินแล้ว</th>
+          <th style="width: 100px;">จัดการ</th>
         </tr>
       </thead>
       <tbody>
@@ -9479,33 +9491,11 @@ function renderAdminEvaluationsDashboard(evals) {
     const tbody = table.querySelector('tbody');
     
     grouped[course].forEach(ev => {
-      const scObj = ev.scores || {};
-      const scVals = Object.values(scObj).map(v => {
-        if (typeof v === 'number') return v;
-        if (!v) return 0;
-        const s = String(v).trim();
-        if (s === 'ไม่ผ่าน') return 4;
-        if (s === 'เกรด 1') return 5;
-        if (s === 'เกรด 2') return 6;
-        if (s === 'เกรด 3') return 7;
-        if (s === 'เกรด 4') return 8;
-        if (s === 'เกียรตินิยม') return 10;
-        const parsed = parseFloat(s);
-        return isNaN(parsed) ? 0 : parsed;
-      });
-      const avgSc = scVals.length > 0 ? Math.round(scVals.reduce((a,b) => a+b, 0) / scVals.length) : 0;
-      const scoreColor = avgSc >= 8 ? '#16a34a' : (avgSc >= 5 ? '#ca8a04' : '#dc2626');
-      
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td style="font-weight: 600;">${ev.studentName}</td>
-        <td style="text-align: center;"><span style="background: ${scoreColor}; color: white; padding: 2px 6px; border-radius: 10px; font-weight: bold; font-size: 0.75rem;">${avgSc}</span></td>
-        <td>${ev.teacher}</td>
-        <td>${ev.timestamp ? formatDateToThai(ev.timestamp.split('T')[0] || ev.timestamp) : '-'}</td>
-        <td style="color: #16a34a; max-width: 200px;">${ev.strengths || '-'}</td>
-        <td style="color: #dc2626; max-width: 200px;">${ev.improvements || '-'}</td>
+        <td style="font-weight: 600; font-size: 0.8rem;">${ev.studentName}</td>
         <td>
-          <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ แก้ไข</button>
+          <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไขข้อมูล</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -9516,6 +9506,7 @@ function renderAdminEvaluationsDashboard(evals) {
     container.appendChild(section);
   });
 }
+
 
 
 
