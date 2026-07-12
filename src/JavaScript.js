@@ -4158,9 +4158,12 @@ function renderMonthlyGrid(data) {
 }
 
 function loadDailyGrid(isSilent = false) {
-
   const dateInput = document.getElementById('daily_grid_filter_date').value;
   const sheetDate = convertDateToSheet(dateInput);
+  
+  if (document.getElementById('daily_grid_date_display')) {
+    document.getElementById('daily_grid_date_display').innerText = formatDateToThaiShort(dateInput);
+  }
   
   if (!isSilent) {
     setLoading(true, 'กำลังดึงตารางสอนรายห้องเรียนประจำวันที่ ' + formatDateToThai(sheetDate) + '...');
@@ -4211,7 +4214,7 @@ function renderDailyAttendanceSummary() {
   branches.forEach(b => {
     stats[b] = {};
     timeSlots.forEach(slot => {
-      stats[b][slot.label] = { live: 0, online: 0, leave: 0, absent: 0, makeup: 0, enrolled: 0, studentNames: [] };
+      stats[b][slot.label] = { live: 0, online: 0, leave: 0, absent: 0, makeup: 0, orange: 0, enrolled: 0, studentNames: [] };
     });
   });
   
@@ -4233,6 +4236,7 @@ function renderDailyAttendanceSummary() {
         stats[logBranch][slot.label].leave += parseInt(log.isLeave) || 0;
         stats[logBranch][slot.label].absent += parseInt(log.isAbsent) || 0;
         stats[logBranch][slot.label].makeup += parseInt(log.isMakeup) || 0;
+        stats[logBranch][slot.label].orange += parseInt(log.isOrange) || 0;
         
         const courseName = log.subject;
         const enrolledStudents = (state.enrollments && state.enrollments[courseName]) || [];
@@ -4316,7 +4320,7 @@ function renderDailyAttendanceSummary() {
           branchUniqueStudents.push(name);
         }
       });
-      totalAttendedBranch += (stats[b][sl.label].live + stats[b][sl.label].online + stats[b][sl.label].orange);
+      totalAttendedBranch += ((stats[b][sl.label].live || 0) + (stats[b][sl.label].online || 0) + (stats[b][sl.label].orange || 0));
     });
     const totalEnrolledBranch = branchUniqueStudents.length;
     html += `

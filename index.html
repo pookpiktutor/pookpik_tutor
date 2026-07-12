@@ -472,7 +472,7 @@
                 
                 <!-- Daily View Controls (Hidden) -->
                 <div id="daily_view_controls" style="display: none; align-items: center; gap: 8px;">
-                  <input type="date" id="daily_grid_filter_date" class="form-input" onchange="loadDailyGrid()">
+                  <input type="date" id="daily_grid_filter_date" class="form-input" onchange="loadDailyGrid()" oninput="loadDailyGrid()">
                   <span id="daily_grid_date_display" style="font-weight: bold; color: var(--color-primary-hover); font-size: 1.05rem; min-width: 250px;"></span>
                 </div>
                 
