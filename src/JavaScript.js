@@ -7143,20 +7143,21 @@ function renderDebtorsTable() {
       </div>
     `;
     
+    const roundList = s.round ? s.round.split(',').map(c => `<div style="margin-bottom:2px;">${c.trim()}</div>`).join('') : '-';
     const courseText = `
-      <div style="font-weight:500;">${s.round || '-'}</div>
+      <div style="font-weight:500;">${roundList}</div>
       <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">ชั้น: ${s.grade || '-'} ${s.classSection || ''}</div>
     `;
     
     tr.innerHTML = `
-      <td style="white-space: nowrap;">${nameText}</td>
-      <td style="white-space: nowrap;">${courseText}</td>
-      <td style="text-align: right; font-weight: 500; white-space: nowrap;">฿${s.full.toLocaleString()}</td>
-      <td style="text-align: right; font-weight: 500; color: var(--color-success); white-space: nowrap;">฿${s.paid.toLocaleString()}</td>
-      <td style="text-align: right; font-weight: 700; color: var(--color-danger); white-space: nowrap;">฿${s.outstanding.toLocaleString()}</td>
-      <td style="white-space: nowrap;"><span class="badge badge-info">${s.classType || 'เดี่ยว'}</span></td>
-      <td style="white-space: nowrap;">${formatDateTimeToThaiLong(s.paymentDate) || '-'}</td>
-      <td style="white-space: nowrap;">
+      <td>${nameText}</td>
+      <td>${courseText}</td>
+      <td style="text-align: right; font-weight: 500;">฿${s.full.toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 500; color: var(--color-success);">฿${s.paid.toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 700; color: var(--color-danger);">฿${s.outstanding.toLocaleString()}</td>
+      <td><span class="badge badge-info">${s.classType || 'เดี่ยว'}</span></td>
+      <td>${formatDateTimeToThaiLong(s.paymentDate) || '-'}</td>
+      <td>
         <button class="btn btn-primary btn-icon" onclick="showDebtorPaymentModal('${s.id}')" title="บันทึกชำระเงิน">
           🪙 จ่ายเงิน
         </button>
@@ -7562,7 +7563,7 @@ function renderReceiptsTable() {
           if (el) {
             const list = coursesMap[studentId];
             if (Array.isArray(list) && list.length > 0) {
-              el.innerText = list.join(', ');
+              el.innerHTML = list.map(c => `<div style="margin-bottom:2px;">${c}</div>`).join('');
             } else {
               el.innerText = '-';
             }
@@ -10042,8 +10043,8 @@ window.openStudentModal = function(id = null) {
           
           document.getElementById('student_time_note_0').value = data.TimeNote || '';
           document.getElementById('student_extra_note_0').value = data.ExtraNote || '';
-          document.getElementById('student_hours_0').value = data.Hours || '';
-          document.getElementById('student_hours_left_0').value = data.HoursLeft || '';
+          document.getElementById('student_hours_0').value = cleanTimeStr(data.Hours) || '';
+          document.getElementById('student_hours_left_0').value = cleanTimeStr(data.HoursLeft) || '';
           
           document.getElementById('pay_r1_date_0').value = data.PayRound1Date || '';
           document.getElementById('pay_r1_amount_0').value = data.PayRound1Amount || '';
