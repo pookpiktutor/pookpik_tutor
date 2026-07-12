@@ -1255,7 +1255,7 @@ function addEmployee(data, logUser) {
       data.phone || '',
       ''
     ]);
-    deleteCacheObject('usersdb_raw');
+    clearCacheObject('usersdb_raw');
     logActivity(logUser, 'เพิ่มพนักงาน', `เพิ่มผู้ใช้ใหม่: ${data.username} บทบาท: ${data.role || 'Staff'}`);
     return { success: true };
   } catch (e) {
@@ -1329,7 +1329,7 @@ function changeEmployeePasswordByAdmin(username, newPassword, logUser) {
         const dbUsername = rows[i][0].toString().trim().toLowerCase();
         if (dbUsername === cleanUsername) {
           sheet.getRange(i + 1, 2).setValue(newPassword.toString().trim());
-          deleteCacheObject('usersdb_raw');
+          clearCacheObject('usersdb_raw');
           logActivity(logUser, 'แก้ไขรหัสผ่านพนักงาน', `เปลี่ยนรหัสผ่านพนักงานให้ผู้ใช้: ${username}`);
           return { success: true };
         }
@@ -1819,7 +1819,9 @@ function getCourseEnrollmentCounts(courseNames, classInfoList) {
                 if (specs && specs.length > 0) {
                   specMatch = specs.some(s => {
                     const dl = s.dayOfWeek.toLowerCase().replace('วัน', ''); 
-                    const dayOk = dayTimeCell.indexOf(dl) !== -1;
+                    const shortDayMap = { 'อาทิตย์': 'อา.', 'จันทร์': 'จ.', 'อังคาร': 'อ.', 'พุธ': 'พ.', 'พฤหัสบดี': 'พฤ.', 'ศุกร์': 'ศ.', 'เสาร์': 'ส.' };
+                    const shortDay = shortDayMap[dl] || dl;
+                    const dayOk = dayTimeCell.indexOf(dl) !== -1 || dayTimeCell.indexOf(shortDay) !== -1;
                     if (!dayOk) return false;
                     
                     if (s.startHour !== null && s.startHour !== undefined) {
@@ -2020,8 +2022,8 @@ function updateEvaluation(evalData, logUser) {
       sheet.getRange(rowIndex, 10).setValue(scoresJSON);
     }
     
-    deleteCacheObject('evaluations_list');
-    deleteCacheObject('evaluations_list_all');
+    clearCacheObject('evaluations_list');
+    clearCacheObject('evaluations_list_all');
     // Clear teacher-specific caches too
     try {
       const cache = CacheService.getScriptCache();
@@ -6297,6 +6299,109 @@ function addMultipleClassLogs(logs, logUser) {
       if (log.teacherSub) teachers.push(log.teacherSub);
     });
     invalidateTeacherSalaryCache(teachers);
+    
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function saveBatchClassLogs(adds, updates, deletes, logUser) {
+  checkTeacherBlock(logUser);
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(15000);
+    const sheet = getDb().getSheetByName('Data Learn');
+    if (!sheet) throw new Error('Data Learn sheet not found');
+    const teachersToInvalidate = new Set();
+    const datesToInvalidate = new Set();
+    let actionLog = [];
+    
+    // Process Updates
+    if (updates && updates.length > 0) {
+      updates.forEach(u => {
+        const rowIndex = u.rowIndex;
+        const log = u.log;
+        const rowVals = sheet.getRange(rowIndex, 1, 1, 17).getValues()[0];
+        const oldLog = {
+          subject: rowVals[0] ? rowVals[0].toString().trim() : '',
+          teacherRegular: rowVals[1] ? rowVals[1].toString().trim() : '',
+          teacherSub: rowVals[2] ? rowVals[2].toString().trim() : '',
+          timeStart: rowVals[3] ? rowVals[3].toString().trim() : '',
+          timeEnd: rowVals[4] ? rowVals[4].toString().trim() : '',
+          note: rowVals[5] ? rowVals[5].toString().trim() : '',
+          isPresentLive: parseInt(rowVals[6]) || 0,
+          isPresentOnline: parseInt(rowVals[7]) || 0,
+          isLeave: parseInt(rowVals[8]) || 0,
+          isAbsent: parseInt(rowVals[9]) || 0,
+          isMakeup: parseInt(rowVals[10]) || 0,
+          isOrange: parseInt(rowVals[11]) || 0,
+          hours: rowVals[12] ? rowVals[12].toString().trim() : '',
+          date: rowVals[13] ? rowVals[13].toString().trim() : '',
+          roomBranch: rowVals[14] ? rowVals[14].toString().trim() : ''
+        };
+        try { processClassHoursDeduction(oldLog, true); } catch(e){}
+        
+        log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd);
+        const newVals = [[
+          log.subject, log.teacherRegular, log.teacherSub || '',
+          log.timeStart, log.timeEnd, log.note || '',
+          log.isPresentLive ? parseInt(log.isPresentLive, 10) || 0 : 0,
+          log.isPresentOnline ? parseInt(log.isPresentOnline, 10) || 0 : 0,
+          log.isLeave ? parseInt(log.isLeave, 10) || 0 : 0,
+          log.isAbsent ? parseInt(log.isAbsent, 10) || 0 : 0,
+          log.isMakeup ? parseInt(log.isMakeup, 10) || 0 : 0,
+          log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
+          log.hours || '', log.date || '', log.roomBranch || ''
+        ]];
+        sheet.getRange(rowIndex, 1, 1, 15).setValues(newVals);
+        sheet.getRange(rowIndex, 17).setValue(''); // clear confirm
+        try { processClassHoursDeduction(log, false); } catch(e){}
+        
+        datesToInvalidate.add(oldLog.date);
+        datesToInvalidate.add(log.date);
+        teachersToInvalidate.add(oldLog.teacherRegular);
+        if (oldLog.teacherSub) teachersToInvalidate.add(oldLog.teacherSub);
+        teachersToInvalidate.add(log.teacherRegular);
+        if (log.teacherSub) teachersToInvalidate.add(log.teacherSub);
+        actionLog.push('แก้ไข: ' + log.subject);
+      });
+    }
+    
+    // Process Adds
+    if (adds && adds.length > 0) {
+      adds.forEach(function(log) { log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd); });
+      const rowsData = adds.map(log => [
+        log.subject, log.teacherRegular, log.teacherSub || '',
+        log.timeStart, log.timeEnd, log.note || '',
+        log.isPresentLive ? parseInt(log.isPresentLive, 10) || 0 : 0,
+        log.isPresentOnline ? parseInt(log.isPresentOnline, 10) || 0 : 0,
+        log.isLeave ? parseInt(log.isLeave, 10) || 0 : 0,
+        log.isAbsent ? parseInt(log.isAbsent, 10) || 0 : 0,
+        log.isMakeup ? parseInt(log.isMakeup, 10) || 0 : 0,
+        log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
+        log.hours || '', log.date || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'd/M/yyyy'),
+        log.roomBranch || ''
+      ]);
+      const lastRow = sheet.getLastRow();
+      sheet.getRange(lastRow + 1, 1, rowsData.length, 15).setValues(rowsData);
+      
+      adds.forEach(log => {
+        try { processClassHoursDeduction(log, false); } catch (e) {}
+        datesToInvalidate.add(log.date);
+        teachersToInvalidate.add(log.teacherRegular);
+        if (log.teacherSub) teachersToInvalidate.add(log.teacherSub);
+      });
+      actionLog.push('เพิ่มใหม่: ' + adds.length + ' รายการ');
+    }
+    
+    if (actionLog.length > 0) {
+      logActivity(logUser, 'Batch Update คลาสเรียน', actionLog.join(', '));
+      datesToInvalidate.forEach(d => clearClassLogsCache(d));
+      invalidateTeacherSalaryCache(Array.from(teachersToInvalidate));
+    }
     
     return { success: true };
   } catch (err) {
