@@ -873,7 +873,7 @@
               <div class="filter-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 6px;">
                   <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">เลือกครู:</label>
-                  <select id="calc_teacher_select" class="form-select" style="width: 200px;" onchange="handleStaffPayrollFilterChange()">
+                  <select id="calc_teacher_select" class="form-select" style="width: 250px;" onchange="handleStaffPayrollFilterChange()">
                     <option value="">(เลือกครูเพื่อคำนวณ)</option>
                   </select>
                 </div>
@@ -3447,7 +3447,7 @@ function editStudentFromGradeSheet(studentName) {
     showToast('ไม่พบข้อมูลนักเรียนคนนี้ในระบบ', 'warning');
   }
 }
-</script>
-
+    <datalist id="teachers_datalist"></datalist>
+    <script src="src/JavaScript.js"></script>
 </body>
 </html>

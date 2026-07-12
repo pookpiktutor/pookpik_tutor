@@ -3333,7 +3333,7 @@ body {
 
   z-index: 9999;
 
-  max-height: 200px;
+  max-height: 400px;
 
   overflow-y: auto;
 
@@ -3930,3 +3930,7 @@ body {
   }
 
 }
+
+
+#debtors_panel .custom-table th, #debtors_panel .custom-table td, #print_receipts_panel .custom-table th, #print_receipts_panel .custom-table td { padding: 4px 6px !important; white-space: nowrap !important; font-size: 0.85rem !important; }
+#search_panel .custom-table th, #search_panel .custom-table td, #receipts_panel .custom-table th, #receipts_panel .custom-table td { padding: 4px 6px !important; white-space: nowrap !important; font-size: 0.85rem !important; }
