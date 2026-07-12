@@ -3181,18 +3181,12 @@ function getTeacherCoursesAndStudents(logUser) {
                for (let r = 3; r < data.length; r++) {
                   const val = data[r][c];
                   if (val !== '' && val !== null && !isNaN(val) && parseFloat(val) >= 0) {
-                     let idCol = 1, fnameCol = 2, lnameCol = 3, nickCol = 4;
-                     for(let x = 0; x < 10; x++) {
-                        const h = (data[1][x] || '').toString().toLowerCase();
-                        if (h.includes('รหัส')) idCol = x;
-                        if (h.includes('ชื่อจริง') || h === 'ชื่อ') fnameCol = x;
-                        if (h.includes('สกุล')) lnameCol = x;
-                        if (h.includes('เล่น')) nickCol = x;
-                     }
+                     // Use explicit columns as requested: Name/Surname in B (1), Nickname in C (2), ID in A (0)
+                     let idCol = 0, fnameCol = 1, nickCol = 2;
                      
                      const sId = (data[r][idCol] || '').toString().trim();
                      const sFname = (data[r][fnameCol] || '').toString().trim();
-                     const sLname = (data[r][lnameCol] || '').toString().trim();
+                     const sLname = '';
                      let sNick = (data[r][nickCol] || '').toString().trim();
                      if (sNick.includes('GMT+') || sNick.match(/Sun|Mon|Tue|Wed|Thu|Fri|Sat.*202\d/)) {
                         sNick = '';
