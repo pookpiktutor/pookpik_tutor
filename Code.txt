@@ -4985,10 +4985,8 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         }
         if (isNaN(hoursVal) || hoursVal <= 0) return;
         
-        let numKids = c.numKids || 0;
-        if (numKids === 0) {
-          numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
-        }
+        // Count only สด + ออนไลน์ + ชดเชย for totalHours calculation
+        let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
         
         const subject = c.subject || '';
         const hasEx = subject.toLowerCase().includes('ex');
