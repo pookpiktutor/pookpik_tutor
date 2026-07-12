@@ -101,6 +101,11 @@ const SHEET_REGISTRY = [
       'Latitude', 'Longitude'
     ],
     headerRow: 1
+  },
+  {
+    name: 'TeacherSalaryConfirmations',
+    headers: ['Year', 'Month', 'TeacherID', 'TeacherName', 'TotalPay', 'ConfirmedAt'],
+    headerRow: 1
   }
   // ✅ เพิ่มตารางใหม่ได้ที่นี่ — ระบบจะสร้างชีตและ headers ให้อัตโนมัติ
   // ตัวอย่าง:
@@ -7325,6 +7330,10 @@ function clearCacheObject(key) {
   } catch (e) {}
 }
 
+function deleteCacheObject(key) {
+  return clearCacheObject(key);
+}
+
 function invalidateStudentCache() {
   clearCacheObject('students_list');
 }
@@ -7618,6 +7627,66 @@ function getStudentData(id) {
     result.PayRound1Staff = row[14] ? row[14].toString().trim() : '';
     result.PayRound1Time = row[7] ? row[7].toString().trim() : '';
     
+    return { success: true, data: result };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// =========================================================================
+// TEACHER SALARY CONFIRMATION
+// =========================================================================
+function confirmTeacherSalary(year, month, teacherId, teacherName, totalPay) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
+    if (!sheet) return { success: false, error: 'Sheet not found' };
+    
+    // Check if already confirmed
+    const data = sheet.getDataRange().getValues();
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] == year && data[i][1] == month && data[i][2] == teacherId) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+    
+    const now = new Date();
+    if (rowIndex > 0) {
+      // Update existing
+      sheet.getRange(rowIndex, 4).setValue(teacherName);
+      sheet.getRange(rowIndex, 5).setValue(totalPay);
+      sheet.getRange(rowIndex, 6).setValue(now);
+    } else {
+      // Append new
+      sheet.appendRow([year, month, teacherId, teacherName, totalPay, now]);
+    }
+    
+    return { success: true, timestamp: now.toISOString() };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function getTeacherSalaryConfirmations(year, month) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
+    if (!sheet) return { success: false, error: 'Sheet not found' };
+    
+    const data = sheet.getDataRange().getValues();
+    const result = [];
+    for (let i = 1; i < data.length; i++) {
+      if ((!year || data[i][0] == year) && (!month || data[i][1] == month)) {
+        result.push({
+          year: data[i][0],
+          month: data[i][1],
+          teacherId: data[i][2],
+          teacherName: data[i][3],
+          totalPay: data[i][4],
+          confirmedAt: data[i][5]
+        });
+      }
+    }
     return { success: true, data: result };
   } catch (e) {
     return { success: false, error: e.message };

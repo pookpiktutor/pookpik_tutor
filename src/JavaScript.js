@@ -3070,6 +3070,11 @@ function openEditModalByName(studentName) {
     match = state.students.find(reg => reg.name.trim() === studentName.trim());
   }
   
+  if (!match) {
+    const cleanTarget = studentName.replace(/\s+/g, '');
+    match = state.students.find(reg => reg.name.replace(/\s+/g, '') === cleanTarget);
+  }
+  
   if (match) {
     showEditStudentModal(match.id);
   } else {
@@ -4959,72 +4964,6 @@ function showAddClassLogModal() {
   document.getElementById('class_submit_btn').innerText = '💾 บันทึกข้อมูลคลาสเรียน';
   if(document.getElementById('class_submit_btn')) document.getElementById('class_submit_btn').style.background = '#10b981';
   document.getElementById('class_modal').classList.add('active');
-}
-
-function showEditClassLogModal(rowIndex) {
-  const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
-  const isTeacher = (role === 'Teacher' || role === 'ครู');
-  if (isTeacher) {
-    showToast('คุณไม่มีสิทธิ์ในการแก้ไขคลาสเรียน', 'error');
-    return;
-  }
-  
-  let log = (state.classLogs || []).find(l => String(l.rowIndex) === String(rowIndex));
-  if (!log && state.dailyGridData && Array.isArray(state.dailyGridData.classes)) {
-    log = state.dailyGridData.classes.find(l => String(l.rowIndex) === String(rowIndex));
-  }
-
-  function populateModalWithLog(data) {
-    clearClassForm();
-    modalState.editingIndex = rowIndex;
-    document.getElementById('class_modal_title').innerText = 'แก้ไขคลาสเรียน';
-    document.getElementById('class_submit_btn').innerText = '✓ อัปเดตคลาสเรียน';
-    if(document.getElementById('class_submit_btn')) document.getElementById('class_submit_btn').style.background = '#3b82f6';
-    document.getElementById('class_row_index').value = data.rowIndex || '';
-    
-    // Populate tab 0 (edit mode uses only 1 class at a time)
-    const g = id => document.getElementById(id + '_0');
-    if (g('class_subject')) g('class_subject').value = data.subject || '';
-    if (g('class_teacher_reg')) g('class_teacher_reg').value = data.teacherRegular || '';
-    if (g('class_teacher_sub')) g('class_teacher_sub').value = data.teacherSub || '';
-    if (g('class_time_start')) g('class_time_start').value = cleanTimeStr(data.timeStart);
-    if (g('class_time_end')) g('class_time_end').value = cleanTimeStr(data.timeEnd);
-    if (g('class_hours')) g('class_hours').value = cleanTimeStr(data.hours);
-    if (g('class_date')) g('class_date').value = convertDateFromSheet(data.date);
-    if (g('class_note')) g('class_note').value = data.note || '';
-    if (g('class_kids_live')) g('class_kids_live').value = data.isPresentLive || 0;
-    if (g('class_kids_online')) g('class_kids_online').value = data.isPresentOnline || 0;
-    if (g('class_kids_leave')) g('class_kids_leave').value = data.isLeave || 0;
-    if (g('class_kids_absent')) g('class_kids_absent').value = data.isAbsent || 0;
-    if (g('class_kids_makeup')) g('class_kids_makeup').value = data.isMakeup || 0;
-    if (g('class_kids_orange')) g('class_kids_orange').value = data.isOrange || 0;
-    updateClassKidsSum(0);
-
-    document.getElementById('class_room').value = data.roomBranch || '';
-    switchClassTab(0);
-    document.getElementById('class_modal').classList.add('active');
-  }
-
-  if (log) {
-    populateModalWithLog(log);
-  } else {
-    // Fetch fallback from server
-    setLoading(true, 'กำลังดึงข้อมูลคลาสเรียนจากเซิร์ฟเวอร์...');
-    google.script.run
-      .withSuccessHandler(res => {
-        setLoading(false);
-        if (res && res.success && res.data) {
-          populateModalWithLog(res.data);
-        } else {
-          showToast('ไม่พบข้อมูลคลาสเรียน: ' + (res ? res.error : 'unknown'), 'error');
-        }
-      })
-      .withFailureHandler(err => {
-        setLoading(false);
-        showToast('ดึงข้อมูลล้มเหลว: ' + err.message, 'error');
-      })
-      .getClassLogByRow(rowIndex);
-  }
 }
 
 function closeClassLogModal() {
