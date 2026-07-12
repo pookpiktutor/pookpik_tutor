@@ -9456,16 +9456,29 @@ function renderAdminEvaluationsDashboard(evals) {
     header.innerHTML = `<span>📚</span> ${course} <span class="badge badge-info" style="font-size: 0.75rem;">ประเมินแล้ว ${grouped[course].length} คน</span>`;
     section.appendChild(header);
     
-    // Student Cards Grid
-    const grid = document.createElement('div');
-    grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;';
+    const tableContainer = document.createElement('div');
+    tableContainer.className = 'glass-panel table-responsive';
+    
+    const table = document.createElement('table');
+    table.className = 'custom-table';
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>นักเรียน</th>
+          <th style="text-align:center;">คะแนน</th>
+          <th>ผู้ประเมิน</th>
+          <th>วันที่</th>
+          <th>จุดเด่น</th>
+          <th>ควรพัฒนา</th>
+          <th>จัดการ</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    `;
+    const tbody = table.querySelector('tbody');
     
     grouped[course].forEach(ev => {
-      const card = document.createElement('div');
-      card.style.cssText = 'background: rgba(255, 255, 255, 0.7); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 15px; transition: transform 0.2s, box-shadow 0.2s; position: relative;';
-      card.onmouseover = () => { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = 'var(--shadow-md)'; };
-      card.onmouseout = () => { card.style.transform = 'none'; card.style.boxShadow = 'none'; };
-      
       const scObj = ev.scores || {};
       const scVals = Object.values(scObj).map(v => {
         if (typeof v === 'number') return v;
@@ -9483,29 +9496,23 @@ function renderAdminEvaluationsDashboard(evals) {
       const avgSc = scVals.length > 0 ? Math.round(scVals.reduce((a,b) => a+b, 0) / scVals.length) : 0;
       const scoreColor = avgSc >= 8 ? '#16a34a' : (avgSc >= 5 ? '#ca8a04' : '#dc2626');
       
-      card.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-          <div style="font-weight: 600; font-size: 1.05rem; color: var(--text-main);">${ev.studentName}</div>
-          <div style="background: ${scoreColor}; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem;" title="คะแนน ${avgSc}/10">${avgSc}</div>
-        </div>
-        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;"><strong>ผู้ประเมิน:</strong> ${ev.teacher}</div>
-        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;"><strong>วันที่ประเมิน:</strong> ${ev.timestamp ? formatDateToThai(ev.timestamp.split('T')[0] || ev.timestamp) : '-'}</div>
-        
-        <div style="font-size: 0.8rem; color: #16a34a; background: #f0fdf4; padding: 6px; border-radius: 4px; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-          <strong>จุดเด่น:</strong> ${ev.strengths || '-'}
-        </div>
-        <div style="font-size: 0.8rem; color: #dc2626; background: #fef2f2; padding: 6px; border-radius: 4px; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-          <strong>ควรพัฒนา:</strong> ${ev.improvements || '-'}
-        </div>
-        
-        <div style="display: flex; justify-content: flex-end;">
-          <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ แก้ไขข้อมูล</button>
-        </div>
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight: 600;">${ev.studentName}</td>
+        <td style="text-align: center;"><span style="background: ${scoreColor}; color: white; padding: 2px 6px; border-radius: 10px; font-weight: bold; font-size: 0.75rem;">${avgSc}</span></td>
+        <td>${ev.teacher}</td>
+        <td>${ev.timestamp ? formatDateToThai(ev.timestamp.split('T')[0] || ev.timestamp) : '-'}</td>
+        <td style="color: #16a34a; max-width: 200px;">${ev.strengths || '-'}</td>
+        <td style="color: #dc2626; max-width: 200px;">${ev.improvements || '-'}</td>
+        <td>
+          <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ แก้ไข</button>
+        </td>
       `;
-      grid.appendChild(card);
+      tbody.appendChild(tr);
     });
     
-    section.appendChild(grid);
+    tableContainer.appendChild(table);
+    section.appendChild(tableContainer);
     container.appendChild(section);
   });
 }
