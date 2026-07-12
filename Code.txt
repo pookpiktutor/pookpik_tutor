@@ -3178,11 +3178,12 @@ function getTeacherCoursesAndStudents(logUser) {
           
           if (isMatch) {
                
-               for (let r = 3; r < data.length; r++) {
+               // Start from row 6 (index 5) as requested
+               for (let r = 5; r < data.length; r++) {
                   const val = data[r][c];
                   if (val !== '' && val !== null && !isNaN(val) && parseFloat(val) >= 0) {
-                     // Use explicit columns as requested: Name/Surname in B (1), Nickname in C (2), ID in A (0)
-                     let idCol = 0, fnameCol = 1, nickCol = 2;
+                     // Use explicit columns as requested: Name/Surname in B (1), Nickname in C (2). Use Name (1) as ID to prevent duplicate conflicts.
+                     let idCol = 1, fnameCol = 1, nickCol = 2;
                      
                      const sId = (data[r][idCol] || '').toString().trim();
                      const sFname = (data[r][fnameCol] || '').toString().trim();
@@ -3491,7 +3492,7 @@ function syncToGradeSheet(student) {
           
           selectedConfig.forEach(c => {
             const userSessions = selectedMap[c.courseName];
-            const isPartial = (userSessions !== null && userSessions !== undefined && userSessions < c.sessions);
+            const isPartial = (userSessions !== null && userSessions !== undefined && userSessions !== c.sessions);
             if (isPartial) {
               c.userSessions = userSessions;
               partialCourses.push(c);

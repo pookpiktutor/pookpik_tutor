@@ -2538,7 +2538,7 @@ function calculateMainGroupFee() {
         }
       }
       
-      if (userSessions < totalSessions) {
+      if (userSessions !== totalSessions) {
         partialTotal += price * (userSessions / totalSessions);
       } else {
         fullCourses.push(price);
@@ -2684,7 +2684,7 @@ function handleGradeBranchChange() {
               <div class="session-input-wrapper" style="display: flex; align-items: center; gap: 4px;">
                 <input type="number" class="course-sessions-input" style="width: 50px; padding: 2px 4px; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: 4px; text-align: center;" 
                        min="1" max="100" value="${c.totalSessions || 10}" data-total="${c.totalSessions || 10}" 
-                       disabled oninput="calculateMainGroupFee()" onchange="calculateMainGroupFee()">
+                       oninput="autoCheckCourse(this); calculateMainGroupFee()" onchange="calculateMainGroupFee()">
                 <span style="font-size: 0.75rem; color: var(--text-muted);">ครั้ง</span>
               </div>
             </div>
@@ -2762,10 +2762,16 @@ function toggleSessionInput(cb) {
   if (!row) return;
   const input = row.querySelector('.course-sessions-input');
   if (input) {
-    input.disabled = !cb.checked;
     if (!cb.checked) {
       input.value = input.getAttribute('data-total');
     }
+  }
+}
+
+function autoCheckCourse(input) {
+  const cb = input.closest('.course-item-row').querySelector('.course-checkbox');
+  if (cb && !cb.checked) {
+    cb.checked = true;
   }
 }
 
