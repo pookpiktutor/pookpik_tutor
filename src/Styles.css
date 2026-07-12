@@ -1108,6 +1108,7 @@ body {
 .revenue-logs-table td {
   padding: 3px 4px !important;
   font-size: 0.8rem !important;
+  white-space: nowrap !important;
 }
 
 .revenue-logs-table select {

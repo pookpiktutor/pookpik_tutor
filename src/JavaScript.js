@@ -4824,17 +4824,17 @@ function renderRevenueLogs() {
     `;
     
     tr.innerHTML = `
-      <td><div style="font-weight:600;">${s.name}${s.nickname ? ` (${s.nickname})` : ''}</div></td>
-      <td>${s.grade || '-'}</td>
-      <td>${s.round || '-'}</td>
-      <td>${(s.full || 0).toLocaleString()}</td>
-      <td style="color: var(--color-success); font-weight: 600;">${(s.paid || 0).toLocaleString()}</td>
-      <td>${s.paymentDate || '-'}</td>
-      <td>${cleanTimeStr(s.paymentTimeNote) || '-'}</td>
-      <td>${channelSelect}</td>
-      <td>${s.staff || '-'}</td>
-      <td style="max-width: 180px; word-wrap: break-word; white-space: normal;">${s.extraNote || '-'}</td>
-      <td style="text-align: center;">${checkedCheckbox}</td>
+      <td style="white-space:nowrap;"><div style="font-weight:600;">${s.name}${s.nickname ? ` (${s.nickname})` : ''}</div></td>
+      <td style="white-space:nowrap;">${s.grade || '-'}</td>
+      <td style="white-space:nowrap;">${s.round || '-'}</td>
+      <td style="white-space:nowrap;">${(s.full || 0).toLocaleString()}</td>
+      <td style="white-space:nowrap; color: var(--color-success); font-weight: 600;">${(s.paid || 0).toLocaleString()}</td>
+      <td style="white-space:nowrap;">${s.paymentDate || '-'}</td>
+      <td style="white-space:nowrap;">${cleanTimeStr(s.paymentTimeNote) || '-'}</td>
+      <td style="white-space:nowrap;">${channelSelect}</td>
+      <td style="white-space:nowrap;">${s.staff || '-'}</td>
+      <td style="white-space:nowrap;">${s.extraNote || '-'}</td>
+      <td style="text-align: center; white-space:nowrap;">${checkedCheckbox}</td>
     `;
     if (s.isChecked) {
       tr.classList.add('checked-row');
