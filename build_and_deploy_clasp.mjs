@@ -53,6 +53,7 @@ console.log('  Styles: Wrapped src/Styles.css -> dist/Styles.html');
 let indexContent = readFileSync(join(BASE_DIR, 'index.html'), 'utf8');
 indexContent = indexContent.replace('<link rel="stylesheet" href="./src/Styles.css">', '<?!= include(\'Styles\'); ?>');
 indexContent = indexContent.replace('<script type="module" src="./src/app_entry.js"></script>', '<?!= include(\'JavaScript\'); ?>');
+indexContent = indexContent.replace('<script src="src/JavaScript.js"></script>', '');
 writeFileSync(join(DIST_DIR, 'Index.html'), indexContent, 'utf8');
 console.log('  Index: Transformed and copied index.html -> dist/Index.html');
 
