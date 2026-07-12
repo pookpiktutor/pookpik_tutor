@@ -6105,6 +6105,7 @@ function saveTeacherProfile(e) {
       showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
     })
     .saveTeacherProfile(teacherData, user);
+}
 function loadStaffSalarySummary() {
   const yearEl = document.getElementById('staff_summary_year');
   const monthEl = document.getElementById('staff_summary_month');
