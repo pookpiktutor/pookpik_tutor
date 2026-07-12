@@ -4574,13 +4574,18 @@ function showEditClassLogModal(rowIndex) {
       }
     });
 
-    switchClassTab(0);
+    // Auto switch to the tab of the clicked class
+    const clickedIdx = classes.findIndex(c => String(c.rowIndex) === String(rowIndex));
+    switchClassTab(clickedIdx >= 0 ? clickedIdx : 0);
+    
     document.getElementById('class_modal').classList.add('active');
   }
 
   if (targetLog) {
     const allLogs = state.classLogs || (state.dailyGridData ? state.dailyGridData.classes : []) || [];
-    const roomClasses = allLogs.filter(l => l.roomBranch === targetLog.roomBranch && l.date === targetLog.date);
+    const cleanStr = s => (s || '').toString().trim().toLowerCase().replace(/\s+/g, '');
+    const targetRoomClean = cleanStr(targetLog.roomBranch);
+    const roomClasses = allLogs.filter(l => cleanStr(l.roomBranch) === targetRoomClean && l.date === targetLog.date);
     populateModalWithLogs(roomClasses.length > 0 ? roomClasses : [targetLog]);
   } else {
     // Fetch fallback from server
