@@ -8711,38 +8711,72 @@ function onEvalCourseChange() {
   const course = state._teacherCourses[courseIdx];
   subjectInput.value = course.courseName;
   
-  // Populate students in this course (excluding those already evaluated)
-  if (Array.isArray(course.students)) {
-    const evals = state.evaluations || [];
-    course.students.forEach(function(s, idx) {
-      // Check if this student is already evaluated for this subject
-      const hasEvaluated = evals.some(function(ev) {
-        const cleanEvSub = (ev.subject || '').toString().trim().toLowerCase();
-        const cleanCourseSub = (course.courseName || '').toString().trim().toLowerCase();
-        const cleanEvStuName = (ev.studentName || '').toString().trim().toLowerCase();
-        const cleanStuName = (s.name || '').toString().trim().toLowerCase();
-        const cleanStuNick = (s.nickname || '').toString().trim().toLowerCase();
+  const selectedText = courseSelect.options[courseSelect.selectedIndex].text;
+  const isSingleOrSubgroup = selectedText.includes('เดี่ยว') || selectedText.includes('ย่อย');
+  
+  if (isSingleOrSubgroup) {
+    setLoading(true, 'กำลังค้นหารายละเอียดคอร์สเดี่ยว/ย่อย...');
+    google.script.run
+      .withSuccessHandler(function(res) {
+        setLoading(false);
+        if (res && res.success && res.data) {
+          const data = res.data;
+          
+          studentSelect.innerHTML = '';
+          const opt = document.createElement('option');
+          opt.value = data.studentName;
+          opt.textContent = data.studentName;
+          opt.selected = true;
+          studentSelect.appendChild(opt);
+          
+          gradeInput.value = data.grade;
+          branchInput.value = data.branch;
+          subjectInput.value = data.subject;
+        } else {
+          populateRegularStudents(course);
+        }
+      })
+      .withFailureHandler(function(err) {
+        setLoading(false);
+        populateRegularStudents(course);
+      })
+      .getLatestSingleOrSubgroupDetails(selectedText);
+  } else {
+    populateRegularStudents(course);
+  }
+  
+  function populateRegularStudents(courseObj) {
+    if (Array.isArray(courseObj.students)) {
+      const evals = state.evaluations || [];
+      courseObj.students.forEach(function(s, idx) {
+        const hasEvaluated = evals.some(function(ev) {
+          const cleanEvSub = (ev.subject || '').toString().trim().toLowerCase();
+          const cleanCourseSub = (courseObj.courseName || '').toString().trim().toLowerCase();
+          const cleanEvStuName = (ev.studentName || '').toString().trim().toLowerCase();
+          const cleanStuName = (s.name || '').toString().trim().toLowerCase();
+          const cleanStuNick = (s.nickname || '').toString().trim().toLowerCase();
+          
+          const isSubjectMatch = (cleanEvSub === cleanCourseSub);
+          const isStudentMatch = (cleanEvStuName === cleanStuName || (cleanStuNick !== '' && cleanEvStuName.includes(cleanStuNick)));
+          
+          return isSubjectMatch && isStudentMatch;
+        });
         
-        const isSubjectMatch = (cleanEvSub === cleanCourseSub);
-        const isStudentMatch = (cleanEvStuName === cleanStuName || (cleanStuNick !== '' && cleanEvStuName.includes(cleanStuNick)));
-        
-        return isSubjectMatch && isStudentMatch;
+        if (!hasEvaluated) {
+          const opt = document.createElement('option');
+          opt.value = idx;
+          opt.textContent = s.nickname ? s.name + ' (' + s.nickname + ')' : s.name;
+          studentSelect.appendChild(opt);
+        }
       });
       
-      if (!hasEvaluated) {
+      if (studentSelect.options.length === 1) {
         const opt = document.createElement('option');
-        opt.value = idx;
-        opt.textContent = s.nickname ? s.name + ' (' + s.nickname + ')' : s.name;
+        opt.value = "";
+        opt.disabled = true;
+        opt.textContent = "-- ประเมินครบทุกคนแล้ว --";
         studentSelect.appendChild(opt);
       }
-    });
-    
-    if (studentSelect.options.length === 1) {
-      const opt = document.createElement('option');
-      opt.value = "";
-      opt.disabled = true;
-      opt.textContent = "-- ประเมินครบทุกคนแล้ว --";
-      studentSelect.appendChild(opt);
     }
   }
   
@@ -8765,12 +8799,11 @@ function onEvalCourseChange() {
   
   renderEvalCriteriaGrid(templateType);
   
-  // All templates now use the split feedback (Strengths, Improvements, Recommendations)
   if(document.getElementById('split_feedback_container')) document.getElementById('split_feedback_container').style.display = 'flex';
   const singleFb = document.getElementById('single_feedback_container');
   if (singleFb) singleFb.style.display = 'none';
 }
-
+ 
 function renderEvalCriteriaGrid(type) {
   const tbody = document.getElementById('eval_criteria_tbody');
   const label = document.getElementById('eval_template_label');
@@ -8845,13 +8878,33 @@ function submitStudentEvaluation(event) {
   const cIdx = courseSelect ? courseSelect.value : '';
   const sIdx = studentSelect ? studentSelect.value : '';
   
-  if (cIdx === '' || sIdx === '' || !state._teacherCourses[cIdx] || !state._teacherCourses[cIdx].students[sIdx]) {
+  if (cIdx === '' || sIdx === '' || !state._teacherCourses || !state._teacherCourses[cIdx]) {
     showToast('กรุณาเลือกคอร์สและนักเรียนก่อนส่งใบประเมิน', 'error');
     return;
   }
   
   const course = state._teacherCourses[cIdx];
-  const student = course.students[sIdx];
+  let student = null;
+  
+  const isPrivateOrSubgroup = isNaN(sIdx) || sIdx === '' || !course.students || !course.students[sIdx];
+  if (isPrivateOrSubgroup) {
+    let namePart = studentSelect.value;
+    let nickPart = '';
+    const matchParen = namePart.match(/(.+?)\((.+?)\)/);
+    if (matchParen) {
+      namePart = matchParen[1].trim();
+      nickPart = matchParen[2].trim();
+    }
+    student = {
+      name: namePart,
+      nickname: nickPart,
+      grade: document.getElementById('eval_grade').value || '',
+      branch: document.getElementById('eval_branch').value || ''
+    };
+  } else {
+    student = course.students[sIdx];
+  }
+
   
   // Validate and gather the 6 sub-items for Strengths, Improvements, and Recommendations
   const validateAndGetFeedbackItems = (className, nameTh) => {

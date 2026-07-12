@@ -2907,16 +2907,15 @@
               <div style="font-size: 1.0rem; font-weight: 700; color: var(--color-success);" id="teacher_salary_net_pay">รายได้สุทธิ: ฿0</div>
             </div>
             
-            <!-- Salary Confirmation Section -->
-            <div id="salary_confirm_container" style="display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; padding: 6px 10px; background: rgba(0, 132, 255, 0.04); border-radius: 6px; border: 1px dashed var(--color-primary-light);">
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <input type="checkbox" id="teacher_salary_confirm_chk" style="width: 14px; height: 14px; cursor: pointer; accent-color: var(--color-success);" onchange="handleSalaryConfirmationChange(this)">
-                <label for="teacher_salary_confirm_chk" style="font-size: 0.75rem; font-weight: 700; cursor: pointer; color: var(--text-main); margin-bottom: 0;">
+            <div id="salary_confirm_container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; padding: 14px 18px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 12px; border: 2px solid #2563eb; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1), 0 2px 4px -1px rgba(37, 99, 235, 0.06);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="teacher_salary_confirm_chk" style="width: 22px; height: 22px; min-width: 22px; cursor: pointer; accent-color: var(--color-success);" onchange="handleSalaryConfirmationChange(this)">
+                <label for="teacher_salary_confirm_chk" style="font-size: 1.05rem; font-weight: 800; cursor: pointer; color: #1e3a8a; margin-bottom: 0; line-height: 1.4;">
                   ยืนยันความถูกต้องครบถ้วนของข้อมูลรายได้และชั่วโมงเรียนประจำเดือนนี้
                 </label>
               </div>
-              <div id="salary_confirm_status_text" style="font-size: 0.68rem; font-weight: 600; color: var(--color-success); margin-left: 20px; display: none;">✓ ยืนยันแล้วเมื่อ -</div>
-              <div id="salary_confirm_lock_msg" style="font-size: 0.68rem; color: var(--color-danger); font-weight: 700; margin-left: 20px; display: none;">⚠️ เปิดให้ยืนยันความถูกต้องได้เฉพาะวันที่ 27 และ 28 ของเดือนเท่านั้น</div>
+              <div id="salary_confirm_status_text" style="font-size: 0.85rem; font-weight: 700; color: #15803d; margin-left: 32px; display: none; background: #dcfce7; padding: 4px 10px; border-radius: 20px; align-self: flex-start; border: 1px solid #bbf7d0;">✓ ยืนยันแล้วเมื่อ -</div>
+              <div id="salary_confirm_lock_msg" style="font-size: 0.8rem; color: #b91c1c; font-weight: 700; margin-left: 32px; display: none; background: #fee2e2; padding: 6px 12px; border-radius: 8px; align-self: flex-start; border: 1px solid #fca5a5;">⚠️ เปิดให้ยืนยันความถูกต้องได้เฉพาะวันที่ 27 และ 28 ของเดือนเท่านั้น</div>
             </div>
 
             <div class="form-grid-3" style="margin-bottom: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
