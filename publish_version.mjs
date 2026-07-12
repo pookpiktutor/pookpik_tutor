@@ -6,7 +6,10 @@
 import { execSync } from 'child_process';
 
 const BASE_DIR = process.cwd();
-const DEPLOY_ID = 'AKfycbzsRgxLUZQJBL6TIzaUvVmRr_5VYVkUU0CrukPMJ-Nw5fpo55_4eGOJ6hhrVp4CHDexcQ';
+const DEPLOY_IDS = [
+  'AKfycbzsRgxLUZQJBL6TIzaUvVmRr_5VYVkUU0CrukPMJ-Nw5fpo55_4eGOJ6hhrVp4CHDexcQ',
+  'AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA'
+];
 
 try {
   console.log('🔄 Creating new version via clasp...');
@@ -16,10 +19,12 @@ try {
   const match = verOut.match(/Created version (\d+)/);
   if (match) {
     const ver = match[1];
-    console.log(`🔄 Updating deployment ${DEPLOY_ID} to version ${ver}...`);
-    const depOut = execSync(`clasp deploy -V ${ver} -d "Fix edit modal + salary calc v${ver}" -i ${DEPLOY_ID}`, { cwd: BASE_DIR, encoding: 'utf8' });
-    console.log(depOut);
-    console.log(`✅ Deployment updated successfully to Version ${ver}!`);
+    DEPLOY_IDS.forEach(id => {
+      console.log(`🔄 Updating deployment ${id} to version ${ver}...`);
+      const depOut = execSync(`clasp deploy -V ${ver} -d "Fix edit modal + salary calc v${ver}" -i ${id}`, { cwd: BASE_DIR, encoding: 'utf8' });
+      console.log(depOut);
+    });
+    console.log(`✅ All deployments updated successfully to Version ${ver}!`);
   } else {
     console.error('❌ Could not parse version number from output:', verOut);
   }
