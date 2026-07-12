@@ -9473,36 +9473,25 @@ function renderAdminEvaluationsDashboard(res) {
     header.innerHTML = `<span>📚</span> ${course} ${badgeHtml}`;
     section.appendChild(header);
     
-    const tableContainer = document.createElement('div');
-    tableContainer.className = 'glass-panel table-responsive';
-    
-    const table = document.createElement('table');
-    table.className = 'custom-table';
-    table.innerHTML = `
-      <thead>
-        <tr>
-          <th>รายชื่อนักเรียนที่ประเมินแล้ว</th>
-          <th style="width: 100px;">จัดการ</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    `;
-    const tbody = table.querySelector('tbody');
+    const gridContainer = document.createElement('div');
+    gridContainer.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 15px;';
     
     grouped[course].forEach(ev => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-weight: 600; font-size: 0.8rem;">${ev.studentName}</td>
-        <td>
-          <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไขข้อมูล</button>
-        </td>
+      const card = document.createElement('div');
+      card.style.cssText = 'background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease;';
+      card.onmouseover = () => { card.style.boxShadow = '0 4px 8px rgba(0,0,0,0.08)'; card.style.transform = 'translateY(-2px)'; };
+      card.onmouseout = () => { card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)'; card.style.transform = 'translateY(0)'; };
+      
+      card.innerHTML = `
+        <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-color);">${ev.studentName}</div>
+        <div>
+          <button class="btn btn-secondary" style="width: 100%; padding: 6px; font-size: 0.75rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไขข้อมูล</button>
+        </div>
       `;
-      tbody.appendChild(tr);
+      gridContainer.appendChild(card);
     });
     
-    tableContainer.appendChild(table);
-    section.appendChild(tableContainer);
+    section.appendChild(gridContainer);
     container.appendChild(section);
   });
 }
