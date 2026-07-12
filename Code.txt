@@ -7692,3 +7692,62 @@ function getTeacherSalaryConfirmations(year, month) {
     return { success: false, error: e.message };
   }
 }
+
+function getLatestSingleOrSubgroupDetails(courseName) {
+  try {
+    if (!courseName) return { success: false, error: 'No course name provided' };
+    const db = getDb();
+    const sheetsToSearch = [
+      "เดี่ยว อนุบาล", "เดี่ยว ป.1", "เดี่ยว ป.2", "เดี่ยว ป.3", "เดี่ยว ป.4", "เดี่ยว ป.5", "เดี่ยว ป.6",
+      "เดี่ยว ม.1", "เดี่ยว ม.2", "เดี่ยว ม.3", "เดี่ยว ม.4", "เดี่ยว ม.5", "เดี่ยว ม.6",
+      "ย่อย 2-3", "ย่อย 4-5", "ย่อย 6-10"
+    ];
+    
+    const cleanCourseName = courseName.toString().toLowerCase().replace(/\s+/g, '');
+    let matchedRow = null;
+    
+    for (let sheetName of sheetsToSearch) {
+      const sheet = db.getSheetByName(sheetName);
+      if (!sheet) continue;
+      
+      const lastRow = sheet.getLastRow();
+      if (lastRow < 12) continue;
+      
+      const rawData = sheet.getRange(12, 1, lastRow - 11, Math.min(25, sheet.getLastColumn())).getValues();
+      for (let i = 0; i < rawData.length; i++) {
+        const row = rawData[i];
+        const colA = row[0] ? row[0].toString().trim() : '';
+        const colB = row[1] ? row[1].toString().trim() : '';
+        const colC = row[2] ? row[2].toString().trim() : '';
+        const colI = row[8] ? row[8].toString().trim() : '';
+        const colK = row[10] ? row[10].toString().trim() : '';
+        
+        if (!colB && !colK) continue;
+        
+        const cleanB = colB.toLowerCase().replace(/\s+/g, '');
+        const cleanC = colC.toLowerCase().replace(/\s+/g, '');
+        const cleanK = colK.toLowerCase().replace(/\s+/g, '');
+        
+        const hasStudentMatch = (cleanB && cleanCourseName.includes(cleanB)) || (cleanC && cleanCourseName.includes(cleanC));
+        const hasCourseMatch = (cleanK && cleanCourseName.includes(cleanK));
+        
+        if (hasStudentMatch && hasCourseMatch) {
+          matchedRow = {
+            grade: colA,
+            studentName: colB + (colC ? '(' + colC + ')' : ''),
+            branch: colI,
+            subject: colK
+          };
+        }
+      }
+    }
+    
+    if (matchedRow) {
+      return { success: true, data: matchedRow };
+    }
+    return { success: false, error: 'Student/Course not found in single/subgroup sheets' };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+

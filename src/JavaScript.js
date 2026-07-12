@@ -1705,36 +1705,36 @@ function populateDropdowns() {
 
   // Populate staff payroll year picker
   const staffYearPicker = document.getElementById('calc_year_picker');
-  if (staffYearPicker) {
-    staffYearPicker.innerHTML = '';
+  const staffSummaryYear = document.getElementById('staff_summary_year');
+  if (staffYearPicker || staffSummaryYear) {
     const today = new Date();
     const currentYear = today.getFullYear();
+    const optionsHtml = [];
     for (let y = currentYear - 2; y <= currentYear + 2; y++) {
-      const opt = document.createElement('option');
-      opt.value = y;
-      opt.text = `ปี พ.ศ. ${y + 543} (ค.ศ. ${y})`;
-      if (y === currentYear) opt.selected = true;
-      staffYearPicker.appendChild(opt);
+      const selected = y === currentYear ? ' selected' : '';
+      optionsHtml.push(`<option value="${y}"${selected}>ปี พ.ศ. ${y + 543} (ค.ศ. ${y})</option>`);
     }
+    const htmlString = optionsHtml.join('');
+    if (staffYearPicker) staffYearPicker.innerHTML = htmlString;
+    if (staffSummaryYear) staffSummaryYear.innerHTML = htmlString;
   }
 
   // Populate staff payroll month picker
   const staffMonthPicker = document.getElementById('calc_month_picker');
-  if (staffMonthPicker) {
-    staffMonthPicker.innerHTML = '';
+  const staffSummaryMonth = document.getElementById('staff_summary_month');
+  if (staffMonthPicker || staffSummaryMonth) {
     const monthNames = [
       'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
       'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
       'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
     ];
     const currentMonth = new Date().getMonth() + 1;
-    monthNames.forEach((name, idx) => {
-      const opt = document.createElement('option');
-      opt.value = idx + 1;
-      opt.text = name;
-      if (idx + 1 === currentMonth) opt.selected = true;
-      staffMonthPicker.appendChild(opt);
-    });
+    const optionsHtml = monthNames.map((name, idx) => {
+      const selected = (idx + 1 === currentMonth) ? ' selected' : '';
+      return `<option value="${idx + 1}"${selected}>${name}</option>`;
+    }).join('');
+    if (staffMonthPicker) staffMonthPicker.innerHTML = optionsHtml;
+    if (staffSummaryMonth) staffSummaryMonth.innerHTML = optionsHtml;
   }
   
   // Make teacher select elements searchable
@@ -2089,7 +2089,8 @@ function switchPanel(panelName) {
     'debtors': 'ตรวจสอบและบันทึกค้างชำระเงินค่าเรียน',
     'print_receipts': 'ออกใบเสร็จรับเงินค่าเรียน',
     'evaluation_form': 'ใบประเมินผลการเรียนนักเรียน',
-    'admin_evaluation_form': 'รายการประเมินผลการเรียน (เจ้าหน้าที่)'
+    'admin_evaluation_form': 'รายการประเมินผลการเรียน (เจ้าหน้าที่)',
+    'staff_salary_summary': 'สรุปรายได้ครูทั้งหมด'
   };
   document.getElementById('page_title').innerText = titles[panelName] || 'ระบบดูแลโรงเรียนกวดวิชา';
   
@@ -2142,6 +2143,8 @@ function switchPanel(panelName) {
     initEvaluationForm();
   } else if (panelName === 'admin_evaluation_form') {
     loadAdminEvaluationsDashboard();
+  } else if (panelName === 'staff_salary_summary') {
+    loadStaffSalarySummary();
   }
   checkLowBalanceStudents();
   checkTeacherLeaves();
@@ -6098,6 +6101,114 @@ function saveTeacherProfile(e) {
       showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
     })
     .saveTeacherProfile(teacherData, user);
+function loadStaffSalarySummary() {
+  const yearEl = document.getElementById('staff_summary_year');
+  const monthEl = document.getElementById('staff_summary_month');
+  if (!yearEl || !monthEl) return;
+  
+  const year = parseInt(yearEl.value);
+  const month = parseInt(monthEl.value);
+  
+  const tbody = document.getElementById('staff_summary_tbody');
+  if (tbody) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">กำลังดึงข้อมูล...</td></tr>`;
+  }
+  
+  // Call backend to fetch confirmations
+  google.script.run
+    .withSuccessHandler(res => {
+      if (!res || !res.success) {
+        showToast('ดึงข้อมูลสรุปรายได้ล้มเหลว: ' + (res ? res.error : 'ไม่พบข้อมูล'), 'error');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-danger); padding: 30px;">ดึงข้อมูลล้มเหลว</td></tr>`;
+        }
+        return;
+      }
+      
+      // Calculate from the confirmations list
+      const confirmations = res.data || [];
+      const teachers = state.settings.teachers || [];
+      
+      // Sum totals
+      let totalConfirmedPay = 0;
+      let confirmedCount = 0;
+      
+      // Render table rows
+      let html = '';
+      if (teachers.length === 0) {
+        html = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">ไม่พบข้อมูลคุณครูในระบบ</td></tr>`;
+      } else {
+        // Match each teacher against the confirmations
+        teachers.forEach(teacherName => {
+          const match = confirmations.find(c => c.teacherName === teacherName);
+          const isConfirmed = !!match;
+          
+          let payText = '-';
+          let timeText = '-';
+          let statusHtml = '<span style="color: var(--text-muted); font-weight: 500;">⏳ รอยืนยัน</span>';
+          
+          if (isConfirmed) {
+            confirmedCount++;
+            totalConfirmedPay += parseFloat(match.totalPay || 0);
+            payText = '฿' + Math.round(parseFloat(match.totalPay)).toLocaleString();
+            
+            const confirmedDate = new Date(match.confirmedAt);
+            if (!isNaN(confirmedDate.getTime())) {
+              const pad = (n) => n.toString().padStart(2, '0');
+              const d = pad(confirmedDate.getDate());
+              const mo = pad(confirmedDate.getMonth() + 1);
+              const y = confirmedDate.getFullYear() + 543;
+              const h = pad(confirmedDate.getHours());
+              const mi = pad(confirmedDate.getMinutes());
+              timeText = `${d}/${mo}/${y} ${h}:${mi}`;
+            } else {
+              timeText = match.confirmedAt;
+            }
+            statusHtml = '<span style="color: var(--color-success); font-weight: 700;">✔️ ยืนยันแล้ว</span>';
+          }
+          
+          html += `
+            <tr style="height: 38px;">
+              <td style="font-weight: 600;">${teacherName}</td>
+              <td style="color: var(--text-muted);">${year + 543}</td>
+              <td style="color: var(--text-muted);">${getMonthName(month)}</td>
+              <td style="text-align: right; font-weight: 700; color: ${isConfirmed ? 'var(--color-success)' : 'var(--text-muted)'};">${payText}</td>
+              <td style="font-size: 0.8rem; color: var(--text-muted);">${timeText}</td>
+              <td style="text-align: center; font-size: 0.82rem;">${statusHtml}</td>
+            </tr>
+          `;
+        });
+      }
+      
+      if (tbody) tbody.innerHTML = html;
+      
+      // Update banners
+      const totalPayEl = document.getElementById('staff_summary_total_confirmed_pay');
+      if (totalPayEl) {
+        totalPayEl.innerText = '฿' + Math.round(totalConfirmedPay).toLocaleString();
+      }
+      
+      const countEl = document.getElementById('staff_summary_confirmed_count');
+      if (countEl) {
+        countEl.innerText = `${confirmedCount} / ${teachers.length} คน`;
+      }
+    })
+    .withFailureHandler(err => {
+      showToast('การเชื่อมต่อฐานข้อมูลล้มเหลว: ' + err.message, 'error');
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-danger); padding: 30px;">การเชื่อมต่อล้มเหลว</td></tr>`;
+      }
+    })
+    .getTeacherSalaryConfirmations(year, month);
+}
+
+function getMonthName(m) {
+  const monthNames = [
+    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
+    'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
+    'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+  ];
+  return monthNames[m - 1] || '';
 }
 
 function runTeacherPayCalculation() {
