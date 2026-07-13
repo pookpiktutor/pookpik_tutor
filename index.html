@@ -897,53 +897,42 @@
             </div>
 
             <!-- Staff Yearly Summary Banner -->
-            <div id="staff_yearly_summary_banner" style="display: none; margin-bottom: 20px;">
-              <div class="form-grid-3">
-                <div class="widget-card glass-panel" style="padding: 16px; border-left: 4px solid var(--color-success);">
-                  <div class="widget-info">
-                    <span class="widget-label">💵 รายได้รวมทั้งปี</span>
-                    <span class="widget-value" id="staff_yearly_total_pay" style="font-size: 1.45rem; font-weight: 800; color: var(--color-success); font-family: 'Outfit', sans-serif;">฿0</span>
-                  </div>
+            <!-- Staff Yearly Summary Banner -->
+            <div id="staff_yearly_summary_banner" style="display: none; margin-bottom: 10px;">
+              <div class="form-grid-3" style="gap: 8px;">
+                <div class="widget-card glass-panel" style="padding: 8px 12px; border-left: 3px solid var(--color-success); display: flex; align-items: center; justify-content: space-between;">
+                  <span class="widget-label" style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0;">💵 รายได้รวมทั้งปี:</span>
+                  <span class="widget-value" id="staff_yearly_total_pay" style="font-size: 1.05rem; font-weight: 800; color: var(--color-success); font-family: 'Outfit', sans-serif;">฿0</span>
                 </div>
-                <div class="widget-card glass-panel" style="padding: 16px; border-left: 4px solid var(--color-primary);">
-                  <div class="widget-info">
-                    <span class="widget-label">⏱️ ชั่วโมงสอนรวมทั้งปี</span>
-                    <span class="widget-value" id="staff_yearly_total_hours" style="font-size: 1.45rem; font-weight: 800; color: var(--color-primary); font-family: 'Outfit', sans-serif;">0 ชม.</span>
-                  </div>
+                <div class="widget-card glass-panel" style="padding: 8px 12px; border-left: 3px solid var(--color-primary); display: flex; align-items: center; justify-content: space-between;">
+                  <span class="widget-label" style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0;">⏱️ ชั่วโมงสอนรวมทั้งปี:</span>
+                  <span class="widget-value" id="staff_yearly_total_hours" style="font-size: 1.05rem; font-weight: 800; color: var(--color-primary); font-family: 'Outfit', sans-serif;">0 ชม.</span>
                 </div>
-                <div class="widget-card glass-panel" style="padding: 16px; border-left: 4px solid var(--color-purple);">
-                  <div class="widget-info">
-                    <span class="widget-label">📚 คลาสสอนรวมทั้งปี</span>
-                    <span class="widget-value" id="staff_yearly_total_classes" style="font-size: 1.45rem; font-weight: 800; color: var(--color-purple); font-family: 'Outfit', sans-serif;">0 คลาส</span>
-                  </div>
+                <div class="widget-card glass-panel" style="padding: 8px 12px; border-left: 3px solid var(--color-purple); display: flex; align-items: center; justify-content: space-between;">
+                  <span class="widget-label" style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0;">📚 คลาสสอนรวมทั้งปี:</span>
+                  <span class="widget-value" id="staff_yearly_total_classes" style="font-size: 1.05rem; font-weight: 800; color: var(--color-purple); font-family: 'Outfit', sans-serif;">0 คลาส</span>
                 </div>
               </div>
             </div>
 
             <!-- Calculation Result card -->
-            <div id="calc_result_card" style="display: none;" class="glass-panel">
-              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
-                <h3 id="calc_result_title" style="font-family: var(--font-heading); font-weight: 600;">ผลการคำนวณค่าสอน</h3>
-                <div style="font-size: 1.25rem; font-weight: 700; color: var(--color-success);" id="calc_result_total_pay">รายได้สุทธิ: ฿0</div>
+            <div id="calc_result_card" style="display: none; padding: 10px 14px; margin-bottom: 8px;" class="glass-panel">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; margin-bottom: 8px;">
+                <h3 id="calc_result_title" style="font-family: var(--font-heading); font-weight: 600; font-size: 0.82rem; margin: 0;">ผลการคำนวณค่าสอน</h3>
+                <div style="font-size: 1.0rem; font-weight: 700; color: var(--color-success);" id="calc_result_total_pay">รายได้สุทธิ: ฿0</div>
               </div>
-              <div class="form-grid-3" style="margin-bottom: 20px;">
-                <div class="widget-card glass-panel" style="padding: 12px; border-left: 3px solid var(--color-primary);">
-                  <div class="widget-info">
-                    <span class="widget-label">ชั่วโมงสอนรวม</span>
-                    <span class="widget-value" id="calc_result_total_hours" style="font-size: 1.25rem;">0 ชม.</span>
-                  </div>
+              <div class="form-grid-3" style="margin-bottom: 8px; gap: 8px;">
+                <div class="widget-card glass-panel" style="padding: 8px 12px; border-left: 3px solid var(--color-primary); display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                  <span class="widget-label" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0;">ชั่วโมงสอนรวม:</span>
+                  <span class="widget-value" id="calc_result_total_hours" style="font-size: 1.05rem; font-weight: 700;">0 ชม.</span>
                 </div>
-                <div class="widget-card glass-panel" style="padding: 12px; border-left: 3px solid var(--color-purple);">
-                  <div class="widget-info">
-                    <span class="widget-label">คาบเรียนทั้งหมด</span>
-                    <span class="widget-value" id="calc_result_total_classes" style="font-size: 1.25rem;">0 คลาส</span>
-                  </div>
+                <div class="widget-card glass-panel" style="padding: 8px 12px; border-left: 3px solid var(--color-purple); display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                  <span class="widget-label" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0;">คาบเรียนทั้งหมด:</span>
+                  <span class="widget-value" id="calc_result_total_classes" style="font-size: 1.05rem; font-weight: 700;">0 คลาส</span>
                 </div>
               </div>
               
-
-
-              <div style="margin-top: 24px; margin-bottom: 12px; font-weight: 600; font-size: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+              <div style="margin-top: 10px; margin-bottom: 6px; font-weight: 600; font-size: 0.82rem; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
                 <span>📝</span> รายการคลาสสอนทั้งหมด
               </div>
               <div class="table-responsive">
@@ -2851,7 +2840,7 @@
             gap: 4px;
             overflow-x: auto;
             padding: 4px;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             background: rgba(15, 23, 42, 0.03);
             border-radius: 8px;
             border: 1px solid rgba(0, 0, 0, 0.02);
@@ -2864,23 +2853,24 @@
           </style>
 
           <!-- Yearly Summary Header Banner -->
-          <div class="glass-panel" id="teacher_yearly_summary_banner" style="margin-bottom: 8px; padding: 8px 12px; border-left: 4px solid var(--color-success); background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,253,244,0.9) 100%);">
-            <h3 style="font-family: var(--font-heading); font-weight: 700; font-size: 0.8rem; color: var(--color-success-hover); margin-top: 0; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-              <span>💰</span> สรุปยอดเงินเดือนและชั่วโมงสอนรวมทั้งปี
+          <div class="glass-panel" id="teacher_yearly_summary_banner" style="margin-bottom: 6px; padding: 6px 10px; border-left: 3px solid var(--color-success); background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,253,244,0.9) 100%);">
+            <h3 style="font-family: var(--font-heading); font-weight: 700; font-size: 0.75rem; color: var(--color-success-hover); margin-top: 0; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+              <span>📊</span> สรุปยอดเงินสอนชุณครูทั้งปี
             </h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;">
-              <div style="padding: 6px 10px; background: rgba(255,255,255,0.75); border-radius: 6px; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                <div style="font-size: 0.62rem; color: var(--text-muted); font-weight: 600;">เงินเดือนรวมทั้งปี</div>
-                <div style="font-size: 1.05rem; font-weight: 800; color: var(--color-success); font-family: 'Outfit', sans-serif;" id="yearly_salary_total_pay">฿0</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px;">
+              <div style="padding: 4px 8px; background: rgba(255,255,255,0.75); border-radius: 6px; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.62rem; color: var(--text-muted); font-weight: 600;">เงินเดือนรวมทั้ปี:</div>
+                <div style="font-size: 0.95rem; font-weight: 800; color: var(--color-success); font-family: 'Outfit', sans-serif;" id="yearly_salary_total_pay">฿0</div>
               </div>
-              <div style="padding: 6px 10px; background: rgba(255,255,255,0.75); border-radius: 6px; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                <div style="font-size: 0.62rem; color: var(--text-muted); font-weight: 600;">ชั่วโมงสอนรวมทั้งปี</div>
-                <div style="font-size: 1.05rem; font-weight: 800; color: var(--color-primary); font-family: 'Outfit', sans-serif;" id="yearly_salary_total_hours">0 ชม.</div>
+              <div style="padding: 4px 8px; background: rgba(255,255,255,0.75); border-radius: 6px; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.62rem; color: var(--text-muted); font-weight: 600;">ชั่วโมงสอนรวมทั้งปี:</div>
+                <div style="font-size: 0.95rem; font-weight: 800; color: var(--color-primary); font-family: 'Outfit', sans-serif;" id="yearly_salary_total_hours">0 ชม.</div>
               </div>
-              <div style="padding: 6px 10px; background: rgba(255,255,255,0.75); border-radius: 6px; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                <div style="font-size: 0.62rem; color: var(--text-muted); font-weight: 600;">คาบเรียนรวมทั้งปี</div>
-                <div style="font-size: 1.05rem; font-weight: 800; color: var(--color-purple); font-family: 'Outfit', sans-serif;" id="yearly_salary_total_classes">0 คลาส</div>
+              <div style="padding: 4px 8px; background: rgba(255,255,255,0.75); border-radius: 6px; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.62rem; color: var(--text-muted); font-weight: 600;">คาบเรียนรวมทั้งปี:</div>
+                <div style="font-size: 0.95rem; font-weight: 800; color: var(--color-purple); font-family: 'Outfit', sans-serif;" id="yearly_salary_total_classes">0 คลาส</div>
               </div>
+            </div>
             </div>
           </div>
           
@@ -2901,10 +2891,10 @@
           </div>
           
           <!-- Monthly Detail Area -->
-          <div id="teacher_salary_result_card" class="glass-panel" style="display: none; border-top: 4px solid var(--color-primary); padding: 8px 12px; margin-bottom: 8px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-              <h3 id="teacher_salary_result_title" style="font-family: var(--font-heading); font-weight: 600; font-size: 0.82rem; color: var(--color-primary-hover); margin: 0;">📊 สรุปรายรับค่าสอนประจำเดือน</h3>
-              <div style="font-size: 1.0rem; font-weight: 700; color: var(--color-success);" id="teacher_salary_net_pay">รายได้สุทธิ: ฿0</div>
+          <div id="teacher_salary_result_card" class="glass-panel" style="display: none; border-top: 3px solid var(--color-primary); padding: 6px 10px; margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+              <h3 id="teacher_salary_result_title" style="font-family: var(--font-heading); font-weight: 600; font-size: 0.78rem; color: var(--color-primary-hover); margin: 0;">📊 สรุปรายรับค่าสอนประจำเดือน</h3>
+              <div style="font-size: 0.95rem; font-weight: 700; color: var(--color-success);" id="teacher_salary_net_pay">รายได้สุทธิ: ฿0</div>
             </div>
             
             <div id="salary_confirm_container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; padding: 14px 18px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 12px; border: 2px solid #2563eb; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1), 0 2px 4px -1px rgba(37, 99, 235, 0.06);">
@@ -2918,18 +2908,14 @@
               <div id="salary_confirm_lock_msg" style="font-size: 0.8rem; color: #b91c1c; font-weight: 700; margin-left: 32px; display: none; background: #fee2e2; padding: 6px 12px; border-radius: 8px; align-self: flex-start; border: 1px solid #fca5a5;">⚠️ เปิดให้ยืนยันความถูกต้องได้เฉพาะวันที่ 27 และ 28 ของเดือนเท่านั้น</div>
             </div>
 
-            <div class="form-grid-3" style="margin-bottom: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
-              <div class="widget-card glass-panel" style="padding: 8px 12px; border-left: 3px solid var(--color-primary);">
-                <div class="widget-info" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                  <span class="widget-label" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0;">ชั่วโมงสอนรวม:</span>
-                  <span class="widget-value" id="teacher_salary_total_hours" style="font-size: 1.05rem; font-weight: 700;">0 ชม.</span>
-                </div>
+            <div class="form-grid-3" style="margin-bottom: 6px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;">
+              <div class="widget-card glass-panel" style="padding: 6px 10px; border-left: 3px solid var(--color-primary); display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span class="widget-label" style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0;">ชั่วโมงสอนรวม:</span>
+                <span class="widget-value" id="teacher_salary_total_hours" style="font-size: 0.95rem; font-weight: 700;">0 ชม.</span>
               </div>
-              <div class="widget-card glass-panel" style="padding: 8px 12px; border-left: 3px solid var(--color-purple);">
-                <div class="widget-info" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                  <span class="widget-label" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0;">คาบเรียนทั้งหมด:</span>
-                  <span class="widget-value" id="teacher_salary_total_classes" style="font-size: 1.05rem; font-weight: 700;">0 คลาส</span>
-                </div>
+              <div class="widget-card glass-panel" style="padding: 6px 10px; border-left: 3px solid var(--color-purple); display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span class="widget-label" style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0;">คาบเรียนทั้งหมด:</span>
+                <span class="widget-value" id="teacher_salary_total_classes" style="font-size: 0.95rem; font-weight: 700;">0 คลาส</span>
               </div>
             </div>
             
