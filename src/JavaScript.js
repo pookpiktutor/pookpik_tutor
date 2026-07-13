@@ -4814,7 +4814,7 @@ function renderRevenueLogs() {
     });
     
     const channelSelect = `
-      <select class="form-select table-select pr-channel-select" data-id="${s.id}" style="padding: 4px 8px; font-size: 0.85rem; min-width: 150px;">
+      <select class="form-select table-select pr-channel-select" data-id="${s.id}" style="padding: 2px 4px; font-size: 0.75rem; width: 100px; max-width: 100px; height: 24px;">
         ${optionsHtml}
       </select>
     `;
@@ -4825,16 +4825,16 @@ function renderRevenueLogs() {
     
     tr.innerHTML = `
       <td style="white-space:nowrap;"><div style="font-weight:600;">${s.name}${s.nickname ? ` (${s.nickname})` : ''}</div></td>
-      <td style="white-space:nowrap;">${s.grade || '-'}</td>
-      <td style="white-space:nowrap;">${s.round || '-'}</td>
-      <td style="white-space:nowrap;">${(s.full || 0).toLocaleString()}</td>
-      <td style="white-space:nowrap; color: var(--color-success); font-weight: 600;">${(s.paid || 0).toLocaleString()}</td>
-      <td style="white-space:nowrap;">${s.paymentDate || '-'}</td>
-      <td style="white-space:nowrap;">${cleanTimeStr(s.paymentTimeNote) || '-'}</td>
-      <td style="white-space:nowrap;">${channelSelect}</td>
-      <td style="white-space:nowrap;">${s.staff || '-'}</td>
-      <td style="white-space:nowrap;">${s.extraNote || '-'}</td>
-      <td style="text-align: center; white-space:nowrap;">${checkedCheckbox}</td>
+      <td style="white-space:nowrap; text-align: center; width: 1%;">${s.grade || '-'}</td>
+      <td style="white-space:nowrap; width: 1%;">${s.round || '-'}</td>
+      <td style="white-space:nowrap; text-align: right; width: 1%;">${(s.full || 0).toLocaleString()}</td>
+      <td style="white-space:nowrap; text-align: right; color: var(--color-success); font-weight: 600; width: 1%;">${(s.paid || 0).toLocaleString()}</td>
+      <td style="white-space:nowrap; width: 1%;">${s.paymentDate || '-'}</td>
+      <td style="white-space:nowrap; width: 1%;">${cleanTimeStr(s.paymentTimeNote) || '-'}</td>
+      <td style="white-space:nowrap; width: 1%;">${channelSelect}</td>
+      <td style="white-space:nowrap; width: 1%;">${s.staff || '-'}</td>
+      <td style="white-space:nowrap; width: 1%;">${s.extraNote || '-'}</td>
+      <td style="text-align: center; white-space:nowrap; width: 1%;">${checkedCheckbox}</td>
     `;
     if (s.isChecked) {
       tr.classList.add('checked-row');

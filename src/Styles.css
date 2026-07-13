@@ -1106,14 +1106,14 @@ body {
 
 .revenue-logs-table th,
 .revenue-logs-table td {
-  padding: 3px 4px !important;
-  font-size: 0.8rem !important;
+  padding: 2px 3px !important;
+  font-size: 0.75rem !important;
   white-space: nowrap !important;
 }
 
 .revenue-logs-table select {
-  font-size: 0.78rem !important;
-  padding: 2px 4px !important;
+  font-size: 0.75rem !important;
+  padding: 1px 2px !important;
   height: auto !important;
 }
 
@@ -1466,7 +1466,7 @@ body {
 .student-modal-compact input,
 .student-modal-compact textarea,
 .student-modal-compact button {
-  font-size: 0.8rem !important;
+  font-size: 0.75rem !important;
   padding: 6px 10px !important;
   height: auto !important;
 }
@@ -3702,7 +3702,7 @@ body {
 
     padding: 6px 12px !important;
 
-    font-size: 0.78rem !important;
+    font-size: 0.75rem !important;
 
     border-radius: var(--radius-sm);
 
@@ -3897,7 +3897,7 @@ body {
 
     padding: 6px 12px !important;
 
-    font-size: 0.78rem !important;
+    font-size: 0.75rem !important;
 
     border-radius: var(--radius-sm);
 
@@ -4049,7 +4049,7 @@ body {
 
     padding: 8px 12px !important;
 
-    font-size: 0.8rem !important;
+    font-size: 0.75rem !important;
 
   }
 
@@ -4109,14 +4109,14 @@ body {
 
   .teacher-card-meta-item {
 
-    font-size: 0.78rem !important;
+    font-size: 0.75rem !important;
 
   }
 
 }
 
 
-#debtors_panel .custom-table th, #debtors_panel .custom-table td, #print_receipts_panel .custom-table th, #print_receipts_panel .custom-table td { padding: 2px 4px !important; white-space: normal !important; font-size: 0.75rem !important; }
+#debtors_panel .custom-table th, #debtors_panel .custom-table td, #print_receipts_panel .custom-table th, #print_receipts_panel .custom-table td { padding: 1px 2px !important; white-space: normal !important; font-size: 0.75rem !important; }
 #search_panel .custom-table th, #search_panel .custom-table td, #receipts_panel .custom-table th, #receipts_panel .custom-table td { padding: 4px 6px !important; white-space: normal !important; font-size: 0.80rem !important; }
 #teacher_monthly_salary_panel .custom-table th, #teacher_monthly_salary_panel .custom-table td { padding: 4px 6px !important; white-space: nowrap !important; font-size: 0.70rem !important; }
 #teacher_yearly_summary_banner, #teacher_salary_result_card { padding: 10px !important; margin-bottom: 12px !important; }
@@ -4124,5 +4124,5 @@ body {
 /* Global Fix for Horizontal Scrolling and Table Compacting */
 html, body { overflow-x: hidden !important; max-width: 100vw !important; }
 .table-responsive { overflow-x: auto !important; }
-.custom-table th, .custom-table td { white-space: nowrap !important; padding: 2px 4px !important; font-size: 0.7rem !important; line-height: 1.15; }
+.custom-table th, .custom-table td { white-space: nowrap !important; padding: 1px 2px !important; font-size: 0.7rem !important; line-height: 1.15; }
 @media (max-width: 768px) { .custom-table th, .custom-table td { padding: 1px 2px !important; font-size: 0.6rem !important; } }
