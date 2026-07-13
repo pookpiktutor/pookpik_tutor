@@ -171,9 +171,22 @@ function checkSession() {
       startHeartbeat();
       initIdleTimer();
     } catch (e) {
-      alert('System Error in checkSession: ' + e.message + '\n' + e.stack);
-      localStorage.removeItem('pookpik_session');
-      showLoginScreen();
+      console.error('System Error in checkSession:', e);
+      if (e instanceof SyntaxError) {
+        localStorage.removeItem('pookpik_session');
+        showLoginScreen();
+      } else {
+        if (window.showToast) {
+          showToast('หน้าจอมีปัญหาบางส่วน: ' + e.message, 'warning');
+        }
+        if (state.currentUser) {
+          if (state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู') {
+            if (typeof loadTeacherDailySchedule === 'function') loadTeacherDailySchedule();
+          } else {
+            if (typeof bootApp === 'function') bootApp();
+          }
+        }
+      }
     }
   } else {
     showLoginScreen();
