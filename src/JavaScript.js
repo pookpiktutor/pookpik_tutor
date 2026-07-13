@@ -5523,8 +5523,6 @@ function saveClassLog(e) {
     return;
   }
 
-  setLoading(true, 'กำลังบันทึกข้อมูลคลาสเรียน...');
-  
   // Create recurring copies if any
   const additionalRecurringLogs = [];
   recurringLogsPerTab.forEach(r => {
@@ -5544,12 +5542,14 @@ function saveClassLog(e) {
   
   logsToAdd.push(...additionalRecurringLogs);
 
+  // Close the modal immediately so the user can continue their work
+  closeClassLogModal();
+  showToast('กำลังบันทึกข้อมูลคลาสเรียนในเบื้องหลัง...', 'info');
+
   google.script.run
     .withSuccessHandler(res => {
-      setLoading(false);
       if (res && res.success) {
         showToast('บันทึก/แก้ไขข้อมูลคลาสเรียนสำเร็จแล้ว!', 'success');
-        closeClassLogModal();
         state.forceReloadGrid = true;
         const activePanel = document.querySelector('.nav-item.active')?.getAttribute('data-panel');
         if (activePanel === 'daily_grid') loadDailyGrid();
@@ -5560,7 +5560,6 @@ function saveClassLog(e) {
       }
     })
     .withFailureHandler(err => {
-      setLoading(false);
       showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
     })
     .saveBatchClassLogs(logsToAdd, logsToUpdate, [], user);
@@ -5580,16 +5579,16 @@ function submitBatchClassLogs() {
     return;
   }
   
-  setLoading(true, 'กำลังบันทึกการเปลี่ยนแปลงทั้งหมด...');
+  // Close the modal immediately and save in background
+  closeClassLogModal();
+  showToast('กำลังบันทึกการเปลี่ยนแปลงทั้งหมดในเบื้องหลัง...', 'info');
   const user = getLogUser();
   
   google.script.run
     .withSuccessHandler(res => {
-      setLoading(false);
       if (res && res.success) {
         showToast('บันทึกการเปลี่ยนแปลงทั้งหมดสำเร็จ!', 'success');
-        closeClassLogModal();
-        const activePanel = document.querySelector('.nav-item.active').getAttribute('data-panel');
+        const activePanel = document.querySelector('.nav-item.active')?.getAttribute('data-panel');
         if (activePanel === 'daily_grid') loadDailyGrid();
         else loadRevenueLogs();
         checkLowBalanceStudents();
@@ -5598,7 +5597,6 @@ function submitBatchClassLogs() {
       }
     })
     .withFailureHandler(err => {
-      setLoading(false);
       showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
     })
     .saveBatchClassLogs(modalState.newLogs, modalState.updatedLogs, modalState.deletedRows, user);

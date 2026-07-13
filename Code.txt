@@ -1215,8 +1215,6 @@ function saveUserProfile(username, data, logUser) {
   const rows = sheet.getDataRange().getValues();
   const cleanUsername = username ? username.toString().trim().toLowerCase() : '';
   
-  // Update UsersDB
-  let userUpdated = false;
   for (let i = 1; i < rows.length; i++) {
     if (rows[i][0]) {
       const dbUsername = rows[i][0].toString().trim().toLowerCase();
@@ -1227,45 +1225,11 @@ function saveUserProfile(username, data, logUser) {
         if (data.profilePic !== undefined) {
           sheet.getRange(i + 1, 7).setValue(data.profilePic || '');
         }
-        userUpdated = true;
-        break;
+        logActivity(logUser, 'แก้ไขโปรไฟล์', `ผู้ใช้: ${username} แก้ไขข้อมูลโปรไฟล์ของตนเอง`);
+        return { success: true };
       }
     }
   }
-  
-  // Sync to TeachersDB if teacher
-  const isTeacher = isTeacherUser(username) || isTeacherUser(data.nickname);
-  if (isTeacher) {
-    const tSheet = db.getSheetByName('TeachersDB');
-    if (tSheet) {
-      const tRows = tSheet.getDataRange().getValues();
-      let tRowIndex = -1;
-      for (let j = 1; j < tRows.length; j++) {
-        if (tRows[j][0]) {
-          const tId = tRows[j][8] ? tRows[j][8].toString().trim().toLowerCase() : '';
-          const tNick = tRows[j][0].toString().trim().toLowerCase();
-          if ((tId && tId === cleanUsername) || tNick === cleanUsername) {
-            tRowIndex = j + 1;
-            break;
-          }
-        }
-      }
-      if (tRowIndex !== -1) {
-        tSheet.getRange(tRowIndex, 1).setValue(data.nickname || '');
-        tSheet.getRange(tRowIndex, 2).setValue(data.fullName || '');
-        tSheet.getRange(tRowIndex, 4).setValue(data.phone || '');
-        tSheet.getRange(tRowIndex, 6).setValue(data.bank || '');
-        tSheet.getRange(tRowIndex, 7).setValue(data.accountNumber || '');
-        clearCacheObject('teachers_db_raw');
-      }
-    }
-  }
-  
-  if (userUpdated) {
-    logActivity(logUser, 'แก้ไขโปรไฟล์', `ผู้ใช้: ${username} แก้ไขข้อมูลโปรไฟล์ของตนเอง`);
-    return { success: true };
-  }
-  
   return { success: false, error: 'ไม่พบผู้ใช้ที่ต้องการบันทึก' };
 }
 
