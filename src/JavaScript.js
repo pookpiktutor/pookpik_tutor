@@ -8473,18 +8473,29 @@ function openProfileModal() {
       setLoading(false);
       if (res && res.success) {
         const p = res.profile;
-        document.getElementById('profile_username').value = p.username;
-        document.getElementById('profile_nickname').value = p.nickname || p.username;
-        document.getElementById('profile_fullname').value = p.fullName || '';
-        document.getElementById('profile_phone').value = p.phone || '';
-        document.getElementById('profile_bank').value = p.bank || '';
-        document.getElementById('profile_account_no').value = p.accountNumber || '';
+        const uEl = document.getElementById('profile_username');
+        if (uEl) uEl.value = p.username;
+        const nEl = document.getElementById('profile_nickname');
+        if (nEl) nEl.value = p.nickname || p.username;
+        const fEl = document.getElementById('profile_fullname');
+        if (fEl) fEl.value = p.fullName || '';
+        const pEl = document.getElementById('profile_phone');
+        if (pEl) pEl.value = p.phone || '';
+        const bEl = document.getElementById('profile_bank');
+        if (bEl) bEl.value = p.bank || '';
+        const aEl = document.getElementById('profile_account_no');
+        if (aEl) aEl.value = p.accountNumber || '';
         
         // Reset password fields
-        document.getElementById('profile_curr_pass').value = '';
-        document.getElementById('profile_new_pass').value = '';
-        document.getElementById('profile_confirm_pass').value = '';
-        if(document.getElementById('profile_confirm_pass_group')) document.getElementById('profile_confirm_pass_group').style.display = 'none';
+        const cpEl = document.getElementById('profile_curr_pass');
+        if (cpEl) cpEl.value = '';
+        const npEl = document.getElementById('profile_new_pass');
+        if (npEl) npEl.value = '';
+        const cfpEl = document.getElementById('profile_confirm_pass');
+        if (cfpEl) cfpEl.value = '';
+        if (document.getElementById('profile_confirm_pass_group')) {
+          document.getElementById('profile_confirm_pass_group').style.display = 'none';
+        }
         
         // Set up preview
         const imgEl = document.getElementById('profile_pic_preview_img');
@@ -8492,17 +8503,23 @@ function openProfileModal() {
         
         profileImageDataUrl = p.profilePic || '';
         if (profileImageDataUrl) {
-          imgEl.src = profileImageDataUrl;
-          imgEl.style.display = 'block';
-          textEl.style.display = 'none';
+          if (imgEl) {
+            imgEl.src = profileImageDataUrl;
+            imgEl.style.display = 'block';
+          }
+          if (textEl) textEl.style.display = 'none';
         } else {
-          imgEl.style.display = 'none';
+          if (imgEl) imgEl.style.display = 'none';
           const nameForInitials = p.nickname || p.username;
-          textEl.innerText = nameForInitials.substring(0, 2).toUpperCase();
-          textEl.style.display = 'block';
+          if (textEl) {
+            textEl.innerText = nameForInitials.substring(0, 2).toUpperCase();
+            textEl.style.display = 'block';
+          }
         }
         
-        document.getElementById('profile_modal').classList.add('active');
+        if (document.getElementById('profile_modal')) {
+          document.getElementById('profile_modal').classList.add('active');
+        }
       } else {
         showToast('ไม่สามารถดึงข้อมูลโปรไฟล์ได้: ' + res.error, 'error');
       }
@@ -8515,18 +8532,25 @@ function openProfileModal() {
 }
 
 function closeProfileModal() {
-  document.getElementById('profile_modal').classList.remove('active');
-  document.getElementById('profile_form').reset();
+  if (document.getElementById('profile_modal')) {
+    document.getElementById('profile_modal').classList.remove('active');
+  }
+  if (document.getElementById('profile_form')) {
+    document.getElementById('profile_form').reset();
+  }
   profileImageDataUrl = '';
 }
 
 function toggleProfileConfirmPassGroup() {
-  const newPass = document.getElementById('profile_new_pass').value;
+  const npEl = document.getElementById('profile_new_pass');
+  const newPass = npEl ? npEl.value : '';
   const confirmGroup = document.getElementById('profile_confirm_pass_group');
-  if (newPass.length > 0) {
-    confirmGroup.style.display = 'block';
-  } else {
-    confirmGroup.style.display = 'none';
+  if (confirmGroup) {
+    if (newPass.length > 0) {
+      confirmGroup.style.display = 'block';
+    } else {
+      confirmGroup.style.display = 'none';
+    }
   }
 }
 
@@ -8566,9 +8590,11 @@ function handleProfilePicSelect(e) {
       // Update preview in modal
       const imgEl = document.getElementById('profile_pic_preview_img');
       const textEl = document.getElementById('profile_pic_preview_text');
-      imgEl.src = profileImageDataUrl;
-      imgEl.style.display = 'block';
-      textEl.style.display = 'none';
+      if (imgEl) {
+        imgEl.src = profileImageDataUrl;
+        imgEl.style.display = 'block';
+      }
+      if (textEl) textEl.style.display = 'none';
     };
     img.src = event.target.result;
   };
@@ -8577,16 +8603,25 @@ function handleProfilePicSelect(e) {
 
 function saveUserProfileData(e) {
   e.preventDefault();
-  const username = document.getElementById('profile_username').value;
-  const nickname = document.getElementById('profile_nickname').value.trim();
-  const fullName = document.getElementById('profile_fullname').value.trim();
-  const phone = document.getElementById('profile_phone').value.trim();
-  const bank = document.getElementById('profile_bank').value.trim();
-  const accountNo = document.getElementById('profile_account_no').value.trim();
+  const uEl = document.getElementById('profile_username');
+  const username = uEl ? uEl.value : '';
+  const nEl = document.getElementById('profile_nickname');
+  const nickname = nEl ? nEl.value.trim() : '';
+  const fEl = document.getElementById('profile_fullname');
+  const fullName = fEl ? fEl.value.trim() : '';
+  const pEl = document.getElementById('profile_phone');
+  const phone = pEl ? pEl.value.trim() : '';
+  const bEl = document.getElementById('profile_bank');
+  const bank = bEl ? bEl.value.trim() : '';
+  const aEl = document.getElementById('profile_account_no');
+  const accountNo = aEl ? aEl.value.trim() : '';
   
-  const currentPass = document.getElementById('profile_curr_pass').value;
-  const newPass = document.getElementById('profile_new_pass').value;
-  const confirmPass = document.getElementById('profile_confirm_pass').value;
+  const cpEl = document.getElementById('profile_curr_pass');
+  const currentPass = cpEl ? cpEl.value : '';
+  const npEl = document.getElementById('profile_new_pass');
+  const newPass = npEl ? npEl.value : '';
+  const cfpEl = document.getElementById('profile_confirm_pass');
+  const confirmPass = cfpEl ? cfpEl.value : '';
   
   if (newPass.length > 0) {
     if (newPass.length < 4) {
