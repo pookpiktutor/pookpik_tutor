@@ -9299,6 +9299,44 @@ function loadEvaluationsList() {
     .getEvaluationsList(getLogUser());
 }
 
+function deleteAdminEvaluation(evalId) {
+  const ev = window._adminEvalsCache.find(e => e.evalId === evalId);
+  if (!ev) return;
+  
+  Swal.fire({
+    title: 'ยืนยันการลบใบประเมิน?',
+    html: `คุณต้องการลบใบประเมินของ <b>${ev.studentName}</b> ใช่หรือไม่?<br><br><span style="color:red; font-size:0.9em;">การกระทำนี้ไม่สามารถกู้คืนได้</span>`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'ลบข้อมูล',
+    cancelButtonText: 'ยกเลิก'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        title: 'กำลังลบข้อมูล...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+      
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.success) {
+            Swal.fire('สำเร็จ', 'ลบใบประเมินเรียบร้อยแล้ว', 'success');
+            loadAdminEvaluations(); // Reload the list
+          } else {
+            Swal.fire('ข้อผิดพลาด', response.error, 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          Swal.fire('ข้อผิดพลาด', error.message, 'error');
+        })
+        .deleteEvaluation(evalId, window.currentUser);
+    }
+  });
+}
+
 function openAdminEvaluationEditModal(evalId) {
   // Find the evaluation in cache
   const ev = window._adminEvalsCache.find(e => e.evalId === evalId);
@@ -9610,8 +9648,9 @@ function renderAdminEvaluationsDashboard(res) {
       
       card.innerHTML = `
         <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-color);">${ev.studentName}</div>
-        <div>
-          <button class="btn btn-secondary" style="width: 100%; padding: 6px; font-size: 0.75rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไขข้อมูล</button>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 0.75rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไขข้อมูล</button>
+          <button class="btn btn-danger" style="padding: 6px; font-size: 0.75rem;" onclick="deleteAdminEvaluation('${ev.evalId}')"><i class="fas fa-trash"></i> ลบ</button>
         </div>
       `;
       gridContainer.appendChild(card);
