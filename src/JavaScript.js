@@ -6130,30 +6130,38 @@ function saveTeacherProfile(e) {
 function loadStaffSalarySummary() {
   const yearEl = document.getElementById('staff_summary_year');
   const monthEl = document.getElementById('staff_summary_month');
+  const typeEl = document.getElementById('staff_summary_account_type');
   if (!yearEl || !monthEl) return;
   
   const year = parseInt(yearEl.value);
   const month = parseInt(monthEl.value);
+  const filterType = typeEl ? typeEl.value : 'all';
   
   const tbody = document.getElementById('staff_summary_tbody');
   if (tbody) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">กำลังดึงข้อมูล...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">กำลังดึงข้อมูล...</td></tr>`;
   }
   
-  // Call backend to fetch confirmations
+  // Call backend to fetch all monthly pay data (including bank info and unconfirmed but with hours)
   google.script.run
     .withSuccessHandler(res => {
       if (!res || !res.success) {
         showToast('ดึงข้อมูลสรุปรายได้ล้มเหลว: ' + (res ? res.error : 'ไม่พบข้อมูล'), 'error');
         if (tbody) {
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-danger); padding: 30px;">ดึงข้อมูลล้มเหลว</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-danger); padding: 30px;">ดึงข้อมูลล้มเหลว</td></tr>`;
         }
         return;
       }
       
-      // Calculate from the confirmations list
-      const confirmations = res.data || [];
-      const teachers = state.settings.teachers || [];
+      const allData = res.data || [];
+      
+      // Filter 1: Only teachers with hours/classes > 0
+      let filteredData = allData.filter(item => item.totalClasses > 0);
+      
+      // Filter 2: Account type
+      if (filterType !== 'all') {
+        filteredData = filteredData.filter(item => item.accountType === filterType);
+      }
       
       // Sum totals
       let totalConfirmedPay = 0;
@@ -6161,13 +6169,11 @@ function loadStaffSalarySummary() {
       
       // Render table rows
       let html = '';
-      if (teachers.length === 0) {
-        html = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">ไม่พบข้อมูลคุณครูในระบบ</td></tr>`;
+      if (filteredData.length === 0) {
+        html = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</td></tr>`;
       } else {
-        // Match each teacher against the confirmations
-        teachers.forEach(teacherName => {
-          const match = confirmations.find(c => c.teacherName === teacherName);
-          const isConfirmed = !!match;
+        filteredData.forEach(match => {
+          const isConfirmed = match.isConfirmed;
           
           let payText = '-';
           let timeText = '-';
@@ -6195,12 +6201,14 @@ function loadStaffSalarySummary() {
           
           html += `
             <tr style="height: 38px;">
-              <td style="font-weight: 600;">${teacherName}</td>
-              <td style="color: var(--text-muted);">${year + 543}</td>
-              <td style="color: var(--text-muted);">${getMonthName(month)}</td>
-              <td style="text-align: right; font-weight: 700; color: ${isConfirmed ? 'var(--color-success)' : 'var(--text-muted)'};">${payText}</td>
-              <td style="font-size: 0.8rem; color: var(--text-muted);">${timeText}</td>
-              <td style="text-align: center; font-size: 0.82rem;">${statusHtml}</td>
+              <td style="font-weight: 600; white-space: nowrap; padding: 4px 8px;">${match.teacherName || '-'}</td>
+              <td style="color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; padding: 4px 8px;">${match.bank || '-'}</td>
+              <td style="color: var(--text-muted); font-size: 0.85rem; font-family: monospace; white-space: nowrap; padding: 4px 8px;">${match.accountNumber || '-'}</td>
+              <td style="color: var(--text-muted); white-space: nowrap; padding: 4px 8px;">${getMonthName(month)}</td>
+              <td style="color: var(--text-muted); white-space: nowrap; padding: 4px 8px;">${year + 543}</td>
+              <td style="text-align: right; font-weight: 700; color: ${isConfirmed ? 'var(--color-success)' : 'var(--text-muted)'}; white-space: nowrap; padding: 4px 8px;">${payText}</td>
+              <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; padding: 4px 8px;">${timeText}</td>
+              <td style="text-align: center; font-size: 0.82rem; white-space: nowrap; padding: 4px 8px;">${statusHtml}</td>
             </tr>
           `;
         });
@@ -6216,16 +6224,70 @@ function loadStaffSalarySummary() {
       
       const countEl = document.getElementById('staff_summary_confirmed_count');
       if (countEl) {
-        countEl.innerText = `${confirmedCount} / ${teachers.length} คน`;
+        countEl.innerText = `${confirmedCount} / ${filteredData.length} คน`;
       }
     })
     .withFailureHandler(err => {
       showToast('การเชื่อมต่อฐานข้อมูลล้มเหลว: ' + err.message, 'error');
       if (tbody) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-danger); padding: 30px;">การเชื่อมต่อล้มเหลว</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-danger); padding: 30px;">การเชื่อมต่อล้มเหลว</td></tr>`;
       }
     })
-    .getTeacherSalaryConfirmations(year, month);
+    .getAllTeachersMonthlyPay(year, month);
+}
+
+function printStaffSalarySummary() {
+  const panel = document.getElementById('staff_salary_summary_panel');
+  if (!panel) return;
+  
+  const typeEl = document.getElementById('staff_summary_account_type');
+  const filterType = typeEl ? typeEl.options[typeEl.selectedIndex].text : 'ทั้งหมด';
+  const monthEl = document.getElementById('staff_summary_month');
+  const monthText = monthEl ? monthEl.options[monthEl.selectedIndex].text : '';
+  const yearEl = document.getElementById('staff_summary_year');
+  const yearText = yearEl ? (parseInt(yearEl.value) + 543).toString() : '';
+
+  const printWindow = window.open('', '_blank');
+  
+  // Clone table
+  const tableResponsive = panel.querySelector('.table-responsive');
+  if (!tableResponsive) {
+    showToast('ไม่พบข้อมูลตารางสำหรับพิมพ์', 'error');
+    return;
+  }
+  const tableHtml = tableResponsive.innerHTML;
+  
+  const css = \`
+    <style>
+      body { font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; }
+      h2 { text-align: center; margin-bottom: 5px; }
+      h3 { text-align: center; margin-top: 0; color: #666; font-weight: normal; margin-bottom: 20px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+      th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+      th { background-color: #f8f9fa; font-weight: bold; }
+      td[style*="text-align: right"] { text-align: right; }
+      td[style*="text-align: center"] { text-align: center; }
+      .print-footer { margin-top: 30px; text-align: right; font-size: 12px; color: #777; }
+      @media print {
+        body { -webkit-print-color-adjust: exact; padding: 0; }
+        .print-footer { position: fixed; bottom: 0; right: 0; }
+      }
+    </style>
+  \`;
+  
+  printWindow.document.write('<html><head><title>สรุปรายได้ครู</title>' + css + '</head><body>');
+  printWindow.document.write('<h2>รายงานสรุปรายได้ครู - ' + filterType + '</h2>');
+  printWindow.document.write('<h3>ประจำเดือน ' + monthText + ' ปี ' + yearText + '</h3>');
+  printWindow.document.write(tableHtml);
+  printWindow.document.write('<div class="print-footer">พิมพ์เมื่อ: ' + new Date().toLocaleString('th-TH') + '</div>');
+  printWindow.document.write('</body></html>');
+  
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => {
+    printWindow.print();
+    printWindow.close();
+  }, 500);
 }
 
 function getMonthName(m) {

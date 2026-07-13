@@ -972,8 +972,19 @@
                   <select id="staff_summary_month" class="form-select" style="width: 220px;" onchange="loadStaffSalarySummary()">
                   </select>
                 </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">บัญชี:</label>
+                  <select id="staff_summary_account_type" class="form-select" style="width: 150px;" onchange="loadStaffSalarySummary()">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="บัญชีทั่วไป">บัญชีทั่วไป</option>
+                    <option value="บัญชีบริษัท">บัญชีบริษัท</option>
+                  </select>
+                </div>
                 <button class="btn btn-primary" onclick="loadStaffSalarySummary()">
                   <span>🔄</span> รีโหลดข้อมูล
+                </button>
+                <button class="btn btn-secondary" onclick="printStaffSalarySummary()">
+                  <span>🖨️</span> พิมพ์รายงาน
                 </button>
               </div>
             </div>
@@ -2492,6 +2503,13 @@
               <div class="form-group">
                 <label class="form-label">เลขบัญชีธนาคาร</label>
                 <input type="text" id="profile_account_no" class="form-input" placeholder="ระบุเลขบัญชีธนาคาร">
+              </div>
+              <div class="form-group form-group-full">
+                <label class="form-label">ประเภทบัญชีรับเงิน</label>
+                <select id="profile_account_type" class="form-input">
+                  <option value="บัญชีทั่วไป">บัญชีทั่วไป (General)</option>
+                  <option value="บัญชีบริษัท">บัญชีบริษัท (Company)</option>
+                </select>
               </div>
             </div>
 
