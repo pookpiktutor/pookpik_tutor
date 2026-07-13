@@ -290,7 +290,7 @@
               <div class="toolbar" style="margin-bottom: 20px;">
                 <div class="filter-actions" style="flex-grow: 1; justify-content: flex-start;">
                   <label class="form-label" style="margin-right: 8px; margin-top: 10px;">รอบเรียน:</label>
-                  <select id="summary_round_filter" class="form-select" style="min-width: 180px;">
+                  <select id="summary_round_filter" class="form-select" style="min-width: 280px;">
                     <option value="Summer69">Summer 2569</option>
                     <option value="M1/69" selected>Midterm 1/69</option>
                     <option value="F1/69">Final 1/69</option>
@@ -300,7 +300,7 @@
                   </select>
 
                   <label class="form-label" style="margin-left: 15px; margin-right: 8px; margin-top: 10px;">เลือกสาขา:</label>
-                  <select id="summary_branch_filter" class="form-select" style="min-width: 150px;" onchange="changeSummaryBranch()">
+                  <select id="summary_branch_filter" class="form-select" style="min-width: 250px;" onchange="changeSummaryBranch()">
                     <option value="">ทั้งหมด (แยกหัวข้อ)</option>
                     <option value="สาขา1">สาขา 1 แยกPMY</option>
                     <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
@@ -408,7 +408,7 @@
             <div class="toolbar" style="margin-bottom: 12px;">
               <div class="filter-actions" style="flex-grow: 1; justify-content: flex-start; flex-wrap: wrap; gap: 12px;">
                 <label class="form-label" style="margin-top: 10px;">ระดับชั้น:</label>
-                <select id="grade_sheet_grade_select" class="form-select" style="min-width: 140px;">
+                <select id="grade_sheet_grade_select" class="form-select" style="min-width: 220px;">
                   <option value="อนุบาล">อนุบาล</option>
                   <option value="ป.1">ป.1</option>
                   <option value="ป.2">ป.2</option>
@@ -425,7 +425,7 @@
                 </select>
                 
                 <label class="form-label" style="margin-top: 10px;">สาขา:</label>
-                <select id="grade_sheet_branch_select" class="form-select" style="min-width: 140px;">
+                <select id="grade_sheet_branch_select" class="form-select" style="min-width: 220px;">
                   <option value="สาขา1">สาขา 1 แยกPMY</option>
                   <option value="สาขา2" selected>สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
                   <option value="สาขา3">สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ</option>
@@ -434,7 +434,7 @@
                 <button class="btn btn-primary" onclick="loadGradeSheetGrid()">🔍 โหลดตารางเรียน</button>
                 
                 <label class="form-label" style="margin-top: 10px;">กรองรอบเรียน:</label>
-                <select id="grade_sheet_round_filter" class="form-select" style="min-width: 150px;" onchange="filterGradeSheetGrid()">
+                <select id="grade_sheet_round_filter" class="form-select" style="min-width: 250px;" onchange="filterGradeSheetGrid()">
                   <option value="ALL">-- แสดงทั้งหมด --</option>
                 </select>
                 
@@ -531,7 +531,7 @@
             <div class="toolbar">
               <div class="filter-actions" style="flex-grow: 1; justify-content: flex-start; gap: 16px;">
                 <label class="form-label" style="margin-top: 10px;">สาขา:</label>
-                <select id="private_branch_select" class="form-select" onchange="loadPrivateStudents()" style="min-width: 150px;">
+                <select id="private_branch_select" class="form-select" onchange="loadPrivateStudents()" style="min-width: 250px;">
                   <option value="all" selected>ทั้งหมดทุกสาขา</option>
                   <option value="สาขา1">สาขา 1 แยกPMY</option>
                   <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
@@ -539,7 +539,7 @@
                 </select>
 
                 <label class="form-label" style="margin-top: 10px;">ระดับชั้น/กลุ่ม:</label>
-                <select id="private_sheet_select" class="form-select" onchange="loadPrivateStudents()" style="min-width: 200px;">
+                <select id="private_sheet_select" class="form-select" onchange="loadPrivateStudents()" style="min-width: 320px;">
                   <option value="all" selected>แสดงทั้งหมด</option>
                   <optgroup label="เด็กเรียนเดี่ยว">
                     <option value="เดี่ยว อนุบาล">เดี่ยว อนุบาล</option>
@@ -882,12 +882,12 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 6px;">
                   <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">ปี:</label>
-                  <select id="calc_year_picker" class="form-select" style="width: 200px;" onchange="handleStaffPayrollFilterChange()">
+                  <select id="calc_year_picker" class="form-select" style="width: 280px;" onchange="handleStaffPayrollFilterChange()">
                   </select>
                 </div>
                 <div style="display: flex; align-items: center; gap: 6px;">
                   <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">เดือน:</label>
-                  <select id="calc_month_picker" class="form-select" style="width: 160px;" onchange="handleStaffPayrollMonthChange()">
+                  <select id="calc_month_picker" class="form-select" style="width: 240px;" onchange="handleStaffPayrollMonthChange()">
                   </select>
                 </div>
                 <button class="btn btn-primary" onclick="runTeacherPayCalculation()">
@@ -964,12 +964,12 @@
               <div class="filter-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 6px;">
                   <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">ปี:</label>
-                  <select id="staff_summary_year" class="form-select" style="width: 170px;" onchange="loadStaffSalarySummary()">
+                  <select id="staff_summary_year" class="form-select" style="width: 250px;" onchange="loadStaffSalarySummary()">
                   </select>
                 </div>
                 <div style="display: flex; align-items: center; gap: 6px;">
                   <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">เดือน:</label>
-                  <select id="staff_summary_month" class="form-select" style="width: 140px;" onchange="loadStaffSalarySummary()">
+                  <select id="staff_summary_month" class="form-select" style="width: 220px;" onchange="loadStaffSalarySummary()">
                   </select>
                 </div>
                 <button class="btn btn-primary" onclick="loadStaffSalarySummary()">
@@ -1029,13 +1029,13 @@
               <div class="filter-actions" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">ผู้จัดการ:</label>
-                  <select id="manager_log_filter" class="form-select" style="width: 180px;" onchange="renderManagerLogsTable()">
+                  <select id="manager_log_filter" class="form-select" style="width: 260px;" onchange="renderManagerLogsTable()">
                     <option value="">-- แสดงทุกคน --</option>
                   </select>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">เดือน:</label>
-                  <select id="manager_log_month" class="form-select" style="width: 120px;" onchange="renderManagerLogsTable()">
+                  <select id="manager_log_month" class="form-select" style="width: 200px;" onchange="renderManagerLogsTable()">
                     <option value="">-- ทุกเดือน --</option>
                     <option value="01">มกราคม</option>
                     <option value="02">กุมภาพันธ์</option>
@@ -1053,7 +1053,7 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">ปี:</label>
-                  <select id="manager_log_year" class="form-select" style="width: 100px;" onchange="renderManagerLogsTable()">
+                  <select id="manager_log_year" class="form-select" style="width: 180px;" onchange="renderManagerLogsTable()">
                     <option value="">-- ทุกปี --</option>
                   </select>
                 </div>
@@ -2798,11 +2798,11 @@
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 4px;">
                 <label class="form-label" style="margin-bottom: 0; font-size: 0.78rem;">ปีการศึกษา:</label>
-                <select id="teacher_salary_year_picker" class="form-select" style="width: 110px; font-size: 0.78rem; padding: 2px 6px;" onchange="loadTeacherYearlySalary()"></select>
+                <select id="teacher_salary_year_picker" class="form-select" style="width: 180px; font-size: 0.78rem; padding: 2px 6px;" onchange="loadTeacherYearlySalary()"></select>
               </div>
               <div style="display: flex; align-items: center; gap: 4px;">
                 <label class="form-label" style="margin-bottom: 0; font-size: 0.78rem;">เดือน:</label>
-                <select id="teacher_salary_month_picker" class="form-select" style="width: 110px; font-size: 0.78rem; padding: 2px 6px;" onchange="handleMonthPickerChange()"></select>
+                <select id="teacher_salary_month_picker" class="form-select" style="width: 180px; font-size: 0.78rem; padding: 2px 6px;" onchange="handleMonthPickerChange()"></select>
               </div>
               <button class="btn btn-primary" style="padding: 2px 10px; font-size: 0.78rem;" onclick="loadTeacherYearlySalary()">🧮 คำนวณ</button>
             </div>
