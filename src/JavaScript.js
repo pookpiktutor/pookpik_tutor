@@ -8477,6 +8477,8 @@ function openProfileModal() {
         document.getElementById('profile_nickname').value = p.nickname || p.username;
         document.getElementById('profile_fullname').value = p.fullName || '';
         document.getElementById('profile_phone').value = p.phone || '';
+        document.getElementById('profile_bank').value = p.bank || '';
+        document.getElementById('profile_account_no').value = p.accountNumber || '';
         
         // Reset password fields
         document.getElementById('profile_curr_pass').value = '';
@@ -8579,6 +8581,8 @@ function saveUserProfileData(e) {
   const nickname = document.getElementById('profile_nickname').value.trim();
   const fullName = document.getElementById('profile_fullname').value.trim();
   const phone = document.getElementById('profile_phone').value.trim();
+  const bank = document.getElementById('profile_bank').value.trim();
+  const accountNo = document.getElementById('profile_account_no').value.trim();
   
   const currentPass = document.getElementById('profile_curr_pass').value;
   const newPass = document.getElementById('profile_new_pass').value;
@@ -8603,6 +8607,8 @@ function saveUserProfileData(e) {
     nickname: nickname,
     fullName: fullName,
     phone: phone,
+    bank: bank,
+    accountNumber: accountNo,
     profilePic: profileImageDataUrl
   };
   
