@@ -6257,7 +6257,7 @@ function printStaffSalarySummary() {
   }
   const tableHtml = tableResponsive.innerHTML;
   
-  const css = \`
+  const css = `
     <style>
       body { font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; }
       h2 { text-align: center; margin-bottom: 5px; }
@@ -6273,7 +6273,7 @@ function printStaffSalarySummary() {
         .print-footer { position: fixed; bottom: 0; right: 0; }
       }
     </style>
-  \`;
+  `;
   
   printWindow.document.write('<html><head><title>สรุปรายได้ครู</title>' + css + '</head><body>');
   printWindow.document.write('<h2>รายงานสรุปรายได้ครู - ' + filterType + '</h2>');
