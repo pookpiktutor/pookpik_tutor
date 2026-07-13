@@ -730,8 +730,18 @@ function renderTeacherSalaryDetail(res) {
   const titleText = res.monthName ? `📊 สรุปรายรับค่าสอนประจำเดือน ${res.monthName}${dateRangeStr}` : '📊 สรุปรายรับค่าสอนประจำเดือน';
   document.getElementById('teacher_salary_result_title').innerText = titleText;
   
+  let sumMinutes = 0;
+  res.classes.forEach(c => {
+    if (c.numKids > 0) {
+      sumMinutes += parseHoursLeftToMinutes(c.hours);
+    }
+  });
+  const sumHoursPart = Math.floor(sumMinutes / 60);
+  const sumMinPart = sumMinutes % 60;
+  const formattedSumHours = `${sumHoursPart} ชม. ${sumMinPart} นาที`;
+
   document.getElementById('teacher_salary_net_pay').innerText = 'รายได้สุทธิ: ฿' + (res.totalPay || 0).toLocaleString();
-  document.getElementById('teacher_salary_total_hours').innerText = (res.totalHours || 0).toLocaleString() + ' ชม.';
+  document.getElementById('teacher_salary_total_hours').innerText = formattedSumHours;
   document.getElementById('teacher_salary_total_classes').innerText = (res.totalClasses || 0).toLocaleString() + ' คลาส';
   
   const tbody = document.getElementById('teacher_salary_classes_tbody');
@@ -6311,7 +6321,9 @@ function handleStaffPayrollMonthChange() {
     // Calculate monthly totals and sums locally to ensure accuracy
     let sumMinutes = 0;
     monthRes.classes.forEach(c => {
-      sumMinutes += parseHoursLeftToMinutes(c.hours);
+      if (c.numKids > 0) {
+        sumMinutes += parseHoursLeftToMinutes(c.hours);
+      }
     });
     
     const sumHoursPart = Math.floor(sumMinutes / 60);
