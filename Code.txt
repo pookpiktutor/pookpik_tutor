@@ -4892,7 +4892,7 @@ function saveTeacherProfile(teacher, logUser) {
         genSheet.appendRow([teacher.nickname]);
       }
     } else {
-      sheet.getRange(rowIndex, 1, 1, 9).setValues([rowValues]);
+      sheet.getRange(rowIndex, 1, 1, 10).setValues([rowValues]);
     }
     
     // Clear cache

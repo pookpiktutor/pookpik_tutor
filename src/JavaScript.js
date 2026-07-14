@@ -6923,7 +6923,7 @@ function closeTeacherModal() {
   document.getElementById('teacher_modal').classList.remove('active');
 }
 
-function saveTeacherProfile(e) {
+function submitTeacherProfile(e) {
   e.preventDefault();
   const teacherData = {
     nickname: document.getElementById('t_nickname').value.trim(),
@@ -6933,10 +6933,11 @@ function saveTeacherProfile(e) {
     subjects: document.getElementById('t_subjects').value.trim(),
     bank: document.getElementById('t_bank').value.trim(),
     accountNumber: document.getElementById('t_account_number').value.trim(),
-    accountType: document.getElementById('t_account_type').value
+    accountType: document.getElementById('t_account_type').value,
+    rate: document.getElementById('t_compensation').value.trim()
   };
   
-  setLoading(true, 'กำลังจัดเก็บประวัติอาจารย์...');
+  setLoading(true, 'กำลังบันทึกประวัติอาจารย์...');
   const user = getLogUser();
   
   google.script.run
