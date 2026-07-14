@@ -4993,8 +4993,10 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
           cellC = '';
         }
         
-        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cellB.replace(/^ครู/, '').trim() === cleanNick || cellB.includes(cleanNick));
-        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cellC.replace(/^ครู/, '').trim() === cleanNick || cellC.includes(cleanNick));
+        const cValB = cellB.replace(/^ครู/, '').trim();
+        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cValB === cleanNick || cellB.includes(cleanNick) || (cValB.length > 1 && cleanNick.includes(cValB)));
+        const cValC = cellC.replace(/^ครู/, '').trim();
+        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cValC === cleanNick || cellC.includes(cleanNick) || (cValC.length > 1 && cleanNick.includes(cValC)));
         
         let role = '';
         if (cellB !== '' && cellC !== '') {
@@ -5322,8 +5324,10 @@ function getAllTeachersMonthlyPay(year, month) {
           cellC = '';
         }
         
-        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cellB.replace(/^ครู/, '').trim() === cleanNick || cellB.includes(cleanNick));
-        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cellC.replace(/^ครู/, '').trim() === cleanNick || cellC.includes(cleanNick));
+        const cValB = cellB.replace(/^ครู/, '').trim();
+        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cValB === cleanNick || cellB.includes(cleanNick) || (cValB.length > 1 && cleanNick.includes(cValB)));
+        const cValC = cellC.replace(/^ครู/, '').trim();
+        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cValC === cleanNick || cellC.includes(cleanNick) || (cValC.length > 1 && cleanNick.includes(cValC)));
         
         let role = '';
         if (cellB !== '' && cellC !== '') {
