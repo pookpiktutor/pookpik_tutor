@@ -8065,7 +8065,7 @@ function migrateMainClassTo19Columns() {
 // Requested feature: Update column A in Data Learn by matching with branch/date
 // ==============================================================================
 function updateDataLearnSubjects() {
-  const db = SpreadsheetApp.openById(SHEET_IDS.database);
+  const db = typeof getDb === 'function' ? getDb() : SpreadsheetApp.openById(SPREADSHEET_ID);
   const dataLearnSheet = db.getSheetByName('Data Learn');
   const data = dataLearnSheet.getDataRange().getValues();
   
