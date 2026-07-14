@@ -48,9 +48,9 @@ function checkSession() {
       document.getElementById('app_shell').style.display = 'flex';
       
       // Update displayed name
-      document.getElementById('current_user_display').innerText = state.currentUser.username;
-      document.getElementById('current_role_display').innerText = state.currentUser.role;
-      document.getElementById('avatar_letters').innerText = state.currentUser.username.substring(0, 2).toUpperCase();
+      if (document.getElementById('current_user_display')) document.getElementById('current_user_display').innerText= state.currentUser.username;
+      if (document.getElementById('current_role_display')) document.getElementById('current_role_display').innerText= state.currentUser.role;
+      if (document.getElementById('avatar_letters')) document.getElementById('avatar_letters').innerText= state.currentUser.username.substring(0, 2).toUpperCase();
       
       // Bootstrap App Data
       bootApp();
@@ -118,7 +118,7 @@ function bootApp() {
         
         // Update diagnostic badge
         if (settings.dbSummary) {
-          document.getElementById('db_diagnostic_badge').innerHTML = `
+          if (document.getElementById('db_diagnostic_badge')) document.getElementById('db_diagnostic_badge').innerHTML= `
             <div><b>เธเธฒเธเธเนเธญเธกเธนเธฅ:</b> ${settings.dbSummary.name}</div>
             <div><b>ID:</b> ${settings.dbSummary.id.substring(0, 12)}...</div>
             <div><b>เนเธเนเธเธเธฒเธ:</b> ${settings.dbSummary.sheets ? settings.dbSummary.sheets.length : 0} เธเธตเธ•</div>
@@ -127,7 +127,7 @@ function bootApp() {
         }
       } else {
         showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธฒเธฃเธ•เธฑเนเธเธเนเธฒเนเธ”เน: ' + (settings ? settings.error : 'unknown'), 'error');
-        document.getElementById('db_diagnostic_badge').innerText = 'DB: เนเธซเธฅเธ”เธฅเนเธกเน€เธซเธฅเธง';
+        if (document.getElementById('db_diagnostic_badge')) document.getElementById('db_diagnostic_badge').innerText= 'DB: เนเธซเธฅเธ”เธฅเนเธกเน€เธซเธฅเธง';
       }
       switchPanel('dashboard');
     })
@@ -161,25 +161,25 @@ function bootApp() {
   
   // Set default dates
   const todayStr = getTodayString();
-  document.getElementById('log_filter_date').value = todayStr;
-  document.getElementById('daily_grid_filter_date').value = todayStr;
-  document.getElementById('class_date').value = todayStr;
-  document.getElementById('student_pay_date').value = todayStr;
-  document.getElementById('manager_date').value = todayStr;
+  if (document.getElementById('log_filter_date')) document.getElementById('log_filter_date').value= todayStr;
+  if (document.getElementById('daily_grid_filter_date')) document.getElementById('daily_grid_filter_date').value= todayStr;
+  if (document.getElementById('class_date')) document.getElementById('class_date').value= todayStr;
+  if (document.getElementById('student_pay_date')) document.getElementById('student_pay_date').value= todayStr;
+  if (document.getElementById('manager_date')) document.getElementById('manager_date').value= todayStr;
   if (document.getElementById('teacher_schedule_date')) {
-    document.getElementById('teacher_schedule_date').value = todayStr;
+    if (document.getElementById('teacher_schedule_date')) document.getElementById('teacher_schedule_date').value= todayStr;
   }
   
   // Set display strings for dates
   setTimeout(() => {
     if (document.getElementById('daily_grid_date_display')) {
-      document.getElementById('daily_grid_date_display').innerText = formatDateToThaiShort(todayStr);
+      if (document.getElementById('daily_grid_date_display')) document.getElementById('daily_grid_date_display').innerText= formatDateToThaiShort(todayStr);
     }
     if (document.getElementById('class_log_date_display')) {
-      document.getElementById('class_log_date_display').innerText = formatDateToThaiShort(todayStr);
+      if (document.getElementById('class_log_date_display')) document.getElementById('class_log_date_display').innerText= formatDateToThaiShort(todayStr);
     }
     if (document.getElementById('teacher_schedule_date_display')) {
-      document.getElementById('teacher_schedule_date_display').innerText = formatDateToThaiShort(todayStr);
+      if (document.getElementById('teacher_schedule_date_display')) document.getElementById('teacher_schedule_date_display').innerText= formatDateToThaiShort(todayStr);
     }
   }, 100);
 
@@ -208,8 +208,8 @@ function bootApp() {
   const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
   const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
   
-  document.getElementById('calc_start_date').value = `${prevYear}-${prevMonth < 10 ? '0' + prevMonth : prevMonth}-29`;
-  document.getElementById('calc_end_date').value = `${currentYear}-${currentMonth < 10 ? '0' + currentMonth : currentMonth}-28`;
+  if (document.getElementById('calc_start_date')) document.getElementById('calc_start_date').value= `${prevYear}-${prevMonth < 10 ? '0' + prevMonth : prevMonth}-29`;
+  if (document.getElementById('calc_end_date')) document.getElementById('calc_end_date').value= `${currentYear}-${currentMonth < 10 ? '0' + currentMonth : currentMonth}-28`;
 }
 
 // ----------------------------------------------------
@@ -444,7 +444,7 @@ function calculateHoursFromPayment() {
   const hh = Math.floor(totalHrs);
   const mm = Math.round((totalHrs % 1) * 60);
   
-  document.getElementById('p_hours').value = `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
+  if (document.getElementById('p_hours')) document.getElementById('p_hours').value= `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
 }
 
 function setLoading(show, text = 'เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅ...') {
@@ -624,7 +624,7 @@ function switchPanel(panelName) {
     'debtors': 'เธ•เธฃเธงเธเธชเธญเธเนเธฅเธฐเธเธฑเธเธ—เธถเธเธเนเธฒเธเธเธณเธฃเธฐเน€เธเธดเธเธเนเธฒเน€เธฃเธตเธขเธ',
     'print_receipts': 'เธญเธญเธเนเธเน€เธชเธฃเนเธเธฃเธฑเธเน€เธเธดเธเธเนเธฒเน€เธฃเธตเธขเธ'
   };
-  document.getElementById('page_title').innerText = titles[panelName] || 'เธฃเธฐเธเธเธ”เธนเนเธฅเนเธฃเธเน€เธฃเธตเธขเธเธเธงเธ”เธงเธดเธเธฒ';
+  if (document.getElementById('page_title')) document.getElementById('page_title').innerText= titles[panelName] || 'เธฃเธฐเธเธเธ”เธนเนเธฅเนเธฃเธเน€เธฃเธตเธขเธเธเธงเธ”เธงเธดเธเธฒ';
   
   // Load panel specific data
   if (panelName === 'dashboard') {
@@ -634,7 +634,7 @@ function switchPanel(panelName) {
     loadStudents();
   } else if (panelName === 'grade_sheets') {
     // Reset grade sheet display
-    document.getElementById('grade_sheet_grid_table').innerHTML = `<tr><td style="padding: 40px; text-align: center; color: var(--text-muted);">เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธ•เธฒเธฃเธฒเธเธฃเธฐเธ”เธฑเธเธเธฑเนเธเธ”เนเธฒเธเธเธ</td></tr>`;
+    if (document.getElementById('grade_sheet_grid_table')) document.getElementById('grade_sheet_grid_table').innerHTML= `<tr><td style="padding: 40px; text-align: center; color: var(--text-muted);">เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธ•เธฒเธฃเธฒเธเธฃเธฐเธ”เธฑเธเธเธฑเนเธเธ”เนเธฒเธเธเธ</td></tr>`;
     document.getElementById('save_grade_sheet_btn').disabled = true;
   } else if (panelName === 'daily_grid') {
     loadDailyGrid();
@@ -677,15 +677,15 @@ function loadDashboard() {
 }
 
 function renderDashboardData(data) {
-  document.getElementById('dash_total_income').innerText = 'เธฟ' + data.totalIncome.toLocaleString();
-  document.getElementById('dash_total_paid').innerText = 'เธฟ' + data.totalPaid.toLocaleString();
+  if (document.getElementById('dash_total_income')) document.getElementById('dash_total_income').innerText= 'เธฟ' + data.totalIncome.toLocaleString();
+  if (document.getElementById('dash_total_paid')) document.getElementById('dash_total_paid').innerText= 'เธฟ' + data.totalPaid.toLocaleString();
   
   const outstandingEl = document.getElementById('dash_total_outstanding');
   outstandingEl.innerText = 'เธฟ' + data.totalOutstanding.toLocaleString();
   outstandingEl.style.color = data.totalOutstanding > 0 ? '#ef4444' : 'var(--text-main)';
   
-  document.getElementById('dash_total_classes').innerText = data.totalClasses.toLocaleString() + ' เธเธฅเธฒเธช';
-  document.getElementById('dash_total_hours').innerText = data.totalHours.toLocaleString() + ' เธเธก.';
+  if (document.getElementById('dash_total_classes')) document.getElementById('dash_total_classes').innerText= data.totalClasses.toLocaleString() + ' เธเธฅเธฒเธช';
+  if (document.getElementById('dash_total_hours')) document.getElementById('dash_total_hours').innerText= data.totalHours.toLocaleString() + ' เธเธก.';
   
   // Branches chart
   const ctx1 = document.getElementById('chart_branches').getContext('2d');
@@ -914,10 +914,10 @@ function updateCombinedRound() {
     const base = document.getElementById('round_select').value;
     const year = document.getElementById('round_year').value.trim();
     finalRound = base + year;
-    document.getElementById('student_round').value = finalRound;
+    if (document.getElementById('student_round')) document.getElementById('student_round').value= finalRound;
   } else {
     finalRound = document.getElementById('student_round_text').value.trim();
-    document.getElementById('student_round').value = finalRound;
+    if (document.getElementById('student_round')) document.getElementById('student_round').value= finalRound;
     
     // Recalculate price dynamically when typing
     const grade = document.getElementById('student_grade').value;
@@ -927,10 +927,10 @@ function updateCombinedRound() {
       if (['เธก.4', 'เธก.5', 'เธก.6'].includes(grade) || isEx) {
         price = 2500;
       }
-      document.getElementById('student_full').value = price;
-      document.getElementById('calculated_fee_display').innerText = price.toLocaleString();
+      if (document.getElementById('student_full')) document.getElementById('student_full').value= price;
+      if (document.getElementById('calculated_fee_display')) document.getElementById('calculated_fee_display').innerText= price.toLocaleString();
       if (!state.selectedStudent) {
-        document.getElementById('student_paid').value = price;
+        if (document.getElementById('student_paid')) document.getElementById('student_paid').value= price;
       }
     }
   }
@@ -990,10 +990,10 @@ function calculateMainGroupFee() {
   }
   
   const roundedTotal = Math.round(total);
-  document.getElementById('calculated_fee_display').innerText = roundedTotal.toLocaleString();
-  document.getElementById('student_full').value = roundedTotal;
+  if (document.getElementById('calculated_fee_display')) document.getElementById('calculated_fee_display').innerText= roundedTotal.toLocaleString();
+  if (document.getElementById('student_full')) document.getElementById('student_full').value= roundedTotal;
   if (!state.selectedStudent) {
-    document.getElementById('student_paid').value = roundedTotal;
+    if (document.getElementById('student_paid')) document.getElementById('student_paid').value= roundedTotal;
   }
 }
 
@@ -1005,7 +1005,7 @@ function handleGradeBranchChange() {
   let grade = document.getElementById('student_grade').value;
   if (classType === 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ') {
     grade = document.getElementById('student_course_grade').value;
-    document.getElementById('student_grade').value = grade; // Sync back to personal grade
+    if (document.getElementById('student_grade')) document.getElementById('student_grade').value= grade; // Sync back to personal grade
   }
   
   if (classType !== 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ') {
@@ -1016,10 +1016,10 @@ function handleGradeBranchChange() {
       if (['เธก.4', 'เธก.5', 'เธก.6'].includes(grade) || isEx) {
         price = 2500;
       }
-      document.getElementById('student_full').value = price;
-      document.getElementById('calculated_fee_display').innerText = price.toLocaleString();
+      if (document.getElementById('student_full')) document.getElementById('student_full').value= price;
+      if (document.getElementById('calculated_fee_display')) document.getElementById('calculated_fee_display').innerText= price.toLocaleString();
       if (!state.selectedStudent) {
-        document.getElementById('student_paid').value = price;
+        if (document.getElementById('student_paid')) document.getElementById('student_paid').value= price;
       }
     }
     return;
@@ -1059,8 +1059,8 @@ function handleGradeBranchChange() {
         }
       } else {
         container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">เนเธกเนเธเธเธฃเธฒเธขเธงเธดเธเธฒเน€เธฃเธตเธขเธเนเธเธชเน€เธเธฃเธ”เธเธตเธ•เธเธฑเนเธเธเธตเน</span>';
-        document.getElementById('calculated_fee_display').innerText = '0';
-        document.getElementById('student_full').value = '0';
+        if (document.getElementById('calculated_fee_display')) document.getElementById('calculated_fee_display').innerText= '0';
+        if (document.getElementById('student_full')) document.getElementById('student_full').value= '0';
       }
     })
     .getGradeCourses(grade, branch);
@@ -1088,11 +1088,11 @@ function loadStudentRegisteredCourses(studentName, grade, branch) {
         // Restore payment mode radio buttons
         if (stdRow) {
           if (stdRow.isCard === 1) {
-            document.getElementById('pay_mode_card').checked = true;
+            if (document.getElementById('pay_mode_card')) document.getElementById('pay_mode_card').checked= true;
           } else if (state.selectedStudent && (state.selectedStudent.paymentChannel === 'เน€เธเธดเธเธชเธ”' || state.selectedStudent.paymentChannel === 'เธชเธ”')) {
-            document.getElementById('pay_mode_cash').checked = true;
+            if (document.getElementById('pay_mode_cash')) document.getElementById('pay_mode_cash').checked= true;
           } else {
-            document.getElementById('pay_mode_transfer').checked = true;
+            if (document.getElementById('pay_mode_transfer')) document.getElementById('pay_mode_transfer').checked= true;
           }
         }
         
@@ -1186,13 +1186,13 @@ function handleClassTypeChange() {
       }
     }
     
-    document.getElementById('student_full').value = price;
-    document.getElementById('student_hours').value = hours;
-    document.getElementById('student_hours_left').value = hours;
-    document.getElementById('calculated_fee_display').innerText = price.toLocaleString();
+    if (document.getElementById('student_full')) document.getElementById('student_full').value= price;
+    if (document.getElementById('student_hours')) document.getElementById('student_hours').value= hours;
+    if (document.getElementById('student_hours_left')) document.getElementById('student_hours_left').value= hours;
+    if (document.getElementById('calculated_fee_display')) document.getElementById('calculated_fee_display').innerText= price.toLocaleString();
     
     if (!state.selectedStudent) {
-      document.getElementById('student_paid').value = price;
+      if (document.getElementById('student_paid')) document.getElementById('student_paid').value= price;
     }
     
     updateCombinedRound();
@@ -1201,19 +1201,19 @@ function handleClassTypeChange() {
 
 function showAddStudentModal() {
   state.selectedStudent = null;
-  document.getElementById('student_modal_title').innerText = 'เธฅเธเธ—เธฐเน€เธเธตเธขเธเน€เธฃเธตเธขเธ (เนเธเธเธฅเธฐเน€เธญเธตเธขเธ”)';
+  if (document.getElementById('student_modal_title')) document.getElementById('student_modal_title').innerText= 'เธฅเธเธ—เธฐเน€เธเธตเธขเธเน€เธฃเธตเธขเธ (เนเธเธเธฅเธฐเน€เธญเธตเธขเธ”)';
   document.getElementById('student_form').reset();
-  document.getElementById('pay_mode_transfer').checked = true;
+  if (document.getElementById('pay_mode_transfer')) document.getElementById('pay_mode_transfer').checked= true;
   
-  document.getElementById('student_pay_date').value = getTodayString();
-  document.getElementById('student_id').value = '';
-  document.getElementById('student_carried_forward').value = '0';
+  if (document.getElementById('student_pay_date')) document.getElementById('student_pay_date').value= getTodayString();
+  if (document.getElementById('student_id')) document.getElementById('student_id').value= '';
+  if (document.getElementById('student_carried_forward')) document.getElementById('student_carried_forward').value= '0';
   
   // Set default classType to เธเธฅเธธเนเธกเธซเธฅเธฑเธ
-  document.getElementById('student_class_type').value = 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ';
-  document.getElementById('student_course_grade').value = 'เธ.1';
-  document.getElementById('round_select').value = 'MIDTERM 1';
-  document.getElementById('round_year').value = '/2569';
+  if (document.getElementById('student_class_type')) document.getElementById('student_class_type').value= 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ';
+  if (document.getElementById('student_course_grade')) document.getElementById('student_course_grade').value= 'เธ.1';
+  if (document.getElementById('round_select')) document.getElementById('round_select').value= 'MIDTERM 1';
+  if (document.getElementById('round_year')) document.getElementById('round_year').value= '/2569';
   
   handleClassTypeChange();
   
@@ -1225,39 +1225,39 @@ function showEditStudentModal(id) {
   if (!student) return;
   
   state.selectedStudent = student;
-  document.getElementById('student_modal_title').innerText = 'เนเธเนเนเธเธเธฒเธฃเธฅเธเธ—เธฐเน€เธเธตเธขเธเน€เธฃเธตเธขเธ';
+  if (document.getElementById('student_modal_title')) document.getElementById('student_modal_title').innerText= 'เนเธเนเนเธเธเธฒเธฃเธฅเธเธ—เธฐเน€เธเธตเธขเธเน€เธฃเธตเธขเธ';
   document.getElementById('student_form').reset();
   
-  document.getElementById('student_id').value = student.id;
-  document.getElementById('student_name').value = student.name;
-  document.getElementById('student_nickname').value = student.nickname;
-  document.getElementById('student_school').value = student.school;
-  document.getElementById('student_contact').value = formatPhone(student.contact);
-  document.getElementById('student_branch_learn').value = student.branchLearn;
-  document.getElementById('student_branch_pay').value = student.branchPay;
-  document.getElementById('student_full').value = student.full;
-  document.getElementById('student_paid').value = student.paid;
-  document.getElementById('student_pay_date').value = convertDateFromSheet(student.paymentDate) || getTodayString();
-  document.getElementById('student_pay_channel').value = student.paymentChannel;
-  document.getElementById('student_staff').value = student.staff;
-  document.getElementById('student_time_note').value = student.paymentTimeNote;
-  document.getElementById('student_extra_note').value = student.extraNote;
+  if (document.getElementById('student_id')) document.getElementById('student_id').value= student.id;
+  if (document.getElementById('student_name')) document.getElementById('student_name').value= student.name;
+  if (document.getElementById('student_nickname')) document.getElementById('student_nickname').value= student.nickname;
+  if (document.getElementById('student_school')) document.getElementById('student_school').value= student.school;
+  if (document.getElementById('student_contact')) document.getElementById('student_contact').value= formatPhone(student.contact);
+  if (document.getElementById('student_branch_learn')) document.getElementById('student_branch_learn').value= student.branchLearn;
+  if (document.getElementById('student_branch_pay')) document.getElementById('student_branch_pay').value= student.branchPay;
+  if (document.getElementById('student_full')) document.getElementById('student_full').value= student.full;
+  if (document.getElementById('student_paid')) document.getElementById('student_paid').value= student.paid;
+  if (document.getElementById('student_pay_date')) document.getElementById('student_pay_date').value= convertDateFromSheet(student.paymentDate) || getTodayString();
+  if (document.getElementById('student_pay_channel')) document.getElementById('student_pay_channel').value= student.paymentChannel;
+  if (document.getElementById('student_staff')) document.getElementById('student_staff').value= student.staff;
+  if (document.getElementById('student_time_note')) document.getElementById('student_time_note').value= student.paymentTimeNote;
+  if (document.getElementById('student_extra_note')) document.getElementById('student_extra_note').value= student.extraNote;
   
   // Restore payment mode radio buttons
   if (student.paymentChannel === 'เน€เธเธดเธเธชเธ”' || student.paymentChannel === 'เธชเธ”') {
-    document.getElementById('pay_mode_cash').checked = true;
+    if (document.getElementById('pay_mode_cash')) document.getElementById('pay_mode_cash').checked= true;
   } else {
-    document.getElementById('pay_mode_transfer').checked = true;
+    if (document.getElementById('pay_mode_transfer')) document.getElementById('pay_mode_transfer').checked= true;
   }
   
   // Advanced fields
-  document.getElementById('student_grade').value = student.grade;
-  document.getElementById('student_class_section').value = student.classSection;
-  document.getElementById('student_line_name').value = student.lineName;
-  document.getElementById('student_line_id').value = student.lineId;
-  document.getElementById('student_carried_forward').value = student.carriedForwardFee;
-  document.getElementById('student_hours').value = student.classHours;
-  document.getElementById('student_hours_left').value = student.classHoursLeft;
+  if (document.getElementById('student_grade')) document.getElementById('student_grade').value= student.grade;
+  if (document.getElementById('student_class_section')) document.getElementById('student_class_section').value= student.classSection;
+  if (document.getElementById('student_line_name')) document.getElementById('student_line_name').value= student.lineName;
+  if (document.getElementById('student_line_id')) document.getElementById('student_line_id').value= student.lineId;
+  if (document.getElementById('student_carried_forward')) document.getElementById('student_carried_forward').value= student.carriedForwardFee;
+  if (document.getElementById('student_hours')) document.getElementById('student_hours').value= student.classHours;
+  if (document.getElementById('student_hours_left')) document.getElementById('student_hours_left').value= student.classHoursLeft;
   
   // Map legacy classType values to UI classType dropdown
   let uiClassType = 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ';
@@ -1266,19 +1266,19 @@ function showEditStudentModal(id) {
   
   if (dbClassType.includes('เน€เธ”เธตเนเธขเธง')) {
     uiClassType = 'เน€เธ”เธตเนเธขเธง';
-    document.getElementById('student_class_type').value = 'เน€เธ”เธตเนเธขเธง';
+    if (document.getElementById('student_class_type')) document.getElementById('student_class_type').value= 'เน€เธ”เธตเนเธขเธง';
   } else if (dbClassType.includes('เธขเนเธญเธข') || dbClassType.includes('เธเธฅเธธเนเธกเธขเนเธญเธข')) {
     uiClassType = 'เธเธฅเธธเนเธกเธขเนเธญเธข';
-    document.getElementById('student_class_type').value = 'เธเธฅเธธเนเธกเธขเนเธญเธข';
+    if (document.getElementById('student_class_type')) document.getElementById('student_class_type').value= 'เธเธฅเธธเนเธกเธขเนเธญเธข';
     
     let subSize = 'เธเธฅเธธเนเธกเธขเนเธญเธข 2-3 เธเธ';
     if (dbClassType.includes('4-5')) subSize = 'เธเธฅเธธเนเธกเธขเนเธญเธข 4-5 เธเธ';
     else if (dbClassType.includes('6-10')) subSize = 'เธเธฅเธธเนเธกเธขเนเธญเธข 6-10 เธเธ';
-    document.getElementById('student_subgroup_size').value = subSize;
+    if (document.getElementById('student_subgroup_size')) document.getElementById('student_subgroup_size').value= subSize;
   } else {
     uiClassType = 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ';
-    document.getElementById('student_class_type').value = 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ';
-    document.getElementById('student_course_grade').value = grade;
+    if (document.getElementById('student_class_type')) document.getElementById('student_class_type').value= 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ';
+    if (document.getElementById('student_course_grade')) document.getElementById('student_course_grade').value= grade;
   }
   
   // Set UI course/round fields
@@ -1300,8 +1300,8 @@ function showEditStudentModal(id) {
       baseRound = 'MIDTERM 1';
       yearSuffix = dbRound ? ' ' + dbRound : '/2569';
     }
-    document.getElementById('round_select').value = baseRound;
-    document.getElementById('round_year').value = yearSuffix;
+    if (document.getElementById('round_select')) document.getElementById('round_select').value= baseRound;
+    if (document.getElementById('round_year')) document.getElementById('round_year').value= yearSuffix;
     
     document.getElementById('course_text_container').style.display = 'none';
     document.getElementById('course_group_container').style.display = 'flex';
@@ -1309,15 +1309,15 @@ function showEditStudentModal(id) {
     
     handleGradeBranchChange();
   } else {
-    document.getElementById('student_round_text').value = student.round || '';
+    if (document.getElementById('student_round_text')) document.getElementById('student_round_text').value= student.round || '';
     
     document.getElementById('course_text_container').style.display = 'block';
     document.getElementById('course_group_container').style.display = 'none';
     document.getElementById('course_checkboxes_wrapper').style.display = 'none';
   }
   
-  document.getElementById('calculated_fee_display').innerText = student.full.toLocaleString();
-  document.getElementById('student_round').value = student.round;
+  if (document.getElementById('calculated_fee_display')) document.getElementById('calculated_fee_display').innerText= student.full.toLocaleString();
+  if (document.getElementById('student_round')) document.getElementById('student_round').value= student.round;
   
   document.getElementById('student_modal').classList.add('active');
 }
@@ -1838,11 +1838,11 @@ function showAddCourseColumnModal() {
   const branch = document.getElementById('grade_sheet_branch_select').value;
   
   document.getElementById('add_course_form').reset();
-  document.getElementById('add_course_branch_select').value = branch;
-  document.getElementById('add_course_grade_select').value = grade === 'เธญเธเธธเธเธฒเธฅ' ? 'เธ.1' : grade;
+  if (document.getElementById('add_course_branch_select')) document.getElementById('add_course_branch_select').value= branch;
+  if (document.getElementById('add_course_grade_select')) document.getElementById('add_course_grade_select').value= grade === 'เธญเธเธธเธเธฒเธฅ' ? 'เธ.1' : grade;
   
   // Set default BE year
-  document.getElementById('new_course_year').value = new Date().getFullYear() + 543;
+  if (document.getElementById('new_course_year')) document.getElementById('new_course_year').value= new Date().getFullYear() + 543;
   
   document.getElementById('add_course_modal').classList.add('active');
 }
@@ -1975,18 +1975,18 @@ function showPrivatePaymentModal(name, courseName) {
   
   state.selectedPrivateStudent = std;
   
-  document.getElementById('p_student_name').value = std.name;
-  document.getElementById('p_course_name').value = std.courseName;
-  document.getElementById('p_student_display_name').innerText = 'เธเธฑเธเน€เธฃเธตเธขเธ: ' + std.name + ' (' + std.nickname + ')';
-  document.getElementById('p_course_display_name').innerText = 'เธเธญเธฃเนเธช: ' + std.courseName;
+  if (document.getElementById('p_student_name')) document.getElementById('p_student_name').value= std.name;
+  if (document.getElementById('p_course_name')) document.getElementById('p_course_name').value= std.courseName;
+  if (document.getElementById('p_student_display_name')) document.getElementById('p_student_display_name').innerText= 'เธเธฑเธเน€เธฃเธตเธขเธ: ' + std.name + ' (' + std.nickname + ')';
+  if (document.getElementById('p_course_display_name')) document.getElementById('p_course_display_name').innerText= 'เธเธญเธฃเนเธช: ' + std.courseName;
   
-  document.getElementById('p_carried_forward').value = std.carriedForward;
-  document.getElementById('p_hours').value = parseSheetDurationToHHMM(std.hours) || '08:00';
-  document.getElementById('p_paid').value = std.paid;
-  document.getElementById('p_payment_date').value = convertDateFromSheet(std.paymentDate) || getTodayString();
-  document.getElementById('p_payment_time').value = convertTimeFromSheet(std.paymentDate) || getCurrentTimeHHMM();
-  document.getElementById('p_payment_channel').value = std.paymentChannel;
-  document.getElementById('p_staff').value = std.staff || '';
+  if (document.getElementById('p_carried_forward')) document.getElementById('p_carried_forward').value= std.carriedForward;
+  if (document.getElementById('p_hours')) document.getElementById('p_hours').value= parseSheetDurationToHHMM(std.hours) || '08:00';
+  if (document.getElementById('p_paid')) document.getElementById('p_paid').value= std.paid;
+  if (document.getElementById('p_payment_date')) document.getElementById('p_payment_date').value= convertDateFromSheet(std.paymentDate) || getTodayString();
+  if (document.getElementById('p_payment_time')) document.getElementById('p_payment_time').value= convertTimeFromSheet(std.paymentDate) || getCurrentTimeHHMM();
+  if (document.getElementById('p_payment_channel')) document.getElementById('p_payment_channel').value= std.paymentChannel;
+  if (document.getElementById('p_staff')) document.getElementById('p_staff').value= std.staff || '';
   
   document.getElementById('private_payment_modal').classList.add('active');
 }
@@ -2062,7 +2062,7 @@ function savePrivateStudentPayment(e) {
 function loadDailyGrid(silent = false) {
   const dateInput = document.getElementById('daily_grid_filter_date').value;
   if (document.getElementById('daily_grid_date_display')) {
-    document.getElementById('daily_grid_date_display').innerText = formatDateToThaiShort(dateInput);
+    if (document.getElementById('daily_grid_date_display')) document.getElementById('daily_grid_date_display').innerText= formatDateToThaiShort(dateInput);
   }
   const sheetDate = convertDateToSheet(dateInput);
   
@@ -2187,34 +2187,34 @@ function renderDailyGrid() {
 
 function quickAddClassLog(roomLabel) {
   showAddClassLogModal();
-  document.getElementById('class_room').value = roomLabel;
+  if (document.getElementById('class_room')) document.getElementById('class_room').value= roomLabel;
 }
 
 function showAddRoomModal() {
-  document.getElementById('room_modal_title').innerText = 'เน€เธเธดเนเธกเธซเนเธญเธเน€เธฃเธตเธขเธเนเธซเธกเน';
+  if (document.getElementById('room_modal_title')) document.getElementById('room_modal_title').innerText= 'เน€เธเธดเนเธกเธซเนเธญเธเน€เธฃเธตเธขเธเนเธซเธกเน';
   document.getElementById('room_add_fields').style.display = 'block';
   
   // Pre-select current active branch tab filter (or default to เธชเธฒเธเธฒ1)
   const currentBranch = state.activeBranchFilter || 'เธชเธฒเธเธฒ1';
-  document.getElementById('room_add_branch').value = currentBranch;
-  document.getElementById('room_add_name').value = '';
-  document.getElementById('room_edit_ipad').value = '';
-  document.getElementById('room_edit_zoom').value = '';
+  if (document.getElementById('room_add_branch')) document.getElementById('room_add_branch').value= currentBranch;
+  if (document.getElementById('room_add_name')) document.getElementById('room_add_name').value= '';
+  if (document.getElementById('room_edit_ipad')) document.getElementById('room_edit_ipad').value= '';
+  if (document.getElementById('room_edit_zoom')) document.getElementById('room_edit_zoom').value= '';
   
-  document.getElementById('room_edit_branch').value = '';
-  document.getElementById('room_edit_name').value = '';
+  if (document.getElementById('room_edit_branch')) document.getElementById('room_edit_branch').value= '';
+  if (document.getElementById('room_edit_name')) document.getElementById('room_edit_name').value= '';
   
   document.getElementById('room_modal').classList.add('active');
 }
 
 function showEditRoomModal(branch, roomName, ipad, zoom) {
-  document.getElementById('room_modal_title').innerText = 'เธ•เธฑเนเธเธเนเธฒเธซเนเธญเธเน€เธฃเธตเธขเธ (IPAD & Zoom)';
+  if (document.getElementById('room_modal_title')) document.getElementById('room_modal_title').innerText= 'เธ•เธฑเนเธเธเนเธฒเธซเนเธญเธเน€เธฃเธตเธขเธ (IPAD & Zoom)';
   document.getElementById('room_add_fields').style.display = 'none';
   
-  document.getElementById('room_edit_branch').value = branch;
-  document.getElementById('room_edit_name').value = roomName;
-  document.getElementById('room_edit_ipad').value = ipad;
-  document.getElementById('room_edit_zoom').value = zoom;
+  if (document.getElementById('room_edit_branch')) document.getElementById('room_edit_branch').value= branch;
+  if (document.getElementById('room_edit_name')) document.getElementById('room_edit_name').value= roomName;
+  if (document.getElementById('room_edit_ipad')) document.getElementById('room_edit_ipad').value= ipad;
+  if (document.getElementById('room_edit_zoom')) document.getElementById('room_edit_zoom').value= zoom;
   document.getElementById('room_modal').classList.add('active');
 }
 
@@ -2294,7 +2294,7 @@ function deleteRoomFrontend(branch, roomName) {
 function loadClassLogs(silent = false) {
   const filterDateInput = document.getElementById('log_filter_date').value;
   if (document.getElementById('class_log_date_display')) {
-    document.getElementById('class_log_date_display').innerText = formatDateToThaiShort(filterDateInput);
+    if (document.getElementById('class_log_date_display')) document.getElementById('class_log_date_display').innerText= formatDateToThaiShort(filterDateInput);
   }
   const sheetDate = convertDateToSheet(filterDateInput);
   
@@ -2414,23 +2414,23 @@ function renderClassLogsTable() {
 
 function showAddClassLogModal() {
   state.selectedClassLog = null;
-  document.getElementById('class_modal_title').innerText = 'เธเธฑเธเธ—เธถเธเธเธฑเนเธงเนเธกเธเธชเธญเธเธเธฅเธฒเธชเนเธซเธกเน';
+  if (document.getElementById('class_modal_title')) document.getElementById('class_modal_title').innerText= 'เธเธฑเธเธ—เธถเธเธเธฑเนเธงเนเธกเธเธชเธญเธเธเธฅเธฒเธชเนเธซเธกเน';
   document.getElementById('class_form').reset();
   
   // Reset attendance numbers
-  document.getElementById('class_kids_live').value = 0;
-  document.getElementById('class_kids_online').value = 0;
-  document.getElementById('class_kids_leave').value = 0;
-  document.getElementById('class_kids_absent').value = 0;
-  document.getElementById('class_kids_makeup').value = 0;
-  document.getElementById('class_kids_orange').value = 0;
-  document.getElementById('class_kids_sum').value = 0;
+  if (document.getElementById('class_kids_live')) document.getElementById('class_kids_live').value= 0;
+  if (document.getElementById('class_kids_online')) document.getElementById('class_kids_online').value= 0;
+  if (document.getElementById('class_kids_leave')) document.getElementById('class_kids_leave').value= 0;
+  if (document.getElementById('class_kids_absent')) document.getElementById('class_kids_absent').value= 0;
+  if (document.getElementById('class_kids_makeup')) document.getElementById('class_kids_makeup').value= 0;
+  if (document.getElementById('class_kids_orange')) document.getElementById('class_kids_orange').value= 0;
+  if (document.getElementById('class_kids_sum')) document.getElementById('class_kids_sum').value= 0;
   
-  document.getElementById('class_date').value = document.getElementById('log_filter_date').value;
-  document.getElementById('class_row_index').value = '';
+  if (document.getElementById('class_date')) document.getElementById('class_date').value= document.getElementById('log_filter_date').value;
+  if (document.getElementById('class_row_index')) document.getElementById('class_row_index').value= '';
   
   // Reset and show recurring option
-  document.getElementById('class_is_recurring').checked = false;
+  if (document.getElementById('class_is_recurring')) document.getElementById('class_is_recurring').checked= false;
   document.getElementById('class_recurring_wrapper').style.display = 'block';
   document.getElementById('class_recurring_end_container').style.display = 'none';
   
@@ -2442,30 +2442,30 @@ function showEditClassLogModal(rowIndex) {
   if (!log) return;
   
   state.selectedClassLog = log;
-  document.getElementById('class_modal_title').innerText = 'เนเธเนเนเธเธเธฑเธเธ—เธถเธเธเธฑเนเธงเนเธกเธเธชเธญเธ';
+  if (document.getElementById('class_modal_title')) document.getElementById('class_modal_title').innerText= 'เนเธเนเนเธเธเธฑเธเธ—เธถเธเธเธฑเนเธงเนเธกเธเธชเธญเธ';
   
-  document.getElementById('class_row_index').value = log.rowIndex;
-  document.getElementById('class_subject').value = log.subject;
-  document.getElementById('class_teacher_reg').value = log.teacherRegular;
-  document.getElementById('class_teacher_sub').value = log.teacherSub || '';
-  document.getElementById('class_time_start').value = log.timeStart;
-  document.getElementById('class_time_end').value = log.timeEnd;
-  document.getElementById('class_hours').value = log.hours;
-  document.getElementById('class_date').value = convertDateFromSheet(log.date);
-  document.getElementById('class_room').value = log.roomBranch;
-  document.getElementById('class_note').value = log.note;
+  if (document.getElementById('class_row_index')) document.getElementById('class_row_index').value= log.rowIndex;
+  if (document.getElementById('class_subject')) document.getElementById('class_subject').value= log.subject;
+  if (document.getElementById('class_teacher_reg')) document.getElementById('class_teacher_reg').value= log.teacherRegular;
+  if (document.getElementById('class_teacher_sub')) document.getElementById('class_teacher_sub').value= log.teacherSub || '';
+  if (document.getElementById('class_time_start')) document.getElementById('class_time_start').value= log.timeStart;
+  if (document.getElementById('class_time_end')) document.getElementById('class_time_end').value= log.timeEnd;
+  if (document.getElementById('class_hours')) document.getElementById('class_hours').value= log.hours;
+  if (document.getElementById('class_date')) document.getElementById('class_date').value= convertDateFromSheet(log.date);
+  if (document.getElementById('class_room')) document.getElementById('class_room').value= log.roomBranch;
+  if (document.getElementById('class_note')) document.getElementById('class_note').value= log.note;
   
-  document.getElementById('class_kids_live').value = log.isPresentLive || 0;
-  document.getElementById('class_kids_online').value = log.isPresentOnline || 0;
-  document.getElementById('class_kids_leave').value = log.isLeave || 0;
-  document.getElementById('class_kids_absent').value = log.isAbsent || 0;
-  document.getElementById('class_kids_makeup').value = log.isMakeup || 0;
-  document.getElementById('class_kids_orange').value = log.isOrange || 0;
+  if (document.getElementById('class_kids_live')) document.getElementById('class_kids_live').value= log.isPresentLive || 0;
+  if (document.getElementById('class_kids_online')) document.getElementById('class_kids_online').value= log.isPresentOnline || 0;
+  if (document.getElementById('class_kids_leave')) document.getElementById('class_kids_leave').value= log.isLeave || 0;
+  if (document.getElementById('class_kids_absent')) document.getElementById('class_kids_absent').value= log.isAbsent || 0;
+  if (document.getElementById('class_kids_makeup')) document.getElementById('class_kids_makeup').value= log.isMakeup || 0;
+  if (document.getElementById('class_kids_orange')) document.getElementById('class_kids_orange').value= log.isOrange || 0;
   
   updateClassKidsSum();
   
   // Hide recurring option during editing
-  document.getElementById('class_is_recurring').checked = false;
+  if (document.getElementById('class_is_recurring')) document.getElementById('class_is_recurring').checked= false;
   document.getElementById('class_recurring_wrapper').style.display = 'none';
   document.getElementById('class_recurring_end_container').style.display = 'none';
   
@@ -2474,7 +2474,7 @@ function showEditClassLogModal(rowIndex) {
 
 function closeClassLogModal() {
   document.getElementById('class_modal').classList.remove('active');
-  document.getElementById('class_is_recurring').checked = false;
+  if (document.getElementById('class_is_recurring')) document.getElementById('class_is_recurring').checked= false;
   document.getElementById('class_recurring_end_container').style.display = 'none';
 }
 
@@ -2482,7 +2482,7 @@ function updateClassKidsSum() {
   const live = parseInt(document.getElementById('class_kids_live').value) || 0;
   const online = parseInt(document.getElementById('class_kids_online').value) || 0;
   const leave = parseInt(document.getElementById('class_kids_leave').value) || 0;
-  document.getElementById('class_kids_sum').value = live + online + leave;
+  if (document.getElementById('class_kids_sum')) document.getElementById('class_kids_sum').value= live + online + leave;
 }
 
 function calculateClassHours() {
@@ -2501,7 +2501,7 @@ function calculateClassHours() {
     const hr = Math.floor(diffMin / 60);
     const min = diffMin % 60;
     const formatted = `${hr}:${min < 10 ? '0' + min : min}`;
-    document.getElementById('class_hours').value = formatted;
+    if (document.getElementById('class_hours')) document.getElementById('class_hours').value= formatted;
   }
 }
 
@@ -2891,24 +2891,24 @@ function switchTeacherSubTab(tabName) {
 
 function showAddTeacherModal() {
   document.getElementById('teacher_form').reset();
-  document.getElementById('teacher_modal_title').innerText = 'เน€เธเธดเนเธกเธเธฃเธฐเธงเธฑเธ•เธดเธเธธเธ“เธเธฃเธนเนเธซเธกเน';
+  if (document.getElementById('teacher_modal_title')) document.getElementById('teacher_modal_title').innerText= 'เน€เธเธดเนเธกเธเธฃเธฐเธงเธฑเธ•เธดเธเธธเธ“เธเธฃเธนเนเธซเธกเน';
   document.getElementById('t_nickname').readOnly = false;
   document.getElementById('teacher_modal').classList.add('active');
 }
 
 function showEditTeacherModal(nickname, fullName, school, phone, subjects, bank, accountNumber, compensation, accountType) {
   document.getElementById('teacher_form').reset();
-  document.getElementById('teacher_modal_title').innerText = 'เนเธเนเนเธเธเธฃเธฐเธงเธฑเธ•เธดเธเธธเธ“เธเธฃเธน';
-  document.getElementById('t_nickname').value = nickname;
+  if (document.getElementById('teacher_modal_title')) document.getElementById('teacher_modal_title').innerText= 'เนเธเนเนเธเธเธฃเธฐเธงเธฑเธ•เธดเธเธธเธ“เธเธฃเธน';
+  if (document.getElementById('t_nickname')) document.getElementById('t_nickname').value= nickname;
   document.getElementById('t_nickname').readOnly = true; // Nickname is primary key
-  document.getElementById('t_fullname').value = fullName !== '-' ? fullName : '';
-  document.getElementById('t_school').value = school !== '-' ? school : '';
-  document.getElementById('t_phone').value = phone !== '-' ? phone : '';
-  document.getElementById('t_subjects').value = subjects !== '-' ? subjects : '';
-  document.getElementById('t_bank').value = bank !== '-' ? bank : '';
-  document.getElementById('t_account_number').value = accountNumber !== '-' ? accountNumber : '';
-  document.getElementById('t_compensation').value = compensation !== '-' ? compensation : '150';
-  document.getElementById('t_account_type').value = accountType !== '-' ? accountType : 'เธเธฑเธเธเธตเธ—เธฑเนเธงเนเธ';
+  if (document.getElementById('t_fullname')) document.getElementById('t_fullname').value= fullName !== '-' ? fullName : '';
+  if (document.getElementById('t_school')) document.getElementById('t_school').value= school !== '-' ? school : '';
+  if (document.getElementById('t_phone')) document.getElementById('t_phone').value= phone !== '-' ? phone : '';
+  if (document.getElementById('t_subjects')) document.getElementById('t_subjects').value= subjects !== '-' ? subjects : '';
+  if (document.getElementById('t_bank')) document.getElementById('t_bank').value= bank !== '-' ? bank : '';
+  if (document.getElementById('t_account_number')) document.getElementById('t_account_number').value= accountNumber !== '-' ? accountNumber : '';
+  if (document.getElementById('t_compensation')) document.getElementById('t_compensation').value= compensation !== '-' ? compensation : '150';
+  if (document.getElementById('t_account_type')) document.getElementById('t_account_type').value= accountType !== '-' ? accountType : 'เธเธฑเธเธเธตเธ—เธฑเนเธงเนเธ';
   
   document.getElementById('teacher_modal').classList.add('active');
 }
@@ -2985,10 +2985,10 @@ function runTeacherPayCalculation() {
 
 function renderTeacherPayResult(res) {
   document.getElementById('calc_result_card').style.display = 'block';
-  document.getElementById('calc_result_title').innerText = 'เธชเธฃเธธเธเธเธฒเธเธชเธญเธเธเธฃเธฐเธเธณเธเธงเธ”เธเธญเธ ' + res.teacher;
-  document.getElementById('calc_result_total_pay').innerText = 'เธฃเธฒเธขเนเธ”เนเธชเธธเธ—เธเธด: เธฟ' + res.totalPay.toLocaleString();
-  document.getElementById('calc_result_total_hours').innerText = res.totalHours.toLocaleString() + ' เธเธก.';
-  document.getElementById('calc_result_total_classes').innerText = res.classes.length.toLocaleString() + ' เธเธฅเธฒเธช';
+  if (document.getElementById('calc_result_title')) document.getElementById('calc_result_title').innerText= 'เธชเธฃเธธเธเธเธฒเธเธชเธญเธเธเธฃเธฐเธเธณเธเธงเธ”เธเธญเธ ' + res.teacher;
+  if (document.getElementById('calc_result_total_pay')) document.getElementById('calc_result_total_pay').innerText= 'เธฃเธฒเธขเนเธ”เนเธชเธธเธ—เธเธด: เธฟ' + res.totalPay.toLocaleString();
+  if (document.getElementById('calc_result_total_hours')) document.getElementById('calc_result_total_hours').innerText= res.totalHours.toLocaleString() + ' เธเธก.';
+  if (document.getElementById('calc_result_total_classes')) document.getElementById('calc_result_total_classes').innerText= res.classes.length.toLocaleString() + ' เธเธฅเธฒเธช';
   
   const tbody = document.getElementById('calc_details_tbody');
   tbody.innerHTML = '';
@@ -3060,7 +3060,7 @@ function renderManagerLogsTable() {
 
 function showAddManagerLogModal() {
   document.getElementById('manager_form').reset();
-  document.getElementById('manager_date').value = getTodayString();
+  if (document.getElementById('manager_date')) document.getElementById('manager_date').value= getTodayString();
   document.getElementById('manager_modal').classList.add('active');
 }
 
@@ -3181,7 +3181,7 @@ function toggleRecurringDate() {
     const year = today.getFullYear();
     if (day < 10) day = '0' + day;
     if (month < 10) month = '0' + month;
-    document.getElementById('class_recurring_end_date').value = `${year}-${month}-${day}`;
+    if (document.getElementById('class_recurring_end_date')) document.getElementById('class_recurring_end_date').value= `${year}-${month}-${day}`;
   }
 }
 
@@ -3252,13 +3252,13 @@ function renderDebtorsTable() {
 }
 
 function showDebtorPaymentModal(id, name, courseName, balance) {
-  document.getElementById('dp_student_id').value = id;
-  document.getElementById('dp_student_display_name').innerText = `เธเธฑเธเน€เธฃเธตเธขเธ: ${name}`;
-  document.getElementById('dp_course_display_name').innerText = `เธเธญเธฃเนเธช: ${courseName}`;
-  document.getElementById('dp_balance_display').innerText = `เธขเธญเธ”เธเนเธฒเธเธเนเธฒเธขเน€เธ”เธดเธก: เธฟ${balance.toLocaleString()}`;
-  document.getElementById('dp_paid').value = balance;
-  document.getElementById('dp_payment_date').value = getTodayString();
-  document.getElementById('dp_staff').value = getLogUser() || '';
+  if (document.getElementById('dp_student_id')) document.getElementById('dp_student_id').value= id;
+  if (document.getElementById('dp_student_display_name')) document.getElementById('dp_student_display_name').innerText= `เธเธฑเธเน€เธฃเธตเธขเธ: ${name}`;
+  if (document.getElementById('dp_course_display_name')) document.getElementById('dp_course_display_name').innerText= `เธเธญเธฃเนเธช: ${courseName}`;
+  if (document.getElementById('dp_balance_display')) document.getElementById('dp_balance_display').innerText= `เธขเธญเธ”เธเนเธฒเธเธเนเธฒเธขเน€เธ”เธดเธก: เธฟ${balance.toLocaleString()}`;
+  if (document.getElementById('dp_paid')) document.getElementById('dp_paid').value= balance;
+  if (document.getElementById('dp_payment_date')) document.getElementById('dp_payment_date').value= getTodayString();
+  if (document.getElementById('dp_staff')) document.getElementById('dp_staff').value= getLogUser() || '';
   
   const channelSelect = document.getElementById('dp_payment_channel');
   channelSelect.innerHTML = '';
@@ -3327,9 +3327,9 @@ function saveDebtorPayment(e) {
 
 function showStudentHistoryModal(name, nickname) {
   if (!name) return;
-  document.getElementById('history_student_info').innerHTML = `<strong>เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเธฃเธฐเธงเธฑเธ•เธดเธเธญเธ:</strong> ${name} ${nickname ? '('+nickname+')' : ''}...`;
-  document.getElementById('history_courses_tbody').innerHTML = `<tr><td colspan="8" style="text-align: center;">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธญเธฃเนเธช...</td></tr>`;
-  document.getElementById('history_lessons_tbody').innerHTML = `<tr><td colspan="6" style="text-align: center;">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเธฃเธฐเธงเธฑเธ•เธดเน€เธเนเธฒเน€เธฃเธตเธขเธ...</td></tr>`;
+  if (document.getElementById('history_student_info')) document.getElementById('history_student_info').innerHTML= `<strong>เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเธฃเธฐเธงเธฑเธ•เธดเธเธญเธ:</strong> ${name} ${nickname ? '('+nickname+')' : ''}...`;
+  if (document.getElementById('history_courses_tbody')) document.getElementById('history_courses_tbody').innerHTML= `<tr><td colspan="8" style="text-align: center;">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธญเธฃเนเธช...</td></tr>`;
+  if (document.getElementById('history_lessons_tbody')) document.getElementById('history_lessons_tbody').innerHTML= `<tr><td colspan="6" style="text-align: center;">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเธฃเธฐเธงเธฑเธ•เธดเน€เธเนเธฒเน€เธฃเธตเธขเธ...</td></tr>`;
   
   document.getElementById('student_history_modal').classList.add('active');
   
@@ -3338,11 +3338,11 @@ function showStudentHistoryModal(name, nickname) {
       if (res && res.success) {
         renderStudentHistory(name, nickname, res.courses, res.classes);
       } else {
-        document.getElementById('history_student_info').innerText = 'เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธเนเธญเธกเธนเธฅเธเธฃเธฐเธงเธฑเธ•เธดเนเธ”เน: ' + (res ? res.error : 'unknown');
+        if (document.getElementById('history_student_info')) document.getElementById('history_student_info').innerText= 'เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธเนเธญเธกเธนเธฅเธเธฃเธฐเธงเธฑเธ•เธดเนเธ”เน: ' + (res ? res.error : 'unknown');
       }
     })
     .withFailureHandler(err => {
-      document.getElementById('history_student_info').innerText = 'เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message;
+      if (document.getElementById('history_student_info')) document.getElementById('history_student_info').innerText= 'เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message;
     })
     .getStudentHistoryData(name, nickname);
 }
@@ -3568,21 +3568,21 @@ function showPrintReceiptModal(studentId) {
       setLoading(false);
       
       // Set customer info
-      document.getElementById('pr_customer').value = s.name + (s.nickname ? ' (' + s.nickname + ')' : '');
-      document.getElementById('pr_phone').value = formatPhone(s.contact) || '';
+      if (document.getElementById('pr_customer')) document.getElementById('pr_customer').value= s.name + (s.nickname ? ' (' + s.nickname + ')' : '');
+      if (document.getElementById('pr_phone')) document.getElementById('pr_phone').value= formatPhone(s.contact) || '';
       
       // Generate date in Thai Buddhist year (local year is 2026 -> 2569)
-      document.getElementById('pr_date').value = formatDateTimeToThaiLong(new Date());
+      if (document.getElementById('pr_date')) document.getElementById('pr_date').value= formatDateTimeToThaiLong(new Date());
       
       // Generate receipt number e.g., 69-0012
       const yearBE = new Date().getFullYear() + 543;
       const shortYear = yearBE.toString().slice(-2);
       const studentIndex = state.students.indexOf(s) + 1;
-      document.getElementById('pr_number').value = `${shortYear}-${String(studentIndex).padStart(4, '0')}`;
+      if (document.getElementById('pr_number')) document.getElementById('pr_number').value= `${shortYear}-${String(studentIndex).padStart(4, '0')}`;
       
       // Default Tax ID
-      document.getElementById('pr_tax_id').value = '0215562010486';
-      document.getElementById('pr_address').value = 'เธญ.เน€เธกเธทเธญเธ เธ.เธฃเธฐเธขเธญเธ 21000';
+      if (document.getElementById('pr_tax_id')) document.getElementById('pr_tax_id').value= '0215562010486';
+      if (document.getElementById('pr_address')) document.getElementById('pr_address').value= 'เธญ.เน€เธกเธทเธญเธ เธ.เธฃเธฐเธขเธญเธ 21000';
       
       // Clear all 10 description and amount inputs
       for (let i = 1; i <= 10; i++) {
@@ -3616,19 +3616,19 @@ function showPrintReceiptModal(studentId) {
       }
       
       // Notes: default to empty
-      document.getElementById('pr_note_1').value = '';
-      document.getElementById('pr_note_2').value = '';
-      document.getElementById('pr_note_3').value = '';
+      if (document.getElementById('pr_note_1')) document.getElementById('pr_note_1').value= '';
+      if (document.getElementById('pr_note_2')) document.getElementById('pr_note_2').value= '';
+      if (document.getElementById('pr_note_3')) document.getElementById('pr_note_3').value= '';
       
       // Payment channel
       const payChannel = s.paymentChannel || '';
       if (payChannel.toLowerCase().includes('เธชเธ”')) {
-        document.getElementById('pr_payment_method').value = 'เน€เธเธดเธเธชเธ”';
+        if (document.getElementById('pr_payment_method')) document.getElementById('pr_payment_method').value= 'เน€เธเธดเธเธชเธ”';
       } else {
-        document.getElementById('pr_payment_method').value = 'เน€เธเธดเธเนเธญเธ';
+        if (document.getElementById('pr_payment_method')) document.getElementById('pr_payment_method').value= 'เน€เธเธดเธเนเธญเธ';
       }
       
-      document.getElementById('pr_staff').value = s.staff || getLogUser() || '';
+      if (document.getElementById('pr_staff')) document.getElementById('pr_staff').value= s.staff || getLogUser() || '';
       
       // Auto-select branch based on s.branchLearn
       let studentBranch = '1';
@@ -3637,7 +3637,7 @@ function showPrintReceiptModal(studentId) {
       } else if (s.branchLearn && s.branchLearn.indexOf('3') !== -1) {
         studentBranch = '3';
       }
-      document.getElementById('pr_branch_select').value = studentBranch;
+      if (document.getElementById('pr_branch_select')) document.getElementById('pr_branch_select').value= studentBranch;
       
       // Load branch details (address/phone)
       handleReceiptBranchChange();
