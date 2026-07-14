@@ -3836,9 +3836,10 @@ function switchDailyGridView(mode) {
 }
 
 function updateMonthDisplay() {
-  const thaiYear = monthlyViewState.selectedYear + 543;
-  document.getElementById('monthly_grid_month_display').innerText = 
-    thaiMonthNames[monthlyViewState.selectedMonth] + ' ' + thaiYear;
+  const sel = document.getElementById('monthly_grid_month_select');
+  if (!sel) return;
+  const val = monthlyViewState.selectedYear + '-' + String(monthlyViewState.selectedMonth).padStart(2, '0');
+  sel.value = val;
 }
 
 function updateDowTabsActive() {
@@ -4203,6 +4204,9 @@ function renderMonthlyGrid(data) {
 }
 
 function loadDailyGrid(isSilent = false) {
+  if (monthlyViewState.mode !== 'daily') {
+    switchDailyGridView('daily');
+  }
   const dateInput = document.getElementById('daily_grid_filter_date').value;
   const sheetDate = convertDateToSheet(dateInput);
   
@@ -10330,4 +10334,42 @@ function syncDataLearnSubjects() {
     if (typeof hideLoading === 'function') hideLoading();
     alert('เกิดข้อผิดพลาด: ' + err.message);
   }).updateDataLearnSubjects();
+}
+
+
+function handleMonthSelectChange() {
+  const sel = document.getElementById('monthly_grid_month_select');
+  if (!sel || !sel.value) return;
+  const parts = sel.value.split('-');
+  monthlyViewState.selectedYear = parseInt(parts[0]);
+  monthlyViewState.selectedMonth = parseInt(parts[1]);
+  loadMonthlyGrid();
+}
+
+// Ensure the dropdown is populated on first load
+document.addEventListener('DOMContentLoaded', function() {
+  populateMonthSelect();
+});
+function populateMonthSelect() {
+  const sel = document.getElementById('monthly_grid_month_select');
+  if (!sel) return;
+  sel.innerHTML = '';
+  
+  // Show from 1 year ago to 2 years in future
+  const now = new Date();
+  const currentY = now.getFullYear();
+  const currentM = now.getMonth() + 1;
+  
+  for (let y = currentY - 1; y <= currentY + 2; y++) {
+    for (let m = 1; m <= 12; m++) {
+      const option = document.createElement('option');
+      option.value = y + '-' + String(m).padStart(2, '0');
+      const thaiYear = y + 543;
+      option.text = thaiMonthNames[m] + ' ' + thaiYear;
+      if (y === monthlyViewState.selectedYear && m === monthlyViewState.selectedMonth) {
+        option.selected = true;
+      }
+      sel.appendChild(option);
+    }
+  }
 }
