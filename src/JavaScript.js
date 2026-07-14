@@ -1804,6 +1804,7 @@ function populateDropdowns() {
   
   populateSelect('teacher_schedule_select', ['(เลือกชื่อครู)', ...teachers]);
   populateDatalist('student_school_list', schools);
+  populateDatalist('profile_school_list', schools);
   populateSelect('student_pay_channel', channels);
   populateSelect('p_payment_channel', channels);
   populateSelect('manager_name', ['ผจก.ป้อม', 'ผจก.กิ๊บ', 'ผจก.พัช', 'ผจก.เพื่อน']);
@@ -8675,6 +8676,8 @@ function openProfileModal() {
         if (bEl) bEl.value = p.bank || '';
         const aEl = document.getElementById('profile_account_no');
         if (aEl) aEl.value = p.accountNumber || '';
+        const scEl = document.getElementById('profile_school');
+        if (scEl) scEl.value = p.school || '';
         
         // Reset password fields
         const cpEl = document.getElementById('profile_curr_pass');

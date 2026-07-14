@@ -1225,6 +1225,25 @@ function saveUserProfile(username, data, logUser) {
         if (data.profilePic !== undefined) {
           sheet.getRange(i + 1, 7).setValue(data.profilePic || '');
         }
+        
+        // --- ADDED FOR TEACHERSDB ---
+        if (isTeacherUser(username)) {
+           const tSheet = db.getSheetByName('TeachersDB');
+           if (tSheet) {
+             const tRows = tSheet.getDataRange().getValues();
+             for (let j = 1; j < tRows.length; j++) {
+                if (tRows[j][0].toString().trim().toLowerCase() === (data.nickname || '').toLowerCase() || 
+                    (tRows[j][8] && tRows[j][8].toString().trim().toLowerCase() === cleanUsername)) {
+                   if (data.school !== undefined) tSheet.getRange(j + 1, 3).setValue(data.school);
+                   if (data.phone !== undefined) tSheet.getRange(j + 1, 4).setValue(data.phone);
+                   if (data.bank !== undefined) tSheet.getRange(j + 1, 6).setValue(data.bank);
+                   if (data.accountNumber !== undefined) tSheet.getRange(j + 1, 7).setValue(data.accountNumber);
+                   break;
+                }
+             }
+           }
+        }
+        // ----------------------------
         logActivity(logUser, 'แก้ไขโปรไฟล์', `ผู้ใช้: ${username} แก้ไขข้อมูลโปรไฟล์ของตนเอง`);
         return { success: true };
       }
