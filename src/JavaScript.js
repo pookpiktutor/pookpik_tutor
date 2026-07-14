@@ -650,11 +650,8 @@ function loadTeacherYearlySalary() {
   if (resultCard) resultCard.style.display = 'none';
   
   // Reset yearly values
-  const totalPayEl = document.getElementById('yearly_salary_total_pay');
   if (totalPayEl) totalPayEl.innerText = '฿0';
-  const totalHoursEl = document.getElementById('yearly_salary_total_hours');
   if (totalHoursEl) totalHoursEl.innerText = '0 ชม.';
-  const totalClassesEl = document.getElementById('yearly_salary_total_classes');
   if (totalClassesEl) totalClassesEl.innerText = '0 คลาส';
   
   google.script.run
@@ -2233,7 +2230,6 @@ function switchPanel(panelName) {
     loadTeacherProfiles();
   } else if (panelName === 'teacher_payroll') {
     if(document.getElementById('calc_result_card')) document.getElementById('calc_result_card').style.display = 'none';
-    const staffBanner = document.getElementById('staff_yearly_summary_banner');
     if (staffBanner) staffBanner.style.display = 'none';
     const role = state.currentUser ? (state.currentUser.role || 'Staff').toString().trim() : 'Staff';
     if (role === 'Teacher' || role === 'ครู') {
@@ -6427,7 +6423,6 @@ function handleStaffPayrollFilterChange() {
   const teacher = teacherSelect.value;
   
   if (!teacher || teacher.includes('เลือกครู')) {
-    if(document.getElementById('staff_yearly_summary_banner')) document.getElementById('staff_yearly_summary_banner').style.display = 'none';
     if(document.getElementById('calc_result_card')) document.getElementById('calc_result_card').style.display = 'none';
     showToast('กรุณาระบุชื่อครูเพื่อประมวลผล', 'warning');
     return;
@@ -6442,13 +6437,9 @@ function handleStaffPayrollFilterChange() {
   
   setLoading(true, 'กำลังคำนวณรายได้คุณครูทั้งหมด 12 เดือน...');
   
-  if(document.getElementById('staff_yearly_summary_banner')) document.getElementById('staff_yearly_summary_banner').style.display = 'none';
   if(document.getElementById('calc_result_card')) document.getElementById('calc_result_card').style.display = 'none';
   
   // Reset yearly values
-  document.getElementById('staff_yearly_total_pay').innerText = '฿0';
-  document.getElementById('staff_yearly_total_hours').innerText = '0 ชม.';
-  document.getElementById('staff_yearly_total_classes').innerText = '0 คลาส';
   
   google.script.run
     .withSuccessHandler(res => {
@@ -6476,11 +6467,7 @@ function handleStaffPayrollFilterChange() {
       }
       
       // Update yearly banner displays
-      document.getElementById('staff_yearly_total_pay').innerText = '฿' + Math.round(yearlyPay).toLocaleString();
-      document.getElementById('staff_yearly_total_hours').innerText = (Math.round(yearlyHours * 100) / 100).toLocaleString() + ' ชม.';
-      document.getElementById('staff_yearly_total_classes').innerText = yearlyClasses.toLocaleString() + ' คลาส';
       
-      if(document.getElementById('staff_yearly_summary_banner')) document.getElementById('staff_yearly_summary_banner').style.display = 'block';
       
       // Load selected month
       handleStaffPayrollMonthChange();
