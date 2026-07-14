@@ -8058,3 +8058,124 @@ function migrateMainClassTo19Columns() {
     sheet.getRange(5, 18).setValue('ผู้รับเงิน');
   });
 }
+
+
+// ==============================================================================
+// UTIL: Update Data Learn Subjects to match Grade Sheet Headers
+// Requested feature: Update column A in Data Learn by matching with branch/date
+// ==============================================================================
+function updateDataLearnSubjects() {
+  const db = SpreadsheetApp.openById(SHEET_IDS.database);
+  const dataLearnSheet = db.getSheetByName('Data Learn');
+  const data = dataLearnSheet.getDataRange().getValues();
+  
+  if (data.length <= 1) return 'No data to process.';
+  
+  // Cache the headers of all grade sheets
+  const grades = ['อนุบาล', 'ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
+  const branches = ['1', '2', '3'];
+  const gradeSheetCache = {};
+  
+  for (let g of grades) {
+    for (let b of branches) {
+      const sheetName = `${g}/${b}`;
+      const sheet = db.getSheetByName(sheetName);
+      if (sheet) {
+        // Get Row 1 headers (which contain the full course names)
+        const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+        gradeSheetCache[sheetName] = headers.filter(h => h && String(h).trim() !== '');
+      }
+    }
+  }
+  
+  const thDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+  let updatedCount = 0;
+  
+  for (let i = 1; i < data.length; i++) { 
+    const row = data[i];
+    let subject = row[0] ? String(row[0]).trim() : '';
+    const dateStr = row[13]; // Col N (Date)
+    const roomStr = row[14] ? String(row[14]) : ''; // Col O (Branch/Room)
+    
+    // Only process if it contains "หลัก"
+    if (subject.includes('หลัก')) {
+      // 1. Determine Branch
+      let branchNum = '1';
+      if (roomStr.includes('สาขา2') || roomStr.includes('สาขา 2') || roomStr.includes('สาขา-2')) branchNum = '2';
+      else if (roomStr.includes('สาขา3') || roomStr.includes('สาขา 3') || roomStr.includes('สาขา-3')) branchNum = '3';
+      
+      // 2. Determine Grade
+      let gradeFound = '';
+      for (let g of grades) {
+        if (subject.includes(g)) {
+          gradeFound = g;
+          break;
+        }
+      }
+      
+      // 3. Determine Day of Week
+      let dayStr = '';
+      if (dateStr instanceof Date) {
+        dayStr = thDays[dateStr.getDay()];
+      } else if (typeof dateStr === 'string') {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          const d = parseInt(parts[0], 10);
+          const m = parseInt(parts[1], 10) - 1;
+          const y = parseInt(parts[2], 10);
+          const dateObj = new Date(y, m, d);
+          if (!isNaN(dateObj.getTime())) {
+            dayStr = thDays[dateObj.getDay()];
+          }
+        }
+      }
+      
+      if (gradeFound && dayStr) {
+        const targetSheetName = `${gradeFound}/${branchNum}`;
+        const headers = gradeSheetCache[targetSheetName];
+        
+        if (headers && headers.length > 0) {
+          // Determine core words to match (e.g. "วิทย์", "อังกฤษ")
+          let coreSubj = subject.replace('หลัก', '').replace(gradeFound, '').replace(/\d+/g, '').replace(/[()]/g, '').trim();
+          const coreWords = coreSubj.split(/[\s\/]+/).filter(w => w.trim() !== '' && w.trim() !== 'ป' && w.trim() !== 'ม');
+          
+          let matchedHeader = '';
+          // Find the best matching header
+          for (let h of headers) {
+            const hStr = String(h);
+            // It must be a "หลัก" subject for the same grade on the same day
+            if (hStr.includes('หลัก') && hStr.includes(gradeFound) && hStr.includes(dayStr)) {
+              let matchAll = true;
+              for (let w of coreWords) {
+                if (!hStr.includes(w)) {
+                  matchAll = false;
+                  break;
+                }
+              }
+              
+              if (matchAll) {
+                matchedHeader = hStr;
+                break;
+              }
+            }
+          }
+          
+          // If we found a match and it's different, update it in the array
+          if (matchedHeader && subject !== matchedHeader) {
+            data[i][0] = matchedHeader;
+            updatedCount++;
+          }
+        }
+      }
+    }
+  }
+  
+  if (updatedCount > 0) {
+    // Write Column A back to the sheet
+    const colA = data.map(row => [row[0]]);
+    dataLearnSheet.getRange(1, 1, colA.length, 1).setValues(colA);
+  }
+  
+  Logger.log('Updated ' + updatedCount + ' rows in Data Learn.');
+  return 'Updated ' + updatedCount + ' rows in Data Learn.';
+}
