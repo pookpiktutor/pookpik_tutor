@@ -10311,3 +10311,23 @@ if (document.readyState === 'loading') {
 } else {
   initializeApp();
 }
+
+
+// ==========================================
+// Sync Data Learn Subjects
+// ==========================================
+function syncDataLearnSubjects() {
+  if (!confirm('ต้องการซิงค์ชื่อวิชาใน Data Learn ให้ตรงกับหัวตารางใช่หรือไม่? (อาจใช้เวลา 1-2 นาที)')) return;
+  
+  if (typeof showLoading === 'function') {
+    showLoading('กำลังซิงค์และแก้ไขข้อมูล... (ห้ามปิดหน้าจอ)');
+  }
+  
+  google.script.run.withSuccessHandler(function(res) {
+    if (typeof hideLoading === 'function') hideLoading();
+    alert('สำเร็จ! ' + res);
+  }).withFailureHandler(function(err) {
+    if (typeof hideLoading === 'function') hideLoading();
+    alert('เกิดข้อผิดพลาด: ' + err.message);
+  }).updateDataLearnSubjects();
+}
