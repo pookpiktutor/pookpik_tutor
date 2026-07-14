@@ -649,9 +649,13 @@ function loadTeacherYearlySalary() {
   const resultCard = document.getElementById('teacher_salary_result_card');
   if (resultCard) resultCard.style.display = 'none';
   
+    const totalPayEl = document.getElementById('teacher_salary_net_pay');
+  const totalHoursEl = document.getElementById('teacher_salary_total_hours');
+  const totalClassesEl = document.getElementById('teacher_salary_total_classes');
+  
   // Reset yearly values
-  if (totalPayEl) totalPayEl.innerText = '฿0';
-  if (totalHoursEl) totalHoursEl.innerText = '0 ชม.';
+  if (totalPayEl) totalPayEl.innerText = 'รายได้สุทธิ: ฿0';
+  if (totalHoursEl) totalHoursEl.innerText = '0 ช.ม.';
   if (totalClassesEl) totalClassesEl.innerText = '0 คลาส';
   
   google.script.run
@@ -680,8 +684,8 @@ function loadTeacherYearlySalary() {
       }
       
       // Update yearly banner displays
-      if (totalPayEl) totalPayEl.innerText = '฿' + Math.round(yearlyPay).toLocaleString();
-      if (totalHoursEl) totalHoursEl.innerText = (Math.round(yearlyHours * 100) / 100).toLocaleString() + ' ชม.';
+      if (totalPayEl) totalPayEl.innerText = 'รายได้สุทธิ: ฿' + Math.round(yearlyPay).toLocaleString();
+      if (totalHoursEl) totalHoursEl.innerText = (Math.round(yearlyHours * 100) / 100).toLocaleString() + ' ช.ม.';
       if (totalClassesEl) totalClassesEl.innerText = yearlyClasses.toLocaleString() + ' คลาส';
       
       // Show Month Tabs container
