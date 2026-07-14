@@ -1129,7 +1129,11 @@ function bootApp() {
     if (!activeEl) return;
     const panelName = activeEl.getAttribute('data-panel');
     if (panelName === 'daily_grid') {
-      loadDailyGrid(true); // Silent reload
+      if (typeof monthlyViewState !== 'undefined' && monthlyViewState.mode === 'monthly') {
+        loadMonthlyGrid(true);
+      } else {
+        loadDailyGrid(true);
+      }
     } else if (panelName === 'class_logs') {
       loadRevenueLogs(true); // Silent reload
     } else if (panelName === 'teacher_schedule') {
