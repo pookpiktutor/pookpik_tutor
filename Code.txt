@@ -8131,40 +8131,45 @@ function updateDataLearnSubjects() {
       }
       
       if (gradeFound && dayStr) {
-        const targetSheetName = `${gradeFound}/${branchNum}`;
-        const headers = gradeSheetCache[targetSheetName];
+        // Determine core words to match (e.g. "วิทย์", "อังกฤษ")
+        let coreSubj = subject.replace('หลัก', '').replace(gradeFound, '').replace(/\d+/g, '').replace(/[()]/g, '').trim();
+        const coreWords = coreSubj.split(/[\s\/]+/).filter(w => w.trim() !== '' && w.trim() !== 'ป' && w.trim() !== 'ม');
         
-        if (headers && headers.length > 0) {
-          // Determine core words to match (e.g. "วิทย์", "อังกฤษ")
-          let coreSubj = subject.replace('หลัก', '').replace(gradeFound, '').replace(/\d+/g, '').replace(/[()]/g, '').trim();
-          const coreWords = coreSubj.split(/[\s\/]+/).filter(w => w.trim() !== '' && w.trim() !== 'ป' && w.trim() !== 'ม');
+        let matchedHeader = '';
+        
+        // Search across all 3 branches for this grade (e.g. ป.3/1, ป.3/2, ป.3/3)
+        for (let b of branches) {
+          const targetSheetName = `${gradeFound}/${b}`;
+          const headers = gradeSheetCache[targetSheetName];
           
-          let matchedHeader = '';
-          // Find the best matching header
-          for (let h of headers) {
-            const hStr = String(h);
-            // It must be a "หลัก" subject for the same grade on the same day
-            if (hStr.includes('หลัก') && hStr.includes(gradeFound) && hStr.includes(dayStr)) {
-              let matchAll = true;
-              for (let w of coreWords) {
-                if (!hStr.includes(w)) {
-                  matchAll = false;
-                  break;
+          if (headers && headers.length > 0) {
+            for (let h of headers) {
+              const hStr = String(h);
+              // Must be a "หลัก" subject for the same grade on the same day
+              if (hStr.includes('หลัก') && hStr.includes(gradeFound) && hStr.includes(dayStr)) {
+                // Just check that core words match (subject)
+                let matchAll = true;
+                for (let w of coreWords) {
+                  if (!hStr.includes(w)) {
+                    matchAll = false;
+                    break;
+                  }
                 }
-              }
-              
-              if (matchAll) {
-                matchedHeader = hStr;
-                break;
+                
+                if (matchAll) {
+                  matchedHeader = hStr;
+                  break; // Found matching header
+                }
               }
             }
           }
-          
-          // If we found a match and it's different, update it in the array
-          if (matchedHeader && subject !== matchedHeader) {
-            data[i][0] = matchedHeader;
-            updatedCount++;
-          }
+          if (matchedHeader) break; // Stop searching branches if found
+        }
+        
+        // If we found a match and it's different, update it in the array
+        if (matchedHeader && subject !== matchedHeader) {
+          data[i][0] = matchedHeader;
+          updatedCount++;
         }
       }
     }
