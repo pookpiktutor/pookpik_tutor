@@ -1606,6 +1606,35 @@ function checkLowBalanceStudents() {
   checkTeacherLeaves();
 }
 
+
+window.navigateToClassScheduleFromLeave = function(dateStr, roomStr) {
+  if (dateStr) {
+    let dateObj;
+    if (dateStr.includes('/')) {
+       const parts = dateStr.split('/');
+       if (parts.length === 3) {
+         dateObj = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+       }
+    }
+    if (dateObj && !isNaN(dateObj.getTime())) {
+      // Local time adjust to avoid UTC offset issues
+      const tzOffset = dateObj.getTimezoneOffset() * 60000;
+      const localDate = new Date(dateObj.getTime() - tzOffset);
+      const dateInput = localDate.toISOString().split('T')[0];
+      const el = document.getElementById('daily_grid_filter_date');
+      if (el) el.value = dateInput;
+    }
+  }
+  
+  if (roomStr) {
+    if (roomStr.includes('สาขา 1') || roomStr.includes('PMY')) state.activeBranchFilter = 'สาขา 1 แยกPMY';
+    else if (roomStr.includes('สาขา 2') || roomStr.includes('ระยองวิทยาคม')) state.activeBranchFilter = 'สาขา 2 ข้างโรงเรียนระยองวิทยาคม';
+    else if (roomStr.includes('สาขา 3') || roomStr.includes('เซนต์โยเซฟ')) state.activeBranchFilter = 'สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ';
+  }
+  
+  switchPanel('daily_grid');
+  loadDailyGrid();
+};
 function checkTeacherLeaves() {
   google.script.run
     .withSuccessHandler(res => {
@@ -1620,8 +1649,8 @@ function checkTeacherLeaves() {
             : `<span style="background:#e5e7eb; color:#6b7280; padding:0 4px; border-radius:3px; font-size:0.6rem;">${l.date || ''}</span>`;
           const borderColor = isToday ? '#f59e0b' : '#fbd58d';
           const bgColor = isToday ? '#fef3c7' : '#fffbeb';
-          return `<span style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 2px 4px; font-size: 0.68rem; text-align: center; line-height: 1.4;">
-            ${dateBadge}👨‍🏫 <strong>ครู ${l.teacher} ลา</strong> — ${formatSubjectName(l.subject)} (${cleanTimeStr(l.timeStart)}-${cleanTimeStr(l.timeEnd)})${l.teacherSub ? ` ครูแทน: ${l.teacherSub}` : ' ⚠️ไม่มีครูแทน'}
+          return `<span style="cursor:pointer; display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 2px 4px; font-size: 0.68rem; text-align: center; line-height: 1.4;" onclick="if(window.navigateToClassScheduleFromLeave) window.navigateToClassScheduleFromLeave('${l.date || ''}', '${l.room || ''}')" title="คลิกเพื่อไปที่ตารางสอน">
+            ${dateBadge} 👩‍🏫 <strong>ลา ${l.teacher} ลา</strong> 📚 ${formatSubjectName(l.subject)} (${cleanTimeStr(l.timeStart)}-${cleanTimeStr(l.timeEnd)})${l.teacherSub ? ` ครูแทน: ${l.teacherSub}` : ' ⚠️ไม่มีครูแทน'}
           </span>`;
         });
         const todayCount = res.leaves.filter(l => l.isToday).length;
