@@ -101,11 +101,6 @@ const SHEET_REGISTRY = [
       'Latitude', 'Longitude'
     ],
     headerRow: 1
-  },
-  {
-    name: 'TeacherSalaryConfirmations',
-    headers: ['Year', 'Month', 'TeacherID', 'TeacherName', 'TotalPay', 'ConfirmedAt'],
-    headerRow: 1
   }
   // ✅ เพิ่มตารางใหม่ได้ที่นี่ — ระบบจะสร้างชีตและ headers ให้อัตโนมัติ
   // ตัวอย่าง:
@@ -172,13 +167,14 @@ function getRegistryDef(sheetName) {
 }
 
 function doGet(e) {
-  if (e.parameter && e.parameter.export === 'true') {
-    return ContentService.createTextOutput(exportAllDataToJson()).setMimeType(ContentService.MimeType.JSON);
-  }
-  if (e && e.parameter && e.parameter.clean_garbage === '1') {
-    cleanDataLearnColAGarbage();
-    return ContentService.createTextOutput("Garbage cleaned and cache cleared.").setMimeType(ContentService.MimeType.TEXT);
-  }
+  // ensureTeacherIDs();
+  if (e && e.parameter && e.parameter.debug_rows === '1') {
+  const db = getDb();
+  const s2 = db.getSheetByName('ป.1/1');
+  return ContentService.createTextOutput(JSON.stringify({
+    rows: s2 ? s2.getRange(4,1,5,s2.getLastColumn()).getValues() : null
+  })).setMimeType(ContentService.MimeType.JSON);
+}
 if (e && e.parameter && e.parameter.debug_headers === '1') {
   const db = getDb();
   const s1 = db.getSheetByName('เดี่ยว ป.1');
@@ -675,7 +671,7 @@ function getOrCreateSheet(sheetName) {
     sheet = db.insertSheet(sheetName);
     sheet.clear();
     const headers = ['ระดับชั้น', 'ชื่อ-นามสกุล', 'ชื่อ', 'โรงเรียน', 'ห้องเรียนที่', 'เบอร์ติดต่อ', 'เบอร์ผู้ปกครอง/เบอร์ติดต่อ', 'ID LINE', 'สาขาที่เรียน', 'สาขาที่จ่ายเงิน'];
-    const row5 = new Array(18).fill('');
+    const row5 = new Array(15).fill('');
     headers.forEach((h, idx) => { row5[idx] = h; });
     row5[10] = 'ยอดชำระ';
     row5[11] = 'ส่วนลด';
@@ -979,20 +975,14 @@ function checkTeacherBlock(logUser) {
 
 function isUserTeacher(username, nickname) {
   try {
-    const cacheKey = 'teachers_list';
-    let rows = getCacheObject(cacheKey);
-    
-    if (!rows) {
-      const db = getDb();
-      const sheet = db.getSheetByName('TeachersDB');
-      if (!sheet) return false;
-      rows = sheet.getDataRange().getValues();
-      setCacheObject(cacheKey, rows, 1800);
-    }
-    
+    const db = getDb();
+    const sheet = db.getSheetByName('TeachersDB');
+    if (!sheet) return false;
+    const rows = sheet.getDataRange().getValues();
     const cleanUsername = (username || '').toString().trim().toLowerCase();
     const cleanNickname = (nickname || '').toString().trim().toLowerCase();
     
+    // คอลัมน์ A (ดัชนี 0) คือ Nickname ของอาจารย์, คอลัมน์ I (ดัชนี 8) คือ รหัสประจำตัวครู
     for (let i = 1; i < rows.length; i++) {
       if (rows[i][0]) {
         const val = rows[i][0].toString().trim().toLowerCase();
@@ -1138,11 +1128,10 @@ function getUserProfile(username) {
             phone = tRows[i][3] ? tRows[i][3].toString().trim() : '';
             bank = tRows[i][5] ? tRows[i][5].toString().trim() : '';
             accountNumber = tRows[i][6] ? tRows[i][6].toString().trim() : '';
-            const tId = tRows[i][8] ? tRows[i][8].toString().trim() : tNick;
             return {
               success: true,
               profile: {
-                username: tId,
+                username: tNick,
                 role: 'Teacher',
                 nickname: nickname,
                 fullName: fullName,
@@ -1178,7 +1167,6 @@ function getUserProfile(username) {
             phone = tRows[i][3] ? tRows[i][3].toString().trim() : phone;
             bank = tRows[i][5] ? tRows[i][5].toString().trim() : '';
             accountNumber = tRows[i][6] ? tRows[i][6].toString().trim() : '';
-            userRow[0] = tId || tNick; // Override the username with real Teacher ID
             break;
           }
         }
@@ -1225,25 +1213,6 @@ function saveUserProfile(username, data, logUser) {
         if (data.profilePic !== undefined) {
           sheet.getRange(i + 1, 7).setValue(data.profilePic || '');
         }
-        
-        // --- ADDED FOR TEACHERSDB ---
-        if (isTeacherUser(username)) {
-           const tSheet = db.getSheetByName('TeachersDB');
-           if (tSheet) {
-             const tRows = tSheet.getDataRange().getValues();
-             for (let j = 1; j < tRows.length; j++) {
-                if (tRows[j][0].toString().trim().toLowerCase() === (data.nickname || '').toLowerCase() || 
-                    (tRows[j][8] && tRows[j][8].toString().trim().toLowerCase() === cleanUsername)) {
-                   if (data.school !== undefined) tSheet.getRange(j + 1, 3).setValue(data.school);
-                   if (data.phone !== undefined) tSheet.getRange(j + 1, 4).setValue(data.phone);
-                   if (data.bank !== undefined) tSheet.getRange(j + 1, 6).setValue(data.bank);
-                   if (data.accountNumber !== undefined) tSheet.getRange(j + 1, 7).setValue(data.accountNumber);
-                   break;
-                }
-             }
-           }
-        }
-        // ----------------------------
         logActivity(logUser, 'แก้ไขโปรไฟล์', `ผู้ใช้: ${username} แก้ไขข้อมูลโปรไฟล์ของตนเอง`);
         return { success: true };
       }
@@ -1279,7 +1248,7 @@ function addEmployee(data, logUser) {
       data.phone || '',
       ''
     ]);
-    clearCacheObject('usersdb_raw');
+    deleteCacheObject('usersdb_raw');
     logActivity(logUser, 'เพิ่มพนักงาน', `เพิ่มผู้ใช้ใหม่: ${data.username} บทบาท: ${data.role || 'Staff'}`);
     return { success: true };
   } catch (e) {
@@ -1353,7 +1322,7 @@ function changeEmployeePasswordByAdmin(username, newPassword, logUser) {
         const dbUsername = rows[i][0].toString().trim().toLowerCase();
         if (dbUsername === cleanUsername) {
           sheet.getRange(i + 1, 2).setValue(newPassword.toString().trim());
-          clearCacheObject('usersdb_raw');
+          deleteCacheObject('usersdb_raw');
           logActivity(logUser, 'แก้ไขรหัสผ่านพนักงาน', `เปลี่ยนรหัสผ่านพนักงานให้ผู้ใช้: ${username}`);
           return { success: true };
         }
@@ -1724,7 +1693,7 @@ function getDailyGridData(dateStr, logUser) {
     let enrollments = getCacheObject(enrollCacheKey);
     if (!enrollments) {
       enrollments = getCourseEnrollmentCounts(courseNames, classInfoList);
-      setCacheObject(enrollCacheKey, enrollments, 300); // cache for 5 minutes
+      setCacheObject(enrollCacheKey, enrollments, 1800); // cache for 30 minutes
     }
     
     // DEBUG: Get first grade sheet headers
@@ -1751,88 +1720,25 @@ function getDailyGridData(dateStr, logUser) {
 }
 
 
-function getCachedSheetEnrollments(sheetName) {
-  const cacheKey = 'enroll_map_' + sheetName.replace(/\s+/g, '_');
-  const cached = getCacheObject(cacheKey);
-  if (cached) return cached;
-  
-  const db = getDb();
-  const sheet = db.getSheetByName(sheetName);
-  if (!sheet) return {};
-  
-  const lastCol = sheet.getLastColumn();
-  const lastRow = sheet.getLastRow();
-  if (lastCol < 1 || lastRow < 4) return {};
-  
-  const dataRange = sheet.getDataRange().getValues();
-  const headerRow1 = dataRange[0] || [];
-  const headerRow3 = dataRange[2] || [];
-  
-  const map = {};
-  for (let colIdx = 0; colIdx < headerRow1.length; colIdx++) {
-    const colHeader = headerRow1[colIdx] ? headerRow1[colIdx].toString().trim() : '';
-    if (!colHeader) continue;
-    
-    const dayTimeCell = headerRow3[colIdx] ? headerRow3[colIdx].toString().trim().toLowerCase() : '';
-    
-    // Parse time/day from headerRow3
-    let startHour = null;
-    const cleanCell = dayTimeCell.replace(/\s+/g, '');
-    const timeMatch = cleanCell.match(/(\d{1,2})[\.:]\d{2}/);
-    if (timeMatch) {
-      startHour = parseInt(timeMatch[1], 10);
-    }
-    
-    const shortDayMap = { 'อาทิตย์': 'อา.', 'จันทร์': 'จ.', 'อังคาร': 'อ.', 'พุธ': 'พ.', 'พฤหัสบดี': 'พฤ.', 'ศุกร์': 'ศ.', 'เสาร์': 'ส.' };
-    let cleanDay = '';
-    const days = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
-    for (let day of days) {
-      if (dayTimeCell.indexOf(day) !== -1) {
-        cleanDay = day;
-        break;
-      }
-    }
-    
-    const key = colHeader.toLowerCase() + '|' + cleanDay + '|' + (startHour !== null ? startHour : '');
-    if (!map[key]) map[key] = [];
-    
-    for (let rIdx = 5; rIdx < dataRange.length; rIdx++) {
-      const val = dataRange[rIdx][colIdx];
-      const studentName = dataRange[rIdx][1] ? dataRange[rIdx][1].toString().trim() : '';
-      if (val !== '' && val !== null && val !== undefined && studentName) {
-        if (map[key].indexOf(studentName) === -1) {
-          map[key].push(studentName);
-        }
-      }
-    }
-  }
-  
-  setCacheObject(cacheKey, map, 1800); // cache for 30 minutes
-  return map;
-}
-
 // getCourseEnrollmentCounts: นับจำนวน นร. จากตารางห้องเรียนตามชื่อคอร์ส+วัน
+// classInfoList: array of { subject, dayOfWeek } เพื่อให้จับคู่ header ตาม รอบ วัน...
 function getCourseEnrollmentCounts(courseNames, classInfoList) {
   try {
     const db = getDb();
     const sheets = db.getSheets();
-    const counts = {};
+    const counts = {}; // Map of courseName -> Array of unique studentNames
+    
+    // Initialize array of student names for each course to allow unique deduplication
     courseNames.forEach(c => { counts[c] = []; });
     
-    const gradeSheetNames = [];
-    sheets.forEach(sheet => {
-      const name = sheet.getName();
-      if (name.match(/^(ป\.|ม\.|อนุบาล)/) || name.match(/^(ย่อย 2-3|ย่อย 4-5|ย่อย 6-10)/)) {
-        gradeSheetNames.push(name);
-      }
-    });
-    
-    const classSpecs = {};
+    // Build lookup: courseName -> Array of { dayOfWeek, startHour }
+    const classSpecs = {}; 
     if (classInfoList && classInfoList.length > 0) {
       classInfoList.forEach(info => {
         if (!info.subject) return;
         if (!classSpecs[info.subject]) classSpecs[info.subject] = [];
         
+        // Find startHour if timeStart is provided
         let parsedStartHour = null;
         if (info.timeStart) {
           if (info.timeStart instanceof Date) {
@@ -1842,56 +1748,137 @@ function getCourseEnrollmentCounts(courseNames, classInfoList) {
             if (!isNaN(d.getTime())) {
               parsedStartHour = d.getHours();
             } else {
+              // Try string parsing if it's like "10:00"
               const timeMatch = info.timeStart.toString().match(/(\d{1,2})[:\.]\d{2}/);
               if (timeMatch) parsedStartHour = parseInt(timeMatch[1], 10);
             }
           }
         }
+        
         classSpecs[info.subject].push({
           dayOfWeek: info.dayOfWeek || "",
+          timeStart: info.timeStart,
           startHour: parsedStartHour
         });
       });
     }
     
-    gradeSheetNames.forEach(sheetName => {
-      const enrollMap = getCachedSheetEnrollments(sheetName);
+    sheets.forEach(sheet => {
+      const name = sheet.getName();
       
-      courseNames.forEach(cName => {
-        const specs = classSpecs[cName] || [];
-        if (specs.length === 0) return;
-        
-        specs.forEach(s => {
-          const dl = s.dayOfWeek.toLowerCase().replace('วัน', '');
-          const shortDayMap = { 'อาทิตย์': 'อา.', 'จันทร์': 'จ.', 'อังคาร': 'อ.', 'พุธ': 'พ.', 'พฤหัสบดี': 'พฤ.', 'ศุกร์': 'ศ.', 'เสาร์': 'ส.' };
-          const shortDay = shortDayMap[dl] || dl;
+      // 1. Standard Grade sheets (like ป.1/1, ป.1/2, ป.1, etc.)
+      const isGradeSheet = name.match(/^(ป\.|ม\.|อนุบาล)/);
+      if (isGradeSheet) {
+        const lastCol = sheet.getLastColumn();
+        const lastRow = sheet.getLastRow();
+        if (lastCol >= 1 && lastRow >= 4) {
+          const dataRange = sheet.getDataRange().getValues();
+          const headerRow1 = dataRange[0] || [];
+          const headerRow3 = dataRange[2] || [];
           
-          for (let key in enrollMap) {
-            const parts = key.split('|');
-            const keyCourse = parts[0];
-            const keyDay = parts[1];
-            const keyHour = parts[2];
+          for (let colIdx = 0; colIdx < headerRow1.length; colIdx++) {
+            const colHeader = headerRow1[colIdx] ? headerRow1[colIdx].toString().trim() : '';
+            if (!colHeader) continue;
             
-            if (keyCourse.indexOf(cName.toLowerCase()) !== -1) {
-              const dayOk = dl === '' || keyDay.indexOf(dl) !== -1 || keyDay.indexOf(shortDay) !== -1 || dl.indexOf(keyDay) !== -1;
-              const hourOk = s.startHour === null || keyHour === '' || parseInt(keyHour, 10) === s.startHour;
+            const dayTimeCell = headerRow3[colIdx] ? headerRow3[colIdx].toString().toLowerCase() : '';
+            
+            for (let ci = 0; ci < courseNames.length; ci++) {
+              const cName = courseNames[ci].trim();
+              if (colHeader.toLowerCase().indexOf(cName.toLowerCase()) === -1) continue;
               
-              if (dayOk && hourOk) {
-                enrollMap[key].forEach(studentName => {
+              const specs = classSpecs[cName];
+              if (specs && specs.length > 0) {
+                const specMatch = specs.some(s => {
+                  const dl = s.dayOfWeek.toLowerCase().replace('วัน', ''); 
+                  const dayOk = dayTimeCell.indexOf(dl) !== -1;
+                  if (!dayOk) return false;
+                  
+                  // If we have a startHour spec, verify it matches the start time of the cell
+                  // The cell typically contains "10.00-12.00" or similar. We extract the first part.
+                  if (s.startHour !== null && s.startHour !== undefined) {
+                    const cleanCell = dayTimeCell.replace(/\s+/g, ''); // Remove spaces
+                    // Try to match time range like 10.00-12.00
+                    const timeMatch = cleanCell.match(/(\d{1,2})[\.:]\d{2}/);
+                    if (timeMatch) {
+                      const cellStartHour = parseInt(timeMatch[1], 10);
+                      return cellStartHour === s.startHour;
+                    }
+                  }
+                  return true;
+                });
+                if (!specMatch) continue;
+              }
+              
+              // Count students (Row 6 is index 5 for grade sheets)
+              for (let rIdx = 5; rIdx < dataRange.length; rIdx++) {
+                const val = dataRange[rIdx][colIdx];
+                const studentName = dataRange[rIdx][1] ? dataRange[rIdx][1].toString().trim() : '';
+                if (val !== '' && val !== null && val !== undefined && studentName) {
                   if (counts[cName].indexOf(studentName) === -1) {
                     counts[cName].push(studentName);
                   }
+                }
+              }
+              break; 
+            }
+          }
+        }
+      }
+      
+      // 2. Private Sheets (เดี่ยว อนุบาล, เดี่ยว ป.1, etc. or ย่อย x-x)
+      const isPrivateSheet = name.match(/^(เดี่ยว|ย่อย)/);
+      if (isPrivateSheet) {
+        const lastCol = sheet.getLastColumn();
+        const lastRow = sheet.getLastRow();
+        if (lastCol >= 12 && lastRow >= 12) {
+          const dataRange = sheet.getDataRange().getValues();
+          
+          for (let rIdx = 11; rIdx < dataRange.length; rIdx++) {
+            const studentName = dataRange[rIdx][1] ? dataRange[rIdx][1].toString().trim() : '';
+            const cName = dataRange[rIdx][10] ? dataRange[rIdx][10].toString().trim() : '';
+            if (!studentName || !cName) continue;
+            
+            // Check day time of private sheet (Column O which is index 14)
+            const dayTimeCell = dataRange[rIdx][14] ? dataRange[rIdx][14].toString().toLowerCase() : '';
+            
+            // Match with courseNames and specs
+            if (courseNames.includes(cName)) {
+              const specs = classSpecs[cName];
+              if (specs && specs.length > 0) {
+                const specMatch = specs.some(s => {
+                  const dl = s.dayOfWeek.toLowerCase().replace('วัน', '');
+                  const dayOk = dayTimeCell.indexOf(dl) !== -1;
+                  if (!dayOk) return false;
+                  
+                  if (s.startHour !== null && s.startHour !== undefined) {
+                    const cleanCell = dayTimeCell.replace(/\s+/g, '');
+                    const timeMatch = cleanCell.match(/(\d{1,2})[\.:]\d{2}/);
+                    if (timeMatch) {
+                      return parseInt(timeMatch[1], 10) === s.startHour;
+                    }
+                  }
+                  return true;
                 });
+                if (!specMatch) continue;
+              }
+              
+              if (counts[cName].indexOf(studentName) === -1) {
+                counts[cName].push(studentName);
               }
             }
           }
-        });
-      });
+        }
+      }
+      
     });
     
-    return counts;
-  } catch (e) {
-    Logger.log('Error in getCourseEnrollmentCounts: ' + e.message);
+    // Map list of student names back to counts object for backward compatibility or return full mapped arrays
+    const finalCounts = {};
+    courseNames.forEach(c => {
+      finalCounts[c] = counts[c]; // Returns array of student names
+    });
+    return finalCounts;
+  } catch (err) {
     return {};
   }
 }
@@ -2057,8 +2044,8 @@ function updateEvaluation(evalData, logUser) {
       sheet.getRange(rowIndex, 10).setValue(scoresJSON);
     }
     
-    clearCacheObject('evaluations_list');
-    clearCacheObject('evaluations_list_all');
+    deleteCacheObject('evaluations_list');
+    deleteCacheObject('evaluations_list_all');
     // Clear teacher-specific caches too
     try {
       const cache = CacheService.getScriptCache();
@@ -2070,43 +2057,6 @@ function updateEvaluation(evalData, logUser) {
   } catch (e) {
     return { success: false, error: e.message };
   }
-}
-function getAdminEvalStats() {
-  const evals = getEvaluationsList(null);
-  const counts = {};
-  try {
-    const db = getDb();
-    const statusSheet = db.getSheetByName('StatusDB');
-    if (statusSheet) {
-      const data = statusSheet.getDataRange().getValues();
-      const subjects = [...new Set(evals.map(e => e.subject))];
-      subjects.forEach(s => counts[s] = 0);
-      
-      const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
-      for (let i = 1; i < data.length; i++) {
-        const student = data[i][1];
-        const course = data[i][15];
-        const timeNote = data[i][7];
-        if (!student || !course) continue;
-        
-        subjects.forEach(subj => {
-          if (subj.indexOf(course.toString().trim()) !== -1) {
-            let subjDay = '';
-            days.forEach(d => { if (subj.indexOf(d) !== -1) subjDay = d; });
-            let timeDay = '';
-            days.forEach(d => { if ((timeNote||'').indexOf(d) !== -1) timeDay = d; });
-            
-            if (!subjDay || !timeDay || subjDay === timeDay) {
-              counts[subj]++;
-            }
-          }
-        });
-      }
-    }
-  } catch (e) {
-    Logger.log('Error calculating admin eval stats: ' + e.message);
-  }
-  return { evals: evals, counts: counts };
 }
 
 function getEvaluationsList(logUser) {
@@ -2273,7 +2223,7 @@ function getMonthlyGridData(year, month, dayOfWeek, logUser) {
       const cleanVal = nameOrId.toString().trim().toLowerCase();
       const match = teachersList.find(t => {
         const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
         return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
       });
       return match ? match.nickname : nameOrId;
@@ -2376,7 +2326,7 @@ function debugExportData() {
       const cleanVal = nameOrId.toString().trim().toLowerCase();
       const match = Array.isArray(teachersList) ? teachersList.find(t => {
         const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
         return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
       }) : null;
       return match ? match.nickname : nameOrId;
@@ -2465,13 +2415,6 @@ function debugExportData() {
 // General Dropdowns
 // ----------------------------------------------------
 function getGeneralSettings() {
-  try {
-    migrateAllGradeSheetsHeaders();
-  } catch(e) {}
-  try {
-    cleanDataLearnColAGarbage();
-  } catch(e) {}
-  
   const cacheKey = 'general_settings';
   const cached = getCacheObject(cacheKey);
   if (cached) return cached;
@@ -2521,16 +2464,14 @@ function getGeneralSettings() {
       "กรุงศรี พี่ปิ๊ก",
       "TTB",
       "กสิกร พี่ปิ๊ก",
+      "กสิกร บัญชีบริษัท",
       "SCB คุณยาย",
       "กรุงศรี คุณตา",
-      "กรุงศรี บัญชีบริษัท",
-      "กสิกร บัญชีบริษัท(กด)",
-      "กสิกร บัญชีบริษัท(สแกน)",
-      "TTB บัญชีบริษัท(กด)",
-      "TTB บัญชีบริษัท(สแกน)",
-      "เงินสด",
-      "พี่ปิ๊ก โอน",
-      "พี่ต้น โอน"
+      "ออมสิน ยาย",
+      "กรุงไทย ยาย",
+      "กรุงเทพ ยาย",
+      "โอนผิดบัญชี",
+      "ยังไม่ชำระเงิน"
     ];
     
     const db = getDb();
@@ -2863,63 +2804,8 @@ function getRoundSummary(round, branch) {
   }
 }
 
-/**
- * One-time migration: append day/time from Row 3 into Row 1 header
- * for existing grade-sheet columns that don't already include it.
- * Uses a ScriptProperty flag so it only runs once per spreadsheet.
- */
-function migrateExistingGradeSheetHeaders() {
-  try {
-    const props = PropertiesService.getScriptProperties();
-    const flag = props.getProperty('HEADER_MIGRATION_DONE');
-    if (flag === 'true') return; // already migrated
-
-    const db = getDb();
-    const sheets = db.getSheets();
-
-    sheets.forEach(sheet => {
-      const name = sheet.getName();
-      const match = name.match(/^(.+)\/([1-3])$/);
-      if (!match) return;
-
-      const lastCol = sheet.getLastColumn();
-      if (lastCol < 16) return;
-
-      const numCols = lastCol - 15;
-      const row1 = sheet.getRange(1, 16, 1, numCols).getValues()[0];
-      const row3 = sheet.getRange(3, 16, 1, numCols).getValues()[0];
-
-      let changed = false;
-      for (let c = 0; c < numCols; c++) {
-        const headerVal = row1[c] ? row1[c].toString().trim() : '';
-        const dayTimeVal = row3[c] ? row3[c].toString().trim() : '';
-
-        if (!headerVal || !dayTimeVal) continue;
-
-        // Skip if the header already contains the day/time text
-        if (headerVal.indexOf(dayTimeVal) !== -1) continue;
-
-        row1[c] = headerVal + ' ' + dayTimeVal;
-        changed = true;
-      }
-
-      if (changed) {
-        sheet.getRange(1, 16, 1, numCols).setValues([row1]);
-      }
-    });
-
-    props.setProperty('HEADER_MIGRATION_DONE', 'true');
-  } catch (e) {
-    // Migration failure is non-fatal; log and continue
-    Logger.log('migrateExistingGradeSheetHeaders error: ' + e.message);
-  }
-}
-
 function getAllCoursesFromGradeSheets() {
   try {
-    // Run one-time header migration (day/time → Row 1)
-    migrateExistingGradeSheetHeaders();
-
     const db = getDb();
     const sheets = db.getSheets();
     const courses = [];
@@ -2930,8 +2816,8 @@ function getAllCoursesFromGradeSheets() {
       const match = name.match(/^(.+)\/([1-3])$/);
       if (match) {
         const lastCol = sheet.getLastColumn();
-        if (lastCol >= 19) {
-          const vals = sheet.getRange(1, 19, 1, lastCol - 18).getValues()[0];
+        if (lastCol >= 16) {
+          const vals = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
           vals.forEach(val => {
             if (val) {
               const cName = val.toString().trim();
@@ -3006,75 +2892,16 @@ function filterLatestCourseRounds(courses) {
 function getStudentsList(logUser) {
   if (logUser) checkTeacherBlock(logUser);
   const cacheKey = 'students_list';
-  let list = getCacheObject(cacheKey);
+  const cached = getCacheObject(cacheKey);
+  if (cached) return cached;
   
-  if (!list) {
-    try {
-      list = getStudentsListRaw();
-      setCacheObject(cacheKey, list, 600); // 10 minutes cache
-    } catch (err) {
-      return { error: err.message };
-    }
+  try {
+    const list = getStudentsListRaw();
+    setCacheObject(cacheKey, list, 600); // 10 minutes cache
+    return list;
+  } catch (err) {
+    return { error: err.message };
   }
-  
-  // Filter for teachers
-  if (logUser && isTeacherUser(logUser)) {
-    try {
-      const db = getDb();
-      let teacherName = logUser;
-      const usersSheet = db.getSheetByName('UsersDB');
-      if (usersSheet) {
-        const users = usersSheet.getDataRange().getValues();
-        for (let i = 1; i < users.length; i++) {
-          if (users[i][0] && users[i][0].toString().trim().toLowerCase() === logUser.toLowerCase()) {
-            teacherName = users[i][3] ? users[i][3].toString().trim() : users[i][4] ? users[i][4].toString().trim() : logUser;
-            break;
-          }
-        }
-      }
-      
-      const classLogs = getClassLogs('');
-      const teacherCoursesMap = {};
-      if (Array.isArray(classLogs)) {
-        classLogs.forEach(c => {
-          const isAssigned = c.teacherRegular && c.teacherRegular.toLowerCase().includes(teacherName.toLowerCase());
-          if (isAssigned && c.subject) {
-            teacherCoursesMap[c.subject.trim().toLowerCase()] = {
-              day: c.dayOfWeek || '',
-              time: c.timeStart || ''
-            };
-          }
-        });
-      }
-      
-      if (Object.keys(teacherCoursesMap).length === 0) return [];
-      
-      list = list.filter(student => {
-        for (let j = 1; j <= 5; j++) {
-          const sCourse = (student[`Course ${j}`] || '').toLowerCase().trim();
-          const sDay = student[`Day ${j}`] || '';
-          const sTime = student[`Time ${j}`] || '';
-          
-          for (const [cName, cInfo] of Object.entries(teacherCoursesMap)) {
-            if (sCourse && sCourse.includes(cName)) {
-              if (cInfo.day && cInfo.time) {
-                if (sDay.includes(cInfo.day) && (sTime.includes(cInfo.time) || cInfo.time.includes(sTime))) {
-                  return true;
-                }
-              } else {
-                return true;
-              }
-            }
-          }
-        }
-        return false;
-      });
-    } catch(e) {
-      // fallback to full list on error
-    }
-  }
-  
-  return list;
 }
 
 function getStudentsListRaw() {
@@ -3146,22 +2973,20 @@ function getTeacherCoursesAndStudents(logUser) {
   try {
     const db = getDb();
     
-    // 1. Get current teacher's nickname from TeachersDB using logUser (TeacherID / Username / Name)
-    const teachersList = getTeachersDB(null);
-    let matchedTeacherNick = (logUser || '').toString().trim();
-    
-    if (matchedTeacherNick) {
-      const cleanLogUser = matchedTeacherNick.toLowerCase();
-      const match = teachersList.find(t => {
-        const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toLowerCase().trim();
-        const tFull = (t.fullName || '').toLowerCase().trim();
-        return tId === cleanLogUser || tNick === cleanLogUser || tFull === cleanLogUser || tNick.includes(cleanLogUser) || tFull.includes(cleanLogUser) || cleanLogUser.includes(tNick);
-      });
-      if (match) {
-        matchedTeacherNick = match.nickname;
+    // 1. Get current teacher's name/nickname
+    let teacherName = logUser;
+    const usersSheet = db.getSheetByName('UsersDB');
+    if (usersSheet) {
+      const users = usersSheet.getDataRange().getValues();
+      for (let i = 1; i < users.length; i++) {
+        if (users[i][0] && users[i][0].toString().trim().toLowerCase() === logUser.toLowerCase()) {
+          teacherName = users[i][3] ? users[i][3].toString().trim() : users[i][4] ? users[i][4].toString().trim() : logUser;
+          break;
+        }
       }
     }
+    
+    const isTeacher = isTeacherUser(logUser);
     
     // 2. Scan Data Learn for teacher's courses
     const classLogs = getClassLogs('');
@@ -3169,37 +2994,15 @@ function getTeacherCoursesAndStudents(logUser) {
     
     if (Array.isArray(classLogs)) {
       classLogs.forEach(c => {
-        const isAssigned = c.teacherRegular && c.teacherRegular.toLowerCase().includes(matchedTeacherNick.toLowerCase());
+        // If logged-in user is a Teacher, only show their classes. If Admin/Staff, show all classes.
+        const isAssigned = !isTeacher || 
+          (c.teacherRegular && c.teacherRegular.toLowerCase().includes(teacherName.toLowerCase())) ||
+          (c.teacherSub && c.teacherSub.toLowerCase().includes(teacherName.toLowerCase()));
           
         if (isAssigned && c.subject) {
           const courseKey = c.subject.trim();
-          const dayName = c.dayOfWeek || '';
-          const timeStart = c.timeStart || '';
-          const timeEnd = c.timeEnd || '';
-          
-          let fullCourseName = courseKey;
-          let dayTimeStr = '';
-          
-          var hasDay = /(จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์)/.test(courseKey);
-          var hasTime = /\d+[:.]\d+/.test(courseKey);
-          
-          if (hasDay && hasTime) {
-            fullCourseName = courseKey;
-            if (dayName && timeStart) {
-              dayTimeStr = dayName + ' ' + timeStart + '-' + timeEnd;
-            }
-          } else if (dayName && timeStart) {
-            dayTimeStr = dayName + ' ' + timeStart + '-' + timeEnd;
-            fullCourseName = courseKey + ' ' + dayTimeStr;
-          }
-          
-          teacherCoursesMap[fullCourseName] = {
+          teacherCoursesMap[courseKey] = {
             courseName: courseKey,
-            displayCourseName: fullCourseName,
-            dayTimeStr: dayTimeStr,
-            day: dayName,
-            timeStart: timeStart,
-            timeEnd: timeEnd,
             roomBranch: c.roomBranch || '',
             students: []
           };
@@ -3207,97 +3010,156 @@ function getTeacherCoursesAndStudents(logUser) {
       });
     }
     
-    const courseKeys = Object.keys(teacherCoursesMap);
-    if (courseKeys.length === 0) return [];
+    // If no courses found for teacher, return empty
+    const courses = Object.keys(teacherCoursesMap);
+    if (courses.length === 0) return [];
     
-    // 3. For each course, search enrolled students from Grade Sheets
-    const gradeSheets = [
-      'อนุบาล/1','ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1','ม.1/1','ม.2/1','ม.3/1','ม.4/1','ม.5/1','ม.6/1',
-      'อนุบาล/2','ป.1/2','ป.2/2','ป.3/2','ป.4/2','ป.5/2','ป.6/2','ม.1/2','ม.2/2','ม.3/2','ม.4/2','ม.5/2','ม.6/2',
-      'อนุบาล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3'
-    ];
-
-    for (let sheetName of gradeSheets) {
-      const sheet = db.getSheetByName(sheetName);
-      if (!sheet) continue;
-      
-      const data = sheet.getDataRange().getValues();
-      if (data.length < 4) continue;
-      
-      const courseRow = data[0]; // Row 1 (Index 0)
-      const dayTimeRow = data[2]; // Row 3 (Index 2)
-      
-      let branch = '';
-      if (sheetName.includes('/1')) branch = 'สาขา 1';
-      else if (sheetName.includes('/2')) branch = 'สาขา 2';
-      else if (sheetName.includes('/3')) branch = 'สาขา 3';
-      
-      for (let key of courseKeys) {
-        const cInfo = teacherCoursesMap[key];
-        const targetCourseName = cInfo.courseName.toLowerCase().trim();
-        const targetDayTime = cInfo.dayTimeStr ? cInfo.dayTimeStr.toLowerCase().trim() : '';
-        
-        for (let c = 4; c < courseRow.length; c++) {
-          const cellCourse = (courseRow[c] || '').toString().toLowerCase().trim();
-          const cellDayTime = (dayTimeRow[c] || '').toString().toLowerCase().trim();
-          
-          let isMatch = false;
-          if (cellCourse === targetCourseName) {
-            isMatch = true;
-          } else if (cellCourse && (cellCourse.includes(targetCourseName) || targetCourseName.includes(cellCourse))) {
-            if (!targetDayTime || (cellDayTime && cellDayTime.includes(targetDayTime)) || (targetDayTime && targetDayTime.includes(cellDayTime)) || cellCourse.includes(targetDayTime)) {
-              isMatch = true;
-            }
-          }
-          
-          if (isMatch) {
-               
-               // Start from row 6 (index 5) as requested
-               for (let r = 5; r < data.length; r++) {
-                  const val = data[r][c];
-                  if (val !== '' && val !== null && !isNaN(val) && parseFloat(val) >= 0) {
-                     // Use explicit columns as requested: Name/Surname in B (1), Nickname in C (2). Use Name (1) as ID to prevent duplicate conflicts.
-                     let idCol = 1, fnameCol = 1, nickCol = 2;
-                     
-                     const sId = (data[r][idCol] || '').toString().trim();
-                     const sFname = (data[r][fnameCol] || '').toString().trim();
-                     const sLname = '';
-                     let sNick = (data[r][nickCol] || '').toString().trim();
-                     if (sNick.includes('GMT+') || sNick.match(/Sun|Mon|Tue|Wed|Thu|Fri|Sat.*202\d/)) {
-                        sNick = '';
-                     }
-                     
-                     const existing = cInfo.students.find(s => s.studentId === sId && sId !== '');
-                     if (!existing) {
-                       cInfo.students.push({
-                         studentId: sId,
-                         nickname: sNick,
-                         name: (sFname + ' ' + sLname).trim(),
-                         firstname: sFname,
-                         lastname: sLname,
-                         grade: sheetName.split('/')[0],
-                         branch: branch
-                       });
-                     }
-                  }
-               }
-             }
-          }
+    // 3. For each course, search enrolled students from relevant sheets
+    const studentsList = getStudentsListRaw(); // Get students from StatusDB
+    
+    courses.forEach(courseName => {
+      // Analyze course name to guess grade and branch
+      let detectedGrade = '';
+      const grades = ['อนุบาล', 'ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
+      for (const g of grades) {
+        if (courseName.includes(g)) {
+          detectedGrade = g;
+          break;
         }
       }
-    
-    const result = [];
-    courseKeys.forEach(key => {
-      const item = teacherCoursesMap[key];
-      result.push({
-        courseName: item.displayCourseName,
-        students: item.students
+      
+      let detectedBranch = '';
+      if (courseName.includes('สาขา_1') || courseName.includes('สาขา1') || courseName.includes('PMY')) {
+        detectedBranch = 'สาขา 1 แยกPMY';
+      } else if (courseName.includes('สาขา_2') || courseName.includes('สาขา2') || courseName.includes('ระยองวิทยา')) {
+        detectedBranch = 'สาขา 2 ระยองวิทยา';
+      } else if (courseName.includes('สาขา_3') || courseName.includes('สาขา3') || courseName.includes('อัสสัมชัญ')) {
+        detectedBranch = 'สาขา 3 อัสสัมชัญ';
+      }
+      
+      const enrolledStudents = [];
+      const addedStudentIds = new Set();
+      
+      // A. Check in StatusDB first (students who have this exact course round text)
+      studentsList.forEach(s => {
+        if (s.round && s.round.toLowerCase().includes(courseName.toLowerCase())) {
+          if (!addedStudentIds.has(s.id)) {
+            addedStudentIds.add(s.id);
+            enrolledStudents.push({
+              id: s.id,
+              name: s.name,
+              nickname: s.nickname,
+              grade: s.grade || s.classType || detectedGrade,
+              branch: s.branchLearn || detectedBranch
+            });
+          }
+        }
       });
+      
+      // B. If it's Group (กลุ่มหลัก) - scan Grade/Branch sheets e.g. "ป.6/1", "ป.6/2", "ป.6/3"
+      if (detectedGrade) {
+        const branches = ['1', '2', '3'];
+        branches.forEach(bSuffix => {
+          const sheetName = `${detectedGrade}/${bSuffix}`;
+          const sheet = db.getSheetByName(sheetName);
+          if (sheet) {
+            const lastRow = sheet.getLastRow();
+            const lastCol = sheet.getLastColumn();
+            if (lastRow >= 6 && lastCol >= 16) {
+              const headerRow1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+              const headerRow3 = sheet.getRange(3, 16, 1, lastCol - 15).getValues()[0];
+              
+              // Find column index for this course (matching by course subject name or day/time text)
+              let targetColIdx = -1;
+              for (let cIdx = 0; cIdx < headerRow1.length; cIdx++) {
+                const h1 = headerRow1[cIdx] ? headerRow1[cIdx].toString().trim() : '';
+                const h3 = headerRow3[cIdx] ? headerRow3[cIdx].toString().trim() : '';
+                if (
+                  (h1 && courseName.includes(h1)) || 
+                  (h3 && courseName.includes(h3)) ||
+                  (courseName.toLowerCase().includes(h1.toLowerCase()) && h1 !== '')
+                ) {
+                  targetColIdx = 15 + cIdx;
+                  break;
+                }
+              }
+              
+              if (targetColIdx !== -1) {
+                const rows = sheet.getRange(6, 1, lastRow - 5, lastCol).getValues();
+                rows.forEach(row => {
+                  const sName = row[1] ? row[1].toString().trim() : '';
+                  const sNickname = row[2] ? row[2].toString().trim() : '';
+                  const sId = row[0] ? row[0].toString().trim() : '';
+                  const hasLesson = row[targetColIdx] !== '' && row[targetColIdx] !== null && row[targetColIdx] !== undefined;
+                  
+                  if (sName && hasLesson && !addedStudentIds.has(sId)) {
+                    addedStudentIds.add(sId);
+                    // Match with StatusDB metadata to get proper grade/branch if possible
+                    const meta = studentsList.find(st => st.name === sName) || {};
+                    enrolledStudents.push({
+                      id: sId || 'GRID_' + sName,
+                      name: sName,
+                      nickname: sNickname || meta.nickname || '',
+                      grade: meta.grade || detectedGrade,
+                      branch: meta.branchLearn || (bSuffix === '1' ? 'สาขา 1 แยกPMY' : bSuffix === '2' ? 'สาขา 2 ระยองวิทยา' : 'สาขา 3 อัสสัมชัญ')
+                    });
+                  }
+                });
+              }
+            }
+          }
+        });
+        
+        // C. Check in Private/Subgroup sheets (เดี่ยว อนุบาล ... เดี่ยว ม.6, ย่อย 2-3, ย่อย 4-5, ย่อย 6-10)
+        const sheetsToCheck = [
+          `เดี่ยว ${detectedGrade}`,
+          'ย่อย 2-3',
+          'ย่อย 4-5',
+          'ย่อย 6-10'
+        ];
+        
+        sheetsToCheck.forEach(sheetName => {
+          const sheet = db.getSheetByName(sheetName);
+          if (sheet) {
+            const lastRow = sheet.getLastRow();
+            const lastCol = sheet.getLastColumn();
+            if (lastRow >= 12 && lastCol >= 12) {
+              const rows = sheet.getRange(12, 1, lastRow - 11, lastCol).getValues();
+              rows.forEach(row => {
+                const sId = row[0] ? row[0].toString().trim() : '';
+                const sName = row[1] ? row[1].toString().trim() : '';
+                const sNickname = row[2] ? row[2].toString().trim() : '';
+                const dbCourse = row[10] ? row[10].toString().trim() : '';
+                const dbNote = row[11] ? row[11].toString().trim() : ''; // day/time note
+                
+                // Match course name or dayTime note
+                const isMatch = (dbCourse && courseName.toLowerCase().includes(dbCourse.toLowerCase())) ||
+                                (dbNote && courseName.toLowerCase().includes(dbNote.toLowerCase()));
+                                
+                if (sName && isMatch && !addedStudentIds.has(sId)) {
+                  addedStudentIds.add(sId);
+                  const meta = studentsList.find(st => st.name === sName) || {};
+                  enrolledStudents.push({
+                    id: sId || 'PRIV_' + sName,
+                    name: sName,
+                    nickname: sNickname || meta.nickname || '',
+                    grade: meta.grade || detectedGrade,
+                    branch: meta.branchLearn || detectedBranch
+                  });
+                }
+              });
+            }
+          }
+        });
+      }
+      
+      teacherCoursesMap[courseName].students = enrolledStudents;
     });
     
-    return result;
-  } catch (err) {
-    return [];
+    // Convert map to array and filter out courses that have 0 students (optional, but good for UX)
+    return Object.keys(teacherCoursesMap).map(k => teacherCoursesMap[k]);
+  } catch (e) {
+    return { error: e.message };
   }
 }
 
@@ -3359,9 +3221,9 @@ function getStudentDetailedCourses(studentName, nickname, grade, branchLearn, cl
     const lastCol = sheet.getLastColumn();
     if (lastRow < 6 || lastCol < 16) return [];
     
-    const headerRow1 = sheet.getRange(1, 19, 1, lastCol - 18).getValues()[0];
-    const headerRow2 = sheet.getRange(2, 19, 1, lastCol - 18).getValues()[0];
-    const headerRow3 = sheet.getRange(3, 19, 1, lastCol - 18).getValues()[0];
+    const headerRow1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+    const headerRow2 = sheet.getRange(2, 16, 1, lastCol - 15).getValues()[0];
+    const headerRow3 = sheet.getRange(3, 16, 1, lastCol - 15).getValues()[0];
     
     const studentData = sheet.getRange(6, 1, lastRow - 5, lastCol).getValues();
     for (let idx = 0; idx < studentData.length; idx++) {
@@ -3405,10 +3267,10 @@ function getGradeCourses(grade, branch, logUser) {
     const lastCol = sheet.getLastColumn();
     if (lastCol < 16) return [];
     
-    const headerRow1 = sheet.getRange(1, 19, 1, lastCol - 18).getValues()[0];
-    const headerRow2 = sheet.getRange(2, 19, 1, lastCol - 18).getValues()[0];
-    const headerRow3 = sheet.getRange(3, 19, 1, lastCol - 18).getValues()[0];
-    const headerRow4 = sheet.getRange(4, 19, 1, lastCol - 18).getValues()[0];
+    const headerRow1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+    const headerRow2 = sheet.getRange(2, 16, 1, lastCol - 15).getValues()[0];
+    const headerRow3 = sheet.getRange(3, 16, 1, lastCol - 15).getValues()[0];
+    const headerRow4 = sheet.getRange(4, 16, 1, lastCol - 15).getValues()[0];
     
     const courses = [];
     for (let i = 0; i < headerRow1.length; i++) {
@@ -3518,20 +3380,14 @@ function syncToGradeSheet(student) {
       sheet.getRange(targetRow, 12).setValue(0); 
       sheet.getRange(targetRow, 14).setValue(student.paid); 
       sheet.getRange(targetRow, 15).setValue(student.isCard ? 1 : 0);
-      sheet.getRange(targetRow, 16).setValue(student.paymentDate || '');
-      sheet.getRange(targetRow, 17).setValue(student.paymentChannel || '');
-      sheet.getRange(targetRow, 18).setValue(student.staff || '');
     } else {
       sheet.getRange(targetRow, 1, 1, 10).setValues([[
         student.grade, student.name, student.nickname, student.school, student.classSection,
         student.contact, student.lineName, student.lineId, student.branchLearn, student.branchPay
       ]]);
-            sheet.getRange(targetRow, 11).setValue(student.full);
+      sheet.getRange(targetRow, 11).setValue(student.full);
       sheet.getRange(targetRow, 14).setValue(student.paid);
       sheet.getRange(targetRow, 15).setValue(student.isCard ? 1 : 0);
-      sheet.getRange(targetRow, 16).setValue(student.paymentDate || '');
-      sheet.getRange(targetRow, 17).setValue(student.paymentChannel || '');
-      sheet.getRange(targetRow, 18).setValue(student.staff || '');
     }
     
     // Sync checked courses into columns 16+ in the grade sheet
@@ -3539,16 +3395,16 @@ function syncToGradeSheet(student) {
       const selectedList = student.selectedCourses || [];
       if (selectedList.length > 0) {
         const lastCol = sheet.getLastColumn();
-        if (lastCol >= 19) {
-          const header1 = sheet.getRange(1, 19, 1, lastCol - 18).getValues()[0];
-          const header2 = sheet.getRange(2, 19, 1, lastCol - 18).getValues()[0];
-          const header4 = sheet.getRange(4, 19, 1, lastCol - 18).getValues()[0];
+        if (lastCol >= 16) {
+          const header1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+          const header2 = sheet.getRange(2, 16, 1, lastCol - 15).getValues()[0];
+          const header4 = sheet.getRange(4, 16, 1, lastCol - 15).getValues()[0];
           
           const coursesInSheet = [];
           for (let j = 0; j < header1.length; j++) {
             if (header1[j]) {
               coursesInSheet.push({
-                colIndex: 19 + j,
+                colIndex: 16 + j,
                 courseName: header1[j].toString().trim(),
                 price: parseFloat(header2[j]) || 0,
                 sessions: parseInt(header4[j]) || 10
@@ -3572,7 +3428,7 @@ function syncToGradeSheet(student) {
           
           selectedConfig.forEach(c => {
             const userSessions = selectedMap[c.courseName];
-            const isPartial = (userSessions !== null && userSessions !== undefined && userSessions !== c.sessions);
+            const isPartial = (userSessions !== null && userSessions !== undefined && userSessions < c.sessions);
             if (isPartial) {
               c.userSessions = userSessions;
               partialCourses.push(c);
@@ -3660,7 +3516,7 @@ function syncStudentToStatusDB(std) {
     std.full,
     std.outstanding,
     std.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy'),
-    std.paymentChannel || 'กสิกร บัญชีบริษัท(สแกน)',
+    std.paymentChannel || 'กสิกร บัญชีบริษัท',
     std.staff || '',
     std.round,
     std.grade,
@@ -3716,51 +3572,33 @@ function addStudentRegistration(student, logUser) {
     if (!sheet) throw new Error('StatusDB sheet not found');
     
     // Handle subgroup registrations (split into multiple individual records)
-    if (student.isSubgroupNewLogic && student.subgroupStudents && student.subgroupStudents.length > 0) {
+    if (student.subgroupStudentList && student.subgroupStudentList.length > 0) {
+      const studentCount = student.subgroupStudentList.length;
+      const totalPaid = parseFloat(student.paid) || 0;
+      const totalFull = parseFloat(student.full) || 0;
+      
+      // Calculate averaged price/paid amounts per student
+      const singleFull = Math.round(totalFull / studentCount);
+      const singlePaid = Math.round(totalPaid / studentCount);
+      
       let lastResult = null;
-      for (let i = 0; i < student.subgroupStudents.length; i++) {
-          const sgMember = student.subgroupStudents[i];
-          
-          const memberStudent = Object.assign({}, student, {
-              name: sgMember.name,
-              nickname: sgMember.nickname,
-              school: sgMember.school,
-              contact: sgMember.contact,
-              grade: sgMember.grade,
-              classSection: sgMember.classSection,
-              lineName: sgMember.lineName,
-              lineId: sgMember.lineId,
-              
-              full: sgMember.full,
-              paid: sgMember.paid,
-              
-              payRound1_amount: sgMember.payRound1_amount,
-              payRound1_date: sgMember.payRound1_date,
-              payRound1_channel: sgMember.payRound1_channel,
-              payRound1_staff: sgMember.payRound1_staff,
-              payRound1_time: sgMember.payRound1_time,
-              
-              payRound2_amount: sgMember.payRound2_amount,
-              payRound2_date: sgMember.payRound2_date,
-              payRound2_channel: sgMember.payRound2_channel,
-              payRound2_staff: sgMember.payRound2_staff,
-              payRound2_time: sgMember.payRound2_time,
-              
-              payRound3_amount: sgMember.payRound3_amount,
-              payRound3_date: sgMember.payRound3_date,
-              payRound3_channel: sgMember.payRound3_channel,
-              payRound3_staff: sgMember.payRound3_staff,
-              payRound3_time: sgMember.payRound3_time,
-              
-              isSubgroupNewLogic: false,
-              subgroupStudents: null,
-              subgroupStudentList: null
-          });
-          
-          lastResult = addStudentRegistration(memberStudent, logUser);
+      
+      for (let i = 0; i < studentCount; i++) {
+        const member = student.subgroupStudentList[i];
+        if (!member.name) continue;
+        
+        const memberStudent = Object.assign({}, student, {
+          name: member.name,
+          nickname: member.nickname || '',
+          full: singleFull,
+          paid: singlePaid,
+          subgroupStudentList: null // Avoid infinite loop
+        });
+        
+        lastResult = addStudentRegistration(memberStudent, logUser);
       }
       
-      logActivity(logUser, 'ลงทะเบียนกลุ่มย่อย', `นักเรียน: ${student.subgroupStudents.map(m => m.name).join(', ')} คอร์ส: ${student.subgroupCourses.join(', ')}`);
+      logActivity(logUser, 'ลงทะเบียนกลุ่มย่อย (ชุด)', `นักเรียน: ${student.subgroupStudentList.map(m => m.name).filter(n => n).join(', ')} คอร์ส: ${student.round}`);
       invalidateStudentCache();
       return { success: true, id: lastResult ? lastResult.id : 'SUBGROUP' };
     }
@@ -4093,16 +3931,16 @@ function getGradeSheetData(grade, branch, logUser) {
       const branchName = `สาขา${suffix}`;
       
       const sheetCourses = [];
-      if (lastCol >= 19) {
-        const headerRow1 = sheet.getRange(1, 19, 1, lastCol - 18).getValues()[0];
-        const headerRow2 = sheet.getRange(2, 19, 1, lastCol - 18).getValues()[0];
-        const headerRow3 = sheet.getRange(3, 19, 1, lastCol - 18).getValues()[0];
-        const headerRow4 = sheet.getRange(4, 19, 1, lastCol - 18).getValues()[0];
+      if (lastCol >= 16) {
+        const headerRow1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+        const headerRow2 = sheet.getRange(2, 16, 1, lastCol - 15).getValues()[0];
+        const headerRow3 = sheet.getRange(3, 16, 1, lastCol - 15).getValues()[0];
+        const headerRow4 = sheet.getRange(4, 16, 1, lastCol - 15).getValues()[0];
         
         for (let i = 0; i < headerRow1.length; i++) {
           if (headerRow1[i]) {
             sheetCourses.push({
-              colIndex: 19 + i,
+              colIndex: 16 + i,
               courseName: headerRow1[i].toString().trim(),
               price: parseFloat(headerRow2[i]) || 0,
               dayTime: headerRow3[i] ? headerRow3[i].toString().trim() : '',
@@ -4197,12 +4035,7 @@ function saveGradeSheetData(grade, branch, coursesUpdate, studentsUpdate, logUse
       const sheetStudentsUpdate = studentsBySheet[sheetName] || [];
       
       sheetCoursesUpdate.forEach(c => {
-        var fullCourseName = c.courseName.trim();
-        var dayTimeStr = (c.dayTime || '').trim();
-        if (dayTimeStr && !fullCourseName.includes(dayTimeStr)) {
-          fullCourseName = fullCourseName + ' ' + dayTimeStr;
-        }
-        sheet.getRange(1, c.colIndex).setValue(fullCourseName);
+        sheet.getRange(1, c.colIndex).setValue(c.courseName);
         sheet.getRange(2, c.colIndex).setValue(c.price);
         sheet.getRange(3, c.colIndex).setValue(c.dayTime || '');
         sheet.getRange(4, c.colIndex).setValue(c.totalSessions);
@@ -4304,7 +4137,7 @@ function addNewCourseColumn(grade, branch, courseName, price, dayTime, sessions,
     const lastCol = sheet.getLastColumn();
     const targetCol = lastCol + 1;
     
-    sheet.getRange(1, targetCol).setValue(courseName + (dayTime ? ' ' + dayTime.trim() : ''));
+    sheet.getRange(1, targetCol).setValue(courseName);
     sheet.getRange(2, targetCol).setValue(price);
     sheet.getRange(3, targetCol).setValue(dayTime || ''); 
     sheet.getRange(4, targetCol).setValue(parseInt(sessions) || 10); 
@@ -4333,7 +4166,7 @@ function addNewCoursesBatch(grade, branch, courseList, logUser) {
     // Write each course in adjacent columns
     courseList.forEach((c, idx) => {
       const targetCol = lastCol + 1 + idx;
-      sheet.getRange(1, targetCol).setValue(c.courseName + (c.dayTime ? ' ' + c.dayTime.trim() : ''));
+      sheet.getRange(1, targetCol).setValue(c.courseName);
       sheet.getRange(2, targetCol).setValue(c.price);
       sheet.getRange(3, targetCol).setValue(c.dayTime || '');
       sheet.getRange(4, targetCol).setValue(parseInt(c.sessions) || 10);
@@ -4845,7 +4678,7 @@ function getTeachersDB(logUser) {
         subjects: row[4] ? row[4].toString().trim() : '',
         bank: row[5] ? row[5].toString().trim() : '',
         accountNumber: row[6] ? row[6].toString().trim() : '',
-        accountType: row[7] ? row[7].toString().trim() : 'บัญชีทั่วไป',
+        compensation: row[7] ? row[7].toString().trim() : '150',
         teacherId: row[8] ? row[8].toString().trim() : ''
       });
     });
@@ -4881,7 +4714,7 @@ function saveTeacherProfile(teacher, logUser) {
       teacher.subjects || '',
       teacher.bank || '',
       teacher.accountNumber || '',
-      teacher.accountType || 'บัญชีทั่วไป',
+      teacher.compensation || '150',
       teacher.teacherId || ''
     ];
     
@@ -4892,7 +4725,7 @@ function saveTeacherProfile(teacher, logUser) {
         genSheet.appendRow([teacher.nickname]);
       }
     } else {
-      sheet.getRange(rowIndex, 1, 1, 10).setValues([rowValues]);
+      sheet.getRange(rowIndex, 1, 1, 9).setValues([rowValues]);
     }
     
     // Clear cache
@@ -4905,23 +4738,318 @@ function saveTeacherProfile(teacher, logUser) {
   }
 }
 
+function calculateTeacherMonthlyPay(teacher, startDateStr, endDateStr, logUser) {
+  // Security bypass
+  /*
+  if (logUser && isTeacherUser(logUser)) {
+    const cleanUser = logUser.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
+    const cleanTeacher = teacher.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
+    if (cleanUser !== cleanTeacher && !cleanUser.includes(cleanTeacher) && !cleanTeacher.includes(cleanUser)) {
+      // Check teachers database nickname matching (use null to get all teachers to prevent self-filtering)
+      const teachersList = getTeachersDB(null);
+      const isMatch = Array.isArray(teachersList) && teachersList.some(t => {
+        const dbNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
+        return dbNick === cleanUser || dbNick === cleanTeacher;
+      });
+      if (!isMatch) {
+        throw new Error('คุณไม่มีสิทธิ์คำนวณเงินเดือนของครูท่านอื่น');
+      }
+    }
+  }
+  */
+  try {
+    const classLogs = getClassLogs(''); 
+    if (classLogs.error) throw new Error(classLogs.error);
+    
+    const start = parseDateString(startDateStr);
+    const end = parseDateString(endDateStr);
+    
+    if (!start || !end) throw new Error('รูปแบบช่วงวันที่ที่ระบุไม่ถูกต้อง');
+    
+    // Fetch teacher profile to get base rate
+    const teachersList = getTeachersDB(null);
+    const teacherProfile = Array.isArray(teachersList) 
+      ? teachersList.find(t => {
+          const tId = (t.teacherId || '').toLowerCase().trim();
+          const tNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
+          const targetNick = teacher.toLowerCase().trim().replace(/^ครู/, '').trim();
+          return (tId !== '' && tId === teacher.toLowerCase().trim()) || 
+                 tNick === targetNick || tNick.includes(targetNick) || targetNick.includes(tNick);
+        })
+      : null;
+    if (!teacherProfile) {
+      throw new Error('ไม่พบประวัติคุณครูชื่อ/รหัส: "' + teacher + '" ในฐานข้อมูล TeachersDB');
+    }
+    const resolvedNickname = teacherProfile.nickname;
+    const baseCompensation = teacherProfile.compensation 
+      ? parseFloat(teacherProfile.compensation) || 150
+      : 150;
+    
+    const matchedClasses = [];
+    let grandTotalHours = 0;
+    let grandTotalPay = 0;
+    
+    console.log('Calculating pay for:', teacher, 'Range:', startDateStr, 'to', endDateStr);
+    console.log('Total classLogs loaded:', classLogs.length);
+    
+    classLogs.forEach(c => {
+      const dateParts = c.date.split('/');
+      if (dateParts.length !== 3) return;
+      
+      // Convert year to CE for safe Date parsing (e.g. if it is BE year)
+      let parsedYear = parseInt(dateParts[2]);
+      if (parsedYear > 2400) parsedYear -= 543;
+      
+      const cDate = new Date(parsedYear, parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+      
+      if (cDate < start || cDate > end) return;
+      
+      const cleanName = function(name) {
+        if (!name) return '';
+        return name.toString().toLowerCase().trim().replace(/^ครู/, '').trim();
+      };
+      
+      const tRegClean = cleanName(c.teacherRegular);
+      const tSubClean = cleanName(c.teacherSub);
+      const teacherTargetClean = cleanName(resolvedNickname);
+      
+      let matches = false;
+      let role = '';
+      
+      if (tRegClean !== '' && tSubClean !== '') {
+        // Both columns B and C have teachers: match only C (teacherSub)
+        if (tSubClean !== '' && (tSubClean.includes(teacherTargetClean) || teacherTargetClean.includes(tSubClean))) {
+          matches = true;
+          role = `สอนแทน ${c.teacherRegular}`;
+        }
+      } else {
+        // Only one has data (or check B as default)
+        const checkName = tRegClean !== '' ? tRegClean : tSubClean;
+        if (checkName !== '' && (checkName.includes(teacherTargetClean) || teacherTargetClean.includes(checkName))) {
+          const isLeave = c.note ? c.note.toLowerCase().includes('ครูลา') : false;
+          if (!isLeave) {
+            matches = true;
+            role = tRegClean !== '' ? 'ครูประจำ' : `สอนแทน`;
+          }
+        }
+      }
+      
+      if (!matches) return;
+      
+      // Calculate total student count from Column Q
+      const numKids = c.numKids || 0;
+      if (numKids < 1) return; // Must have at least 1 student as per user rules
+      
+      let hoursVal = 0;
+      if (c.hours.includes(':')) {
+        const parts = c.hours.split(':');
+        hoursVal = parseFloat(parts[0]) + (parseFloat(parts[1]) / 60);
+      } else {
+        hoursVal = parseFloat(c.hours) || 0;
+      }
+      
+      // Extract subject flags
+      const subject = c.subject.toLowerCase();
+      const hasEx = subject.includes('ex');
+      const hasDieu = subject.includes('เดี่ยว') || subject.includes('เดียว');
+      
+      // "รยว." check: regular teacher name or sub teacher name containing "รยว."
+      const matchedTeacherName = role === 'ครูประจำ' ? c.teacherRegular : c.teacherSub;
+      const hasRyw = matchedTeacherName.includes('รยว.') || c.subject.includes('รยว.') || teacher.includes('รยว.');
+      
+      let rate = 0;
+      
+      if (hasEx) {
+        // Rules 18-34 apply since there is "ex" in the subject name
+        if (numKids === 1) {
+          rate = 200; // Rule 18
+        } else if (numKids >= 2 && numKids <= 5) {
+          rate = 200; // Rule 19
+        } else if (numKids >= 6 && numKids <= 10) {
+          rate = 250; // Rule 20
+        } else if (numKids >= 11 && numKids <= 15) {
+          rate = 300; // Rule 21
+        } else if (numKids >= 16 && numKids <= 20) {
+          rate = 350; // Rule 22
+        } else if (numKids >= 21 && numKids <= 25) {
+          rate = 400; // Rule 23
+        } else if (numKids >= 26 && numKids <= 30) {
+          rate = 450; // Rule 24
+        } else if (numKids >= 31 && numKids <= 35) {
+          rate = 500; // Rule 25
+        } else if (numKids >= 36 && numKids <= 40) {
+          rate = 550; // Rule 26
+        } else if (numKids >= 41 && numKids <= 45) {
+          rate = 600; // Rule 27
+        } else if (numKids >= 46 && numKids <= 50) {
+          rate = 650; // Rule 28
+        } else if (numKids >= 51 && numKids <= 55) {
+          rate = 700; // Rule 29
+        } else if (numKids >= 56 && numKids <= 60) {
+          rate = 750; // Rule 30
+        } else if (numKids >= 61 && numKids <= 65) {
+          rate = 800; // Rule 31
+        } else if (numKids >= 66 && numKids <= 70) {
+          rate = 850; // Rule 32
+        } else if (numKids >= 71 && numKids <= 75) {
+          rate = 900; // Rule 33
+        } else if (numKids >= 76 && numKids <= 80) {
+          rate = 950; // Rule 34
+        } else if (numKids > 80) {
+          rate = 950; // Fallback
+        }
+      } else if (hasRyw) {
+        // Teacher name contains "รยว." but subject does not have "ex"
+        // Rules 19-34 (Group B) apply when ryw is true and ex is false
+        if (numKids === 1) {
+          rate = 150; // Under Dieu or Ryw logic, base rate is 150 for 1 kid
+        } else if (numKids >= 2 && numKids <= 5) {
+          rate = 200; // Rule 19 (Ryw or ex)
+        } else if (numKids >= 6 && numKids <= 10) {
+          rate = 250; // Rule 20 (Ryw or ex)
+        } else if (numKids >= 11 && numKids <= 15) {
+          rate = 300; // Rule 21 (Ryw or ex)
+        } else if (numKids >= 16 && numKids <= 20) {
+          rate = 350; // Rule 22 (Ryw or ex)
+        } else if (numKids >= 21 && numKids <= 25) {
+          rate = 400; // Rule 23 (Ryw or ex)
+        } else if (numKids >= 26 && numKids <= 30) {
+          rate = 450; // Rule 24 (Ryw or ex)
+        } else if (numKids >= 31 && numKids <= 35) {
+          rate = 500; // Rule 25 (Ryw or ex)
+        } else if (numKids >= 36 && numKids <= 40) {
+          rate = 550; // Rule 26 (Ryw or ex)
+        } else if (numKids >= 41 && numKids <= 45) {
+          rate = 600; // Rule 27 (Ryw or ex)
+        } else if (numKids >= 46 && numKids <= 50) {
+          rate = 650; // Rule 28 (Ryw or ex)
+        } else if (numKids >= 51 && numKids <= 55) {
+          rate = 700; // Rule 29 (Ryw or ex)
+        } else if (numKids >= 56 && numKids <= 60) {
+          rate = 750; // Rule 30 (Ryw or ex)
+        } else if (numKids >= 61 && numKids <= 65) {
+          rate = 800; // Rule 31 (Ryw or ex)
+        } else if (numKids >= 66 && numKids <= 70) {
+          rate = 850; // Rule 32 (Ryw or ex)
+        } else if (numKids >= 71 && numKids <= 75) {
+          rate = 900; // Rule 33 (Ryw or ex)
+        } else if (numKids >= 76 && numKids <= 80) {
+          rate = 950; // Rule 34 (Ryw or ex)
+        } else if (numKids > 80) {
+          rate = 950; // Fallback
+        }
+      } else {
+        // Teacher name does NOT contain "รยว." and subject does NOT contain "ex"
+        // Rules 1-17 (Group A) apply
+        if (numKids === 1) {
+          rate = 150; // Rule 1
+        } else if (numKids >= 2 && numKids <= 5) {
+          rate = 150; // Rule 2
+        } else if (numKids >= 6 && numKids <= 10) {
+          rate = 200; // Rule 3
+        } else if (numKids >= 11 && numKids <= 15) {
+          rate = 250; // Rule 4
+        } else if (numKids >= 16 && numKids <= 20) {
+          rate = 300; // Rule 5
+        } else if (numKids >= 21 && numKids <= 25) {
+          rate = 350; // Rule 6
+        } else if (numKids >= 26 && numKids <= 30) {
+          rate = 400; // Rule 7
+        } else if (numKids >= 31 && numKids <= 35) {
+          rate = 450; // Rule 8
+        } else if (numKids >= 36 && numKids <= 40) {
+          rate = 500; // Rule 9
+        } else if (numKids >= 41 && numKids <= 45) {
+          rate = 550; // Rule 10
+        } else if (numKids >= 46 && numKids <= 50) {
+          rate = 600; // Rule 11
+        } else if (numKids >= 51 && numKids <= 55) {
+          rate = 650; // Rule 12
+        } else if (numKids >= 56 && numKids <= 60) {
+          rate = 700; // Rule 13
+        } else if (numKids >= 61 && numKids <= 65) {
+          rate = 750; // Rule 14
+        } else if (numKids >= 66 && numKids <= 70) {
+          rate = 800; // Rule 15
+        } else if (numKids >= 71 && numKids <= 75) {
+          rate = 850; // Rule 16
+        } else if (numKids >= 76 && numKids <= 80) {
+          rate = 900; // Rule 17
+        } else if (numKids > 80) {
+          rate = 900; // Fallback
+        }
+      }
+      
+      const pay = hoursVal * rate;
+      
+      grandTotalHours += hoursVal;
+      grandTotalPay += pay;
+      
+            matchedClasses.push({
+        date: c.date,
+        subject: c.subject,
+        room: c.roomBranch,
+        role: role,
+        numKids: numKids,
+        hours: c.hours,
+        rate: rate,
+        pay: Math.round(pay * 100) / 100,
+        rowIndex: c.rowIndex,
+        teacherConfirmed: c.teacherConfirmed
+      });
+    });
+    
+    console.log('Calculation complete. Matched classes:', matchedClasses.length, 'Total pay:', grandTotalPay);
+    
+    return {
+      success: true,
+      teacher: teacher,
+      startDate: startDateStr,
+      endDate: endDateStr,
+      classes: matchedClasses,
+      totalHours: Math.round(grandTotalHours * 100) / 100,
+      totalPay: Math.round(grandTotalPay * 100) / 100
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
 function calculateTeacherYearlyPay(teacher, year, logUser) {
   const cacheKey = 'yearly_pay_' + teacher.toString().trim().toLowerCase() + '_' + year;
   const cached = getCacheObject(cacheKey);
   if (cached) return cached;
-  
+  // Security bypass: trust teacher parameter directly
+  /*
+  if (logUser && isTeacherUser(logUser)) {
+    const cleanUser = logUser.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
+    const cleanTeacher = teacher.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
+    if (cleanUser !== cleanTeacher && !cleanUser.includes(cleanTeacher) && !cleanTeacher.includes(cleanUser)) {
+      // Check teachers database nickname matching (use null to get all teachers to prevent self-filtering)
+      const teachersList = getTeachersDB(null);
+      const isMatch = Array.isArray(teachersList) && teachersList.some(t => {
+        const dbNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
+        return dbNick === cleanUser || dbNick === cleanTeacher;
+      });
+      if (!isMatch) {
+        throw new Error('คุณไม่มีสิทธิ์คำนวณเงินเดือนของครูท่านอื่น');
+      }
+    }
+  }
+  */
   try {
     logActivity(logUser || teacher || 'System', 'คำนวณเงินเดือนรายปีเริ่ม', 'คุณครู: ' + teacher + ', ปี: ' + year);
-    const classLogs = getClassLogs('');
-    if (!Array.isArray(classLogs)) throw new Error(classLogs.error || 'ไม่สามารถดึงข้อมูล Class Logs ได้');
+    const classLogs = getClassLogs(''); 
+    if (classLogs.error) throw new Error(classLogs.error);
     
+    // Fetch teacher profile to get base rate (we pass null to get all teachers to prevent empty result from self-filtering of username vs nickname mismatch)
     const teachersList = getTeachersDB(null);
     if (!Array.isArray(teachersList) || teachersList.length === 0) {
       throw new Error('ไม่พบข้อมูลรายชื่อครูในฐานข้อมูล TeachersDB');
     }
     const teacherProfile = teachersList.find(t => {
       const tId = (t.teacherId || '').toLowerCase().trim();
-      const tNick = (t.nickname || '').toString().toLowerCase().trim().replace(/^ครู/, '').trim();
+      const tNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
       const targetNick = teacher.toLowerCase().trim().replace(/^ครู/, '').trim();
       return (tId !== '' && tId === teacher.toLowerCase().trim()) || 
              tNick === targetNick || tNick.includes(targetNick) || targetNick.includes(tNick);
@@ -4930,526 +5058,213 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
       throw new Error('ไม่พบประวัติคุณครูชื่อ/รหัส: "' + teacher + '" ในฐานข้อมูล TeachersDB');
     }
     const resolvedNickname = teacherProfile.nickname;
-    const cleanResolvedNick = resolvedNickname.toLowerCase().trim();
-    
+    const baseCompensation = teacherProfile.compensation 
+      ? parseFloat(teacherProfile.compensation) || 150
+      : 150;
+      
+    // Function to calculate ranges locally
     const isLeap = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
     const getRangeForMonth = function(m) {
       let startStr, endStr;
       const yStr = year.toString();
       const prevYStr = (year - 1).toString();
       switch (m) {
-        case 1: startStr = `${prevYStr}-12-29`; endStr = `${yStr}-01-28`; break;
-        case 2: startStr = `${yStr}-01-29`; endStr = `${yStr}-02-28`; break;
-        case 3: startStr = isLeap ? `${yStr}-02-29` : `${yStr}-03-01`; endStr = `${yStr}-03-28`; break;
-        case 4: startStr = `${yStr}-03-29`; endStr = `${yStr}-04-28`; break;
-        case 5: startStr = `${yStr}-04-29`; endStr = `${yStr}-05-28`; break;
-        case 6: startStr = `${yStr}-05-29`; endStr = `${yStr}-06-28`; break;
-        case 7: startStr = `${yStr}-06-29`; endStr = `${yStr}-07-28`; break;
-        case 8: startStr = `${yStr}-07-29`; endStr = `${yStr}-08-28`; break;
-        case 9: startStr = `${yStr}-08-29`; endStr = `${yStr}-09-28`; break;
-        case 10: startStr = `${yStr}-09-29`; endStr = `${yStr}-10-28`; break;
-        case 11: startStr = `${yStr}-10-29`; endStr = `${yStr}-11-28`; break;
-        case 12: startStr = `${yStr}-11-29`; endStr = `${yStr}-12-28`; break;
+        case 1:
+          startStr = `${prevYStr}-12-29`; endStr = `${yStr}-01-28`; break;
+        case 2:
+          startStr = `${yStr}-01-29`; endStr = `${yStr}-02-28`; break;
+        case 3:
+          startStr = isLeap ? `${yStr}-02-29` : `${yStr}-03-01`; endStr = `${yStr}-03-28`; break;
+        case 4:
+          startStr = `${yStr}-03-29`; endStr = `${yStr}-04-28`; break;
+        case 5:
+          startStr = `${yStr}-04-29`; endStr = `${yStr}-05-28`; break;
+        case 6:
+          startStr = `${yStr}-05-29`; endStr = `${yStr}-06-28`; break;
+        case 7:
+          startStr = `${yStr}-06-29`; endStr = `${yStr}-07-28`; break;
+        case 8:
+          startStr = `${yStr}-07-29`; endStr = `${yStr}-08-28`; break;
+        case 9:
+          startStr = `${yStr}-08-29`; endStr = `${yStr}-09-28`; break;
+        case 10:
+          startStr = `${yStr}-09-29`; endStr = `${yStr}-10-28`; break;
+        case 11:
+          startStr = `${yStr}-10-29`; endStr = `${yStr}-11-28`; break;
+        case 12:
+          startStr = `${yStr}-11-29`; endStr = `${yStr}-12-28`; break;
       }
       return { start: parseDateString(startStr), end: parseDateString(endStr), startStr: startStr, endStr: endStr };
     };
 
-    const confirmSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
-    const confirmMap = {};
-    let totalInsAccumulated = 0;
-    if (confirmSheet) {
-      const confirmData = confirmSheet.getDataRange().getValues();
-      for (let i = 1; i < confirmData.length; i++) {
-        const tName = confirmData[i][3];
-        if (tName === teacher) {
-          const insDed = parseFloat(confirmData[i][6]) || 0;
-          totalInsAccumulated += insDed;
-          confirmMap[`${confirmData[i][0]}_${confirmData[i][1]}`] = {
-             confirmedAt: confirmData[i][5],
-             insuranceDeducted: insDed
-          };
-        }
-      }
-    }
-
     const monthlyResults = {};
+    
     for (let m = 1; m <= 12; m++) {
       const range = getRangeForMonth(m);
       const matchedClasses = [];
       let totalHours = 0;
       let totalPay = 0;
-      let totalClasses = 0;
       
       classLogs.forEach(c => {
-        const cDate = parseDateString(c.date);
+        const dateParts = c.date.split('/');
+        if (dateParts.length !== 3) return;
+        
+        let parsedYear = parseInt(dateParts[2]);
+        if (parsedYear > 2400) parsedYear -= 543;
+        
+        const cDate = new Date(parsedYear, parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
         if (cDate < range.start || cDate > range.end) return;
         
-        // Check column B (teacherRegular) and C (teacherSub)
-        let cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
-        let cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
-        const cleanNick = cleanResolvedNick.replace(/^ครู/, '').trim();
+        const cleanName = function(name) {
+          if (!name) return '';
+          return name.toString().toLowerCase().trim().replace(/^ครู/, '').trim();
+        };
         
-        if (cellC === '-' || cellC.includes('ไม่มี') || cellC.includes('รอครู')) {
-          cellC = '';
-        }
+        const tRegClean = cleanName(c.teacherRegular);
+        const tSubClean = cleanName(c.teacherSub);
+        const teacherTargetClean = cleanName(resolvedNickname);
         
-        const cValB = cellB.replace(/^ครู/, '').trim();
-        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cValB === cleanNick || cellB.includes(cleanNick) || (cValB.length > 1 && cleanNick.includes(cValB)));
-        const cValC = cellC.replace(/^ครู/, '').trim();
-        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cValC === cleanNick || cellC.includes(cleanNick) || (cValC.length > 1 && cleanNick.includes(cValC)));
-        
+        let matches = false;
         let role = '';
-        if (cellB !== '' && cellC !== '') {
-          if (matchC) {
-             role = 'ครูแทน';
-          } else if (matchB) {
-             return; 
-          } else {
-             return;
+        
+        if (tRegClean !== '' && tSubClean !== '') {
+          if (tSubClean !== '' && (tSubClean.includes(teacherTargetClean) || teacherTargetClean.includes(tSubClean))) {
+            matches = true;
+            role = `สอนแทน ${c.teacherRegular}`;
           }
-        } else if (cellB !== '') {
-          if (!matchB) return;
-          role = 'ครูประจำ';
-        } else if (cellC !== '') {
-          if (!matchC) return;
-          role = 'ครูแทน';
         } else {
-          return;
-        }
-
-        const subjectName = c.subject || '';
-        const note = c.note || '';
-        const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
-        
-        if (role === 'ครูประจำ') {
-           if (note.includes('ครูลา')) {
-               return; 
-           }
-           if (isPrivateOrSmallGroup && note.includes('ลา')) {
-               return; 
-           }
+          const checkName = tRegClean !== '' ? tRegClean : tSubClean;
+          if (checkName !== '' && (checkName.includes(teacherTargetClean) || teacherTargetClean.includes(checkName))) {
+            const isLeave = c.note ? c.note.toLowerCase().includes('ครูลา') : false;
+            if (!isLeave) {
+              matches = true;
+              role = tRegClean !== '' ? 'ครูประจำ' : `สอนแทน`;
+            }
+          }
         }
         
-        // Parse hours
-        const hoursStr = c.hours || '';
-        let hoursVal = 0;
-        if (hoursStr.includes(':')) {
-          const parts = hoursStr.split(':');
-          hoursVal = parseFloat(parts[0]) + (parseFloat(parts[1] || '0') / 60);
-        } else {
-          hoursVal = parseFloat(hoursStr) || 0;
-        }
-        if (isNaN(hoursVal) || hoursVal <= 0) return;
+        if (!matches) return;
         
-        // Count only สด + ออนไลน์ + ชดเชย for totalHours calculation
-        let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
-        const leaves = parseInt(c.isLeave) || 0;
+        const numKids = c.numKids || 0;
+        if (numKids < 1) return;
         
-        if (!isPrivateOrSmallGroup && numKids === 0 && leaves > 0) {
-           numKids = leaves;
-        }
+        let hoursVal = parseHoursStrToMinutes(c.hours) / 60;
+        if (isNaN(hoursVal)) hoursVal = 0;
         
-        const subject = c.subject || '';
-        const hasEx = subject.toLowerCase().includes('ex');
-        const hasRyw = cleanResolvedNick.includes('รยว.') || resolvedNickname.includes('รยว.');
+        const subject = c.subject.toLowerCase();
+        const hasEx = subject.includes('ex');
+        const matchedTeacherName = role === 'ครูประจำ' ? c.teacherRegular : c.teacherSub;
+        const hasRyw = matchedTeacherName.includes('รยว.') || c.subject.includes('รยว.') || teacher.includes('รยว.');
         
         let rate = 0;
-        if (numKids === 0) {
-          rate = 0;
-        } else if (hasEx || hasRyw) {
-          if (numKids === 1) rate = hasEx ? 200 : 150;
-          else if (numKids <= 5) rate = 200;
-          else if (numKids <= 10) rate = 250;
-          else if (numKids <= 15) rate = 300;
-          else if (numKids <= 20) rate = 350;
-          else if (numKids <= 25) rate = 400;
-          else if (numKids <= 30) rate = 450;
-          else if (numKids <= 35) rate = 500;
-          else if (numKids <= 40) rate = 550;
-          else if (numKids <= 45) rate = 600;
-          else if (numKids <= 50) rate = 650;
-          else if (numKids <= 55) rate = 700;
-          else if (numKids <= 60) rate = 750;
-          else if (numKids <= 65) rate = 800;
-          else if (numKids <= 70) rate = 850;
-          else if (numKids <= 75) rate = 900;
-          else rate = 950;
-        } else {
-          if (numKids === 1) rate = 150;
-          else if (numKids <= 5) rate = 150;
-          else if (numKids <= 10) rate = 200;
-          else if (numKids <= 15) rate = 250;
-          else if (numKids <= 20) rate = 300;
-          else if (numKids <= 25) rate = 350;
-          else if (numKids <= 30) rate = 400;
-          else if (numKids <= 35) rate = 450;
-          else if (numKids <= 40) rate = 500;
-          else if (numKids <= 45) rate = 550;
-          else if (numKids <= 50) rate = 600;
-          else if (numKids <= 55) rate = 650;
-          else if (numKids <= 60) rate = 700;
-          else if (numKids <= 65) rate = 750;
-          else if (numKids <= 70) rate = 800;
-          else if (numKids <= 75) rate = 850;
-          else rate = 900;
+        
+        // 18. วิชา ex และเด็ก >= 1
+        if (hasEx && numKids >= 1) {
+          if (numKids === 1) { rate = 200; }
+          else if (numKids >= 2 && numKids <= 5) { rate = 200; }
+          else if (numKids >= 6 && numKids <= 10) { rate = 250; }
+          else if (numKids >= 11 && numKids <= 15) { rate = 300; }
+          else if (numKids >= 16 && numKids <= 20) { rate = 350; }
+          else if (numKids >= 21 && numKids <= 25) { rate = 400; }
+          else if (numKids >= 26 && numKids <= 30) { rate = 450; }
+          else if (numKids >= 31 && numKids <= 35) { rate = 500; }
+          else if (numKids >= 36 && numKids <= 40) { rate = 550; }
+          else if (numKids >= 41 && numKids <= 45) { rate = 600; }
+          else if (numKids >= 46 && numKids <= 50) { rate = 650; }
+          else if (numKids >= 51 && numKids <= 55) { rate = 700; }
+          else if (numKids >= 56 && numKids <= 60) { rate = 750; }
+          else if (numKids >= 61 && numKids <= 65) { rate = 800; }
+          else if (numKids >= 66 && numKids <= 70) { rate = 850; }
+          else if (numKids >= 71 && numKids <= 75) { rate = 900; }
+          else if (numKids >= 76 && numKids <= 80) { rate = 950; }
+          else { rate = 950; }
+        }
+        // ครูมี รยว. (รวมทั้งเคส ex หรือไม่ ex)
+        else if (hasRyw) {
+          if (numKids === 1) { rate = 150; } // default fallback or special
+          else if (numKids >= 2 && numKids <= 5) { rate = 200; }
+          else if (numKids >= 6 && numKids <= 10) { rate = 250; }
+          else if (numKids >= 11 && numKids <= 15) { rate = 300; }
+          else if (numKids >= 16 && numKids <= 20) { rate = 350; }
+          else if (numKids >= 21 && numKids <= 25) { rate = 400; }
+          else if (numKids >= 26 && numKids <= 30) { rate = 450; }
+          else if (numKids >= 31 && numKids <= 35) { rate = 500; }
+          else if (numKids >= 36 && numKids <= 40) { rate = 550; }
+          else if (numKids >= 41 && numKids <= 45) { rate = 600; }
+          else if (numKids >= 46 && numKids <= 50) { rate = 650; }
+          else if (numKids >= 51 && numKids <= 55) { rate = 700; }
+          else if (numKids >= 56 && numKids <= 60) { rate = 750; }
+          else if (numKids >= 61 && numKids <= 65) { rate = 800; }
+          else if (numKids >= 66 && numKids <= 70) { rate = 850; }
+          else if (numKids >= 71 && numKids <= 75) { rate = 900; }
+          else if (numKids >= 76 && numKids <= 80) { rate = 950; }
+          else { rate = 950; }
+        }
+        // ครูทั่วไป และไม่มี ex
+        else {
+          if (numKids === 1) { rate = 150; }
+          else if (numKids >= 2 && numKids <= 5) { rate = 150; }
+          else if (numKids >= 6 && numKids <= 10) { rate = 200; }
+          else if (numKids >= 11 && numKids <= 15) { rate = 250; }
+          else if (numKids >= 16 && numKids <= 20) { rate = 300; }
+          else if (numKids >= 21 && numKids <= 25) { rate = 350; }
+          else if (numKids >= 26 && numKids <= 30) { rate = 400; }
+          else if (numKids >= 31 && numKids <= 35) { rate = 450; }
+          else if (numKids >= 36 && numKids <= 40) { rate = 500; }
+          else if (numKids >= 41 && numKids <= 45) { rate = 550; }
+          else if (numKids >= 46 && numKids <= 50) { rate = 600; }
+          else if (numKids >= 51 && numKids <= 55) { rate = 650; }
+          else if (numKids >= 56 && numKids <= 60) { rate = 700; }
+          else if (numKids >= 61 && numKids <= 65) { rate = 750; }
+          else if (numKids >= 66 && numKids <= 70) { rate = 800; }
+          else if (numKids >= 71 && numKids <= 75) { rate = 850; }
+          else if (numKids >= 76 && numKids <= 80) { rate = 900; }
+          else { rate = 900; }
         }
         
         const pay = hoursVal * rate;
-        if (numKids > 0) {
-          totalHours += hoursVal;
-          totalClasses += 1;
-        }
+        totalHours += hoursVal;
         totalPay += pay;
-        matchedClasses.push({
+        
+                matchedClasses.push({
           date: c.date,
           subject: c.subject,
-          room: (c.roomBranch || '').replace(/\s*zoom\s*\d*/gi, '').trim(),
+          room: c.roomBranch,
           role: role,
           numKids: numKids,
-          hours: hoursStr,
+          hours: c.hours,
           rate: rate,
           pay: Math.round(pay * 100) / 100,
           rowIndex: c.rowIndex,
-          teacherConfirmed: c.teacherConfirmed || 0
+          teacherConfirmed: c.teacherConfirmed
         });
       });
       
-      let grossPay = Math.round(totalPay * 100) / 100;
-      let currentInsDeduction = 0;
-      let insStatus = '';
-      let isConfirmed = false;
-      let confirmedAt = null;
-      
-      const conf = confirmMap[`${year}_${m}`];
-      if (conf) {
-        isConfirmed = true;
-        confirmedAt = conf.confirmedAt;
-        currentInsDeduction = conf.insuranceDeducted || 0;
-        if (totalInsAccumulated >= 2000) {
-          insStatus = 'ครบแล้ว';
-        } else {
-          insStatus = 'หักแล้ว';
-        }
-      } else {
-        if (totalInsAccumulated >= 2000) {
-          insStatus = 'ครบแล้ว';
-        } else {
-          let expectedDeduction = grossPay * 0.15;
-          if (totalInsAccumulated + expectedDeduction > 2000) {
-            expectedDeduction = 2000 - totalInsAccumulated;
-          }
-          currentInsDeduction = Math.round(expectedDeduction * 100) / 100;
-          insStatus = `(สะสม ${totalInsAccumulated})`;
-        }
-      }
-
       monthlyResults[m] = {
+        success: true,
+        teacher: teacher,
+        startDate: range.startStr,
+        endDate: range.endStr,
         classes: matchedClasses,
         totalHours: Math.round(totalHours * 100) / 100,
-        totalClasses: totalClasses,
-        totalPay: grossPay,
-        netPay: grossPay - currentInsDeduction,
-        insuranceDeduction: currentInsDeduction,
-        insuranceStatus: insStatus,
-        isConfirmed: isConfirmed,
-        confirmedAt: confirmedAt
+        totalPay: Math.round(totalPay * 100) / 100
       };
     }
     
-    logActivity(logUser || teacher || 'System', 'YearlyPay Complete', 'Teacher: ' + teacher);
+    logActivity(logUser || teacher || 'System', 'คำนวณเงินเดือนรายปีสำเร็จ', 'คุณครู: ' + teacher + ', ปี: ' + year);
     const resultVal = { success: true, months: monthlyResults };
-    setCacheObject(cacheKey, resultVal, 600);
+    setCacheObject(cacheKey, resultVal, 600); // 10 minutes cache
     return resultVal;
   } catch (e) {
-    logActivity(logUser || teacher || 'System', 'YearlyPay Error', e.message);
-    return { success: false, error: e.message };
-  }
-}
-
-/**
- * Calculate monthly pay for ALL teachers at once for a single month.
- * Used by the "สรุปรายได้ครูทั้งหมด" dashboard to show real-time salary data.
- */
-function getAllTeachersMonthlyPay(year, month) {
-  const cacheKey = 'all_teachers_monthly_' + year + '_' + month;
-  const cached = getCacheObject(cacheKey);
-  if (cached) return cached;
-  
-  try {
-    const classLogs = getClassLogs('');
-    if (!Array.isArray(classLogs)) throw new Error(classLogs.error || 'ไม่สามารถดึงข้อมูล Class Logs ได้');
-    
-    const teachersList = getTeachersDB(null);
-    if (!Array.isArray(teachersList) || teachersList.length === 0) {
-      throw new Error('ไม่พบข้อมูลรายชื่อครูในฐานข้อมูล TeachersDB');
-    }
-    
-    // Build date range for the month
-    const isLeap = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
-    const yStr = year.toString();
-    const prevYStr = (year - 1).toString();
-    let startStr, endStr;
-    switch (month) {
-      case 1: startStr = prevYStr + '-12-29'; endStr = yStr + '-01-28'; break;
-      case 2: startStr = yStr + '-01-29'; endStr = yStr + '-02-28'; break;
-      case 3: startStr = isLeap ? yStr + '-02-29' : yStr + '-03-01'; endStr = yStr + '-03-28'; break;
-      case 4: startStr = yStr + '-03-29'; endStr = yStr + '-04-28'; break;
-      case 5: startStr = yStr + '-04-29'; endStr = yStr + '-05-28'; break;
-      case 6: startStr = yStr + '-05-29'; endStr = yStr + '-06-28'; break;
-      case 7: startStr = yStr + '-06-29'; endStr = yStr + '-07-28'; break;
-      case 8: startStr = yStr + '-07-29'; endStr = yStr + '-08-28'; break;
-      case 9: startStr = yStr + '-08-29'; endStr = yStr + '-09-28'; break;
-      case 10: startStr = yStr + '-09-29'; endStr = yStr + '-10-28'; break;
-      case 11: startStr = yStr + '-10-29'; endStr = yStr + '-11-28'; break;
-      case 12: startStr = yStr + '-11-29'; endStr = yStr + '-12-28'; break;
-    }
-    const rangeStart = parseDateString(startStr);
-    const rangeEnd = parseDateString(endStr);
-    
-    // Filter class logs to only this month's date range
-    const monthLogs = classLogs.filter(c => {
-      const cDate = parseDateString(c.date);
-      return cDate >= rangeStart && cDate <= rangeEnd;
-    });
-    
-    // Get confirmation data & calculate insurance deduction sums
-    const confirmSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
-    const confirmMap = {};
-    const insuranceSums = {};
-    if (confirmSheet) {
-      const confirmData = confirmSheet.getDataRange().getValues();
-      for (let i = 1; i < confirmData.length; i++) {
-        const tName = confirmData[i][3];
-        const insDed = parseFloat(confirmData[i][6]) || 0;
-        
-        // Sum past deductions (only if it's NOT the current month we are querying, so we know the sum *before* this month)
-        // Actually, it's easier to just sum all of them, and if this month is already confirmed, we don't calculate a new one.
-        if (!insuranceSums[tName]) insuranceSums[tName] = 0;
-        
-        if (confirmData[i][0] == year && confirmData[i][1] == month) {
-          confirmMap[tName] = {
-            totalPay: confirmData[i][4],
-            confirmedAt: confirmData[i][5],
-            insuranceDeducted: insDed
-          };
-        } else {
-          insuranceSums[tName] += insDed;
-        }
-      }
-    }
-    
-    // Helper: calculate pay rate
-    function getRate(numKids, hasEx, hasRyw) {
-      if (numKids === 0) return 0;
-      if (hasEx || hasRyw) {
-        if (numKids === 1) return hasEx ? 200 : 150;
-        if (numKids <= 5) return 200;
-        if (numKids <= 10) return 250;
-        if (numKids <= 15) return 300;
-        if (numKids <= 20) return 350;
-        if (numKids <= 25) return 400;
-        if (numKids <= 30) return 450;
-        if (numKids <= 35) return 500;
-        if (numKids <= 40) return 550;
-        if (numKids <= 45) return 600;
-        if (numKids <= 50) return 650;
-        if (numKids <= 55) return 700;
-        if (numKids <= 60) return 750;
-        if (numKids <= 65) return 800;
-        if (numKids <= 70) return 850;
-        if (numKids <= 75) return 900;
-        return 950;
-      } else {
-        if (numKids === 1) return 150;
-        if (numKids <= 5) return 150;
-        if (numKids <= 10) return 200;
-        if (numKids <= 15) return 250;
-        if (numKids <= 20) return 300;
-        if (numKids <= 25) return 350;
-        if (numKids <= 30) return 400;
-        if (numKids <= 35) return 450;
-        if (numKids <= 40) return 500;
-        if (numKids <= 45) return 550;
-        if (numKids <= 50) return 600;
-        if (numKids <= 55) return 650;
-        if (numKids <= 60) return 700;
-        if (numKids <= 65) return 750;
-        if (numKids <= 70) return 800;
-        if (numKids <= 75) return 850;
-        return 900;
-      }
-    }
-    
-    // For each teacher, calculate their monthly pay
-    const settings = getGeneralSettings();
-    const teacherNames = settings.teachers || [];
-    const results = [];
-    
-    teacherNames.forEach(teacherName => {
-      // Find teacher profile
-      const teacherProfile = teachersList.find(t => {
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
-        const targetNick = teacherName.toLowerCase().trim();
-        return tNick === targetNick;
-      });
-      
-      if (!teacherProfile) {
-        // Teacher name from settings but no profile - still include with 0
-        const conf = confirmMap[teacherName];
-        results.push({
-          teacherName: teacherName,
-          totalPay: 0,
-          totalHours: 0,
-          totalClasses: 0,
-          isConfirmed: !!conf,
-          confirmedAt: conf ? conf.confirmedAt : null
-        });
-        return;
-      }
-      
-      const resolvedNickname = teacherProfile.nickname;
-      const cleanResolvedNick = resolvedNickname.toLowerCase().trim();
-      const cleanNick = cleanResolvedNick.replace(/^ครู/, '').trim();
-      
-      let totalHours = 0;
-      let totalPay = 0;
-      let totalClasses = 0;
-      
-      monthLogs.forEach(c => {
-        let cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
-        let cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
-        const cleanNick = cleanResolvedNick.replace(/^ครู/, '').trim();
-        
-        if (cellC === '-' || cellC.includes('ไม่มี') || cellC.includes('รอครู')) {
-          cellC = '';
-        }
-        
-        const cValB = cellB.replace(/^ครู/, '').trim();
-        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cValB === cleanNick || cellB.includes(cleanNick) || (cValB.length > 1 && cleanNick.includes(cValB)));
-        const cValC = cellC.replace(/^ครู/, '').trim();
-        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cValC === cleanNick || cellC.includes(cleanNick) || (cValC.length > 1 && cleanNick.includes(cValC)));
-        
-        let role = '';
-        if (cellB !== '' && cellC !== '') {
-          if (matchC) {
-             role = 'ครูแทน';
-          } else if (matchB) {
-             return; 
-          } else {
-             return;
-          }
-        } else if (cellB !== '') {
-          if (!matchB) return;
-          role = 'ครูประจำ';
-        } else if (cellC !== '') {
-          if (!matchC) return;
-          role = 'ครูแทน';
-        } else {
-          return;
-        }
-
-        const subjectName = c.subject || '';
-        const note = c.note || '';
-        const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
-        
-        if (role === 'ครูประจำ') {
-           if (note.includes('ครูลา')) {
-               return; 
-           }
-           if (isPrivateOrSmallGroup && note.includes('ลา')) {
-               return; 
-           }
-        }
-        
-        // Parse hours
-        const hoursStr = c.hours || '';
-        let hoursVal = 0;
-        if (hoursStr.includes(':')) {
-          const parts = hoursStr.split(':');
-          hoursVal = parseFloat(parts[0]) + (parseFloat(parts[1] || '0') / 60);
-        } else {
-          hoursVal = parseFloat(hoursStr) || 0;
-        }
-        if (isNaN(hoursVal) || hoursVal <= 0) return;
-        
-        // Count only สด + ออนไลน์ + ชดเชย
-        let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
-        const leaves = parseInt(c.isLeave) || 0;
-        
-        if (!isPrivateOrSmallGroup && numKids === 0 && leaves > 0) {
-           numKids = leaves;
-        }
-        
-        const subject = c.subject || '';
-        const hasEx = subject.toLowerCase().includes('ex');
-        const hasRyw = cleanResolvedNick.includes('รยว.') || resolvedNickname.includes('รยว.');
-        
-        const rate = getRate(numKids, hasEx, hasRyw);
-        const pay = hoursVal * rate;
-        
-        if (numKids > 0) {
-          totalHours += hoursVal;
-          totalClasses += 1;
-        }
-        totalPay += pay;
-      });
-      
-      const conf = confirmMap[teacherName];
-      const grossPay = Math.round(totalPay * 100) / 100;
-      let sumIns = insuranceSums[teacherName] || 0;
-      let currentInsDeduction = 0;
-      let insStatus = '';
-      
-      if (conf) {
-        currentInsDeduction = conf.insuranceDeducted || 0;
-        if (sumIns + currentInsDeduction >= 2000) {
-          insStatus = 'ครบแล้ว';
-        } else {
-          insStatus = 'หักแล้ว';
-        }
-      } else {
-        if (sumIns >= 2000) {
-          insStatus = 'ครบแล้ว';
-        } else {
-          let expectedDeduction = grossPay * 0.15;
-          if (sumIns + expectedDeduction > 2000) {
-            expectedDeduction = 2000 - sumIns;
-          }
-          currentInsDeduction = Math.round(expectedDeduction * 100) / 100;
-          insStatus = `(สะสม ${sumIns})`;
-        }
-      }
-      
-      const netPay = grossPay - currentInsDeduction;
-
-      results.push({
-        teacherName: teacherName,
-        teacherId: teacherProfile ? teacherProfile.teacherId : '',
-        bank: teacherProfile ? (teacherProfile.bank || '') : '',
-        accountNumber: teacherProfile ? (teacherProfile.accountNumber || '') : '',
-        totalPay: grossPay,
-        netPay: netPay,
-        insuranceDeduction: currentInsDeduction,
-        insuranceStatus: insStatus,
-        totalHours: Math.round(totalHours * 100) / 100,
-        totalClasses: totalClasses,
-        isConfirmed: !!conf,
-        confirmedAt: conf ? conf.confirmedAt : null
-      });
-    });
-    
-    const resultVal = { success: true, data: results };
-    setCacheObject(cacheKey, resultVal, 300); // Cache 5 minutes
-    return resultVal;
-  } catch (e) {
-    return { success: false, error: e.message };
+    logActivity(logUser || teacher || 'System', 'คำนวณเงินเดือนรายปีผิดพลาด', e.message + ' | Stack: ' + e.stack);
+    return { success: false, error: e.message + " | Stack: " + e.stack };
   }
 }
 
 function toggleClassAbsentInSheet(rowIndex, type, isChecked) {
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
@@ -5502,7 +5317,7 @@ function toggleClassAbsentInSheet(rowIndex, type, isChecked) {
 function toggleTeacherConfirmInSheet(rowIndex, isChecked) {
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
@@ -5555,26 +5370,6 @@ function areDatesSame(d1, d2) {
          date1.getDate() === date2.getDate();
 }
 
-function formatTimeValue(val) {
-  if (!val) return '';
-  if (val instanceof Date) {
-    try {
-      return Utilities.formatDate(val, 'Asia/Bangkok', 'HH:mm');
-    } catch (e) {
-      return val.toString().trim();
-    }
-  }
-  return val.toString().trim();
-}
-
-function parseHoursValue(val) {
-  if (val instanceof Date) {
-    return (val.getHours() + (val.getMinutes() / 60)).toString();
-  }
-  return val ? val.toString().trim() : '';
-}
-
-
 function getClassLogs(filterDate, logUser) {
   // ครูสามารถดูข้อมูลตารางเรียนได้
   const cacheKey = 'class_logs_date_' + (filterDate || 'all');
@@ -5590,7 +5385,7 @@ function getClassLogs(filterDate, logUser) {
       const cleanVal = nameOrId.toString().trim().toLowerCase();
       const match = teachersList.find(t => {
         const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
         return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
       });
       return match ? match.nickname : nameOrId;
@@ -5609,8 +5404,8 @@ function getClassLogs(filterDate, logUser) {
         subject: row[0] ? row[0].toString().trim() : '',
         teacherRegular: resolveNick(row[1]),
         teacherSub: resolveNick(row[2]),
-        timeStart: formatTimeValue(row[3]),
-        timeEnd: formatTimeValue(row[4]),
+        timeStart: row[3] ? row[3].toString().trim() : '',
+        timeEnd: row[4] ? row[4].toString().trim() : '',
         note: row[5] ? row[5].toString().trim() : '',
         isPresentLive: parseInt(row[6]) || 0,
         isPresentOnline: parseInt(row[7]) || 0,
@@ -5618,7 +5413,7 @@ function getClassLogs(filterDate, logUser) {
         isAbsent: parseInt(row[9]) || 0,
         isMakeup: parseInt(row[10]) || 0,
         isOrange: parseInt(row[11]) || 0,
-        hours: parseHoursValue(row[12]),
+        hours: row[12] ? row[12].toString().trim() : '',
         date: dateRaw,
                 roomBranch: row[14] ? row[14].toString().trim() : '',
         teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
@@ -5634,57 +5429,6 @@ function getClassLogs(filterDate, logUser) {
   }
 }
 
-function getClassLogByRow(rowIndex) {
-  try {
-    ensureDataLearnMigrated(getDb());
-    const sheet = getDb().getSheetByName('Data Learn');
-    if (!sheet) throw new Error('Data Learn sheet not found');
-    const lastRow = sheet.getLastRow();
-    if (rowIndex < 2 || rowIndex > lastRow) {
-      throw new Error('ไม่พบข้อมูลคลาสเรียนในแถวที่ ' + rowIndex);
-    }
-    const row = sheet.getRange(rowIndex, 1, 1, sheet.getLastColumn()).getValues()[0];
-    const teachersList = getTeachersDB(null);
-    const resolveNick = function(nameOrId) {
-      if (!nameOrId) return '';
-      const cleanVal = nameOrId.toString().trim().toLowerCase();
-      const match = teachersList.find(t => {
-        const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
-        return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
-      });
-      return match ? match.nickname : nameOrId;
-    };
-    
-    return {
-      success: true,
-      data: {
-        subject: row[0] ? row[0].toString().trim() : '',
-        teacherRegular: resolveNick(row[1]),
-        teacherSub: resolveNick(row[2]),
-        timeStart: formatTimeValue(row[3]),
-        timeEnd: formatTimeValue(row[4]),
-        note: row[5] ? row[5].toString().trim() : '',
-        isPresentLive: parseInt(row[6]) || 0,
-        isPresentOnline: parseInt(row[7]) || 0,
-        isLeave: parseInt(row[8]) || 0,
-        isAbsent: parseInt(row[9]) || 0,
-        isMakeup: parseInt(row[10]) || 0,
-        isOrange: parseInt(row[11]) || 0,
-        hours: parseHoursValue(row[12]),
-        date: cleanSheetDate(row[13]),
-        roomBranch: row[14] ? row[14].toString().trim() : '',
-        teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
-        numKids: row[16] ? (parseInt(row[16]) || 0) : 0,
-        rowIndex: rowIndex
-      }
-    };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
-}
-
-
 function getClassLogsForTeacher(teacherName, nickname) {
   try {
     ensureDataLearnMigrated(getDb());
@@ -5695,7 +5439,7 @@ function getClassLogsForTeacher(teacherName, nickname) {
       const cleanVal = nameOrId.toString().trim().toLowerCase();
       const match = Array.isArray(teachersList) ? teachersList.find(t => {
         const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
         return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
       }) : null;
       return match ? match.nickname : nameOrId;
@@ -5732,8 +5476,8 @@ function getClassLogsForTeacher(teacherName, nickname) {
         subject: row[0] ? row[0].toString().trim() : '',
         teacherRegular: resolveNick(row[1]),
         teacherSub: resolveNick(row[2]),
-        timeStart: formatTimeValue(row[3]),
-        timeEnd: formatTimeValue(row[4]),
+        timeStart: row[3] ? row[3].toString().trim() : '',
+        timeEnd: row[4] ? row[4].toString().trim() : '',
         note: row[5] ? row[5].toString().trim() : '',
         isPresentLive: parseInt(row[6]) || 0,
         isPresentOnline: parseInt(row[7]) || 0,
@@ -5741,7 +5485,7 @@ function getClassLogsForTeacher(teacherName, nickname) {
         isAbsent: parseInt(row[9]) || 0,
         isMakeup: parseInt(row[10]) || 0,
         isOrange: parseInt(row[11]) || 0,
-        hours: parseHoursValue(row[12]),
+        hours: row[12] ? row[12].toString().trim() : '',
         date: dateRaw,
                 roomBranch: row[14] ? row[14].toString().trim() : '',
         teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
@@ -5756,117 +5500,11 @@ function getClassLogsForTeacher(teacherName, nickname) {
   }
 }
 
-
-function cleanSubjectNameString(subjectStr) {
-  if (!subjectStr) return '';
-  var clean = subjectStr.toString();
-  
-  // Strip out long date strings like "Sat Dec 30 1899 18:00:00 GMT+0642 (Indochina Time)"
-  var dateRegex = /\b(?:Sun|Mon|Tue|Wed|Thu|Fri|Sat)\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s+\d{4}\s+\d{2}:\d{2}:\d{2}[^-\n]*/gi;
-  clean = clean.replace(dateRegex, '');
-  
-  // Clean dangling dashes/spaces
-  clean = clean.replace(/\s*-\s*(?=-|$)/g, '');
-  clean = clean.replace(/^-|-$|^\s+|\s+$/g, '');
-  return clean.replace(/\s{2,}/g, ' ').trim();
-}
-
-function cleanDataLearnColAGarbage() {
-  try {
-    const db = getDb();
-    const sheet = db.getSheetByName('Data Learn');
-    if (!sheet) return;
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 2) return;
-    const range = sheet.getRange(2, 1, lastRow - 1, 1);
-    const values = range.getValues();
-    let updated = false;
-    for (let i = 0; i < values.length; i++) {
-      const val = values[i][0] ? values[i][0].toString() : '';
-      if (val.includes('1899') || val.includes('1900') || val.includes('GMT')) {
-        const cleaned = cleanSubjectNameString(val);
-        if (cleaned !== val) {
-          values[i][0] = cleaned;
-          updated = true;
-        }
-      }
-    }
-    if (updated) {
-      range.setValues(values);
-      // Invalidate all caches
-      clearClassLogsCache('');
-    }
-  } catch(e) {
-    Logger.log('Error cleaning Data Learn Col A: ' + e.message);
-  }
-}
-
-function formatSubjectWithDayTime(subject, dateStr, timeStart, timeEnd) {
-  if (!subject) return '';
-  var subjectName = cleanSubjectNameString(subject);
-  
-  // Check if subject already contains day and time info to avoid double appending
-  var hasDay = /(จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์)/.test(subjectName);
-  var hasTime = /\d+[:.]\d+/.test(subjectName);
-  if (hasDay && hasTime) {
-    return subjectName;
-  }
-  
-  var dayName = '';
-  if (dateStr) {
-    var parts = dateStr.toString().split('/');
-    if (parts.length === 3) {
-      var day = parseInt(parts[0], 10);
-      var month = parseInt(parts[1], 10) - 1;
-      var year = parseInt(parts[2], 10);
-      var date = new Date(year, month, day);
-      var days = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
-      dayName = days[date.getDay()];
-    }
-  }
-  
-  var cleanTime = function(t) {
-    if (!t) return '';
-    if (t instanceof Date) {
-      return Utilities.formatDate(t, 'Asia/Bangkok', 'HH:mm');
-    }
-    var str = t.toString().trim();
-    if (str.includes('GMT') || str.includes('1899') || str.includes('1900') || str.length > 15) {
-      try {
-        var d = new Date(str);
-        if (!isNaN(d.getTime())) {
-          return Utilities.formatDate(d, 'Asia/Bangkok', 'HH:mm');
-        }
-      } catch(e) {}
-      var match = str.match(/(\d{1,2})[:.](\d{2})/);
-      if (match) {
-        return match[1].padStart(2, '0') + ':' + match[2];
-      }
-    }
-    // Handle standard string formats like "17:00-19:00" or just "17.00"
-    var cleanStr = str.replace('.', ':');
-    var colonMatch = cleanStr.match(/(\d{1,2}):(\d{2})/);
-    if (colonMatch) {
-      return colonMatch[1].padStart(2, '0') + ':' + colonMatch[2];
-    }
-    return cleanStr;
-  };
-  
-  var startClean = cleanTime(timeStart);
-  var endClean = cleanTime(timeEnd);
-  
-  var dayTimeStr = (dayName + ' ' + (startClean && endClean ? (startClean + '-' + endClean) : '')).trim();
-  if (dayTimeStr && !subjectName.includes(dayTimeStr)) {
-    subjectName = subjectName + ' ' + dayTimeStr;
-  }
-  return cleanSubjectNameString(subjectName);
-}
-
 function addClassLog(log, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     ensureDataLearnMigrated(getDb());
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
@@ -5877,7 +5515,7 @@ function addClassLog(log, logUser) {
       if (!name) return '';
       const cleanTarget = name.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
       const match = teachersList.find(t => {
-        const tNick = (t.nickname || '').toString().toLowerCase().trim().replace(/^ครู/, '').trim();
+        const tNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
         const tId = (t.teacherId || '').toLowerCase().trim();
         return tNick === cleanTarget || tId === cleanTarget;
       });
@@ -5886,12 +5524,6 @@ function addClassLog(log, logUser) {
     
     const resolvedTeacherRegular = resolveId(log.teacherRegular);
     const resolvedTeacherSub = resolveId(log.teacherSub);
-    log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd);
-    
-    const iPresentLive = log.isPresentLive ? parseInt(log.isPresentLive) || 0 : 0;
-    const iPresentOnline = log.isPresentOnline ? parseInt(log.isPresentOnline) || 0 : 0;
-    const iMakeup = log.isMakeup ? parseInt(log.isMakeup) || 0 : 0;
-    const numKids = iPresentLive + iPresentOnline + iMakeup;
     
     const rowData = [
       log.subject,
@@ -5900,17 +5532,15 @@ function addClassLog(log, logUser) {
       log.timeStart,
       log.timeEnd,
       log.note || '',
-      iPresentLive,
-      iPresentOnline,
+      log.isPresentLive ? parseInt(log.isPresentLive) || 0 : 0,
+      log.isPresentOnline ? parseInt(log.isPresentOnline) || 0 : 0,
       log.isLeave ? parseInt(log.isLeave) || 0 : 0,
       log.isAbsent ? parseInt(log.isAbsent) || 0 : 0,
-      iMakeup,
+      log.isMakeup ? parseInt(log.isMakeup) || 0 : 0,
       log.isOrange ? parseInt(log.isOrange) || 0 : 0,
       log.hours || '',
       log.date || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'd/M/yyyy'),
-      log.roomBranch || '',
-      0,        // teacherConfirmed (column P)
-      numKids   // numKids (column Q) = iPresentLive + iPresentOnline + iMakeup
+      log.roomBranch || ''
     ];
     
     sheet.appendRow(rowData);
@@ -5939,14 +5569,13 @@ function updateClassLog(rowIndex, log, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     ensureDataLearnMigrated(getDb());
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
     // Read old log values first to revert them
-    // Read old log values first to revert them
-    const rowVals = sheet.getRange(rowIndex, 1, 1, 17).getValues()[0];
+    const rowVals = sheet.getRange(rowIndex, 1, 1, 15).getValues()[0];
     const oldLog = {
       subject: rowVals[0] ? rowVals[0].toString().trim() : '',
       teacherRegular: rowVals[1] ? rowVals[1].toString().trim() : '',
@@ -5971,7 +5600,7 @@ function updateClassLog(rowIndex, log, logUser) {
       if (!name) return '';
       const cleanTarget = name.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
       const match = teachersList.find(t => {
-        const tNick = (t.nickname || '').toString().toLowerCase().trim().replace(/^ครู/, '').trim();
+        const tNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
         const tId = (t.teacherId || '').toLowerCase().trim();
         return tNick === cleanTarget || tId === cleanTarget;
       });
@@ -5980,14 +5609,7 @@ function updateClassLog(rowIndex, log, logUser) {
     
     const resolvedTeacherRegular = resolveId(log.teacherRegular);
     const resolvedTeacherSub = resolveId(log.teacherSub);
-    log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd);
     
-    const iPresentLive = log.isPresentLive ? parseInt(log.isPresentLive) || 0 : 0;
-    const iPresentOnline = log.isPresentOnline ? parseInt(log.isPresentOnline) || 0 : 0;
-    const iMakeup = log.isMakeup ? parseInt(log.isMakeup) || 0 : 0;
-    const numKids = iPresentLive + iPresentOnline + iMakeup;
-    const currentConfirmed = rowVals[15] ? (parseInt(rowVals[15]) || 0) : 0;
-
     const rowValues = [
       [
         log.subject,
@@ -5996,21 +5618,19 @@ function updateClassLog(rowIndex, log, logUser) {
         log.timeStart,
         log.timeEnd,
         log.note || '',
-        iPresentLive,
-        iPresentOnline,
+        log.isPresentLive ? parseInt(log.isPresentLive) || 0 : 0,
+        log.isPresentOnline ? parseInt(log.isPresentOnline) || 0 : 0,
         log.isLeave ? parseInt(log.isLeave) || 0 : 0,
         log.isAbsent ? parseInt(log.isAbsent) || 0 : 0,
-        iMakeup,
+        log.isMakeup ? parseInt(log.isMakeup) || 0 : 0,
         log.isOrange ? parseInt(log.isOrange) || 0 : 0,
         log.hours || '',
         log.date,
-        log.roomBranch || '',
-        currentConfirmed,
-        numKids
+        log.roomBranch || ''
       ]
     ];
     
-    sheet.getRange(rowIndex, 1, 1, 17).setValues(rowValues);
+    sheet.getRange(rowIndex, 1, 1, 15).setValues(rowValues);
     
     try {
       recalculateSubjectHours(oldLog.subject);
@@ -6040,7 +5660,7 @@ function updateClassAbsenceAndAttendance(rowIndex, type, checked, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     const db = getDb();
     const sheet = db.getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
@@ -6099,7 +5719,7 @@ function deleteClassLog(rowIndex, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
@@ -6395,7 +6015,7 @@ function debugReadSheetHeaders() {
   };
   
   if (numCols > 0) {
-    result.headers = targetSheet.getRange(1, 19, 5, numCols).getValues();
+    result.headers = targetSheet.getRange(1, 16, 5, numCols).getValues();
   }
   
   const file = DriveApp.getFileById(db.getId());
@@ -6435,7 +6055,7 @@ function initAllGradeSheets() {
           'สาขาเรียน',
           'สาขาที่เก็บเงิน'
         ];
-        const row5 = new Array(18).fill('');
+        const row5 = new Array(15).fill('');
         headers.forEach((h, idx) => {
           row5[idx] = h;
         });
@@ -6444,11 +6064,8 @@ function initAllGradeSheets() {
         row5[12] = 'คงเหลือ'; // Col 13
         row5[13] = 'ยอดจ่าย'; // Col 14
         row5[14] = 'รูดบัตร'; // Col 15
-        row5[15] = 'วันที่ชำระเงิน'; // Col 16
-        row5[16] = 'ช่องทางชำระเงิน'; // Col 17
-        row5[17] = 'ผู้รับเงิน'; // Col 18
         
-        sheet.getRange(5, 1, 1, 18).setValues([row5]);
+        sheet.getRange(5, 1, 1, 15).setValues([row5]);
       }
     });
   });
@@ -6605,7 +6222,12 @@ function matchCourseName(dlSubject, studCourse) {
   return cleanDl.indexOf(cleanStud) !== -1 || cleanStud.indexOf(cleanDl) !== -1;
 }
 
-// Duplicate matchCourseNameIgnoringRound removed to avoid redeclaration error
+function matchCourseNameIgnoringRound(dlSubject, studCourse) {
+  if (!dlSubject || !studCourse) return false;
+  const cleanDl = dlSubject.toLowerCase().replace(/\s+/g, '').trim().replace(/\d+$/, '');
+  const cleanStud = studCourse.toLowerCase().replace(/\s+/g, '').trim().replace(/\d+$/, '');
+  return cleanDl === cleanStud || cleanDl.indexOf(cleanStud) !== -1 || cleanStud.indexOf(cleanDl) !== -1;
+}
 
 function recalculateSubjectHours(subject) {
   const db = getDb();
@@ -6692,11 +6314,10 @@ function addMultipleClassLogs(logs, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
-    logs.forEach(function(log) { log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd); });
     const rowsData = logs.map(log => [
       log.subject,
       log.teacherRegular,
@@ -6743,109 +6364,6 @@ function addMultipleClassLogs(logs, logUser) {
   }
 }
 
-function saveBatchClassLogs(adds, updates, deletes, logUser) {
-  checkTeacherBlock(logUser);
-  const lock = LockService.getScriptLock();
-  try {
-    lock.waitLock(30000);
-    const sheet = getDb().getSheetByName('Data Learn');
-    if (!sheet) throw new Error('Data Learn sheet not found');
-    const teachersToInvalidate = new Set();
-    const datesToInvalidate = new Set();
-    let actionLog = [];
-    
-    // Process Updates
-    if (updates && updates.length > 0) {
-      updates.forEach(u => {
-        const rowIndex = u.rowIndex;
-        const log = u.log;
-        const rowVals = sheet.getRange(rowIndex, 1, 1, 17).getValues()[0];
-        const oldLog = {
-          subject: rowVals[0] ? rowVals[0].toString().trim() : '',
-          teacherRegular: rowVals[1] ? rowVals[1].toString().trim() : '',
-          teacherSub: rowVals[2] ? rowVals[2].toString().trim() : '',
-          timeStart: rowVals[3] ? rowVals[3].toString().trim() : '',
-          timeEnd: rowVals[4] ? rowVals[4].toString().trim() : '',
-          note: rowVals[5] ? rowVals[5].toString().trim() : '',
-          isPresentLive: parseInt(rowVals[6]) || 0,
-          isPresentOnline: parseInt(rowVals[7]) || 0,
-          isLeave: parseInt(rowVals[8]) || 0,
-          isAbsent: parseInt(rowVals[9]) || 0,
-          isMakeup: parseInt(rowVals[10]) || 0,
-          isOrange: parseInt(rowVals[11]) || 0,
-          hours: rowVals[12] ? rowVals[12].toString().trim() : '',
-          date: rowVals[13] ? rowVals[13].toString().trim() : '',
-          roomBranch: rowVals[14] ? rowVals[14].toString().trim() : ''
-        };
-        try { processClassHoursDeduction(oldLog, true); } catch(e){}
-        
-        log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd);
-        const newVals = [[
-          log.subject, log.teacherRegular, log.teacherSub || '',
-          log.timeStart, log.timeEnd, log.note || '',
-          log.isPresentLive ? parseInt(log.isPresentLive, 10) || 0 : 0,
-          log.isPresentOnline ? parseInt(log.isPresentOnline, 10) || 0 : 0,
-          log.isLeave ? parseInt(log.isLeave, 10) || 0 : 0,
-          log.isAbsent ? parseInt(log.isAbsent, 10) || 0 : 0,
-          log.isMakeup ? parseInt(log.isMakeup, 10) || 0 : 0,
-          log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
-          log.hours || '', log.date || '', log.roomBranch || ''
-        ]];
-        sheet.getRange(rowIndex, 1, 1, 15).setValues(newVals);
-        sheet.getRange(rowIndex, 17).setValue(''); // clear confirm
-        try { processClassHoursDeduction(log, false); } catch(e){}
-        
-        datesToInvalidate.add(oldLog.date);
-        datesToInvalidate.add(log.date);
-        teachersToInvalidate.add(oldLog.teacherRegular);
-        if (oldLog.teacherSub) teachersToInvalidate.add(oldLog.teacherSub);
-        teachersToInvalidate.add(log.teacherRegular);
-        if (log.teacherSub) teachersToInvalidate.add(log.teacherSub);
-        actionLog.push('แก้ไข: ' + log.subject);
-      });
-    }
-    
-    // Process Adds
-    if (adds && adds.length > 0) {
-      adds.forEach(function(log) { log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd); });
-      const rowsData = adds.map(log => [
-        log.subject, log.teacherRegular, log.teacherSub || '',
-        log.timeStart, log.timeEnd, log.note || '',
-        log.isPresentLive ? parseInt(log.isPresentLive, 10) || 0 : 0,
-        log.isPresentOnline ? parseInt(log.isPresentOnline, 10) || 0 : 0,
-        log.isLeave ? parseInt(log.isLeave, 10) || 0 : 0,
-        log.isAbsent ? parseInt(log.isAbsent, 10) || 0 : 0,
-        log.isMakeup ? parseInt(log.isMakeup, 10) || 0 : 0,
-        log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
-        log.hours || '', log.date || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'd/M/yyyy'),
-        log.roomBranch || ''
-      ]);
-      const lastRow = sheet.getLastRow();
-      sheet.getRange(lastRow + 1, 1, rowsData.length, 15).setValues(rowsData);
-      
-      adds.forEach(log => {
-        try { processClassHoursDeduction(log, false); } catch (e) {}
-        datesToInvalidate.add(log.date);
-        teachersToInvalidate.add(log.teacherRegular);
-        if (log.teacherSub) teachersToInvalidate.add(log.teacherSub);
-      });
-      actionLog.push('เพิ่มใหม่: ' + adds.length + ' รายการ');
-    }
-    
-    if (actionLog.length > 0) {
-      logActivity(logUser, 'Batch Update คลาสเรียน', actionLog.join(', '));
-      datesToInvalidate.forEach(d => clearClassLogsCache(d));
-      invalidateTeacherSalaryCache(Array.from(teachersToInvalidate));
-    }
-    
-    return { success: true };
-  } catch (err) {
-    return { success: false, error: err.message };
-  } finally {
-    lock.releaseLock();
-  }
-}
-
 function convertDateToIso(dateStr) {
   if (!dateStr) return '';
   const parts = dateStr.split('/');
@@ -6854,86 +6372,6 @@ function convertDateToIso(dateStr) {
   const m = parts[1].length < 2 ? '0' + parts[1] : parts[1];
   const y = parts[2];
   return y + '-' + m + '-' + d;
-}
-
-function getTeacherRoomSchedule(teacherName, nickname, startVal, endVal) {
-  try {
-    const start = startVal ? new Date(startVal + 'T00:00:00') : null;
-    const end = endVal ? new Date(endVal + 'T23:59:59') : null;
-    
-    // 1. Get correct teacher nickname from TeachersDB
-    const teachersList = getTeachersDB(null);
-    let matchedTeacherNick = (nickname || teacherName || '').toString().trim();
-    
-    if (teacherName) {
-      const cleanName = teacherName.toString().toLowerCase().trim();
-      const match = teachersList.find(t => {
-        const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
-        return (tId !== '' && tId === cleanName) || tNick === cleanName;
-      });
-      if (match) {
-        matchedTeacherNick = match.nickname;
-      }
-    }
-    
-    const cleanNickTarget = matchedTeacherNick.toLowerCase();
-    
-    // 2. Fetch ClassLogs and filter
-    const classLogs = getClassLogs('all');
-    const classes = [];
-    
-    classLogs.forEach(c => {
-      // Check teacher match (regular or sub)
-      const tReg = (c.teacherRegular || '').toLowerCase();
-      const tSub = (c.teacherSub || '').toLowerCase();
-      
-      let match = false;
-      if (cleanNickTarget && (tReg.includes(cleanNickTarget) || tSub.includes(cleanNickTarget))) {
-        match = true;
-      }
-      
-      if (!match) return;
-      
-      // Check date range
-      if (start && end && c.date) {
-        const parts = c.date.split('/');
-        if (parts.length === 3) {
-          let y = parseInt(parts[2]);
-          if (y > 2400) y -= 543;
-          const cDate = new Date(y, parseInt(parts[1]) - 1, parseInt(parts[0]));
-          if (cDate < start || cDate > end) return;
-        } else {
-          return;
-        }
-      }
-      
-      classes.push({
-        id: c.rowIndex,
-        date: c.date || "",
-        timeStart: c.timeStart || "",
-        timeEnd: c.timeEnd || "",
-        subject: c.subject || "",
-        teacherRegular: c.teacherRegular || "",
-        teacherSub: c.teacherSub || "",
-        roomBranchInfo: c.roomBranch || "",
-        memo: c.note || "",
-        presentCount: c.isPresentLive || 0,
-        onlineCount: c.isPresentOnline || 0,
-        leaveCount: c.isLeave || 0,
-        absentCount: c.isAbsent || 0,
-        makeUpCount: c.isMakeup || 0,
-        extraCount: c.isOrange || 0,
-        hours: c.hours || 0,
-        roomBranch: c.roomBranch || "",
-        rowIndex: c.rowIndex
-      });
-    });
-    
-    return classes;
-  } catch (e) {
-    return { error: e.message };
-  }
 }
 
 function getStudentHistoryData(name, nickname, logUser) {
@@ -6950,8 +6388,7 @@ function getStudentHistoryData(name, nickname, logUser) {
         const stdName = row[1] ? row[1].toString().trim() : '';
         const stdNick = row[2] ? row[2].toString().trim() : '';
         
-        // ค้นหาด้วยชื่อ-นามสกุลเต็มเป็นหลัก (exact match)
-        if (stdName === name) {
+        if (stdName === name || (nickname && stdNick === nickname)) {
           allStudents.push({
             id: row[0] ? row[0].toString().trim() : '',
             name: stdName,
@@ -6974,28 +6411,14 @@ function getStudentHistoryData(name, nickname, logUser) {
     
     const classSheet = db.getSheetByName('Data Learn');
     const matchedClasses = [];
-    
-    // ดึงรายการชื่อคอร์สทั้งหมดของนักเรียนคนนี้ (ซึ่งกรองด้วยชื่อ-นามสกุลตรงกันแล้ว)
-    const enrolledCourseNames = allStudents.map(s => s.courseName.toLowerCase().trim()).filter(c => c.length > 0);
-    
     if (classSheet) {
       const cData = classSheet.getDataRange().getValues();
       for (let i = 1; i < cData.length; i++) {
         const row = cData[i];
         const subject = row[0] ? row[0].toString().trim() : '';
-        const subjectClean = subject.toLowerCase().trim();
         
-        // เช็คว่าวิชาใน Data Learn ตรงกับคอร์สที่ลงทะเบียนจริง
-        let isCourseMatch = enrolledCourseNames.some(cName => {
-          return subjectClean === cName || subjectClean.indexOf(cName) !== -1 || cName.indexOf(subjectClean) !== -1;
-        });
-        
-        // Fallback exact name matching
-        if (!isCourseMatch && name) {
-          isCourseMatch = subjectClean.indexOf(name.toLowerCase().trim()) !== -1;
-        }
-        
-        if (isCourseMatch) {
+        const nameMatch = (nickname && subject.indexOf(nickname) !== -1) || (name && subject.indexOf(name) !== -1);
+        if (nameMatch) {
           matchedClasses.push({
             subject: subject,
             teacherRegular: row[1] ? row[1].toString().trim() : '',
@@ -7052,7 +6475,7 @@ function updateStudentPaymentDetails(id, paymentData, logUser) {
     
     const paidAmount = parseFloat(paymentData.paid) || 0;
     const paymentDate = paymentData.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy');
-    const paymentChannel = paymentData.paymentChannel || 'กสิกร บัญชีบริษัท(สแกน)';
+    const paymentChannel = paymentData.paymentChannel || 'กสิกร บัญชีบริษัท';
     const staff = paymentData.staff || '';
     
     const currentPaid = parseFloat(statusSheet.getRange(rowIndex, 10).getValue()) || 0;
@@ -7224,7 +6647,7 @@ function pingActiveUser(username) {
   const lock = LockService.getScriptLock();
   let hasLock = false;
   try {
-    lock.waitLock(15000);
+    lock.waitLock(3000);
     hasLock = true;
     const cache = CacheService.getScriptCache();
     let listStr = cache.get('active_users_list') || '{}';
@@ -7295,10 +6718,10 @@ function getMultipleStudentsCourses(students, logUser) {
       
       const lastRow = sheet.getLastRow();
       const lastCol = sheet.getLastColumn();
-      if (lastRow < 6 || lastCol < 19) continue;
+      if (lastRow < 6 || lastCol < 16) continue;
       
       // Get course names from headerRow1 (row 1, col 16 to lastCol)
-      const headerRow1 = sheet.getRange(1, 19, 1, lastCol - 18).getValues()[0];
+      const headerRow1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
       
       // Get student rows (col 1 to lastCol, row 6 onwards)
       const studentData = sheet.getRange(6, 1, lastRow - 5, lastCol).getValues();
@@ -7314,7 +6737,7 @@ function getMultipleStudentsCourses(students, logUser) {
         if (foundRow) {
           const courses = [];
           for (let i = 0; i < headerRow1.length; i++) {
-            const val = foundRow[18 + i];
+            const val = foundRow[15 + i];
             if (val !== '' && val !== null && val !== undefined) {
               courses.push(headerRow1[i].toString().trim());
             }
@@ -7421,17 +6844,17 @@ function migrateGradeClassroomSheets() {
         hRow3.push(c.dayTime);
         hRow4.push(c.totalSessions);
       });
-      sheet.getRange(1, 19, 1, courses.length).setValues([hRow1]);
-      sheet.getRange(2, 19, 1, courses.length).setValues([hRow2]);
-      sheet.getRange(3, 19, 1, courses.length).setValues([hRow3]);
-      sheet.getRange(4, 19, 1, courses.length).setValues([hRow4]);
+      sheet.getRange(1, 16, 1, courses.length).setValues([hRow1]);
+      sheet.getRange(2, 16, 1, courses.length).setValues([hRow2]);
+      sheet.getRange(3, 16, 1, courses.length).setValues([hRow3]);
+      sheet.getRange(4, 16, 1, courses.length).setValues([hRow4]);
     }
     
     // 2. Write Row 5 headers
     const row5Headers = [
       'ระดับชั้น', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'โรงเรียน', 'ห้องเรียนย่อย',
       'เบอร์ติดต่อ', 'ชื่อโปรไฟล์ไลน์', 'ID LINE', 'สาขาเรียน', 'สาขาที่เก็บเงิน',
-      'ยอดรวม', 'ส่วนลด', 'คงเหลือ', 'ยอดจ่าย', 'รูดบัตร', 'วันที่ชำระเงิน', 'ช่องทางชำระเงิน', 'ผู้รับเงิน'
+      'ยอดรวม', 'ส่วนลด', 'คงเหลือ', 'ยอดจ่าย', 'รูดบัตร'
     ];
     courses.forEach(c => {
       row5Headers.push(c.courseName);
@@ -7574,7 +6997,7 @@ function getTeacherLeaveToday(logUser) {
       if (Array.isArray(teachersList)) {
         teachersList.forEach(t => {
           if (t.teacherId) teachersMap[t.teacherId.toLowerCase().trim()] = t.nickname;
-          if (t.nickname) teachersMap[(t.nickname || '').toString().toLowerCase().trim()] = t.nickname;
+          if (t.nickname) teachersMap[t.nickname.toLowerCase().trim()] = t.nickname;
         });
       }
     } catch(err) {}
@@ -7617,7 +7040,7 @@ function getTeacherLeaveToday(logUser) {
       }
       
       let teacherName = (data[i][1] || '').toString().trim();
-      const subject = cleanSubjectNameString((data[i][0] || '').toString().trim());
+      const subject = (data[i][0] || '').toString().trim();
       const key = teacherName + '|' + subject + '|' + dateValStr;
       
       if (seen.has(key)) continue;
@@ -7741,15 +7164,6 @@ function runDebugHeaders() {
 }
 
 function getCacheObject(key) {
-  try {
-    const cache = CacheService.getScriptCache();
-    const cached = cache.get(key);
-    if (cached) {
-      return JSON.parse(cached);
-    }
-  } catch (e) {
-    Logger.log('Cache read error: ' + e.message);
-  }
   return null;
 }
 
@@ -7760,24 +7174,8 @@ function clearCacheObject(key) {
   } catch (e) {}
 }
 
-function deleteCacheObject(key) {
-  return clearCacheObject(key);
-}
-
 function invalidateStudentCache() {
   clearCacheObject('students_list');
-  
-  // Invalidate sheet-specific enrollment mappings
-  try {
-    const db = getDb();
-    const sheets = db.getSheets();
-    sheets.forEach(sheet => {
-      const name = sheet.getName();
-      if (name.match(/^(ป\.|ม\.|อนุบาล)/) || name.match(/^(ย่อย)/)) {
-        clearCacheObject('enroll_map_' + name.replace(/\s+/g, '_'));
-      }
-    });
-  } catch (e) {}
 }
 
 function ensureTeacherIDs() {
@@ -7856,435 +7254,4 @@ function invalidateTeacherSalaryCache(namesArray) {
       }
     });
   });
-}
-
-function dumpData() {
-  var db = SpreadsheetApp.openById('1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI');
-  var tSheet = db.getSheetByName('TeachersDB');
-  var tData = tSheet ? tSheet.getRange(1, 1, 5, 10).getValues() : 'No TeachersDB';
-  var uSheet = db.getSheetByName('UsersDB');
-  var uData = uSheet ? uSheet.getRange(1, 1, 5, 5).getValues() : 'No UsersDB';
-  var lSheet = db.getSheetByName('Data Learn');
-  var lData = lSheet ? lSheet.getRange(1, 1, 5, 10).getValues() : 'No Data Learn';
-  return JSON.stringify({ teachers: tData, users: uData, dataLearn: lData });
-}
-function exportAllDataToJson() {
-  const db = getDb();
-  
-  const getSheetData = (sheetName) => {
-    const sheet = db.getSheetByName(sheetName);
-    if (!sheet) return [];
-    const rows = sheet.getDataRange().getValues();
-    const headers = rows[0];
-    const data = [];
-    for (let i = 1; i < rows.length; i++) {
-      const obj = {};
-      let hasData = false;
-      for (let j = 0; j < headers.length; j++) {
-        if (headers[j]) {
-          obj[headers[j]] = rows[i][j];
-          if (rows[i][j] !== '') hasData = true;
-        }
-      }
-      if (hasData) data.push(obj);
-    }
-    return data;
-  };
-
-  const jsonData = {
-    teachers: getSheetData('TeachersDB'),
-    rooms: getSheetData('RoomDB'),
-    students: getSheetData('AllStudents'),
-    classLogs: getSheetData('ClassLogs'),
-    users: getSheetData('UsersDB')
-  };
-  
-  return JSON.stringify(jsonData);
-}
-
-function migrateExistingDataLearnSubjects() {
-  try {
-    const db = getDb();
-    const sheet = db.getSheetByName('Data Learn');
-    if (!sheet) return { success: false, error: 'Sheet Data Learn not found' };
-    
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 2) return { success: true, message: 'No rows to migrate' };
-    
-    const range = sheet.getRange(2, 1, lastRow - 1, 15); // Columns A to O
-    const values = range.getValues();
-    
-    const thaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
-    let count = 0;
-    
-    for (let i = 0; i < values.length; i++) {
-      const row = values[i];
-      let subject = row[0] ? row[0].toString().trim() : '';
-      const start = row[3] ? row[3].toString().trim() : '';
-      const end = row[4] ? row[4].toString().trim() : '';
-      const dateVal = row[13];
-      
-      if (!subject || !start || !end || !dateVal) continue;
-      
-      // Parse the date (could be a Date object or string dd/mm/yyyy)
-      let dateObj = null;
-      if (dateVal instanceof Date) {
-        dateObj = dateVal;
-      } else {
-        const dateStr = dateVal.toString().trim();
-        const parts = dateStr.split('/');
-        if (parts.length === 3) {
-          let y = parseInt(parts[2]);
-          if (y > 2400) y -= 543;
-          dateObj = new Date(y, parseInt(parts[1]) - 1, parseInt(parts[0]));
-        }
-      }
-      
-      if (!dateObj || isNaN(dateObj.getTime())) continue;
-      
-      const dayName = thaiDays[dateObj.getDay()];
-      const suffix = `${dayName} ${start}-${end}`;
-      
-      // If the subject doesn't already contain this day name + time
-      if (subject.indexOf(suffix) === -1) {
-        let alreadyHas = false;
-        thaiDays.forEach(d => {
-          if (subject.indexOf(d) !== -1 && (subject.indexOf(':') !== -1 || subject.indexOf('-') !== -1)) {
-            alreadyHas = true;
-          }
-        });
-        
-        if (!alreadyHas) {
-          const newSubject = `${subject} ${suffix}`;
-          sheet.getRange(i + 2, 1).setValue(newSubject);
-          count++;
-        }
-      }
-    }
-    
-    return { success: true, count: count };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
-
-function migrateAllGradeSheetsHeaders() {
-  const db = getDb();
-  const sheets = [
-    'อนุบาล/1','ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1','ม.1/1','ม.2/1','ม.3/1','ม.4/1','ม.5/1','ม.6/1',
-    'อนุบาล/2','ป.1/2','ป.2/2','ป.3/2','ป.4/2','ป.5/2','ป.6/2','ม.1/2','ม.2/2','ม.3/2','ม.4/2','ม.5/2','ม.6/2',
-    'อนุบาล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3'
-  ];
-  
-  sheets.forEach(sheetName => {
-    const sheet = db.getSheetByName(sheetName);
-    if (!sheet) return;
-    
-    const lastCol = sheet.getLastColumn();
-    if (lastCol < 5) return; // courses start from column E (5)
-    
-    const headers1 = sheet.getRange(1, 5, 1, lastCol - 4).getValues()[0];
-    const headers3 = sheet.getRange(3, 5, 1, lastCol - 4).getValues()[0];
-    
-    let updated = false;
-    for (let c = 0; c < headers1.length; c++) {
-      const course = (headers1[c] || '').toString().trim();
-      const daytime = (headers3[c] || '').toString().trim();
-      
-      if (course && daytime && !course.includes(daytime)) {
-        headers1[c] = course + ' ' + daytime;
-        updated = true;
-      }
-    }
-    
-    if (updated) {
-      sheet.getRange(1, 5, 1, headers1.length).setValues([headers1]);
-    }
-  });
-}
-
-function getStudentData(id) {
-  try {
-    const sheet = getDb().getSheetByName('StatusDB');
-    if (!sheet) throw new Error('StatusDB sheet not found');
-    
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 2) return { success: false, error: 'No data in StatusDB' };
-    
-    const data = sheet.getDataRange().getValues();
-    let row = null;
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][0] && data[i][0].toString().trim() === id.toString().trim()) {
-        row = data[i];
-        break;
-      }
-    }
-    
-    // Fallback name search if ID is temp or changed
-    if (!row) {
-      for (let i = 1; i < data.length; i++) {
-        const studentName = data[i][1] ? data[i][1].toString().trim() : '';
-        if (id.toString().toLowerCase().includes(studentName.toLowerCase()) && studentName.length > 0) {
-          row = data[i];
-          break;
-        }
-      }
-    }
-    
-    if (!row) {
-      return { success: false, error: 'ไม่พบข้อมูลนักเรียนชื่อนี้ในฐานข้อมูล' };
-    }
-    
-    const result = {
-      id: row[0] ? row[0].toString().trim() : '',
-      StudentName: row[1] ? row[1].toString().trim() : '',
-      Nickname: row[2] ? row[2].toString().trim() : '',
-      School: row[3] ? row[3].toString().trim() : '',
-      Contact: row[4] ? row[4].toString().trim() : '',
-      BranchLearn: row[5] ? row[5].toString().trim() : '',
-      BranchPay: row[6] ? row[6].toString().trim() : '',
-      TimeNote: row[7] ? row[7].toString().trim() : '',
-      ExtraNote: row[8] ? row[8].toString().trim() : '',
-      PaidAmount: parseFloat(row[9]) || 0,
-      FullAmount: parseFloat(row[10]) || 0,
-      Outstanding: parseFloat(row[11]) || 0,
-      PaymentDate: row[12] ? row[12].toString().trim() : '',
-      PaymentChannel: row[13] ? row[13].toString().trim() : '',
-      Staff: row[14] ? row[14].toString().trim() : '',
-      Course: row[15] ? row[15].toString().trim() : '',
-      Grade: row[16] ? row[16].toString().trim() : '',
-      ClassSection: row[17] ? row[17].toString().trim() : '',
-      LineName: row[18] ? row[18].toString().trim() : '',
-      LineID: row[19] ? row[19].toString().trim() : '',
-      CarriedForward: parseFloat(row[20]) || 0,
-      Hours: row[21] ? row[21].toString().trim() : '',
-      HoursLeft: row[22] ? row[22].toString().trim() : '',
-      ClassType: row[23] ? row[23].toString().trim() : 'เดี่ยว'
-    };
-    
-    // Installments mappings
-    result.PayRound1Date = row[12] ? row[12].toString().trim() : '';
-    result.PayRound1Amount = parseFloat(row[9]) || 0;
-    result.PayRound1Channel = row[13] ? row[13].toString().trim() : '';
-    result.PayRound1Staff = row[14] ? row[14].toString().trim() : '';
-    result.PayRound1Time = row[7] ? row[7].toString().trim() : '';
-    
-    return { success: true, data: result };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
-
-// =========================================================================
-// TEACHER SALARY CONFIRMATION
-// =========================================================================
-function confirmTeacherSalary(year, month, teacherId, teacherName, totalPay, insuranceDeducted) {
-  try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
-    if (!sheet) return { success: false, error: 'Sheet not found' };
-    
-    insuranceDeducted = parseFloat(insuranceDeducted) || 0;
-    
-    // Check if already confirmed
-    const data = sheet.getDataRange().getValues();
-    let rowIndex = -1;
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][0] == year && data[i][1] == month && data[i][2] == teacherId) {
-        rowIndex = i + 1;
-        break;
-      }
-    }
-    
-    const now = new Date();
-    if (rowIndex > 0) {
-      // Update existing
-      sheet.getRange(rowIndex, 4).setValue(teacherName);
-      sheet.getRange(rowIndex, 5).setValue(totalPay);
-      sheet.getRange(rowIndex, 6).setValue(now);
-      sheet.getRange(rowIndex, 7).setValue(insuranceDeducted);
-    } else {
-      // Append new
-      sheet.appendRow([year, month, teacherId, teacherName, totalPay, now, insuranceDeducted]);
-    }
-    
-    return { success: true, timestamp: now.toISOString() };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
-
-function getTeacherSalaryConfirmations(year, month) {
-  try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
-    if (!sheet) return { success: false, error: 'Sheet not found' };
-    
-    const data = sheet.getDataRange().getValues();
-    const result = [];
-    for (let i = 1; i < data.length; i++) {
-      if ((!year || data[i][0] == year) && (!month || data[i][1] == month)) {
-        result.push({
-          year: data[i][0],
-          month: data[i][1],
-          teacherId: data[i][2],
-          teacherName: data[i][3],
-          totalPay: data[i][4],
-          confirmedAt: data[i][5]
-        });
-      }
-    }
-    return { success: true, data: result };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
-
-function getLatestSingleOrSubgroupDetails(courseName) {
-  try {
-    if (!courseName) return { success: false, error: 'No course name provided' };
-    const db = getDb();
-    const sheetsToSearch = [
-      "เดี่ยว อนุบาล", "เดี่ยว ป.1", "เดี่ยว ป.2", "เดี่ยว ป.3", "เดี่ยว ป.4", "เดี่ยว ป.5", "เดี่ยว ป.6",
-      "เดี่ยว ม.1", "เดี่ยว ม.2", "เดี่ยว ม.3", "เดี่ยว ม.4", "เดี่ยว ม.5", "เดี่ยว ม.6",
-      "ย่อย 2-3", "ย่อย 4-5", "ย่อย 6-10"
-    ];
-    
-    const cleanCourseName = courseName.toString().toLowerCase().replace(/\s+/g, '');
-    let matchedRow = null;
-    
-    for (let sheetName of sheetsToSearch) {
-      const sheet = db.getSheetByName(sheetName);
-      if (!sheet) continue;
-      
-      const lastRow = sheet.getLastRow();
-      if (lastRow < 12) continue;
-      
-      const rawData = sheet.getRange(12, 1, lastRow - 11, Math.min(25, sheet.getLastColumn())).getValues();
-      for (let i = 0; i < rawData.length; i++) {
-        const row = rawData[i];
-        const colA = row[0] ? row[0].toString().trim() : '';
-        const colB = row[1] ? row[1].toString().trim() : '';
-        const colC = row[2] ? row[2].toString().trim() : '';
-        const colI = row[8] ? row[8].toString().trim() : '';
-        const colK = row[10] ? row[10].toString().trim() : '';
-        
-        if (!colB && !colK) continue;
-        
-        const cleanB = colB.toLowerCase().replace(/\s+/g, '');
-        const cleanC = colC.toLowerCase().replace(/\s+/g, '');
-        const cleanK = colK.toLowerCase().replace(/\s+/g, '');
-        
-        const hasStudentMatch = (cleanB && cleanCourseName.includes(cleanB)) || (cleanC && cleanCourseName.includes(cleanC));
-        const hasCourseMatch = (cleanK && cleanCourseName.includes(cleanK));
-        
-        if (hasStudentMatch && hasCourseMatch) {
-          matchedRow = {
-            grade: colA,
-            studentName: colB + (colC ? '(' + colC + ')' : ''),
-            branch: colI,
-            subject: colK
-          };
-        }
-      }
-    }
-    
-    if (matchedRow) {
-      return { success: true, data: matchedRow };
-    }
-    return { success: false, error: 'Student/Course not found in single/subgroup sheets' };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
-
-
-
-// ----------------------------------------------------
-// Added Migration Script to move courses to col 19
-// ----------------------------------------------------
-function migrateMainClassTo19Columns() {
-  const db = getDb();
-  const sheets = db.getSheets();
-  
-  sheets.forEach(sheet => {
-    const name = sheet.getName();
-    const match = name.match(/^(.+)\/([1-3])$/);
-    if (!match) return; // Not a classroom sheet
-    
-    const lastRow = sheet.getLastRow();
-    const lastCol = sheet.getLastColumn();
-    if (lastRow < 5) return;
-    
-    // Check if already migrated
-    const col16Val = sheet.getRange(5, 16).getValue().toString().trim();
-    if (col16Val === 'วันที่ชำระเงิน') {
-      return; // Already migrated!
-    }
-    
-    Logger.log('Migrating sheet to 19 columns format: ' + name);
-    
-    // Insert 3 columns at index 16
-    sheet.insertColumns(16, 3);
-    
-    // Add the headers for the 3 new columns
-    sheet.getRange(5, 16).setValue('วันที่ชำระเงิน');
-    sheet.getRange(5, 17).setValue('ช่องทางชำระเงิน');
-    sheet.getRange(5, 18).setValue('ผู้รับเงิน');
-  });
-}
-
-
-// ==============================================================================
-// UTIL: Update Data Learn Subjects to match Grade Sheet Headers
-// Requested feature: Update column A in Data Learn by matching with branch/date
-// ==============================================================================
-function updateDataLearnSubjects() {
-  const db = typeof getDb === 'function' ? getDb() : SpreadsheetApp.openById(SPREADSHEET_ID);
-  const dataLearnSheet = db.getSheetByName('Data Learn');
-  const data = dataLearnSheet.getDataRange().getValues();
-  
-  if (data.length <= 1) return 'No data to process.';
-  
-  let updatedCount = 0;
-  const thDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
-  
-  for (let i = 1; i < data.length; i++) { 
-    const row = data[i];
-    let subject = row[0] ? String(row[0]).trim() : '';
-    const dateStr = row[13]; // Col N (Date)
-    
-    // Check if date is before 18/5/2569 (18 May 2026)
-    let dateObj = null;
-    if (dateStr instanceof Date) {
-      dateObj = dateStr;
-    } else if (typeof dateStr === 'string') {
-      const parts = dateStr.split('/');
-      if (parts.length === 3) {
-        const d = parseInt(parts[0], 10);
-        const m = parseInt(parts[1], 10) - 1;
-        let y = parseInt(parts[2], 10);
-        if (y > 2500) y -= 543;
-        dateObj = new Date(y, m, d);
-        if (isNaN(dateObj.getTime())) {
-          dateObj = null;
-        }
-      }
-    }
-    
-    if (subject.includes('MIDTERM 1/2569')) {
-      if (dateObj && dateObj.getTime() < new Date(2026, 4, 18).getTime()) {
-        const newSubject = subject.replace('MIDTERM 1/2569', 'SUMMER2569');
-        data[i][0] = newSubject;
-        updatedCount++;
-      }
-    }
-  }
-  
-  if (updatedCount > 0) {
-    // Write Column A back to the sheet
-    const colA = data.map(row => [row[0]]);
-    dataLearnSheet.getRange(1, 1, colA.length, 1).setValues(colA);
-  }
-  
-  Logger.log('Updated ' + updatedCount + ' rows in Data Learn.');
-  return 'อัปเดตข้อมูล Data Learn จำนวน ' + updatedCount + ' แถวเรียบร้อยแล้ว';
 }

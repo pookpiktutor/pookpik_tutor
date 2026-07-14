@@ -1,0 +1,362 @@
+7:   classes: [],       // Array of local class logs
+8:   deletedRows: [],   // Row indexes marked for deletion
+9:   newLogs: [],       // Local additions
+10:   updatedLogs: [],   // Local updates: { rowIndex, log }
+16:   settings: { teachers: [], schools: [], paymentChannels: [] },
+17:   students: [],
+18:   classLogs: [],
+19:   managerLogs: [],
+20:   rooms: [],
+34:     courses: [],
+35:     students: []
+40:   privateStudents: [],
+244:     const monthNames = [
+266:   document.querySelectorAll('[data-teacher-panel]').forEach(item => {
+271:   document.querySelector(`[data-teacher-panel="${panelId}"]`).classList.add('active');
+318:         const cDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+325:         const dateA = new Date(parseInt(partsA[2]), parseInt(partsA[1]) - 1, parseInt(partsA[0]));
+326:         const dateB = new Date(parseInt(partsB[2]), parseInt(partsB[1]) - 1, parseInt(partsB[0]));
+341:         if (!groupedByDate[c.date]) {
+342:           groupedByDate[c.date] = [];
+344:         groupedByDate[c.date].push(c);
+351:         const dateA = new Date(parseInt(partsA[2]), parseInt(partsA[1]) - 1, parseInt(partsA[0]));
+352:         const dateB = new Date(parseInt(partsB[2]), parseInt(partsB[1]) - 1, parseInt(partsB[0]));
+370:         const dayClasses = groupedByDate[dateStr].slice(0, 3);
+549:         const monthRes = res.months[m];
+604:   const monthRes = state.yearlySalaryData.months[m];
+606:     const monthNames = [
+611:     monthRes.monthName = monthNames[m - 1];
+629:       return formatDateToThai(`${parts[2]}/${parts[1]}/${parts[0]}`);
+758:         const log = (state.classLogs || []).find(l => l.rowIndex === rowIndex);
+840:         state.rooms = settings.rooms || [];
+884:   document.querySelectorAll('.branch-tab[data-branch]').forEach(tab => {
+886:       document.querySelectorAll('.branch-tab[data-branch]').forEach(t => t.classList.remove('active'));
+1070:     let hr = match[1].padStart(2, '0');
+1071:     let min = match[2];
+1076:     let hr = match[1].padStart(2, '0');
+1077:     let min = match[2];
+1101:     str = str.replace(/\s*GMT[+-]\d+.*$/i, '').trim();
+1103:     str = str.replace(/([+-]\d{2}:?\d{2}|Z)$/i, '').trim();
+1108:       hh = timeMatch[1].padStart(2, '0');
+1109:       mm = timeMatch[2].padStart(2, '0');
+1110:       ss = timeMatch[3].padStart(2, '0');
+1116:         hh = timeMatchHM[1].padStart(2, '0');
+1117:         mm = timeMatchHM[2].padStart(2, '0');
+1131:         let d = parseInt(parts[0], 10);
+1132:         let m = parseInt(parts[1], 10) - 1;
+1133:         let y = parseInt(parts[2], 10);
+1140:         let y = parseInt(parts[0], 10);
+1141:         let m = parseInt(parts[1], 10) - 1;
+1142:         let d = parseInt(parts[2], 10);
+1162:   const thDays = ['วันอาทิตย์', 'วันจันทร์', 'วันอังคาร', 'วันพุธ', 'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์'];
+1163:   const thMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+1165:   const dayName = thDays[dateObj.getDay()];
+1167:   const monthName = thMonths[dateObj.getMonth()];
+1179:   const regex = /\b(midterm|final|test|mock|summer|oct|รอบ|เทอม|สอบ)|\b[mf][1-2]\/\d+|\b\d+\/\d{2,4}/i;
+1236:       let cleanStr = str.replace(/\s*GMT[+-]\d+.*$/i, '').trim();
+1238:       cleanStr = cleanStr.replace(/([+-]\d{2}:?\d{2}|Z)$/i, '').trim();
+1252:     return `${match[1].padStart(2, '0')}:${match[2].padStart(2, '0')}`;
+1267:   const escapedRN = cleanRN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+1281:   const sortedRooms = [...state.rooms].sort((a, b) => {
+1314:     datePart = spaceParts[0];
+1315:     timePart = spaceParts[1];
+1322:     let day = dateParts[0].padStart(2, '0');
+1323:     let month = dateParts[1].padStart(2, '0');
+1324:     let year = dateParts[2];
+1330:       hh = timeParts[0].padStart(2, '0');
+1331:       mm = timeParts[1].padStart(2, '0');
+1357:     const gradesHigh = ['ม.4', 'ม.5', 'ม.6'];
+1432:       let cleanStr = str.replace(/\s*GMT[+-]\d+.*$/i, '').trim();
+1434:       cleanStr = cleanStr.replace(/([+-]\d{2}:?\d{2}|Z)$/i, '').trim();
+1457:     hours = parseInt(parts[0], 10) || 0;
+1458:     minutes = parseInt(parts[1], 10) || 0;
+1481:     let day = parts[0];
+1482:     let month = parts[1];
+1483:     const year = parts[2];
+1533:   populateSelect('class_teacher_sub', ['(ไม่มีครูแทน)', ...teachers]);
+1534:   populateSelect('teacher_schedule_select', ['(เลือกชื่อครู)', ...teachers]);
+1538:   populateSelect('manager_name', ['ผจก.ป้อม', 'ผจก.กิ๊บ', 'ผจก.พัช', 'ผจก.เพื่อน']);
+1539:   populateSelect('calc_teacher_select', ['(เลือกครูเพื่อคำนวณ)', ...teachers]);
+1560:     const monthNames = [
+1598:   const rayongSchools = [
+1623:   const thaiBanks = [
+1685:       const selectedOption = select.options[select.selectedIndex];
+1714:     const selectedOption = select.options[select.selectedIndex];
+1825:         items[activeIndex].click();
+1827:         items[0].click();
+1924:   document.getElementById('page_title').innerText = titles[panelName] || 'ระบบดูแลโรงเรียนกวดวิชา';
+2003:   const fin1 = data.branchFin['สาขา1'] || { full: 0, paid: 0, debt: 0 };
+2004:   const fin2 = data.branchFin['สาขา2'] || { full: 0, paid: 0, debt: 0 };
+2005:   const fin3 = data.branchFin['สาขา3'] || { full: 0, paid: 0, debt: 0 };
+2020:   const monthsTH = [
+2042:       const s1 = monthData['สาขา1'] || 0;
+2043:       const s2 = monthData['สาขา2'] || 0;
+2044:       const s3 = monthData['สาขา3'] || 0;
+2045:       const others = monthData['อื่นๆ'] || 0;
+2046:       const total = monthData['total'] || 0;
+2056:           <td style="font-weight: 500;">${monthsTH[idx]}</td>
+2138:     if (!groups[catObj.branch]) {
+2139:       groups[catObj.branch] = [];
+2141:     groups[catObj.branch].push(catObj);
+2172:     groups[branchName].forEach(catObj => {
+2174:       const row = summary[catName];
+2330:   return classType.includes('กลุ่มหลัก') || ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'].includes(classType);
+2359:     const fullCourses = [];
+2403:       if (['ม.4', 'ม.5', 'ม.6'].includes(grade) || isEx) {
+2467:       if (['ม.4', 'ม.5', 'ม.6'].includes(grade) || isEx) {
+2507:           const selectedList = state.selectedStudent.selectedCourses || [];
+2525:                 const cb = document.querySelector(`.course-checkbox[value="${courseName}"]`);
+2601:             const val = stdRow.courseValues[colIndex];
+2605:                 const cb = document.querySelector(`.course-checkbox[value="${course.courseName}"]`);
+2777:     document.getElementById(`pay_r${r}_amount`).value = student[`payRound${r}_amount`] || '';
+2778:     document.getElementById(`pay_r${r}_date`).value = convertDateFromSheet(student[`payRound${r}_date`]) || '';
+2779:     document.getElementById(`pay_r${r}_channel`).value = student[`payRound${r}_channel`] || '';
+2780:     document.getElementById(`pay_r${r}_staff`).value = student[`payRound${r}_staff`] || '';
+2781:     document.getElementById(`pay_r${r}_time`).value = cleanTimeStr(student[`payRound${r}_time`]);
+2820:     const roundsList = ['MIDTERM 1', 'MIDTERM 2', 'FINAL 1', 'FINAL 2', 'ปิดเทอม ต.ค.', 'Summer'];
+3010:   return match ? match[0] : 'None';
+3027:   const staticRounds = ['MIDTERM 1', 'MIDTERM 2', 'FINAL 1', 'FINAL 2', 'ปิดเทอม ต.ค.', 'Summer'];
+3069:   const allAvailableValues = ['ALL', ...staticRounds, ...yearSpecificRounds, 'ไม่ระบุรอบเรียน'];
+3115:   var prefixes = ['ด.ช.', 'ด.ญ.', 'นาย', 'นางสาว', 'นาง', 'เด็กชาย', 'เด็กหญิง', 'น.ส.'];
+3117:     if (str.indexOf(prefixes[i]) === 0) {
+3118:       str = str.substring(prefixes[i].length).trim();
+3182:   const courses = state.gradeSheetData.courses || [];
+3183:   const students = state.gradeSheetData.students || [];
+3232:         const val = s.courseValues[c.colIndex];
+3292:         const val = s.courseValues[c.colIndex];
+3379:   const std = state.displayedStudents[stdIdx];
+3381:     std[field] = val;
+3387:   const std = state.displayedStudents[stdIdx];
+3389:     std.courseValues[colIndex] = val !== '' ? parseFloat(val) : '';
+3395:   const courses = state.displayedCourses || [];
+3396:   const students = state.displayedStudents || [];
+3402:         const val = s.courseValues[c.colIndex];
+3546:   const courseList = [];
+3706:   const std = state.privateStudents[idx];
+3759:     minutes = (parseInt(parts[0]) * 60) + parseInt(parts[1]);
+3823: const thaiDayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+3824: const thaiMonthNames = ['', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+3871:     thaiMonthNames[monthlyViewState.selectedMonth] + ' ' + thaiYear;
+3906:     setLoading(true, 'กำลังดึงตารางเรียนรายเดือน วัน' + thaiDayNames[monthlyViewState.selectedDow] + '...');
+3914:         state.classLogs = [];
+3937:   const filteredRooms = (data.rooms || []).filter(room => {
+3943:   const dowName = thaiDayNames[monthlyViewState.selectedDow];
+3944:   const thaiMonthShort = thaiMonthNames[monthlyViewState.selectedMonth].substring(0, 3) + '.';
+3949:     const dayNum = parseInt(parts[0]);
+3957:         📆 ตารางเรียนวัน${dowName} รายเดือน — ${thaiMonthNames[monthlyViewState.selectedMonth]} ${thaiYear} (${branchFilter})
+3970:   const timeSlots = [
+4013:       const weekClasses = (w.classes || []).filter(c => {
+4058:     const weekClasses = (w.classes || []).filter(c => {
+4078:       const classes = (w.classes || []).filter(c => matchRoomAndBranch(c.roomBranch, room.roomName, room.branch));
+4102:       const fullThaiDateLabel = `${dowName}ที่ ${parseInt(parts[0])} ${thaiMonthNames[parseInt(parts[1])]} ${parseInt(parts[2]) + 543}`;
+4126:           const isStudentLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.studentLeave) || (c.isLeave > 0);
+4127:           const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && c.note.includes('ครูลา'));
+4136:           const attendances = [];
+4149:           const ipadText = ipadMatch ? `📱 ${ipadMatch[0].toUpperCase()}` : '';
+4177:               <div style="font-weight:700; color:var(--text-main); margin:3px 0 1px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.subject.replace(/\s*\([^)]*สัปดาห์[^)]*\)/g, '')}</div>
+4253:   const timeSlots = [
+4269:   const branches = ['สาขา1', 'สาขา2', 'สาขา3'];
+4273:     stats[b] = {};
+4275:       stats[b][slot.label] = { live: 0, online: 0, leave: 0, absent: 0, makeup: 0, enrolled: 0 };
+4279:   (state.classLogs || []).forEach(log => {
+4292:         stats[logBranch][slot.label].live += parseInt(log.isPresentLive) || 0;
+4293:         stats[logBranch][slot.label].online += parseInt(log.isPresentOnline) || 0;
+4294:         stats[logBranch][slot.label].leave += parseInt(log.isLeave) || 0;
+4295:         stats[logBranch][slot.label].absent += parseInt(log.isAbsent) || 0;
+4296:         stats[logBranch][slot.label].makeup += parseInt(log.isMakeup) || 0;
+4299:         const enrolledCount = (state.enrollments && state.enrollments[courseName]) || 0;
+4300:         stats[logBranch][slot.label].enrolled += enrolledCount;
+4340:       const s = stats[b][slot.label];
+4365:     const branchClasses = (state.classLogs || []).filter(log => {
+4398:   const filteredRooms = (state.rooms || []).filter(room => {
+4412:     const details = [];
+4436:         const attendances = [];
+4450:         const ipadText = ipadMatch ? `📱 ${ipadMatch[0].toUpperCase()}` : '';
+4453:         const isStudentLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.studentLeave) || (c.isLeave > 0);
+4454:         const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && c.note.includes('ครูลา'));
+4556:       const formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+4674:     const sDay = parseInt(sheetParts[0], 10);
+4675:     const sMonth = parseInt(sheetParts[1], 10);
+4676:     const sYear = parseInt(sheetParts[2], 10);
+4678:     const iYear = parseInt(inputParts[0], 10);
+4679:     const iMonth = parseInt(inputParts[1], 10);
+4680:     const iDay = parseInt(inputParts[2], 10);
+4693:   const sDay = parseInt(sheetParts[0], 10);
+4694:   const sMonth = parseInt(sheetParts[1], 10);
+4695:   const sYear = parseInt(sheetParts[2], 10);
+4702:   const startYear = parseInt(startParts[0], 10);
+4703:   const startMonth = parseInt(startParts[1], 10);
+4704:   const startDay = parseInt(startParts[2], 10);
+4707:   const endYear = parseInt(endParts[0], 10);
+4708:   const endMonth = parseInt(endParts[1], 10);
+4709:   const endDay = parseInt(endParts[2], 10);
+4768:   const channels = state.settings.paymentChannels || [];
+4819:   const updates = [];
+4870:   modalState.classes = [];
+4871:   modalState.deletedRows = [];
+4872:   modalState.newLogs = [];
+4873:   modalState.updatedLogs = [];
+4980:   const sorted = [...modalState.classes].sort((a, b) => (a.timeStart || '').localeCompare(b.timeStart || ''));
+5023:     let badges = [];
+5068:   const log = modalState.classes[index];
+5090:       modalState.updatedLogs[existingIdx].log = log;
+5103:   const log = modalState.classes[index];
+5137:   const log = modalState.classes[index];
+5192:   if (!state.classAbsences[rowIndex]) {
+5193:     state.classAbsences[rowIndex] = { studentLeave: false, teacherLeave: false };
+5195:   state.classAbsences[rowIndex][type] = checkbox.checked;
+5202:     const hasStudentLeave = state.classAbsences[rowIndex].studentLeave;
+5203:     const hasTeacherLeave = state.classAbsences[rowIndex].teacherLeave;
+5217:     const log = (state.classLogs || []).find(l => l.rowIndex === rowIndex);
+5288:           const log = (state.classLogs || []).find(l => l.rowIndex === rowIndex);
+5309:             const hasStudentLeave = state.classAbsences[rowIndex].studentLeave;
+5383:   const sMin = parseInt(sParts[0]) * 60 + parseInt(sParts[1]);
+5384:   const eMin = parseInt(eParts[0]) * 60 + parseInt(eParts[1]);
+5430:     const original = modalState.classes[modalState.editingIndex];
+5432:     modalState.classes[modalState.editingIndex] = updatedLog;
+5437:         modalState.updatedLogs[existingIdx].log = updatedLog;
+5444:         modalState.newLogs[newLogIdx] = updatedLog;
+5473:   const startDate = new Date(parseInt(startParts[0], 10), parseInt(startParts[1], 10) - 1, parseInt(startParts[2], 10));
+5474:   const endDate = new Date(parseInt(endParts[0], 10), parseInt(endParts[1], 10) - 1, parseInt(endParts[2], 10));
+5482:   const logs = [];
+5675:       const d = parseInt(parts[0], 10);
+5676:       const m = parseInt(parts[1], 10);
+5677:       const y = parseInt(parts[2], 10);
+5688:       const m = parseInt(parts[1], 10) - 1;
+5689:       const y = parseInt(parts[2], 10);
+5690:       const thMonthsFull = [
+5694:       return `${thMonthsFull[m]} ${y}`;
+5700:   const sorted = [...state.teacherClasses].sort((a, b) => {
+5765:     const attendances = [];
+6141:         const monthRes = res.months[m];
+6174:   const monthRes = state.staffYearlySalaryData.months[m];
+6176:     const monthNames = [
+6181:     monthRes.monthName = monthNames[m - 1];
+6201:         return formatDateToThai(`${parts[2]}/${parts[1]}/${parts[0]}`);
+6248:   let year = parseInt(parts[2], 10);
+6250:   const d = new Date(year, parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+6276: const ALLOWED_LOCATIONS = [
+6455:           const uniqueManagers = [...new Set(data.map(log => log.managerName).filter(Boolean))].sort();
+6470:           const uniqueYears = [...new Set(data.map(log => {
+6473:             return parts.length === 3 ? parts[2] : '';
+6532:       return (parseInt(p[0]) || 0) * 60 + (parseInt(p[1]) || 0);
+6551:     return { day: parts[0].padStart(2, '0'), month: parts[1].padStart(2, '0'), year: parts[2] };
+6570:     if (!groupedByPerson[name]) groupedByPerson[name] = [];
+6571:     groupedByPerson[name].push(log);
+6584:     const logs = groupedByPerson[name];
+6597:     const monthLabel = selectedMonth ? ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'][parseInt(selectedMonth)] : 'ทุกเดือน';
+6612:   const personColors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16'];
+6615:     const logs = groupedByPerson[name];
+6616:     const color = personColors[pIdx % personColors.length];
+6726:   if (input.files && input.files[0]) {
+6732:     reader.readAsDataURL(input.files[0]);
+6745:     if (!input.files || !input.files[0]) { resolve(null); return; }
+6746:     const file = input.files[0];
+6799:     const fullName = (u[3] || '').toString();
+6800:     const nickname = (u[4] || '').toString();
+6801:     const role = (u[5] || '').toString();
+6811:     const name = m[3] ? m[3].toString() : (m[4] ? m[4].toString() : m[1]);
+6856:     const diff = (parseInt(eParts[0]) * 60 + parseInt(eParts[1])) - (parseInt(sParts[0]) * 60 + parseInt(sParts[1]));
+7059:     const channels = ['กรุงไทย พีปิ๊ก', 'กรุงเทพ พีปิ๊ก', 'SCB พี่ปิ๊ก', 'กรุงศรี พี่ปิ๊ก', 'TTB', 'กสิกร พี่ปิ๊ก', 'SCB คุณยาย', 'กรุงศรี คุณตา', 'กรุงศรี บัญชีบริษัท', 'กสิกร บัญชีบริษัท(กด)', 'กสิกร บัญชีบริษัท(สแกน)', 'TTB บัญชีบริษัท(กด)', 'TTB บัญชีบริษัท(สแกน)', 'เงินสด', 'พี่ปิ๊ก โอน', 'พี่ต้น โอน'];
+7151:     const dlNum = dlNumMatch ? dlNumMatch[0] : '';
+7152:     const studNum = studNumMatch ? studNumMatch[0] : '';
+7164:         let cleanStr = s.replace(/\s*GMT[+-]\d+.*$/i, '').trim();
+7166:         cleanStr = cleanStr.replace(/([+-]\d{2}:?\d{2}|Z)$/i, '').trim();
+7177:         return (parseInt(m[1], 10) * 60) + (parseInt(m[2], 10) || 0);
+7182:       return (parseInt(parts[0], 10) * 60) + (parseInt(parts[1], 10) || 0);
+7327:   const hrs = parseInt(matches[1], 10) || 0;
+7328:   const mins = parseInt(matches[2], 10) || 0;
+7405:   const mainGroupStudents = [];
+7407:     const el = tbody.querySelector(`.student-course-display[data-id="${s.id}"]`);
+7431:           const el = tbody.querySelector(`.student-course-display[data-id="${studentId}"]`);
+7433:             const list = coursesMap[studentId];
+7453:   str = str.replace(/^[^\(]+\([^\)]*\)\s*/, '');
+7457:   const gradeMatch = str.match(/(ม\.[1-6]|ป\.[1-6]|อนุบาล|M[1-6]|P[1-6])/i);
+7459:     grade = gradeMatch[0];
+7469:   const subjects = ['คณิต', 'วิทย์', 'อังกฤษ', 'ไทย', 'สังคม', 'ฟิสิกส์', 'เคมี', 'ชีวะ', 'ดาราศาสตร์', 'ศิลปะ', 'คอม'];
+7483:   let cleaned = roundStr.replace(/^[^\(]+\([^\)]*\)\s*/, '');
+7510:       payDateObj = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+7695:   let selectedRounds = [];
+7720:     const amt = parseFloat(s[`payRound${r}_amount`]) || 0;
+7958:   const bahtStr = parts[0];
+7959:   const satangStr = parts[1];
+7964:     const digits = ['', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'];
+7965:     const positions = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน'];
+7969:       const digit = parseInt(section[i]);
+7979:           secText += digits[digit] + positions[pos];
+7989:     let sections = [];
+8001:       const secText = convertSection(sections[i]);
+8095:   return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
+8105: const thaiMonths = [
+8114:   const monthIdx = parseInt(parts[1], 10) - 1;
+8115:   const year = parseInt(parts[2], 10);
+8117:   return `${thaiMonths[monthIdx]} ${year}`;
+8124:   return parseInt(parts[2], 10) * 100 + parseInt(parts[1], 10);
+8154:     if (!branchGroups[br]) {
+8155:       branchGroups[br] = { count: 0, sum: 0 };
+8157:     branchGroups[br].count++;
+8158:     branchGroups[br].sum += amt;
+8162:     if (!dailyGroups[dateStr]) {
+8163:       dailyGroups[dateStr] = { count: 0, sum: 0 };
+8165:     dailyGroups[dateStr].count++;
+8166:     dailyGroups[dateStr].sum += amt;
+8171:       const date = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+8184:         if (!weeklyGroups[monTime]) {
+8185:           weeklyGroups[monTime] = { rangeStr: rangeStr, count: 0, sum: 0 };
+8187:         weeklyGroups[monTime].count++;
+8188:         weeklyGroups[monTime].sum += amt;
+8196:       if (!monthlyGroups[sortKey]) {
+8197:         monthlyGroups[sortKey] = { label: label, count: 0, sum: 0 };
+8199:       monthlyGroups[sortKey].count++;
+8200:       monthlyGroups[sortKey].sum += amt;
+8225:     const color = branchColors[br] || '#10b981';
+8226:     const data = branchGroups[br];
+8249:           <td style="text-align: right;">${branchGroups[br].count}</td>
+8250:           <td style="text-align: right; color: var(--color-success); font-weight: 600;">${branchGroups[br].sum.toLocaleString()}</td>
+8269:           <td style="text-align: right;">${dailyGroups[dateStr].count}</td>
+8270:           <td style="text-align: right; color: var(--color-success); font-weight: 600;">${dailyGroups[dateStr].sum.toLocaleString()}</td>
+8288:           <td style="font-weight:600;">${weeklyGroups[monTime].rangeStr}</td>
+8289:           <td style="text-align: right;">${weeklyGroups[monTime].count}</td>
+8290:           <td style="text-align: right; color: var(--color-success); font-weight: 600;">${weeklyGroups[monTime].sum.toLocaleString()}</td>
+8308:           <td style="font-weight:600;">${monthlyGroups[sortKey].label}</td>
+8309:           <td style="text-align: right;">${monthlyGroups[sortKey].count}</td>
+8310:           <td style="text-align: right; color: var(--color-success); font-weight: 600;">${monthlyGroups[sortKey].sum.toLocaleString()}</td>
+8389:   const file = e.target.files[0];
+8563: var evalMathCriteria = [
+8577: var evalSciCriteria = [
+8591: var evalLangSocialCriteria = [
+8634:         state.evaluations = [];
+8671:       state.evaluations = [];
+8692:   if (courseIdx === '' || !state._teacherCourses || !state._teacherCourses[courseIdx]) {
+8697:   const course = state._teacherCourses[courseIdx];
+8702:     const evals = state.evaluations || [];
+8814:   if (courseIdx === '' || studentIdx === '' || !state._teacherCourses[courseIdx] || !state._teacherCourses[courseIdx].students[studentIdx]) {
+8820:   const student = state._teacherCourses[courseIdx].students[studentIdx];
+8834:   if (cIdx === '' || sIdx === '' || !state._teacherCourses[cIdx] || !state._teacherCourses[cIdx].students[sIdx]) {
+8839:   const course = state._teacherCourses[cIdx];
+8840:   const student = course.students[sIdx];
+8844:     const items = [];
+8905:       if (radioGroup[r].checked) {
+8906:         selectedVal = radioGroup[r].value;
+8910:     ratings[criteria[i]] = selectedVal;
+8953:             radioGroup[4].checked = true; // เกรด 4
+8976:         state.evaluations = [];
+8987:       state.evaluations = [];
+9048:       const savedVal = ev.scores ? ev.scores[item] : 'เกรด 4';
+9073:             const idx = parseInt(numStr[1]) - 1;
+9075:               items[idx] = match[1].trim();
+9081:             items[emptyIdx] = line.trim();
+9094:     document.getElementById(`admin_eval_strength_${i}`).value = strengths[i - 1];
+9095:     document.getElementById(`admin_eval_improvement_${i}`).value = improvements[i - 1];
+9096:     document.getElementById(`admin_eval_recommendation_${i}`).value = recommendations[i - 1];
+9125:       if (radioGroup[r].checked) {
+9126:         selectedVal = radioGroup[r].value;
+9130:     ratings[criteria[i]] = selectedVal;
+9136:     const items = [];
+9214: window._adminEvalsCache = [];
+9254:     if (!grouped[subj]) {
+9255:       grouped[subj] = [];
+9257:     grouped[subj].push(ev);
+9272:     header.innerHTML = `<span>📚</span> ${course} <span class="badge badge-info" style="font-size: 0.75rem;">ประเมินแล้ว ${grouped[course].length} คน</span>`;
+9279:     grouped[course].forEach(ev => {
+9308:         <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;"><strong>วันที่ประเมิน:</strong> ${ev.timestamp ? formatDateToThai(ev.timestamp.split('T')[0] || ev.timestamp) : '-'}</div>

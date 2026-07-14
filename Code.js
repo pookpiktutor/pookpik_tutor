@@ -1225,25 +1225,6 @@ function saveUserProfile(username, data, logUser) {
         if (data.profilePic !== undefined) {
           sheet.getRange(i + 1, 7).setValue(data.profilePic || '');
         }
-        
-        // --- ADDED FOR TEACHERSDB ---
-        if (isTeacherUser(username)) {
-           const tSheet = db.getSheetByName('TeachersDB');
-           if (tSheet) {
-             const tRows = tSheet.getDataRange().getValues();
-             for (let j = 1; j < tRows.length; j++) {
-                if (tRows[j][0].toString().trim().toLowerCase() === (data.nickname || '').toLowerCase() || 
-                    (tRows[j][8] && tRows[j][8].toString().trim().toLowerCase() === cleanUsername)) {
-                   if (data.school !== undefined) tSheet.getRange(j + 1, 3).setValue(data.school);
-                   if (data.phone !== undefined) tSheet.getRange(j + 1, 4).setValue(data.phone);
-                   if (data.bank !== undefined) tSheet.getRange(j + 1, 6).setValue(data.bank);
-                   if (data.accountNumber !== undefined) tSheet.getRange(j + 1, 7).setValue(data.accountNumber);
-                   break;
-                }
-             }
-           }
-        }
-        // ----------------------------
         logActivity(logUser, 'แก้ไขโปรไฟล์', `ผู้ใช้: ${username} แก้ไขข้อมูลโปรไฟล์ของตนเอง`);
         return { success: true };
       }
@@ -2273,7 +2254,7 @@ function getMonthlyGridData(year, month, dayOfWeek, logUser) {
       const cleanVal = nameOrId.toString().trim().toLowerCase();
       const match = teachersList.find(t => {
         const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
         return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
       });
       return match ? match.nickname : nameOrId;
@@ -2376,7 +2357,7 @@ function debugExportData() {
       const cleanVal = nameOrId.toString().trim().toLowerCase();
       const match = Array.isArray(teachersList) ? teachersList.find(t => {
         const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
         return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
       }) : null;
       return match ? match.nickname : nameOrId;
@@ -4845,7 +4826,7 @@ function getTeachersDB(logUser) {
         subjects: row[4] ? row[4].toString().trim() : '',
         bank: row[5] ? row[5].toString().trim() : '',
         accountNumber: row[6] ? row[6].toString().trim() : '',
-        accountType: row[7] ? row[7].toString().trim() : 'บัญชีทั่วไป',
+        compensation: row[7] ? row[7].toString().trim() : '150',
         teacherId: row[8] ? row[8].toString().trim() : ''
       });
     });
@@ -4881,7 +4862,7 @@ function saveTeacherProfile(teacher, logUser) {
       teacher.subjects || '',
       teacher.bank || '',
       teacher.accountNumber || '',
-      teacher.accountType || 'บัญชีทั่วไป',
+      teacher.compensation || '150',
       teacher.teacherId || ''
     ];
     
@@ -4892,7 +4873,7 @@ function saveTeacherProfile(teacher, logUser) {
         genSheet.appendRow([teacher.nickname]);
       }
     } else {
-      sheet.getRange(rowIndex, 1, 1, 10).setValues([rowValues]);
+      sheet.getRange(rowIndex, 1, 1, 9).setValues([rowValues]);
     }
     
     // Clear cache
@@ -4921,7 +4902,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
     }
     const teacherProfile = teachersList.find(t => {
       const tId = (t.teacherId || '').toLowerCase().trim();
-      const tNick = (t.nickname || '').toString().toLowerCase().trim().replace(/^ครู/, '').trim();
+      const tNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
       const targetNick = teacher.toLowerCase().trim().replace(/^ครู/, '').trim();
       return (tId !== '' && tId === teacher.toLowerCase().trim()) || 
              tNick === targetNick || tNick.includes(targetNick) || targetNick.includes(tNick);
@@ -4954,24 +4935,6 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
       return { start: parseDateString(startStr), end: parseDateString(endStr), startStr: startStr, endStr: endStr };
     };
 
-    const confirmSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
-    const confirmMap = {};
-    let totalInsAccumulated = 0;
-    if (confirmSheet) {
-      const confirmData = confirmSheet.getDataRange().getValues();
-      for (let i = 1; i < confirmData.length; i++) {
-        const tName = confirmData[i][3];
-        if (tName === teacher) {
-          const insDed = parseFloat(confirmData[i][6]) || 0;
-          totalInsAccumulated += insDed;
-          confirmMap[`${confirmData[i][0]}_${confirmData[i][1]}`] = {
-             confirmedAt: confirmData[i][5],
-             insuranceDeducted: insDed
-          };
-        }
-      }
-    }
-
     const monthlyResults = {};
     for (let m = 1; m <= 12; m++) {
       const range = getRangeForMonth(m);
@@ -4985,28 +4948,19 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         if (cDate < range.start || cDate > range.end) return;
         
         // Check column B (teacherRegular) and C (teacherSub)
-        let cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
-        let cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
+        const cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
+        const cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
         const cleanNick = cleanResolvedNick.replace(/^ครู/, '').trim();
         
-        if (cellC === '-' || cellC.includes('ไม่มี') || cellC.includes('รอครู')) {
-          cellC = '';
-        }
+        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cellB.replace(/^ครู/, '').trim() === cleanNick);
+        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cellC.replace(/^ครู/, '').trim() === cleanNick);
         
-        const cValB = cellB.replace(/^ครู/, '').trim();
-        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cValB === cleanNick || cellB.includes(cleanNick) || (cValB.length > 1 && cleanNick.includes(cValB)));
-        const cValC = cellC.replace(/^ครู/, '').trim();
-        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cValC === cleanNick || cellC.includes(cleanNick) || (cValC.length > 1 && cleanNick.includes(cValC)));
-        
+        // If both B and C have values, use C (substitute teacher priority rule)
+        // If only one has value, use that one
         let role = '';
         if (cellB !== '' && cellC !== '') {
-          if (matchC) {
-             role = 'ครูแทน';
-          } else if (matchB) {
-             return; 
-          } else {
-             return;
-          }
+          if (!matchC) return; // Both filled but C doesn't match - skip
+          role = 'ครูแทน';
         } else if (cellB !== '') {
           if (!matchB) return;
           role = 'ครูประจำ';
@@ -5014,21 +4968,11 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
           if (!matchC) return;
           role = 'ครูแทน';
         } else {
-          return;
+          return; // No teacher in either column
         }
-
-        const subjectName = c.subject || '';
-        const note = c.note || '';
-        const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
         
-        if (role === 'ครูประจำ') {
-           if (note.includes('ครูลา')) {
-               return; 
-           }
-           if (isPrivateOrSmallGroup && note.includes('ลา')) {
-               return; 
-           }
-        }
+        // Skip lessons with leave note
+        if ((c.note || '').includes('ครูลา')) return;
         
         // Parse hours
         const hoursStr = c.hours || '';
@@ -5043,11 +4987,6 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         
         // Count only สด + ออนไลน์ + ชดเชย for totalHours calculation
         let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
-        const leaves = parseInt(c.isLeave) || 0;
-        
-        if (!isPrivateOrSmallGroup && numKids === 0 && leaves > 0) {
-           numKids = leaves;
-        }
         
         const subject = c.subject || '';
         const hasEx = subject.toLowerCase().includes('ex');
@@ -5114,45 +5053,11 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         });
       });
       
-      let grossPay = Math.round(totalPay * 100) / 100;
-      let currentInsDeduction = 0;
-      let insStatus = '';
-      let isConfirmed = false;
-      let confirmedAt = null;
-      
-      const conf = confirmMap[`${year}_${m}`];
-      if (conf) {
-        isConfirmed = true;
-        confirmedAt = conf.confirmedAt;
-        currentInsDeduction = conf.insuranceDeducted || 0;
-        if (totalInsAccumulated >= 2000) {
-          insStatus = 'ครบแล้ว';
-        } else {
-          insStatus = 'หักแล้ว';
-        }
-      } else {
-        if (totalInsAccumulated >= 2000) {
-          insStatus = 'ครบแล้ว';
-        } else {
-          let expectedDeduction = grossPay * 0.15;
-          if (totalInsAccumulated + expectedDeduction > 2000) {
-            expectedDeduction = 2000 - totalInsAccumulated;
-          }
-          currentInsDeduction = Math.round(expectedDeduction * 100) / 100;
-          insStatus = `(สะสม ${totalInsAccumulated})`;
-        }
-      }
-
       monthlyResults[m] = {
         classes: matchedClasses,
         totalHours: Math.round(totalHours * 100) / 100,
         totalClasses: totalClasses,
-        totalPay: grossPay,
-        netPay: grossPay - currentInsDeduction,
-        insuranceDeduction: currentInsDeduction,
-        insuranceStatus: insStatus,
-        isConfirmed: isConfirmed,
-        confirmedAt: confirmedAt
+        totalPay: Math.round(totalPay * 100) / 100
       };
     }
     
@@ -5212,28 +5117,17 @@ function getAllTeachersMonthlyPay(year, month) {
       return cDate >= rangeStart && cDate <= rangeEnd;
     });
     
-    // Get confirmation data & calculate insurance deduction sums
+    // Get confirmation data
     const confirmSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
     const confirmMap = {};
-    const insuranceSums = {};
     if (confirmSheet) {
       const confirmData = confirmSheet.getDataRange().getValues();
       for (let i = 1; i < confirmData.length; i++) {
-        const tName = confirmData[i][3];
-        const insDed = parseFloat(confirmData[i][6]) || 0;
-        
-        // Sum past deductions (only if it's NOT the current month we are querying, so we know the sum *before* this month)
-        // Actually, it's easier to just sum all of them, and if this month is already confirmed, we don't calculate a new one.
-        if (!insuranceSums[tName]) insuranceSums[tName] = 0;
-        
         if (confirmData[i][0] == year && confirmData[i][1] == month) {
-          confirmMap[tName] = {
+          confirmMap[confirmData[i][3]] = {
             totalPay: confirmData[i][4],
-            confirmedAt: confirmData[i][5],
-            insuranceDeducted: insDed
+            confirmedAt: confirmData[i][5]
           };
-        } else {
-          insuranceSums[tName] += insDed;
         }
       }
     }
@@ -5288,7 +5182,7 @@ function getAllTeachersMonthlyPay(year, month) {
     teacherNames.forEach(teacherName => {
       // Find teacher profile
       const teacherProfile = teachersList.find(t => {
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
         const targetNick = teacherName.toLowerCase().trim();
         return tNick === targetNick;
       });
@@ -5316,50 +5210,24 @@ function getAllTeachersMonthlyPay(year, month) {
       let totalClasses = 0;
       
       monthLogs.forEach(c => {
-        let cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
-        let cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
-        const cleanNick = cleanResolvedNick.replace(/^ครู/, '').trim();
+        const cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
+        const cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
         
-        if (cellC === '-' || cellC.includes('ไม่มี') || cellC.includes('รอครู')) {
-          cellC = '';
-        }
+        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cellB.replace(/^ครู/, '').trim() === cleanNick);
+        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cellC.replace(/^ครู/, '').trim() === cleanNick);
         
-        const cValB = cellB.replace(/^ครู/, '').trim();
-        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cValB === cleanNick || cellB.includes(cleanNick) || (cValB.length > 1 && cleanNick.includes(cValB)));
-        const cValC = cellC.replace(/^ครู/, '').trim();
-        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cValC === cleanNick || cellC.includes(cleanNick) || (cValC.length > 1 && cleanNick.includes(cValC)));
-        
-        let role = '';
         if (cellB !== '' && cellC !== '') {
-          if (matchC) {
-             role = 'ครูแทน';
-          } else if (matchB) {
-             return; 
-          } else {
-             return;
-          }
+          if (!matchC) return;
         } else if (cellB !== '') {
           if (!matchB) return;
-          role = 'ครูประจำ';
         } else if (cellC !== '') {
           if (!matchC) return;
-          role = 'ครูแทน';
         } else {
           return;
         }
-
-        const subjectName = c.subject || '';
-        const note = c.note || '';
-        const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
         
-        if (role === 'ครูประจำ') {
-           if (note.includes('ครูลา')) {
-               return; 
-           }
-           if (isPrivateOrSmallGroup && note.includes('ลา')) {
-               return; 
-           }
-        }
+        // Skip leave notes
+        if ((c.note || '').includes('ครูลา')) return;
         
         // Parse hours
         const hoursStr = c.hours || '';
@@ -5374,11 +5242,6 @@ function getAllTeachersMonthlyPay(year, month) {
         
         // Count only สด + ออนไลน์ + ชดเชย
         let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
-        const leaves = parseInt(c.isLeave) || 0;
-        
-        if (!isPrivateOrSmallGroup && numKids === 0 && leaves > 0) {
-           numKids = leaves;
-        }
         
         const subject = c.subject || '';
         const hasEx = subject.toLowerCase().includes('ex');
@@ -5395,42 +5258,9 @@ function getAllTeachersMonthlyPay(year, month) {
       });
       
       const conf = confirmMap[teacherName];
-      const grossPay = Math.round(totalPay * 100) / 100;
-      let sumIns = insuranceSums[teacherName] || 0;
-      let currentInsDeduction = 0;
-      let insStatus = '';
-      
-      if (conf) {
-        currentInsDeduction = conf.insuranceDeducted || 0;
-        if (sumIns + currentInsDeduction >= 2000) {
-          insStatus = 'ครบแล้ว';
-        } else {
-          insStatus = 'หักแล้ว';
-        }
-      } else {
-        if (sumIns >= 2000) {
-          insStatus = 'ครบแล้ว';
-        } else {
-          let expectedDeduction = grossPay * 0.15;
-          if (sumIns + expectedDeduction > 2000) {
-            expectedDeduction = 2000 - sumIns;
-          }
-          currentInsDeduction = Math.round(expectedDeduction * 100) / 100;
-          insStatus = `(สะสม ${sumIns})`;
-        }
-      }
-      
-      const netPay = grossPay - currentInsDeduction;
-
       results.push({
         teacherName: teacherName,
-        teacherId: teacherProfile ? teacherProfile.teacherId : '',
-        bank: teacherProfile ? (teacherProfile.bank || '') : '',
-        accountNumber: teacherProfile ? (teacherProfile.accountNumber || '') : '',
-        totalPay: grossPay,
-        netPay: netPay,
-        insuranceDeduction: currentInsDeduction,
-        insuranceStatus: insStatus,
+        totalPay: Math.round(totalPay * 100) / 100,
         totalHours: Math.round(totalHours * 100) / 100,
         totalClasses: totalClasses,
         isConfirmed: !!conf,
@@ -5449,7 +5279,7 @@ function getAllTeachersMonthlyPay(year, month) {
 function toggleClassAbsentInSheet(rowIndex, type, isChecked) {
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
@@ -5502,7 +5332,7 @@ function toggleClassAbsentInSheet(rowIndex, type, isChecked) {
 function toggleTeacherConfirmInSheet(rowIndex, isChecked) {
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
@@ -5590,7 +5420,7 @@ function getClassLogs(filterDate, logUser) {
       const cleanVal = nameOrId.toString().trim().toLowerCase();
       const match = teachersList.find(t => {
         const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
         return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
       });
       return match ? match.nickname : nameOrId;
@@ -5650,7 +5480,7 @@ function getClassLogByRow(rowIndex) {
       const cleanVal = nameOrId.toString().trim().toLowerCase();
       const match = teachersList.find(t => {
         const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
         return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
       });
       return match ? match.nickname : nameOrId;
@@ -5695,7 +5525,7 @@ function getClassLogsForTeacher(teacherName, nickname) {
       const cleanVal = nameOrId.toString().trim().toLowerCase();
       const match = Array.isArray(teachersList) ? teachersList.find(t => {
         const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
         return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
       }) : null;
       return match ? match.nickname : nameOrId;
@@ -5866,7 +5696,7 @@ function addClassLog(log, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     ensureDataLearnMigrated(getDb());
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
@@ -5877,7 +5707,7 @@ function addClassLog(log, logUser) {
       if (!name) return '';
       const cleanTarget = name.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
       const match = teachersList.find(t => {
-        const tNick = (t.nickname || '').toString().toLowerCase().trim().replace(/^ครู/, '').trim();
+        const tNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
         const tId = (t.teacherId || '').toLowerCase().trim();
         return tNick === cleanTarget || tId === cleanTarget;
       });
@@ -5939,7 +5769,7 @@ function updateClassLog(rowIndex, log, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     ensureDataLearnMigrated(getDb());
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
@@ -5971,7 +5801,7 @@ function updateClassLog(rowIndex, log, logUser) {
       if (!name) return '';
       const cleanTarget = name.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
       const match = teachersList.find(t => {
-        const tNick = (t.nickname || '').toString().toLowerCase().trim().replace(/^ครู/, '').trim();
+        const tNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
         const tId = (t.teacherId || '').toLowerCase().trim();
         return tNick === cleanTarget || tId === cleanTarget;
       });
@@ -6040,7 +5870,7 @@ function updateClassAbsenceAndAttendance(rowIndex, type, checked, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     const db = getDb();
     const sheet = db.getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
@@ -6099,7 +5929,7 @@ function deleteClassLog(rowIndex, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
@@ -6692,7 +6522,7 @@ function addMultipleClassLogs(logs, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
@@ -6747,7 +6577,7 @@ function saveBatchClassLogs(adds, updates, deletes, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(30000);
+    lock.waitLock(15000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     const teachersToInvalidate = new Set();
@@ -6869,7 +6699,7 @@ function getTeacherRoomSchedule(teacherName, nickname, startVal, endVal) {
       const cleanName = teacherName.toString().toLowerCase().trim();
       const match = teachersList.find(t => {
         const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toString().toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
         return (tId !== '' && tId === cleanName) || tNick === cleanName;
       });
       if (match) {
@@ -7224,7 +7054,7 @@ function pingActiveUser(username) {
   const lock = LockService.getScriptLock();
   let hasLock = false;
   try {
-    lock.waitLock(15000);
+    lock.waitLock(3000);
     hasLock = true;
     const cache = CacheService.getScriptCache();
     let listStr = cache.get('active_users_list') || '{}';
@@ -7574,7 +7404,7 @@ function getTeacherLeaveToday(logUser) {
       if (Array.isArray(teachersList)) {
         teachersList.forEach(t => {
           if (t.teacherId) teachersMap[t.teacherId.toLowerCase().trim()] = t.nickname;
-          if (t.nickname) teachersMap[(t.nickname || '').toString().toLowerCase().trim()] = t.nickname;
+          if (t.nickname) teachersMap[t.nickname.toLowerCase().trim()] = t.nickname;
         });
       }
     } catch(err) {}
@@ -8078,12 +7908,10 @@ function getStudentData(id) {
 // =========================================================================
 // TEACHER SALARY CONFIRMATION
 // =========================================================================
-function confirmTeacherSalary(year, month, teacherId, teacherName, totalPay, insuranceDeducted) {
+function confirmTeacherSalary(year, month, teacherId, teacherName, totalPay) {
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
     if (!sheet) return { success: false, error: 'Sheet not found' };
-    
-    insuranceDeducted = parseFloat(insuranceDeducted) || 0;
     
     // Check if already confirmed
     const data = sheet.getDataRange().getValues();
@@ -8101,10 +7929,9 @@ function confirmTeacherSalary(year, month, teacherId, teacherName, totalPay, ins
       sheet.getRange(rowIndex, 4).setValue(teacherName);
       sheet.getRange(rowIndex, 5).setValue(totalPay);
       sheet.getRange(rowIndex, 6).setValue(now);
-      sheet.getRange(rowIndex, 7).setValue(insuranceDeducted);
     } else {
       // Append new
-      sheet.appendRow([year, month, teacherId, teacherName, totalPay, now, insuranceDeducted]);
+      sheet.appendRow([year, month, teacherId, teacherName, totalPay, now]);
     }
     
     return { success: true, timestamp: now.toISOString() };
@@ -8232,59 +8059,48 @@ function migrateMainClassTo19Columns() {
   });
 }
 
-
-// ==============================================================================
-// UTIL: Update Data Learn Subjects to match Grade Sheet Headers
-// Requested feature: Update column A in Data Learn by matching with branch/date
-// ==============================================================================
-function updateDataLearnSubjects() {
-  const db = typeof getDb === 'function' ? getDb() : SpreadsheetApp.openById(SPREADSHEET_ID);
-  const dataLearnSheet = db.getSheetByName('Data Learn');
-  const data = dataLearnSheet.getDataRange().getValues();
+function migrateDataLearnFromOldDB() {
+  const oldDbId = '1VURVA77pcBJSCJNm4WazWBPpgeovArL5iSAHNAkWdec';
+  const newDbId = '1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI';
   
-  if (data.length <= 1) return 'No data to process.';
+  const oldDb = SpreadsheetApp.openById(oldDbId);
+  const newDb = SpreadsheetApp.openById(newDbId);
   
-  let updatedCount = 0;
-  const thDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
-  
-  for (let i = 1; i < data.length; i++) { 
-    const row = data[i];
-    let subject = row[0] ? String(row[0]).trim() : '';
-    const dateStr = row[13]; // Col N (Date)
-    
-    // Check if date is before 18/5/2569 (18 May 2026)
-    let dateObj = null;
-    if (dateStr instanceof Date) {
-      dateObj = dateStr;
-    } else if (typeof dateStr === 'string') {
-      const parts = dateStr.split('/');
-      if (parts.length === 3) {
-        const d = parseInt(parts[0], 10);
-        const m = parseInt(parts[1], 10) - 1;
-        let y = parseInt(parts[2], 10);
-        if (y > 2500) y -= 543;
-        dateObj = new Date(y, m, d);
-        if (isNaN(dateObj.getTime())) {
-          dateObj = null;
-        }
-      }
-    }
-    
-    if (subject.includes('MIDTERM 1/2569')) {
-      if (dateObj && dateObj.getTime() < new Date(2026, 4, 18).getTime()) {
-        const newSubject = subject.replace('MIDTERM 1/2569', 'SUMMER2569');
-        data[i][0] = newSubject;
-        updatedCount++;
-      }
-    }
+  const oldSheet = oldDb.getSheetByName('Data Learn');
+  if (!oldSheet) {
+    Logger.log('ไม่พบชีต Data Learn ในฐานข้อมูลเก่า');
+    return { success: false, error: 'ไม่พบชีต Data Learn ในฐานข้อมูลเก่า' };
   }
   
-  if (updatedCount > 0) {
-    // Write Column A back to the sheet
-    const colA = data.map(row => [row[0]]);
-    dataLearnSheet.getRange(1, 1, colA.length, 1).setValues(colA);
+  let newSheet = newDb.getSheetByName('Data Learn');
+  if (!newSheet) {
+    newSheet = newDb.insertSheet('Data Learn');
   }
   
-  Logger.log('Updated ' + updatedCount + ' rows in Data Learn.');
-  return 'อัปเดตข้อมูล Data Learn จำนวน ' + updatedCount + ' แถวเรียบร้อยแล้ว';
+  const data = oldSheet.getDataRange().getValues();
+  newSheet.clear();
+  if (data.length > 0) {
+    newSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+    ensureDataLearnMigrated(newDb);
+    Logger.log('โอนย้ายข้อมูล Data Learn สำเร็จ จำนวน ' + data.length + ' แถว');
+    return { success: true, message: 'โอนย้ายข้อมูล Data Learn สำเร็จ จำนวน ' + (data.length - 1) + ' แถว' };
+  } else {
+    Logger.log('ชีต Data Learn เก่าไม่มีข้อมูล');
+    return { success: false, error: 'ชีต Data Learn เก่าไม่มีข้อมูล' };
+  }
 }
+
+function debugCheckUsers() {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('UsersDB');
+    if (!sheet) {
+      return { success: false, error: 'UsersDB sheet not found' };
+    }
+    const values = sheet.getDataRange().getValues();
+    return { success: true, count: values.length - 1, users: values.slice(1).map(r => ({ username: r[0], password: r[1], role: r[2] })) };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+

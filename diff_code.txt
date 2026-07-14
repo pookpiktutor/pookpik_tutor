@@ -1,0 +1,434 @@
+--- v655
+
++++ curr
+
+@@ -145,6 +145,38 @@
+
+ }
+ 
++function copyAllSheetsFromOldDbHeadless() {
++  const oldId = '1_GFW3sorojPARW70CvlSXmzDXN6XdeFfzInqqz4r2_4';
++  const newId = '1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI';
++  
++  const oldDb = SpreadsheetApp.openById(oldId);
++  const newDb = SpreadsheetApp.openById(newId);
++  
++  const oldSheets = oldDb.getSheets();
++  
++  let copiedCount = 0;
++  oldSheets.forEach(sheet => {
++    const sheetName = sheet.getName();
++    
++    let newSheet = newDb.getSheetByName(sheetName);
++    if (newSheet) {
++      newDb.deleteSheet(newSheet);
++    }
++    
++    const copied = sheet.copyTo(newDb);
++    copied.setName(sheetName);
++    copiedCount++;
++  });
++  
++  // Initialize standard DBs on the new sheet
++  initAllDatabases();
++  return 'คัดลอกแผ่นงานสำเร็จจำนวน ' + copiedCount + ' แผ่นงาน';
++}
++
+ function doGet(e) {
+-  ensureTeacherIDs();
++  try {
++    ensureTeacherIDs();
++  } catch(initErr) {
++    // Don't block page load if ensureTeacherIDs fails
++  }
+   if (e && e.parameter && e.parameter.debug_nada === '1') {
+     debugSearchNada();
+@@ -268,9 +300,20 @@
+
+       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+   }
+-  return HtmlService.createTemplateFromFile('Index')
+-    .evaluate()
+-    .setTitle('ระบบดูแลโรงเรียนกวดวิชาบ้านครูปุ๊กปิ๊ก')
+-    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
++  try {
++    return HtmlService.createTemplateFromFile('Index')
++      .evaluate()
++      .setTitle('ระบบดูแลโรงเรียนกวดวิชาบ้านครูปุ๊กปิ๊ก')
++      .addMetaTag('viewport', 'width=device-width, initial-scale=1')
++      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
++  } catch (evalErr) {
++    return HtmlService.createHtmlOutput(
++      '<html><body style="font-family:sans-serif;padding:40px;">' +
++      '<h1 style="color:#dc2626;">🔴 Server Error in doGet()</h1>' +
++      '<p><b>Error:</b> ' + evalErr.message + '</p>' +
++      '<pre style="background:#f1f5f9;padding:16px;border-radius:8px;overflow:auto;">' + (evalErr.stack || '') + '</pre>' +
++      '<p style="color:#6b7280;margin-top:20px;">กรุณาแจ้งผู้ดูแลระบบ หรือลองรีเฟรชใหม่อีกครั้ง</p>' +
++      '</body></html>'
++    ).setTitle('Error - ระบบครูปุ๊กปิ๊ก');
++  }
+ }
+ 
+@@ -1645,5 +1688,9 @@
+
+     const targetDateSet = {};
+     datesInMonth.forEach(item => {
+-      targetDateSet[item.dateStr] = item.weekNum;
++      const parsed = parseDateString(item.dateStr);
++      if (parsed) {
++        const ceStr = ('0' + parsed.getDate()).slice(-2) + '/' + ('0' + (parsed.getMonth() + 1)).slice(-2) + '/' + parsed.getFullYear();
++        targetDateSet[ceStr] = item.weekNum;
++      }
+     });
+     
+@@ -1659,5 +1706,8 @@
+
+       
+       const dateRaw = cleanSheetDate(row[13]);
+-      const weekNum = targetDateSet[dateRaw];
++      const parsedRaw = parseDateString(dateRaw);
++      if (!parsedRaw) return;
++      const rawCeStr = ('0' + parsedRaw.getDate()).slice(-2) + '/' + ('0' + (parsedRaw.getMonth() + 1)).slice(-2) + '/' + parsedRaw.getFullYear();
++      const weekNum = targetDateSet[rawCeStr];
+       if (!weekNum) return; // not a matching date
+       
+@@ -6453,2 +6503,337 @@
+
+ }
+ 
++// ============================================================
++// ฟังก์ชันสร้างข้อมูลเทสโดยใช้ User และรหัสผ่านจริงที่มีอยู่ในระบบ
++// รันจากเมนู Apps Script Editor > Run > setupTestDataWithRealUsers
++// ============================================================
++function setupTestDataWithRealUsers() {
++  var db = getDb();
++  
++  // สร้างข้อมูลเทส (นักเรียน, คาบเรียน, ห้องเรียน) สำหรับ วันที่ 20-22 เมษายน 2569
++  // โดยคาบเรียนจะผูกกับชื่อครูที่มีอยู่ในระบบจริง
++  generateTestData_April2569_Core(db);
++  
++  clearCacheObject('usersdb_raw');
++  clearClassLogsCache();
++  invalidateStudentCache();
++  logActivity('System', 'เตรียมข้อมูลเทสระบบ', 'สร้างข้อมูลจำลอง 20-22 เม.ย. 2569 โดยใช้ผู้ใช้จริงในระบบ');
++  
++  return 'สร้างข้อมูลเทสสำหรับผู้ใช้จริงในระบบเสร็จสิ้น! สามารถล็อกอินด้วย User และรหัสผ่านปกติของแต่ละคน เพื่อเทสระบบในช่วงวันที่ 20-22 เมษายน 2569 ได้ทันทีครับ';
++}
++
++// ฟังก์ชันล้างข้อมูลเทสทั้งหมด
++function clearTestDataWithRealUsers() {
++  var db = getDb();
++  deleteTestData_April2569_Core(db);
++  
++  clearCacheObject('usersdb_raw');
++  clearClassLogsCache();
++  invalidateStudentCache();
++  logActivity('System', 'ล้างข้อมูลเทส', 'ลบข้อมูลจำลอง 20-22 เม.ย. 2569 ออกเรียบร้อย');
++  
++  return 'ล้างข้อมูลเทสและประวัติจำลองทั้งหมดเสร็จสิ้น!';
++}
++
++
++
++// ฟังก์ชันแกนกลางสำหรับการสร้างข้อมูลเทส (20-22 เมษายน 2569)
++function generateTestData_April2569_Core(db) {
++  // ดึงรายชื่อครูจริงทั้งหมดจาก TeachersDB
++  var teachersSheet = db.getSheetByName('TeachersDB');
++  var teachersData = [];
++  if (teachersSheet && teachersSheet.getLastRow() >= 2) {
++    teachersData = teachersSheet.getRange(2, 1, teachersSheet.getLastRow() - 1, 9).getValues();
++  }
++  
++  // 1. สร้างข้อมูลครูผู้สอนสำรอง (TeachersDB) เฉพาะเมื่อไม่มีข้อมูลเลย
++  if (teachersData.length === 0) {
++    var testTeachers = [
++      ['ครูเทส_เอ', 'นายเทส ทดสอบเอ', 'ม.ราชภัฏ', '081-111-1111', 'คณิตศาสตร์, วิทยาศาสตร์', 'กสิกร', '111-2-33333-4', '200', 'tutor_test01'],
++      ['ครูเทส_บี', 'นางสาวเทส ทดสอบบี', 'ม.บูรพา', '082-222-2222', 'ภาษาอังกฤษ, ภาษาไทย', 'ไทยพาณิชย์', '222-3-44444-5', '180', 'tutor_test02'],
++      ['ครูเทส_ซี', 'นายเทส ทดสอบซี', 'ม.เกษตร', '083-333-3333', 'ฟิสิกส์, เคมี', 'กรุงเทพ', '333-4-55555-6', '220', 'tutor_test03']
++    ];
++    testTeachers.forEach(function(t) {
++      teachersSheet.appendRow(t);
++    });
++    // ดึงใหม่
++    teachersData = teachersSheet.getRange(2, 1, teachersSheet.getLastRow() - 1, 9).getValues();
++  }
++
++  // สร้าง User ครูเทสเพิ่มเติมใน UsersDB (หากไม่มี)
++  var usersSheet = db.getSheetByName('UsersDB');
++  if (usersSheet) {
++    var testUsers = [
++      ['ครูเทส_เอ', 'test1234', 'Teacher', 'เทส_เอ', 'นายเทส ทดสอบเอ', '081-111-1111', ''],
++      ['ครูเทส_บี', 'test1234', 'Teacher', 'เทส_บี', 'นางสาวเทส ทดสอบบี', '082-222-2222', ''],
++      ['ครูเทส_ซี', 'test1234', 'Teacher', 'เทส_ซี', 'นายเทส ทดสอบซี', '083-333-3333', '']
++    ];
++    testUsers.forEach(function(u) {
++      var existing = usersSheet.getDataRange().getValues();
++      var found = existing.some(function(row) { return row[0] && row[0].toString().trim() === u[0]; });
++      if (!found) usersSheet.appendRow(u);
++    });
++  }
++
++  // 2. สร้างข้อมูลห้องเรียน (RoomsDB)
++  var roomsSheet = db.getSheetByName('RoomsDB');
++  var testRooms = [
++    ['สาขา1', 'ห้องเทส A1', 'iPad-T01', 'zoom-test-01'],
++    ['สาขา2', 'ห้องเทส B1', 'iPad-T02', 'zoom-test-02']
++  ];
++  testRooms.forEach(function(r) {
++    var existing = roomsSheet.getDataRange().getValues();
++    var found = existing.some(function(row) { return row[0] === r[0] && row[1] === r[1]; });
++    if (!found) roomsSheet.appendRow(r);
++  });
++
++  // 3. สร้างข้อมูลนักเรียนลงทะเบียน (StatusDB)
++  var statusSheet = db.getSheetByName('StatusDB');
++  var ts = new Date().getTime();
++  
++  var testStudentsGroup = [
++    { name: 'เด็กเทส_สมชาย ใจดี', nick: 'ชาย_เทส', school: 'ร.ร.เทส_วิทยา', grade: 'ม.1', round: 'MIDTERM 1/69', branch: 'สาขา1', full: 3500, paid: 3500 },
++    { name: 'เด็กเทส_สมหญิง รักเรียน', nick: 'หญิง_เทส', school: 'ร.ร.เทส_พิทยา', grade: 'ม.2', round: 'MIDTERM 1/69', branch: 'สาขา1', full: 3500, paid: 2000 },
++    { name: 'เด็กเทส_มานะ อุตสาหะ', nick: 'มานะ_เทส', school: 'ร.ร.เทส_ศึกษา', grade: 'ป.6', round: 'MIDTERM 1/69', branch: 'สาขา2', full: 3000, paid: 3000 }
++  ];
++  
++  // กำหนดครูผู้ดูแลนักเรียนเป็นครูคนแรกสุดที่มีในระบบ
++  var defaultTeacherNick = teachersData[0] ? teachersData[0][0] : 'ครูเทส_เอ';
++  
++  testStudentsGroup.forEach(function(s, idx) {
++    var id = 'TEST_GROUP_' + ts + '_' + idx;
++    statusSheet.appendRow([
++      id, s.name, s.nick, s.school, '081-000-000' + idx,
++      s.branch, s.branch, '', '',
++      s.paid, s.full, s.full - s.paid, '20/04/2026', 'กสิกร บัญชีบริษัท',
++      defaultTeacherNick, s.round, s.grade, '', s.nick, '',
++      0, '', '', 'กลุ่มหลัก'
++    ]);
++  });
++
++  var testStudentsPrivate = [
++    { name: 'เด็กเทส_พิมพ์ สวยงาม', nick: 'พิมพ์_เทส', school: 'ร.ร.เทส_สตรี', grade: 'ม.3', course: 'พิมพ์_เทส(พิมพ์_เทส) ม.3 เดี่ยวคณิต ex 1', branch: 'สาขา1', full: 2500, paid: 2500, hours: '08:00' },
++    { name: 'เด็กเทส_กอล์ฟ เก่งมาก', nick: 'กอล์ฟ_เทส', school: 'ร.ร.เทส_ชาย', grade: 'ม.6', course: 'กอล์ฟ_เทส(กอล์ฟ_เทส) ม.6 เดี่ยวคณิต ex 1', branch: 'สาขา1', full: 2500, paid: 2500, hours: '08:00' },
++    { name: 'เด็กเทส_น้ำ ใสใส', nick: 'น้ำ_เทส', school: 'ร.ร.เทส_วิทย์', grade: 'ป.4', course: 'น้ำ_เทส(น้ำ_เทส) ป.4 เดี่ยวคณิต 1', branch: 'สาขา2', full: 2000, paid: 1000, hours: '08:00' }
++  ];
++  testStudentsPrivate.forEach(function(s, idx) {
++    var id = 'TEST_PRIVATE_' + ts + '_' + idx;
++    statusSheet.appendRow([
++      id, s.name, s.nick, s.school, '089-000-000' + idx,
++      s.branch, s.branch, '', '',
++      s.paid, s.full, s.full - s.paid, '20/04/2026', 'กสิกร บัญชีบริษัท',
++      defaultTeacherNick, s.course, s.grade, '', s.nick, '',
++      0, s.hours, s.hours, 'เดี่ยว'
++    ]);
++  });
++
++  // 4. สร้างข้อมูลในชีตเดี่ยว
++  var privateSheetData = [
++    { sheetName: 'เดี่ยว ม.3', classType: 'เดี่ยว ม.3', student: testStudentsPrivate[0] },
++    { sheetName: 'เดี่ยว ม.6', classType: 'เดี่ยว ม.6', student: testStudentsPrivate[1] },
++    { sheetName: 'เดี่ยว ป.4', classType: 'เดี่ยว ป.4', student: testStudentsPrivate[2] }
++  ];
++  privateSheetData.forEach(function(psd) {
++    var sheet = getOrCreateSheet(psd.sheetName);
++    var s = psd.student;
++    sheet.appendRow([
++      psd.classType, s.name, s.nick, s.school, '',
++      '089-000-0000', s.nick, '', s.branch, s.branch,
++      s.course, '', 0, 0, s.paid, s.paid,
++      '20/04/2026', 'กสิกร บัญชีบริษัท', defaultTeacherNick,
++      '0 ชม. 0 นาที', '8 ชม. 0 นาที'
++    ]);
++  });
++
++  // 5. สร้างบันทึกการสอน (Data Learn)
++  var learnSheet = db.getSheetByName('Data Learn');
++  var newLogs = [];
++  
++  // นำรายชื่อครูจริงที่มีทั้งหมดมาสร้างคาบเรียนเทสให้ (ลดเหลือ 2 วัน: 20-21 เม.ย. 2026 วันละ 3 คาบ รวม 6 คาบต่อครู 1 คน)
++  teachersData.forEach(function(teacherRow) {
++    var tNick = teacherRow[0]; // ชื่อเล่นครู (เช่น ครูเปิ้ล, ครูแอน)
++    var tId = teacherRow[8] || tNick; // Tutor ID (เช่น tutor_0001)
++    
++    var teacherLogs = [
++      // วันที่ 20 เมษายน 2026 (3 คาบ)
++      ['ม.1/1 คณิตศาสตร์ MIDTERM 1/69', tId, '', '09:00', '11:00', 'เทสคาบ 1 วัน20 ครู: ' + tNick, 3, 0, 0, 0, 0, 0, '2:00', '20/4/2026', 'สาขา1 ห้องเทส A1'],
++      ['พิมพ์_เทส(พิมพ์_เทส) ม.3 เดี่ยวคณิต ex 1', tId, '', '11:00', '13:00', 'เทสเดี่ยว ม.3 วัน20 ครู: ' + tNick, 1, 0, 0, 0, 0, 0, '2:00', '20/4/2026', 'สาขา1 ห้องเทส A1'],
++      ['ม.2/1 วิทยาศาสตร์ MIDTERM 1/69', tId, '', '14:00', '16:00', 'เทสคาบ 3 วัน20 ครู: ' + tNick, 2, 1, 0, 0, 0, 0, '2:00', '20/4/2026', 'สาขา1 ห้องเทส A1'],
++      
++      // วันที่ 21 เมษายน 2026 (3 คาบ)
++      ['น้ำ_เทส(น้ำ_เทส) ป.4 เดี่ยวคณิต 1', tId, '', '09:00', '11:00', 'เทสเดี่ยว ป.4 วัน21 ครู: ' + tNick, 1, 0, 0, 0, 0, 0, '2:00', '21/4/2026', 'สาขา2 ห้องเทส B1'],
++      ['ป.6/2 คณิตศาสตร์ MIDTERM 1/69', tId, '', '11:00', '13:00', 'เทสคาบ 2 วัน21 ครู: ' + tNick, 2, 0, 0, 0, 0, 0, '2:00', '21/4/2026', 'สาขา2 ห้องเทส B1'],
++      ['พิมพ์_เทส(พิมพ์_เทส) ม.3 เดี่ยวคณิต ex 1', tId, '', '13:00', '15:00', 'เทสเดี่ยว ม.3 คาบ2 วัน21 ครู: ' + tNick, 1, 0, 0, 0, 0, 0, '2:00', '21/4/2026', 'สาขา1 ห้องเทส A1']
++    ];
++    
++    teacherLogs.forEach(function(log) { 
++      newLogs.push(log); 
++    });
++  });
++
++  if (newLogs.length > 0) {
++    var lastRow = learnSheet.getLastRow();
++    learnSheet.getRange(lastRow + 1, 1, newLogs.length, newLogs[0].length).setValues(newLogs);
++  }
++
++  // 6. สร้างข้อมูลประเมินนักเรียน (EvaluationsDB)
++  var evalSheet = db.getSheetByName('EvaluationsDB');
++  var testEvals = [];
++  teachersData.forEach(function(teacherRow, idx) {
++    var tNick = teacherRow[0];
++    var tId = teacherRow[8] || tNick;
++    testEvals.push([
++      'EVAL-TEST-' + tNick + '-' + ts, 
++      '20/04/2026 10:00:00', 
++      'เด็กเทส_สมชาย ใจดี', 
++      'ชาย_เทส', 
++      'ม.1', 
++      'สาขา1', 
++      '20/04/2026', 
++      'คณิตศาสตร์', 
++      tNick, 
++      JSON.stringify({ attention: '4', understanding: '3', homework: '5' }), 
++      'เด็กตั้งใจเรียนดี ครู: ' + tNick, 
++      'ควรฝึกเรื่องสมการเพิ่ม', 
++      'ให้ทำแบบฝึกหัดเพิ่ม', 
++      tId
++    ]);
++  });
++  if (testEvals.length > 0) {
++    var lastRowEval = evalSheet.getLastRow();
++    evalSheet.getRange(lastRowEval + 1, 1, testEvals.length, testEvals[0].length).setValues(testEvals);
++  }
++}
++
++// ฟังก์ชันแกนกลางสำหรับลบข้อมูลเทส
++function deleteTestData_April2569_Core(db) {
++  var sheetsToClean = [
++    { name: 'TeachersDB', col: 0 },
++    { name: 'UsersDB', col: 0 },
++    { name: 'StatusDB', col: 1 }
++  ];
++  sheetsToClean.forEach(function(sc) {
++    var sheet = db.getSheetByName(sc.name);
++    if (!sheet) return;
++    var data = sheet.getDataRange().getValues();
++    for (var i = data.length - 1; i >= 1; i--) {
++      if (data[i][sc.col] && data[i][sc.col].toString().indexOf('เทส') !== -1) {
++        sheet.deleteRow(i + 1);
++      }
++    }
++  });
++
++  var roomsSheet = db.getSheetByName('RoomsDB');
++  if (roomsSheet) {
++    var rData = roomsSheet.getDataRange().getValues();
++    for (var i = rData.length - 1; i >= 1; i--) {
++      if (rData[i][1] && rData[i][1].toString().indexOf('เทส') !== -1) roomsSheet.deleteRow(i + 1);
++    }
++  }
++
++  var learnSheet = db.getSheetByName('Data Learn');
++  if (learnSheet) {
++    var lData = learnSheet.getDataRange().getValues();
++    for (var i = lData.length - 1; i >= 1; i--) {
++      if (lData[i][5] && lData[i][5].toString().indexOf('เทส') !== -1) learnSheet.deleteRow(i + 1);
++    }
++  }
++
++  var evalSheet = db.getSheetByName('EvaluationsDB');
++  if (evalSheet) {
++    var eData = evalSheet.getDataRange().getValues();
++    for (var i = eData.length - 1; i >= 1; i--) {
++      if (eData[i][0] && eData[i][0].toString().indexOf('TEST') !== -1) evalSheet.deleteRow(i + 1);
++    }
++  }
++
++  ['เดี่ยว ม.3', 'เดี่ยว ม.6', 'เดี่ยว ป.4'].forEach(function(sName) {
++    var sheet = db.getSheetByName(sName);
++    if (!sheet) return;
++    var data = sheet.getDataRange().getValues();
++    for (var i = data.length - 1; i >= 1; i--) {
++      if (data[i][1] && data[i][1].toString().indexOf('เทส') !== -1) sheet.deleteRow(i + 1);
++    }
++  });
++}
++
++function generateTestData_April2569() {
++  var db = getDb();
++  generateTestData_April2569_Core(db);
++  return 'สร้างข้อมูลเทสเสร็จสมบูรณ์!';
++}
++
++function deleteTestData_April2569() {
++  var db = getDb();
++  deleteTestData_April2569_Core(db);
++  logActivity('System', 'ลบข้อมูลเทส', 'ลบข้อมูลเทส 20-22 เม.ย. 2569 ออกจากระบบทั้งหมด');
++  return 'ลบข้อมูลเทสเรียบร้อยแล้ว!';
++}
++
++/**
++ * ดึงข้อมูลการใช้ห้องเรียนทั้งหมดเฉพาะวันเสาร์และวันอาทิตย์
++ */
++function getWeekendRoomSchedule(logUser) {
++  if (logUser) checkTeacherBlock(logUser);
++  try {
++    ensureDataLearnMigrated(getDb());
++    const rawData = getSheetRows('Data Learn');
++    const rooms = getRoomsList();
++    const teachersList = getTeachersDB(null);
++    
++    const resolveNick = function(nameOrId) {
++      if (!nameOrId) return '';
++      const cleanVal = nameOrId.toString().trim().toLowerCase();
++      const match = teachersList.find(t => {
++        const tId = (t.teacherId || '').toLowerCase().trim();
++        const tNick = t.nickname.toLowerCase().trim();
++        return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
++      });
++      return match ? match.nickname : nameOrId;
++    };
++    
++    const weekendLogs = [];
++    
++    rawData.forEach((row, idx) => {
++      if (idx === 0) return;
++      if (!row[0] || row[0] === '0') return;
++      
++      const dateStr = cleanSheetDate(row[13]);
++      const dateParsed = parseDateString(dateStr);
++      if (!dateParsed) return;
++      
++      // ดึงเฉพาะวันเสาร์ (6) และวันอาทิตย์ (0)
++      const day = dateParsed.getDay();
++      if (day === 6 || day === 0) {
++        weekendLogs.push({
++          subject: row[0] ? row[0].toString().trim() : '',
++          teacherRegular: resolveNick(row[1]),
++          teacherSub: resolveNick(row[2]),
++          timeStart: row[3] ? row[3].toString().trim() : '',
++          timeEnd: row[4] ? row[4].toString().trim() : '',
++          note: row[5] ? row[5].toString().trim() : '',
++          isPresentLive: parseInt(row[6]) || 0,
++          isPresentOnline: parseInt(row[7]) || 0,
++          isLeave: parseInt(row[8]) || 0,
++          isAbsent: parseInt(row[9]) || 0,
++          isMakeup: parseInt(row[10]) || 0,
++          hours: row[12] ? row[12].toString().trim() : '',
++          date: dateStr,
++          roomBranch: row[14] ? row[14].toString().trim() : '',
++          teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
++          numKids: row[16] ? (parseInt(row[16]) || 0) : 0,
++          rowIndex: idx + 1
++        });
++      }
++    });
++    
++    return {
++      rooms: rooms,
++      classes: weekendLogs
++    };
++  } catch (err) {
++    return { error: err.message };
++  }
++}
++
++
++ 

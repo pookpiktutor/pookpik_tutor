@@ -1,0 +1,23 @@
+204:                   <span>🏫</span> สาขา 2 ข้างโรงเรียนระยองวิทยาคม
+254:                       <th style="text-align: right;">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</th>
+293:                     <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
+335:               <button class="branch-tab" onclick="setStudentBranchFilter('สาขา2', this)">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</button>
+417:                   <option value="สาขา2" selected>สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
+423:                 <label class="form-label" style="margin-top: 10px;">กรองรอบเรียน:</label>
+428:                 <button class="btn btn-secondary" onclick="showAddCourseColumnModal()">➕ เพิ่มคอร์สเรียน (รายวิชา)</button>
+493:               <button class="branch-tab" data-branch="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</button>
+524:                   <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
+1177:                   <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
+1180:                   <option value="ออนไลน์สาขา2">ออนไลน์ สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
+1188:                   <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
+1645:                       <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
+1812:                   <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
+2336:                   <option value="2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
+5445:     else if (branchName === 'สาขา2') branchDisplayName = 'สาขา 2 ข้างโรงเรียนระยองวิทยาคม';
+6027:   document.getElementById('student_modal_title').innerText = 'แก้ไขการลงทะเบียนเรียน';
+6563:           <a href="#" onclick="editStudentFromGradeSheet('${s.name}'); return false;" style="font-size:0.65rem; color:var(--color-primary); text-decoration:underline; font-weight:600; white-space:nowrap;">✏️ แก้ไขการลงทะเบียนเรียน</a>
+6937:     // Normalizing branch values (e.g. "สาขา2" vs "สาขา 2")
+7617:     const branchShort = b === 'สาขา1' ? 'สาขา 1' : b === 'สาขา2' ? 'สาขา 2' : 'สาขา 3';
+9038:     } else if (cleanRoom.includes('สาขา 2') || cleanRoom.includes('สาขา2')) {
+11092:     branchAddressThai = headOfficeThai + '<br>สาขา 2 : 2/17 ถนนวุฒิสาร ต.ท่าประดู่ อ.เมือง จ.ระยอง 21000 โทร. 083-834-6067, 081-863-1311';
+11502:     'สาขา 2': '#f97316',

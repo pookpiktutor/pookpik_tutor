@@ -1,0 +1,118 @@
+function saveGradeSheetData(grade, branch, coursesUpdate, studentsUpdate, logUser) {
+  checkTeacherBlock(logUser);
+  try {
+    const db = getDb();
+    
+    // Group courses update by sheetName
+    const coursesBySheet = {};
+    coursesUpdate.forEach(c => {
+      const sName = c.sheetName || `${grade}/1`;
+      if (!coursesBySheet[sName]) coursesBySheet[sName] = [];
+      coursesBySheet[sName].push(c);
+    });
+    
+    // Group students update by sheetName
+    const studentsBySheet = {};
+    studentsUpdate.forEach(s => {
+      const sName = s.sheetName || `${grade}/1`;
+      if (!studentsBySheet[sName]) studentsBySheet[sName] = [];
+      studentsBySheet[sName].push(s);
+    });
+    
+    const allSheetNames = new Set([...Object.keys(coursesBySheet), ...Object.keys(studentsBySheet)]);
+    
+    allSheetNames.forEach(sheetName => {
+      const sheet = db.getSheetByName(sheetName);
+      if (!sheet) return;
+      
+      const sheetCoursesUpdate = coursesBySheet[sheetName] || [];
+      const sheetStudentsUpdate = studentsBySheet[sheetName] || [];
+      
+      sheetCoursesUpdate.forEach(c => {
+        sheet.getRange(1, c.colIndex).setValue(c.courseName);
+        sheet.getRange(2, c.colIndex).setValue(c.price);
+        sheet.getRange(3, c.colIndex).setValue(c.dayTime || '');
+        sheet.getRange(4, c.colIndex).setValue(c.totalSessions);
+      });
+      
+      const lastCol = sheet.getLastColumn();
+      
+      sheetStudentsUpdate.forEach(s => {
+        const row = s.rowIndex;
+        
+        // Recalculate subtotal using only courses belonging to this sheet
+        let subtotal = 0;
+        sheetCoursesUpdate.forEach(c => {
+          const val = s.courseValues[c.colIndex];
+          if (val !== '' && !isNaN(val)) {
+            const num = parseFloat(val);
+            const price = parseFloat(c.price) || 0;
+            const totalSessions = parseInt(c.totalSessions) || 10;
+            
+            if (num === 30) subtotal += price * 0.7;
+            else if (num === 20) subtotal += price * 0.9;
+            else if (num === 50) subtotal += price * 0.5;
+            else if (num >= 1 && num <= 2) subtotal += num * 350;
+            else if (num >= 3) subtotal += num * (price / totalSessions);
+          }
+        });
+        
+        if (s.isCard) subtotal *= 1.03;
+        const full = subtotal - s.discount;
+        const outstanding = full - s.paid;
+        
+        // Batch student data update in a single setValues() call!
+        const rowVals = new Array(lastCol).fill('');
+        rowVals[0] = s.grade || grade;
+        rowVals[1] = s.name;
+        rowVals[2] = s.nickname;
+        rowVals[3] = s.school;
+        rowVals[4] = s.classSection;
+        rowVals[5] = s.contact;
+        rowVals[6] = s.lineName;
+        rowVals[7] = s.lineId;
+        rowVals[8] = s.branchLearn;
+        rowVals[9] = s.branchPay;
+        rowVals[10] = full;
+        rowVals[11] = s.discount;
+        rowVals[12] = outstanding;
+        rowVals[13] = s.paid;
+        rowVals[14] = s.isCard ? 1 : 0;
+        
+        for (const colIndex in s.courseValues) {
+          const colIdx0 = parseInt(colIndex) - 1;
+          if (colIdx0 < lastCol) {
+            rowVals[colIdx0] = s.courseValues[colIndex];
+          }
+        }
+        
+        sheet.getRange(row, 1, 1, lastCol).setValues([rowVals]);
+        
+        syncStudentToStatusDB({
+          name: s.name,
+          nickname: s.nickname,
+          school: s.school,
+          contact: s.contact,
+          branchLearn: s.branchLearn,
+          branchPay: s.branchPay,
+          full: full,
+          paid: s.paid,
+          outstanding: outstanding,
+          discount: s.discount,
+          grade: grade,
+          classSection: s.classSection,
+          lineName: s.lineName,
+          lineId: s.lineId,
+          classType: 'กลุ่มหลัก',
+          round: s.sheetName || sheetName
+        });
+      });
+    });
+    
+    logActivity(logUser, 'แก้ไขห้องเรียนแยกสาขา (รวม)', `แก้ไขชีตระดับชั้น ${grade} รวมทุกสาขา จำนวนที่ส่งอัปเดต ${studentsUpdate.length} คน`);
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+

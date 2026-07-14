@@ -1,0 +1,1078 @@
+9: const SHEET_REGISTRY = [
+12:     headers: ['Username', 'Password', 'Role', 'Nickname', 'FullName', 'Phone', 'ProfilePic'],
+14:     defaultData: [
+15:       ['admin', '1234', 'Administrator', '', '', '', ''],
+16:       ['staff', '1234', 'Staff', '', '', '', '']
+21:     headers: ['Nickname', 'FullName', 'School', 'Phone', 'Subjects', 'Bank', 'AccountNumber', 'Compensation', 'TeacherID'],
+26:     headers: ['Branch', 'RoomName', 'IPAD', 'Zoom'],
+31:     headers: ['Timestamp', 'User', 'Action', 'Details'],
+36:     headers: [
+38:       'สาขาเรียน', 'สาขาที่เก็บเงิน', 'หมายเหตุเวลาจ่ายเงิน', 'หมายเหตุเพิ่มเติม',
+48:     headers: ['รายชื่อครู', 'รายชื่อโรงเรียน'],
+53:     headers: [
+56:       'ชด', 'แสด', 'ชม.', 'วันที่', 'ห้อง/สาขา/iPad'
+62:     headers: [
+71:     headers: ['Timestamp', 'Function', 'Message', 'Stack'],
+76:     headers: [
+87:   //   headers: ['Col1', 'Col2', 'Col3'],
+89:   //   defaultData: [['row1col1', 'row1col2', 'row1col3']]  // optional seed data
+110:       sheet.getRange(hRow, 1, 1, def.headers.length).setValues([def.headers]);
+114:         sheet.getRange(hRow + 1, 1, def.defaultData.length, def.defaultData[0].length)
+123:         sheet.getRange(hRow, 1, 1, def.headers.length).setValues([def.headers]);
+142:     if (SHEET_REGISTRY[i].name === sheetName) return SHEET_REGISTRY[i];
+188:         const isClassroom = name.match(/^(.+)\/([1-3])$/);
+195:         let headers = [];
+196:         let missingHeaders = [];
+197:         let emptyCols = [];
+200:           headers = sheet.getRange(headerRowIdx, 1, 1, lastCol).getValues()[0].map(h => h.toString().trim());
+203:             const headerVal = headers[col - 1];
+210:                 if (values[r][0] !== '' && values[r][0] !== null && values[r][0] !== undefined) {
+222:         results[name] = {
+290:     const result = { users: [], teachers: [] };
+297:           username: data[i][0],
+298:           password: data[i][1],
+299:           role: data[i][2],
+300:           nickname: data[i][3]
+310:           nickname: data[i][0],
+311:           fullName: data[i][1],
+312:           role: data[i][2] // if any
+350:         const username = data[i][0];
+351:         const password = data[i][1];
+352:         const role = data[i][2];
+378:         const tHeaders = teachersSheet.getRange(1, 1, 1, teachersSheet.getLastColumn()).getValues()[0];
+381:           const tRow = teachersSheet.getRange(2, 1, 1, teachersSheet.getLastColumn()).getValues()[0];
+394:         const lHeaders = learnSheet.getRange(1, 1, 1, learnSheet.getLastColumn()).getValues()[0];
+397:           const lRow = learnSheet.getRange(2, 1, 1, learnSheet.getLastColumn()).getValues()[0];
+414:           html += `<tr><td>${logData[i][0]}</td><td>${logData[i][1]}</td><td>${logData[i][2]}</td><td>${logData[i][3]}</td></tr>`;
+538:         const m = sourceName.match(/^([ปม]\.[1-6])([1-3])$/);
+540:           targetName = m[1] + '/' + m[2];
+579:             newRow[i] = row[i] !== undefined ? row[i] : '';
+588:           newRow[0] = row[0] !== undefined ? row[0] : '';   // ระดับชั้น (ชั้นเรียน)
+589:           newRow[1] = row[1] !== undefined ? row[1] : '';   // ชื่อ-นามสกุล
+590:           newRow[2] = row[2] !== undefined ? row[2] : '';   // ชื่อเล่น
+591:           newRow[3] = row[3] !== undefined ? row[3] : '';   // โรงเรียน
+592:           newRow[4] = row[4] !== undefined ? row[4] : '';   // ห้องเรียนย่อย (ห้อง)
+593:           newRow[5] = row[5] !== undefined ? row[5] : '';   // เบอร์ติดต่อ (เบอร์)
+594:           newRow[6] = row[6] !== undefined ? row[6] : '';   // ชื่อโปรไฟล์ไลน์ (ชื่อไลน์/กลุ่มติดต่อ)
+595:           newRow[7] = row[7] !== undefined ? row[7] : '';   // ID LINE (ID Line)
+596:           newRow[8] = row[8] !== undefined ? row[8] : '';   // สาขาเรียน (เรียน)
+597:           newRow[9] = row[9] !== undefined ? row[9] : '';   // สาขาที่เก็บเงิน (เก็บเงิน)
+598:           newRow[10] = row[12] !== undefined ? row[12] : ''; // ยอดชำระ/ยอดรวม (ยอดเต็ม)
+599:           newRow[11] = row[11] !== undefined ? row[11] : ''; // ส่วนลด (ส่วนลด)
+600:           newRow[12] = row[14] !== undefined ? row[14] : ''; // รอบ/คงเหลือ (คงเหลือ)
+601:           newRow[13] = row[13] !== undefined ? row[13] : ''; // ยอดเรียนคงเหลือ/ยอดจ่าย (จ่ายมา)
+602:           newRow[14] = row[15] !== undefined ? row[15] : ''; // รหัสบัตร/รูดบัตร (วัน/เดือน/ปี)
+631:   const isClassroom = sheetName.match(/^(.+)\/([1-3])$/);
+635:     const headers = ['ระดับชั้น', 'ชื่อ-นามสกุล', 'ชื่อ', 'โรงเรียน', 'ห้องเรียนที่', 'เบอร์ติดต่อ', 'เบอร์ผู้ปกครอง/เบอร์ติดต่อ', 'ID LINE', 'สาขาที่เรียน', 'สาขาที่จ่ายเงิน'];
+637:     headers.forEach((h, idx) => { row5[idx] = h; });
+638:     row5[10] = 'ยอดชำระ';
+639:     row5[11] = 'ส่วนลด';
+640:     row5[12] = 'รอบ';
+641:     row5[13] = 'ยอดเรียนคงเหลือ';
+642:     row5[14] = 'รหัสบัตร';
+643:     sheet.getRange(5, 1, 1, 15).setValues([row5]);
+651:     const headers = ['ชื่อ', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'โรงเรียน', 'คอร์ส', 'เบอร์ติดต่อ', 'เบอร์ผู้ปกครอง/เบอร์ติดต่อ', 'ID LINE', 'สาขาเรียน(สาขา)', 'สาขาเงิน(สาขา)', 'รอบเรียน', 'หมายเหตุ', 'เรียนจริง(รอบ)', 'เรียน', 'จ่าย', 'คงเหลือ', 'วันที่รับเงิน', 'ช่องทางการรับเงิน', 'ผู้รับเงิน', 'ใบเสร็จ', 'ตรวจสอบ'];
+652:     sheet.getRange(11, 1, 1, 21).setValues([headers]);
+660:     const headers = ['ชื่อ', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'โรงเรียน', 'คอร์ส', 'เบอร์ติดต่อ', 'เบอร์ผู้ปกครอง/เบอร์ติดต่อ', 'ID LINE', 'สาขาเรียน(สาขา)', 'สาขาเงิน(สาขา)', 'รอบเรียน', 'หมายเหตุ', 'เรียนจริง(รอบ)', 'เรียน', 'จ่าย', 'คงเหลือ', 'วันที่รับเงิน', 'ช่องทางการรับเงิน', 'ผู้รับเงิน', 'ใบเสร็จ', 'ตรวจสอบ'];
+661:     sheet.getRange(11, 1, 1, 21).setValues([headers]);
+670:     sheet.getRange(hRow, 1, 1, regDef.headers.length).setValues([regDef.headers]);
+672:       sheet.getRange(hRow + 1, 1, regDef.defaultData.length, regDef.defaultData[0].length)
+699:   if (!sheet) return [];
+702:   if (lastRow === 0 || lastCol === 0) return [];
+744:   if (m) return ('0' + m[1]).slice(-2) + ':' + ('0' + m[2]).slice(-2);
+772:       const headers = learnSheet.getRange(1, 1, 1, lastCol).getValues()[0];
+783:             const zeros = Array(lastRow - 1).fill([0]);
+807:     sheet.appendRow(['Branch', 'RoomName', 'IPAD', 'Zoom']);
+810:     const defaultRooms = [];
+813:     defaultRooms.push(['สาขา1', 'ออนไลน์ สาขา1', 'IPAD 001', 'Zoom 001']);
+817:           defaultRooms.push(['สาขา1', `ห้อง 05/${j}`, `IPAD 005`, `Zoom 005`]);
+821:         defaultRooms.push(['สาขา1', `ห้อง ${pad}`, `IPAD 0${pad}`, `Zoom 0${pad}`]);
+826:     defaultRooms.push(['สาขา2', 'ออนไลน์ สาขา2', 'IPAD 020', 'Zoom 020']);
+827:     defaultRooms.push(['สาขา2', 'ห้อง เอนกประสงค์', 'IPAD 021', 'Zoom 021']);
+828:     const b2Rooms = [1,2,3,4,5,6,7,8,9,21,22,23,24,25,26,31,32,33,34,35,36,41,42,43,44,45,52,53];
+831:       defaultRooms.push(['สาขา2', `ห้อง ${pad}`, `IPAD 0${pad}`, `Zoom 0${pad}`]);
+835:     defaultRooms.push(['สาขา3', 'ออนไลน์ สาขา3', 'IPAD 030', 'Zoom 030']);
+836:     const b3Rooms = ['01', '02', '03', '04', '21', '30', '31', '32/1', '32/2', '32/3', '32/4', '33', '34', '40', '41', '42', '43', '44', '50'];
+838:       defaultRooms.push(['สาขา3', `ห้อง ${r}`, `IPAD 0${r.replace('/', '')}`, `Zoom 0${r.replace('/', '')}`]);
+869:       const teachers = [];
+872:         if (row[0]) teachers.push(row[0].toString().trim());
+874:       const uniqueTeachers = [...new Set(teachers)].sort();
+876:         teachersSheet.appendRow([t, '', '', '', '', '', '', '', '']);
+940:       if (rows[i][0]) {
+941:         const val = rows[i][0].toString().trim().toLowerCase();
+942:         const tid = rows[i][8] ? rows[i][8].toString().trim().toLowerCase() : '';
+978:     if (rows[i][0] && rows[i][1]) {
+979:       const dbUsername = rows[i][0].toString().trim().toLowerCase();
+980:       const dbPassword = rows[i][1].toString().trim();
+983:         let role = rows[i][2] ? rows[i][2].toString().trim() : 'Staff';
+984:         const nickname = rows[i][3] ? rows[i][3].toString().trim() : '';
+985:         const profilePic = rows[i][6] ? rows[i][6].toString().trim() : '';
+992:         logActivity(rows[i][0].toString().trim(), 'เข้าสู่ระบบ', 'เจ้าหน้าที่เข้าใช้ระบบสำเร็จ' + (role === 'Teacher' ? ' (จำกัดสิทธิ์ครูผู้สอน)' : ''));
+996:             username: rows[i][0].toString().trim(), 
+1016:     if (rows[i][0].toString().trim() === username) {
+1041:     if (rows[i][0]) {
+1042:       const dbUsername = rows[i][0].toString().trim().toLowerCase();
+1044:         userRow = rows[i];
+1060:     role = userRow[2] ? userRow[2].toString().trim() : 'Staff';
+1061:     nickname = userRow[3] ? userRow[3].toString().trim() : '';
+1062:     fullName = userRow[4] ? userRow[4].toString().trim() : '';
+1063:     phone = userRow[5] ? userRow[5].toString().trim() : '';
+1064:     profilePic = userRow[6] ? userRow[6].toString().trim() : '';
+1066:     if (isTeacherUser(userRow[0].toString().trim(), nickname)) {
+1075:         if (tRows[i][0]) {
+1076:           const tNick = tRows[i][0].toString().trim();
+1080:             fullName = tRows[i][1] ? tRows[i][1].toString().trim() : '';
+1081:             phone = tRows[i][3] ? tRows[i][3].toString().trim() : '';
+1082:             bank = tRows[i][5] ? tRows[i][5].toString().trim() : '';
+1083:             accountNumber = tRows[i][6] ? tRows[i][6].toString().trim() : '';
+1110:         if (tRows[i][0]) {
+1111:           const tNick = tRows[i][0].toString().trim();
+1112:           const tId = tRows[i][8] ? tRows[i][8].toString().trim() : '';
+1119:             fullName = tRows[i][1] ? tRows[i][1].toString().trim() : fullName;
+1120:             phone = tRows[i][3] ? tRows[i][3].toString().trim() : phone;
+1121:             bank = tRows[i][5] ? tRows[i][5].toString().trim() : '';
+1122:             accountNumber = tRows[i][6] ? tRows[i][6].toString().trim() : '';
+1133:       username: userRow[0].toString().trim(),
+1160:     if (rows[i][0]) {
+1161:       const dbUsername = rows[i][0].toString().trim().toLowerCase();
+1191:       if (rows[i][0] && rows[i][0].toString().trim().toLowerCase() === cleanUsername) {
+1195:     sheet.appendRow([
+1216:     if (!sheet) return [];
+1219:     const users = [];
+1221:       if (!rows[i][0]) continue;
+1223:         username: rows[i][0].toString().trim(),
+1224:         role: rows[i][2] ? rows[i][2].toString().trim() : 'Staff',
+1225:         nickname: rows[i][3] ? rows[i][3].toString().trim() : '',
+1226:         fullName: rows[i][4] ? rows[i][4].toString().trim() : '',
+1227:         phone: rows[i][5] ? rows[i][5].toString().trim() : ''
+1232:     return [];
+1247:     if (rows[i][0]) {
+1248:       const dbUsername = rows[i][0].toString().trim().toLowerCase();
+1249:       const dbPassword = rows[i][1].toString().trim();
+1274:       if (rows[i][0]) {
+1275:         const dbUsername = rows[i][0].toString().trim().toLowerCase();
+1297:     if (!sheet || sheet.getLastRow() < 2) return [];
+1304:     return [];
+1310:   let headers = [];
+1312:     headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => h.toString().trim());
+1314:   const required = ['Username', 'Password', 'Role', 'Nickname', 'FullName', 'Phone', 'ProfilePic'];
+1318:     if (headers[i] !== required[i]) {
+1319:       sheet.getRange(1, i + 1).setValue(required[i]);
+1338:       const tId = teachersRows[i][8] ? teachersRows[i][8].toString().trim() : '';
+1340:         const tNick = teachersRows[i][0] ? teachersRows[i][0].toString().trim() : '';
+1346:       const tNick = teachersRows[i][0] ? teachersRows[i][0].toString().trim() : '';
+1358:       if (usersRows[i][0]) {
+1359:         const dbUsername = usersRows[i][0].toString().trim().toLowerCase();
+1361:           const nickname = usersRows[i][3] ? usersRows[i][3].toString().trim() : '';
+1362:           const fullName = usersRows[i][4] ? usersRows[i][4].toString().trim() : '';
+1363:           return nickname || fullName || usersRows[i][0].toString().trim();
+1381:     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => h.toString().trim());
+1398:         const tNick = teachersRows[i][0] ? teachersRows[i][0].toString().trim() : '';
+1399:         const tId = teachersRows[i][8] ? teachersRows[i][8].toString().trim() : '';
+1401:           teachersMap[tId.toLowerCase()] = tNick;
+1404:           teachersMap[tNick.toLowerCase()] = tNick;
+1414:         if (usersRows[i][0]) {
+1415:           const dbUsername = usersRows[i][0].toString().trim().toLowerCase();
+1416:           const nickname = usersRows[i][3] ? usersRows[i][3].toString().trim() : '';
+1417:           const fullName = usersRows[i][4] ? usersRows[i][4].toString().trim() : '';
+1418:           usersMap[dbUsername] = nickname || fullName || usersRows[i][0].toString().trim();
+1425:       const user = values[i][1] ? values[i][1].toString().trim() : '';
+1429:         if (teachersMap[userLower]) {
+1430:           nickname = teachersMap[userLower];
+1431:         } else if (usersMap[userLower]) {
+1432:           nickname = usersMap[userLower];
+1436:         values[i][nameColIdx - 1] = nickname;
+1439:         values[i][nameColIdx - 1] = '';
+1444:     const nameValues = values.map(row => [row[nameColIdx - 1]]);
+1459:       sheet.appendRow(['Timestamp', 'User', 'Name', 'Action', 'Details']);
+1461:       const headers = sheet.getRange(1, 1, 1, Math.max(1, sheet.getLastColumn())).getValues()[0].map(h => h.toString().trim());
+1471:     sheet.appendRow([timestamp, user || 'System', name || '', action, details || '']);
+1482:     const logs = [];
+1484:       if (rows[i][0]) {
+1489:         if (rows[i].length >= 5) {
+1490:           name = rows[i][2] ? rows[i][2].toString() : '';
+1491:           action = rows[i][3] ? rows[i][3].toString() : '';
+1492:           details = rows[i][4] ? rows[i][4].toString() : '';
+1494:           action = rows[i][2] ? rows[i][2].toString() : '';
+1495:           details = rows[i][3] ? rows[i][3].toString() : '';
+1499:           timestamp: cleanSheetTimestamp(rows[i][0]),
+1500:           user: rows[i][1] ? rows[i][1].toString() : '',
+1524:   const rooms = [];
+1527:     if (!row[0]) return;
+1529:       branch: row[0].toString().trim(),
+1530:       roomName: row[1].toString().trim(),
+1531:       ipad: row[2] ? row[2].toString().trim() : '',
+1532:       zoom: row[3] ? row[3].toString().trim() : ''
+1550:       if (range[i][0].toString().trim() === branch && range[i][1].toString().trim() === roomName) {
+1557:       sheet.appendRow([branch, roomName, ipad, zoom]);
+1582:       if (range[i][0].toString().trim() === branch && range[i][1].toString().trim() === roomName) {
+1590:       logActivity(logUser, 'ลบห้องเรียน', `สาขา: ${branch} ห้อง: ${roomName}`);
+1615:     const courseNames = [...new Set(classes.map(c => c.subject).filter(Boolean))];
+1636:       counts[c] = 0;
+1643:       const match = name.match(/^(.+)\/([1-3])$/);
+1648:           const headerRow1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+1652:             const courseName = headerRow1[colIdx] ? headerRow1[colIdx].toString().trim() : '';
+1656:                 const val = data[rowIdx][colIdx];
+1661:               counts[courseName] += count;
+1668:       const privateOrSubgroup = [
+1679:             const sName = studentNames[i][0] ? studentNames[i][0].toString().trim() : '';
+1680:             const cName = vals[i][0] ? vals[i][0].toString().trim() : '';
+1682:               counts[cName]++;
+1720:       sheet.appendRow([
+1747:         nextId = parseInt(numMatch[1]) + 1;
+1770:           const tNick = tRows[j][0] ? tRows[j][0].toString().trim().toLowerCase() : '';
+1771:           const tFullName = tRows[j][1] ? tRows[j][1].toString().trim().toLowerCase() : '';
+1772:           const tId = tRows[j][8] ? tRows[j][8].toString().trim() : '';
+1786:     sheet.appendRow([
+1805:     logActivity(logUser || 'System', 'ส่งใบประเมินนักเรียน', `[${evalId}] ประเมินนักเรียน: ${data.studentName} (${data.nickname}) วิชา: ${data.subject}`);
+1823:       if (rows[i][0] === evalData.evalId) {
+1859:       cache.removeAll(['evaluations_list_all']);
+1862:     logActivity(logUser, 'แก้ไขใบประเมิน', `อัปเดตการประเมินนักเรียน: ${rows[rowIndex-1][2]}`);
+1876:     if (!sheet || sheet.getLastRow() < 2) return [];
+1878:     const list = [];
+1885:       teacherNicknames = [teacherLogId];
+1891:             const tNick = (tRows[j][0] || '').toString().trim().toLowerCase();
+1892:             const tFullName = (tRows[j][1] || '').toString().trim().toLowerCase();
+1893:             const tId = (tRows[j][8] || '').toString().trim().toLowerCase();
+1908:       if (!rows[i][0]) continue;
+1912:         const cleanEvalBy = (rows[i][13] || '').toString().trim().toLowerCase();
+1915:           const alias = teacherNicknames[a];
+1926:         parsedScores = JSON.parse(rows[i][9]);
+1929:           attention: rows[i][9] || '5',
+1936:         evalId: (rows[i][0] || '').toString(),
+1937:         timestamp: rows[i][1],
+1938:         studentName: rows[i][2],
+1939:         nickname: rows[i][3],
+1940:         grade: rows[i][4],
+1941:         branch: rows[i][5],
+1942:         date: rows[i][6],
+1943:         subject: rows[i][7],
+1944:         teacher: rows[i][8],
+1946:         strengths: rows[i][10] || '',
+1947:         improvements: rows[i][11] || '',
+1948:         recommendations: rows[i][12] || '',
+1949:         evaluatedBy: (rows[i][13] || '').toString().trim()
+1955:     return [];
+1972:     const datesInMonth = [];
+2010:       targetDateSet[item.dateStr] = item.weekNum;
+2014:     const weeklyClasses = {}; // weekNum -> [classLog, ...]
+2016:       weeklyClasses[item.weekNum] = [];
+2021:       if (!row[0] || row[0] === '0') return;
+2023:       const dateRaw = cleanSheetDate(row[13]);
+2024:       const weekNum = targetDateSet[dateRaw];
+2027:       weeklyClasses[weekNum].push({
+2028:         subject: row[0] ? row[0].toString().trim() : '',
+2029:         teacherRegular: resolveNick(row[1]),
+2030:         teacherSub: resolveNick(row[2]),
+2031:         timeStart: row[3] ? row[3].toString().trim() : '',
+2032:         timeEnd: row[4] ? row[4].toString().trim() : '',
+2033:         note: row[5] ? row[5].toString().trim() : '',
+2034:         isPresentLive: parseInt(row[6]) || 0,
+2035:         isPresentOnline: parseInt(row[7]) || 0,
+2036:         isLeave: parseInt(row[8]) || 0,
+2037:         isAbsent: parseInt(row[9]) || 0,
+2038:         isMakeup: parseInt(row[10]) || 0,
+2039:         isOrange: parseInt(row[11]) || 0,
+2040:         hours: row[12] ? row[12].toString().trim() : '',
+2042:         roomBranch: row[14] ? row[14].toString().trim() : '',
+2043:         teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
+2055:         classes: weeklyClasses[item.weekNum] || []
+2067:     const rooms = [];
+2072:           branch: data[i][0] ? data[i][0].toString().trim() : '',
+2073:           roomName: data[i][1] ? data[i][1].toString().trim() : '',
+2074:           ipad: data[i][2] ? data[i][2].toString().trim() : '',
+2075:           zoom: data[i][3] ? data[i][3].toString().trim() : ''
+2081:     const classes = [];
+2097:         if (!data[i][0] || data[i][0] === '0') continue;
+2098:         const dateRaw = cleanSheetDate(data[i][13]);
+2101:           subject: data[i][0] ? data[i][0].toString().trim() : '',
+2102:           teacherRegular: resolveNick(data[i][1]),
+2103:           teacherSub: resolveNick(data[i][2]),
+2104:           timeStart: data[i][3] ? data[i][3].toString().trim() : '',
+2105:           timeEnd: data[i][4] ? data[i][4].toString().trim() : '',
+2106:           note: data[i][5] ? data[i][5].toString().trim() : '',
+2107:           isPresentLive: parseInt(data[i][6]) || 0,
+2108:           isPresentOnline: parseInt(data[i][7]) || 0,
+2109:           isLeave: parseInt(data[i][8]) || 0,
+2110:           isAbsent: parseInt(data[i][9]) || 0,
+2111:           isMakeup: parseInt(data[i][10]) || 0,
+2112:           isOrange: parseInt(data[i][11]) || 0,
+2113:           hours: data[i][12] ? data[i][12].toString().trim() : '',
+2115:           roomBranch: data[i][14] ? data[i][14].toString().trim() : ''
+2166:         errSheet.appendRow(['Timestamp', 'Function', 'Message', 'Stack']);
+2168:       errSheet.appendRow([new Date(), 'debugExportData', e.message, e.stack]);
+2183:     const teachers = [];
+2184:     const schools = [];
+2186:     const defaultSchools = [
+2201:       if (row[1]) schools.push(row[1].toString().trim());
+2208:         if (row[0]) teachers.push(row[0].toString().trim());
+2213:         if (row[0]) teachers.push(row[0].toString().trim());
+2217:     const allSchools = [...schools, ...defaultSchools];
+2219:     const requestedChannels = [
+2246:       teachers: [...new Set(teachers)].sort(),
+2247:       schools: [...new Set(allSchools)].sort(),
+2272:       'สาขา1': { full: 0, paid: 0, debt: 0 },
+2273:       'สาขา2': { full: 0, paid: 0, debt: 0 },
+2274:       'สาขา3': { full: 0, paid: 0, debt: 0 },
+2281:     const monthlySummary = [];
+2284:         'สาขา1': 0,
+2285:         'สาขา2': 0,
+2286:         'สาขา3': 0,
+2293:       if (idx === 0 && row[0] && row[0].toString().toLowerCase().includes('id')) return;
+2294:       const studentName = row[1] ? row[1].toString().trim() : '';
+2295:       if (!row[0] && !studentName) return;
+2297:       const paid = parseFloat(row[9]) || 0;
+2298:       const full = parseFloat(row[10]) || 0;
+2300:       const branchRaw = row[5] ? row[5].toString().trim() : '';
+2301:       const branchPay = row[6] ? row[6].toString().trim() : '';
+2302:       const round = row[15] ? row[15].toString().trim() : 'ทั่วไป';
+2310:         if (branchPay.includes('สาขา1')) branchKey = 'สาขา1';
+2311:         else if (branchPay.includes('สาขา2')) branchKey = 'สาขา2';
+2312:         else if (branchPay.includes('สาขา3')) branchKey = 'สาขา3';
+2314:           if (branchRaw.includes('สาขา1')) branchKey = 'สาขา1';
+2315:           else if (branchRaw.includes('สาขา2')) branchKey = 'สาขา2';
+2316:           else if (branchRaw.includes('สาขา3')) branchKey = 'สาขา3';
+2317:           else branchKey = 'สาขา1';
+2320:         if (branchRaw.includes('สาขา1')) branchKey = 'สาขา1';
+2321:         else if (branchRaw.includes('สาขา2')) branchKey = 'สาขา2';
+2322:         else if (branchRaw.includes('สาขา3')) branchKey = 'สาขา3';
+2323:         else branchKey = 'สาขา1';
+2326:       branchFin[branchKey].full += full;
+2327:       branchFin[branchKey].paid += paid;
+2328:       branchFin[branchKey].debt += debt;
+2331:       const paymentDateStr = cleanSheetDate(row[12]);
+2335:           const m = parseInt(dateParts[1], 10);
+2336:           const y = parseInt(dateParts[2], 10);
+2338:             monthlySummary[m - 1][branchKey] += paid;
+2339:             monthlySummary[m - 1]['total'] += paid;
+2345:         if (!roundFin[round]) {
+2346:           roundFin[round] = { full: 0, paid: 0, debt: 0 };
+2348:         roundFin[round].full += full;
+2349:         roundFin[round].paid += paid;
+2350:         roundFin[round].debt += debt;
+2377:   if (sheetValuesCache_[sheetName]) return sheetValuesCache_[sheetName];
+2381:       sheetValuesCache_[sheetName] = null;
+2386:     sheetValuesCache_[sheetName] = values;
+2389:     sheetValuesCache_[sheetName] = null;
+2397:     const match = cellNotation.match(/^([A-Z]+)([0-9]+)$/);
+2399:     const colLetter = match[1];
+2400:     const rowNum = parseInt(match[2]);
+2410:     if (rowIdx < values.length && colIdx < values[rowIdx].length) {
+2411:       const val = values[rowIdx][colIdx];
+2425:     const categories = [];
+2428:     for (let k in sheetValuesCache_) delete sheetValuesCache_[k];
+2430:     const grades = [
+2449:     const branches = [
+2450:       { name: 'สาขา1', suffix: '/1', privatePaid: 'E3', privateDebt: 'E4', privateCount: 'A2', groupCell: 'B4', groupFull: 'B1', groupPaid: 'B3', groupDebt: 'B2', groupOverFive: 'C2' },
+2451:       { name: 'สาขา2', suffix: '/2', privatePaid: 'F3', privateDebt: 'F4', privateCount: 'B2', groupCell: 'B4', groupFull: 'B1', groupPaid: 'B3', groupDebt: 'B2', groupOverFive: 'C2' },
+2452:       { name: 'สาขา3', suffix: '/3', privatePaid: 'G3', privateDebt: 'G4', privateCount: 'C2', groupCell: 'B4', groupFull: 'B1', groupPaid: 'B3', groupDebt: 'B2', groupOverFive: 'C2' }
+2497:         stats[key] = {
+2508:           notes: []
+2525:     const courses = [];
+2530:       const match = name.match(/^(.+)\/([1-3])$/);
+2534:           const vals = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+2546:     const privateSheets = [
+2561:             const studentName = names[idx][0] ? names[idx][0].toString().trim() : '';
+2562:             const cName = val[0] ? val[0].toString().trim() : '';
+2571:     return filterLatestCourseRounds([...new Set(courses)]).sort();
+2585:       const parsedBase = match[1].trim();
+2586:       const parsedRound = parseInt(match[2], 10);
+2592:     if (!parsedMap[base] || parsedMap[base].round < round) {
+2593:       parsedMap[base] = { fullName: cleanName, round: round };
+2596:   const filtered = [];
+2598:     filtered.push(parsedMap[base].fullName);
+2623:   const students = [];
+2626:     if (idx === 0 && row[0] && row[0].toString().toLowerCase().includes('id')) return;
+2627:     const studentName = row[1] ? row[1].toString().trim() : '';
+2628:     if (!row[0] && !studentName) return;
+2630:     const id = row[0] ? row[0].toString().trim() : 'TEMP_' + (idx + 1);
+2631:     const paid = parseFloat(row[9]) || 0;
+2632:     const full = parseFloat(row[10]) || 0;
+2638:       nickname: row[2] ? row[2].toString().trim() : '',
+2639:       school: row[3] ? row[3].toString().trim() : '',
+2640:       contact: row[4] ? row[4].toString().trim() : '',
+2641:       branchLearn: row[5] ? row[5].toString().trim() : '',
+2642:       branchPay: row[6] ? row[6].toString().trim() : '',
+2643:       paymentTimeNote: row[7] ? row[7].toString().trim() : '',
+2644:       extraNote: row[8] ? row[8].toString().trim() : '',
+2648:       paymentDate: cleanSheetDate(row[12]),
+2649:       paymentChannel: row[13] ? row[13].toString().trim() : '',
+2650:       staff: row[14] ? row[14].toString().trim() : '',
+2651:       round: row[15] ? row[15].toString().trim() : '',
+2653:       grade: row[16] ? row[16].toString().trim() : '',
+2654:       classSection: row[17] ? row[17].toString().trim() : '',
+2655:       lineName: row[18] ? row[18].toString().trim() : '',
+2656:       lineId: row[19] ? row[19].toString().trim() : '',
+2657:       carriedForwardFee: parseFloat(row[20]) || 0,
+2658:       classHours: row[21] ? row[21].toString().trim() : '',
+2659:       classHoursLeft: row[22] ? row[22].toString().trim() : '',
+2660:       classType: row[23] ? row[23].toString().trim() : 'เดี่ยว',
+2661:       isChecked: row[24] ? parseInt(row[24]) === 1 : false
+2673:   const sheets = ['ย่อย 2-3', 'ย่อย 4-5', 'ย่อย 6-10'];
+2674:   const all = [];
+2679:       const id = row[0] ? row[0].toString().trim() : '';
+2680:       const nameVal = row[1] ? row[1].toString().trim() : '';
+2701:         if (users[i][0] && users[i][0].toString().trim().toLowerCase() === logUser.toLowerCase()) {
+2702:           teacherName = users[i][3] ? users[i][3].toString().trim() : users[i][4] ? users[i][4].toString().trim() : logUser;
+2723:           teacherCoursesMap[courseKey] = {
+2726:             students: []
+2734:     if (courses.length === 0) return [];
+2742:       const grades = ['อนุบาล', 'ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
+2751:       if (courseName.includes('สาขา_1') || courseName.includes('สาขา1') || courseName.includes('PMY')) {
+2752:         detectedBranch = 'สาขา 1 แยกPMY';
+2753:       } else if (courseName.includes('สาขา_2') || courseName.includes('สาขา2') || courseName.includes('ระยองวิทยา')) {
+2754:         detectedBranch = 'สาขา 2 ระยองวิทยา';
+2755:       } else if (courseName.includes('สาขา_3') || courseName.includes('สาขา3') || courseName.includes('อัสสัมชัญ')) {
+2756:         detectedBranch = 'สาขา 3 อัสสัมชัญ';
+2759:       const enrolledStudents = [];
+2780:         const branches = ['1', '2', '3'];
+2788:               const headerRow1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+2789:               const headerRow3 = sheet.getRange(3, 16, 1, lastCol - 15).getValues()[0];
+2794:                 const h1 = headerRow1[cIdx] ? headerRow1[cIdx].toString().trim() : '';
+2795:                 const h3 = headerRow3[cIdx] ? headerRow3[cIdx].toString().trim() : '';
+2809:                   const sName = row[1] ? row[1].toString().trim() : '';
+2810:                   const sNickname = row[2] ? row[2].toString().trim() : '';
+2811:                   const sId = row[0] ? row[0].toString().trim() : '';
+2812:                   const hasLesson = row[targetColIdx] !== '' && row[targetColIdx] !== null && row[targetColIdx] !== undefined;
+2823:                       branch: meta.branchLearn || (bSuffix === '1' ? 'สาขา 1 แยกPMY' : bSuffix === '2' ? 'สาขา 2 ระยองวิทยา' : 'สาขา 3 อัสสัมชัญ')
+2833:         const sheetsToCheck = [
+2848:                 const sId = row[0] ? row[0].toString().trim() : '';
+2849:                 const sName = row[1] ? row[1].toString().trim() : '';
+2850:                 const sNickname = row[2] ? row[2].toString().trim() : '';
+2851:                 const dbCourse = row[10] ? row[10].toString().trim() : '';
+2852:                 const dbNote = row[11] ? row[11].toString().trim() : ''; // day/time note
+2875:       teacherCoursesMap[courseName].students = enrolledStudents;
+2879:     return Object.keys(teacherCoursesMap).map(k => teacherCoursesMap[k]);
+2912:             const row = rawData[i];
+2913:             if (row[1] && row[1].toString().trim() === studentName) {
+2914:               const courseName = row[10] ? row[10].toString().trim() : '';
+2915:               const price = parseFloat(row[13]) || 0;
+2916:               const note = row[11] ? row[11].toString().trim() : '';
+2917:               return [{
+2927:       return [];
+2932:     if (branchLearn && (branchLearn.includes('สาขา2') || branchLearn.includes('2'))) suffix = '2';
+2933:     else if (branchLearn && (branchLearn.includes('สาขา3') || branchLearn.includes('3'))) suffix = '3';
+2937:     if (!sheet) return [];
+2941:     if (lastRow < 6 || lastCol < 16) return [];
+2943:     const headerRow1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+2944:     const headerRow2 = sheet.getRange(2, 16, 1, lastCol - 15).getValues()[0];
+2945:     const headerRow3 = sheet.getRange(3, 16, 1, lastCol - 15).getValues()[0];
+2949:       const row = studentData[idx];
+2950:       const name = row[1] ? row[1].toString().trim() : '';
+2952:         const detailedCourses = [];
+2954:           const val = row[15 + i];
+2957:               courseName: headerRow1[i].toString().trim(),
+2958:               price: parseFloat(headerRow2[i]) || 0,
+2959:               dayTime: headerRow3[i] ? headerRow3[i].toString().trim() : '',
+2967:     return [];
+2969:     return [];
+2979:     if (branch.includes('สาขา2')) suffix = '2';
+2980:     else if (branch.includes('สาขา3')) suffix = '3';
+2984:     if (!sheet) return [];
+2987:     if (lastCol < 16) return [];
+2989:     const headerRow1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+2990:     const headerRow2 = sheet.getRange(2, 16, 1, lastCol - 15).getValues()[0];
+2991:     const headerRow3 = sheet.getRange(3, 16, 1, lastCol - 15).getValues()[0];
+2992:     const headerRow4 = sheet.getRange(4, 16, 1, lastCol - 15).getValues()[0];
+2994:     const courses = [];
+2996:       if (headerRow1[i]) {
+2998:           courseName: headerRow1[i].toString().trim(),
+2999:           price: parseFloat(headerRow2[i]) || 0,
+3000:           dayTime: headerRow3[i] ? headerRow3[i].toString().trim() : '',
+3001:           totalSessions: parseInt(headerRow4[i]) || 10
+3007:     return [];
+3031:     if (student.branchLearn.includes('สาขา2')) suffix = '2';
+3032:     else if (student.branchLearn.includes('สาขา3')) suffix = '3';
+3040:   let range = [];
+3051:     if (range[i][0].toString().trim() === student.name && (sheetName.includes('เดี่ยว') ? range[i][9].toString().trim() === courseName : true)) {
+3058:   const rowData = [
+3086:       sheet.getRange(targetRowIndex, 1, 1, 21).setValues([rowData]);
+3092:       sheet.getRange(targetRow, 1, 1, 10).setValues([[
+3101:       sheet.getRange(targetRow, 1, 1, 10).setValues([[
+3112:       const selectedList = student.selectedCourses || [];
+3116:           const header1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+3117:           const header2 = sheet.getRange(2, 16, 1, lastCol - 15).getValues()[0];
+3118:           const header4 = sheet.getRange(4, 16, 1, lastCol - 15).getValues()[0];
+3120:           const coursesInSheet = [];
+3122:             if (header1[j]) {
+3125:                 courseName: header1[j].toString().trim(),
+3126:                 price: parseFloat(header2[j]) || 0,
+3127:                 sessions: parseInt(header4[j]) || 10
+3136:               selectedMap[item.courseName.toString().trim()] = parseInt(item.sessions) || 0;
+3138:               selectedMap[item.toString().trim()] = null;
+3143:           const fullCourses = [];
+3144:           const partialCourses = [];
+3147:             const userSessions = selectedMap[c.courseName];
+3160:             courseValuesToWrite[c.colIndex] = ''; // clear cell by default
+3167:               courseValuesToWrite[c.colIndex] = c.sessions; // full sessions
+3169:               courseValuesToWrite[c.colIndex] = 30; // 30% discount
+3171:               courseValuesToWrite[c.colIndex] = 50; // 50% discount
+3177:             courseValuesToWrite[c.colIndex] = c.userSessions;
+3181:             sheet.getRange(targetRow, parseInt(colIndex)).setValue(courseValuesToWrite[colIndex]);
+3201:       cachedStatusValues_ = [];
+3208:     const dbName = cachedStatusValues_[i][1] ? cachedStatusValues_[i][1].toString().trim() : "";
+3209:     const dbRound = cachedStatusValues_[i][15] ? cachedStatusValues_[i][15].toString().trim() : "";
+3212:       id = cachedStatusValues_[i][0] ? cachedStatusValues_[i][0].toString().trim() : "";
+3222:   const rowValues = [
+3254:     sheet.getRange(rowIndex, 1, 1, 25).setValues([rowValues]);
+3255:     cachedStatusValues_[rowIndex - 1] = rowValues;
+3267:     if (['ม.4', 'ม.5', 'ม.6'].includes(grade) || isEx) {
+3318:         const rowData = [
+3368:       const rowData = [
+3421:       const tempIdx = parseInt(parts[1], 10);
+3433:         if (keys[i][0].toString().trim() === student.id) {
+3444:         const nameVal = allRows[i][1] ? allRows[i][1].toString().trim() : '';
+3445:         const roundVal = allRows[i][15] ? allRows[i][15].toString().trim() : '';
+3468:     const rowValues = [
+3469:       [
+3522:       const tempIdx = parseInt(parts[1], 10);
+3531:         if (keys[i][0].toString().trim() === id) {
+3542:     const rowVals = sheet.getRange(rowIndex, 1, 1, 24).getValues()[0];
+3543:     const stdName = rowVals[1] ? rowVals[1].toString().trim() : '';
+3544:     const classType = rowVals[23] ? rowVals[23].toString().trim() : 'เดี่ยว';
+3545:     const grade = rowVals[16] ? rowVals[16].toString().trim() : 'อนุบาล';
+3546:     const branchLearn = rowVals[5] ? rowVals[5].toString().trim() : '';
+3547:     const round = rowVals[15] ? rowVals[15].toString().trim() : '';
+3561:         if (branchLearn.includes('สาขา2')) suffix = '2';
+3562:         else if (branchLearn.includes('สาขา3')) suffix = '3';
+3574:             const matchesName = gRange[k][0].toString().trim() === stdName;
+3575:             const matchesRound = targetSheetName.includes('เดี่ยว') ? gRange[k][9].toString().trim() === round : true;
+3603:     const suffixes = ['1', '2', '3'];
+3604:     const allCourses = [];
+3605:     const allStudents = [];
+3616:       const branchName = `สาขา${suffix}`;
+3618:       const sheetCourses = [];
+3620:         const headerRow1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+3621:         const headerRow2 = sheet.getRange(2, 16, 1, lastCol - 15).getValues()[0];
+3622:         const headerRow3 = sheet.getRange(3, 16, 1, lastCol - 15).getValues()[0];
+3623:         const headerRow4 = sheet.getRange(4, 16, 1, lastCol - 15).getValues()[0];
+3626:           if (headerRow1[i]) {
+3629:               courseName: headerRow1[i].toString().trim(),
+3630:               price: parseFloat(headerRow2[i]) || 0,
+3631:               dayTime: headerRow3[i] ? headerRow3[i].toString().trim() : '',
+3632:               totalSessions: parseInt(headerRow4[i]) || 10,
+3645:           const name = row[1] ? row[1].toString().trim() : '';
+3650:             const val = row[c.colIndex - 1];
+3651:             courseValues[c.colIndex] = val !== '' ? parseFloat(val) : '';
+3656:             grade: row[0] ? row[0].toString().trim() : '',
+3658:             nickname: row[2] ? row[2].toString().trim() : '',
+3659:             school: row[3] ? row[3].toString().trim() : '',
+3660:             classSection: row[4] ? row[4].toString().trim() : '',
+3661:             contact: row[5] ? row[5].toString().trim() : '',
+3662:             lineName: row[6] ? row[6].toString().trim() : '',
+3663:             lineId: row[7] ? row[7].toString().trim() : '',
+3664:             branchLearn: row[8] ? row[8].toString().trim() : '',
+3665:             branchPay: row[9] ? row[9].toString().trim() : '',
+3667:             full: parseFloat(row[10]) || 0, 
+3668:             discount: parseFloat(row[11]) || 0, 
+3669:             outstanding: parseFloat(row[12]) || 0, 
+3670:             paid: parseFloat(row[13]) || 0, 
+3671:             isCard: parseInt(row[14]) === 1 ? 1 : 0, 
+3701:       if (!coursesBySheet[sName]) coursesBySheet[sName] = [];
+3702:       coursesBySheet[sName].push(c);
+3709:       if (!studentsBySheet[sName]) studentsBySheet[sName] = [];
+3710:       studentsBySheet[sName].push(s);
+3713:     const allSheetNames = new Set([...Object.keys(coursesBySheet), ...Object.keys(studentsBySheet)]);
+3719:       const sheetCoursesUpdate = coursesBySheet[sheetName] || [];
+3720:       const sheetStudentsUpdate = studentsBySheet[sheetName] || [];
+3737:           const val = s.courseValues[c.colIndex];
+3757:         rowVals[0] = s.grade || grade;
+3758:         rowVals[1] = s.name;
+3759:         rowVals[2] = s.nickname;
+3760:         rowVals[3] = s.school;
+3761:         rowVals[4] = s.classSection;
+3762:         rowVals[5] = s.contact;
+3763:         rowVals[6] = s.lineName;
+3764:         rowVals[7] = s.lineId;
+3765:         rowVals[8] = s.branchLearn;
+3766:         rowVals[9] = s.branchPay;
+3767:         rowVals[10] = full;
+3768:         rowVals[11] = s.discount;
+3769:         rowVals[12] = outstanding;
+3770:         rowVals[13] = s.paid;
+3771:         rowVals[14] = s.isCard ? 1 : 0;
+3776:             rowVals[colIdx0] = s.courseValues[colIndex];
+3780:         sheet.getRange(row, 1, 1, lastCol).setValues([rowVals]);
+3803:     logActivity(logUser, 'แก้ไขห้องเรียนแยกสาขา (รวม)', `แก้ไขชีตระดับชั้น ${grade} รวมทุกสาขา จำนวนที่ส่งอัปเดต ${studentsUpdate.length} คน`);
+3815:     if (branch.includes('สาขา2')) suffix = '2';
+3816:     else if (branch.includes('สาขา3')) suffix = '3';
+3842:     if (branch.includes('สาขา2')) suffix = '2';
+3843:     else if (branch.includes('สาขา3')) suffix = '3';
+3893:     let sheetsToProcess = [];
+3895:       sheetsToProcess = [
+3901:       sheetsToProcess = [sheetName];
+3904:     const students = [];
+3920:     const base = match[1].trim();
+3938:   if (!sheet) return [];
+3941:   const learnData = learnSheet ? learnSheet.getDataRange().getValues() : [];
+3943:   let studentsList = [];
+3953:     if (lastRow < 12) return [];
+3960:       const name = row[1] ? row[1].toString().trim() : '';
+3962:       const nickname = row[2] ? row[2].toString().trim() : '';
+3963:       const courseName = row[10] ? row[10].toString().trim() : '';
+3967:       if (!groups[groupKey]) groups[groupKey] = [];
+3968:       groups[groupKey].push({
+3978:     studentsList = [];
+3981:       const groupRows = groups[groupKey];
+3982:       const firstRow = groupRows[0];
+3989:         const dlRow = learnData[j];
+3990:         const dlSubject = dlRow[0] ? dlRow[0].toString().trim() : '';
+3992:         const isPresent = (parseInt(dlRow[6], 10) || 0) >= 1 || 
+3993:                           (parseInt(dlRow[7], 10) || 0) >= 1 || 
+3994:                           (parseInt(dlRow[10], 10) || 0) >= 1;
+3996:           const hoursStr = dlRow[12] ? dlRow[12].toString().trim() : '';
+4006:         const gr = groupRows[rIdx];
+4015:         const paid = parseFloat(row[14]) || 0;
+4016:         const carriedForward = parseFloat(row[12]) || 0;
+4036:         const currentHours = row[19] ? row[19].toString().trim() : '';
+4037:         const currentHoursLeft = row[20] ? row[20].toString().trim() : '';
+4038:         const currentOutstanding = parseFloat(row[15]) || 0;
+4039:         const currentFull = parseFloat(row[13]) || 0;
+4047:           row[19] = hoursAccumulatedStr;
+4048:           row[20] = hoursLeftStr;
+4049:           row[13] = realTimeFull;
+4050:           row[15] = realTimeOutstanding;
+4053:         let note = row[11] ? row[11].toString().trim() : '';
+4057:             const rName = r[1] ? r[1].toString().trim() : '';
+4058:             const rNick = r[2] ? r[2].toString().trim() : '';
+4059:             const rCourse = r[10] ? r[10].toString().trim() : '';
+4067:             const previousFull = parseFloat(row[13]) || 0;
+4068:             const previousPaid = parseFloat(row[14]) || 0;
+4069:             const previousCarried = parseFloat(row[12]) || 0;
+4075:             const nextRow = [
+4076:               row[0] ? row[0].toString().trim() : '',
+4079:               row[3] ? row[3].toString().trim() : '',
+4080:               row[4] ? row[4].toString().trim() : '',
+4081:               row[5] ? row[5].toString().trim() : '',
+4082:               row[6] ? row[6].toString().trim() : '',
+4083:               row[7] ? row[7].toString().trim() : '',
+4084:               row[8] ? row[8].toString().trim() : '',
+4085:               row[9] ? row[9].toString().trim() : '',
+4101:             row[11] = note;
+4107:               school: row[3] ? row[3].toString().trim() : '',
+4108:               contact: row[5] ? row[5].toString().trim() : '',
+4109:               branchLearn: row[8] ? row[8].toString().trim() : '',
+4110:               branchPay: row[9] ? row[9].toString().trim() : '',
+4116:               classSection: row[4] ? row[4].toString().trim() : '',
+4117:               lineName: row[6] ? row[6].toString().trim() : '',
+4118:               lineId: row[7] ? row[7].toString().trim() : '',
+4121:               classType: row[0] ? row[0].toString().trim() : '',
+4127:             row[11] = note;
+4135:           classType: row[0] ? row[0].toString().trim() : '',
+4138:           school: row[3] ? row[3].toString().trim() : '',
+4139:           classSection: row[4] ? row[4].toString().trim() : '',
+4140:           contact: row[5] ? row[5].toString().trim() : '',
+4141:           lineName: row[6] ? row[6].toString().trim() : '',
+4142:           lineId: row[7] ? row[7].toString().trim() : '',
+4143:           branchLearn: row[8] ? row[8].toString().trim() : '',
+4144:           branchPay: row[9] ? row[9].toString().trim() : '',
+4148:           full: parseFloat(row[13]) || 0,
+4150:           outstanding: (parseFloat(row[13]) || 0) - paid - carriedForward,
+4151:           paymentDate: row[16] ? row[16].toString().trim() : '',
+4152:           paymentChannel: row[17] ? row[17].toString().trim() : '',
+4153:           staff: row[18] ? row[18].toString().trim() : '',
+4167:     const gradesHigh = ['ม.4', 'ม.5', 'ม.6'];
+4198:       if (range[i][0].toString().trim() === name && courses[i][0].toString().trim() === courseName) {
+4217:       minutes = (parseInt(parts[0]) * 60) + parseInt(parts[1]);
+4232:     const stdDetails = sheet.getRange(rowIndex, 1, 1, 10).getValues()[0];
+4235:       nickname: stdDetails[2],
+4236:       school: stdDetails[3],
+4237:       contact: stdDetails[5],
+4238:       branchLearn: stdDetails[8],
+4239:       branchPay: stdDetails[9],
+4245:       classSection: stdDetails[4],
+4246:       lineName: stdDetails[6],
+4247:       lineId: stdDetails[7],
+4275:     const teachers = [];
+4279:       if (!row[0]) return;
+4281:       const teacherNick = row[0].toString().trim();
+4295:         fullName: row[1] ? row[1].toString().trim() : '',
+4296:         school: row[2] ? row[2].toString().trim() : '',
+4297:         phone: row[3] ? row[3].toString().trim() : '',
+4298:         subjects: row[4] ? row[4].toString().trim() : '',
+4299:         bank: row[5] ? row[5].toString().trim() : '',
+4300:         accountNumber: row[6] ? row[6].toString().trim() : '',
+4301:         compensation: row[7] ? row[7].toString().trim() : '150',
+4302:         teacherId: row[8] ? row[8].toString().trim() : ''
+4322:         if (nicknames[i][0].toString().trim() === teacher.nickname) {
+4329:     const rowValues = [
+4345:         genSheet.appendRow([teacher.nickname]);
+4348:       sheet.getRange(rowIndex, 1, 1, 9).setValues([rowValues]);
+4408:     const matchedClasses = [];
+4420:       let parsedYear = parseInt(dateParts[2]);
+4423:       const cDate = new Date(parsedYear, parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+4466:         hoursVal = parseFloat(parts[0]) + (parseFloat(parts[1]) / 60);
+4724:       const matchedClasses = [];
+4732:         let parsedYear = parseInt(dateParts[2]);
+4735:         const cDate = new Date(parsedYear, parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+4863:       monthlyResults[m] = {
+4892:     const rowVals = range.getValues()[0];
+4894:     let note = rowVals[5] ? rowVals[5].toString().trim() : '';
+4895:     let isLeave = parseInt(rowVals[8]) || 0;
+4925:     const logDate = cleanSheetDate(rowVals[13]);
+4927:     invalidateTeacherSalaryCache([rowVals[1], rowVals[2]]);
+4946:     const rowVals = sheet.getRange(rowIndex, 1, 1, 15).getValues()[0];
+4947:     const logDate = cleanSheetDate(rowVals[13]);
+4949:     invalidateTeacherSalaryCache([rowVals[1], rowVals[2]]);
+4967:     const d = parseInt(parts[0], 10);
+4968:     const m = parseInt(parts[1], 10);
+4969:     let y = parseInt(parts[2], 10);
+4975:     let y = parseInt(partsDash[0], 10);
+4976:     let m = parseInt(partsDash[1], 10);
+4977:     const d = parseInt(partsDash[2], 10);
+5014:     const logs = [];
+5018:       if (!row[0] || row[0] === '0') return;
+5020:       const dateRaw = cleanSheetDate(row[13]);
+5024:         subject: row[0] ? row[0].toString().trim() : '',
+5025:         teacherRegular: resolveNick(row[1]),
+5026:         teacherSub: resolveNick(row[2]),
+5027:         timeStart: row[3] ? row[3].toString().trim() : '',
+5028:         timeEnd: row[4] ? row[4].toString().trim() : '',
+5029:         note: row[5] ? row[5].toString().trim() : '',
+5030:         isPresentLive: parseInt(row[6]) || 0,
+5031:         isPresentOnline: parseInt(row[7]) || 0,
+5032:         isLeave: parseInt(row[8]) || 0,
+5033:         isAbsent: parseInt(row[9]) || 0,
+5034:         isMakeup: parseInt(row[10]) || 0,
+5035:         isOrange: parseInt(row[11]) || 0,
+5036:         hours: row[12] ? row[12].toString().trim() : '',
+5038:                 roomBranch: row[14] ? row[14].toString().trim() : '',
+5039:         teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
+5040:         numKids: row[16] ? (parseInt(row[16]) || 0) : 0,
+5068:     const logs = [];
+5078:       if (!row[0] || row[0] === '0') return;
+5080:       const teacherRegular = row[1] ? row[1].toString().trim().toLowerCase() : '';
+5081:       const teacherSub = row[2] ? row[2].toString().trim().toLowerCase() : '';
+5093:       const dateRaw = cleanSheetDate(row[13]);
+5096:         subject: row[0] ? row[0].toString().trim() : '',
+5097:         teacherRegular: resolveNick(row[1]),
+5098:         teacherSub: resolveNick(row[2]),
+5099:         timeStart: row[3] ? row[3].toString().trim() : '',
+5100:         timeEnd: row[4] ? row[4].toString().trim() : '',
+5101:         note: row[5] ? row[5].toString().trim() : '',
+5102:         isPresentLive: parseInt(row[6]) || 0,
+5103:         isPresentOnline: parseInt(row[7]) || 0,
+5104:         isLeave: parseInt(row[8]) || 0,
+5105:         isAbsent: parseInt(row[9]) || 0,
+5106:         isMakeup: parseInt(row[10]) || 0,
+5107:         isOrange: parseInt(row[11]) || 0,
+5108:         hours: row[12] ? row[12].toString().trim() : '',
+5110:                 roomBranch: row[14] ? row[14].toString().trim() : '',
+5111:         teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
+5112:         numKids: row[16] ? (parseInt(row[16]) || 0) : 0,
+5148:     const rowData = [
+5178:     invalidateTeacherSalaryCache([log.teacherRegular, log.teacherSub]);
+5198:     const rowVals = sheet.getRange(rowIndex, 1, 1, 15).getValues()[0];
+5200:       subject: rowVals[0] ? rowVals[0].toString().trim() : '',
+5201:       teacherRegular: rowVals[1] ? rowVals[1].toString().trim() : '',
+5202:       teacherSub: rowVals[2] ? rowVals[2].toString().trim() : '',
+5203:       timeStart: rowVals[3] ? rowVals[3].toString().trim() : '',
+5204:       timeEnd: rowVals[4] ? rowVals[4].toString().trim() : '',
+5205:       note: rowVals[5] ? rowVals[5].toString().trim() : '',
+5206:       isPresentLive: parseInt(rowVals[6]) || 0,
+5207:       isPresentOnline: parseInt(rowVals[7]) || 0,
+5208:       isLeave: parseInt(rowVals[8]) || 0,
+5209:       isAbsent: parseInt(rowVals[9]) || 0,
+5210:       isMakeup: parseInt(rowVals[10]) || 0,
+5211:       isOrange: parseInt(rowVals[11]) || 0,
+5212:       hours: rowVals[12] ? rowVals[12].toString().trim() : '',
+5213:       date: cleanSheetDate(rowVals[13]),
+5214:       roomBranch: rowVals[14] ? rowVals[14].toString().trim() : ''
+5233:     const rowValues = [
+5234:       [
+5269:     invalidateTeacherSalaryCache([log.teacherRegular, log.teacherSub, oldLog.teacherRegular, oldLog.teacherSub]);
+5289:     const rowVals = range.getValues()[0];
+5291:     let isPresentLive = parseInt(rowVals[6]) || 0;
+5292:     let isPresentOnline = parseInt(rowVals[7]) || 0;
+5293:     let isLeave = parseInt(rowVals[8]) || 0;
+5312:     const subject = rowVals[0] ? rowVals[0].toString().trim() : '';
+5320:     const logDate = cleanSheetDate(rowVals[13]);
+5322:     invalidateTeacherSalaryCache([rowVals[1], rowVals[2]]);
+5346:     const rowVals = sheet.getRange(rowIndex, 1, 1, 15).getValues()[0];
+5347:     const subject = rowVals[0];
+5349:       subject: rowVals[0] ? rowVals[0].toString().trim() : '',
+5350:       teacherRegular: rowVals[1] ? rowVals[1].toString().trim() : '',
+5351:       teacherSub: rowVals[2] ? rowVals[2].toString().trim() : '',
+5352:       timeStart: rowVals[3] ? rowVals[3].toString().trim() : '',
+5353:       timeEnd: rowVals[4] ? rowVals[4].toString().trim() : '',
+5354:       note: rowVals[5] ? rowVals[5].toString().trim() : '',
+5355:       isPresentLive: parseInt(rowVals[6]) || 0,
+5356:       isPresentOnline: parseInt(rowVals[7]) || 0,
+5357:       isLeave: parseInt(rowVals[8]) || 0,
+5358:       isAbsent: parseInt(rowVals[9]) || 0,
+5359:       isMakeup: parseInt(rowVals[10]) || 0,
+5360:       isOrange: parseInt(rowVals[11]) || 0,
+5361:       hours: rowVals[12] ? rowVals[12].toString().trim() : '',
+5362:       date: cleanSheetDate(rowVals[13]),
+5363:       roomBranch: rowVals[14] ? rowVals[14].toString().trim() : ''
+5378:     invalidateTeacherSalaryCache([oldLog.teacherRegular, oldLog.teacherSub]);
+5395:     const logs = [];
+5399:       if (!row[0] || row[0] === '0') return;
+5401:       const otInStr = cleanSheetTime(row[1]);
+5402:       const otOutStr = cleanSheetTime(row[2]);
+5403:       const workInStr = cleanSheetTime(row[3]);
+5404:       const workOutStr = cleanSheetTime(row[4]);
+5407:       var workHoursVal = row[9] ? row[9].toString().trim() : '';
+5408:       var otHoursVal = row[8] ? row[8].toString().trim() : '';
+5419:       if (row[9] instanceof Date) {
+5420:         workHoursVal = cleanSheetTime(row[9]);
+5422:       if (row[8] instanceof Date) {
+5423:         otHoursVal = cleanSheetTime(row[8]);
+5427:         managerName: row[0].toString().trim(),
+5432:         otDetail: row[5] ? row[5].toString().trim() : '',
+5433:         isPresent: parseInt(row[6]) || 0,
+5434:         isAbsent: parseInt(row[7]) || 0,
+5437:         date: cleanSheetDate(row[10]),
+5438:         lat: row[11] ? row[11].toString().trim() : '',
+5439:         lng: row[12] ? row[12].toString().trim() : '',
+5440:         photoInUrl: row[13] ? row[13].toString().trim() : '',
+5441:         photoOutUrl: row[14] ? row[14].toString().trim() : ''
+5455:     var startMins = parseInt(sp[0]) * 60 + parseInt(sp[1]);
+5456:     var endMins = parseInt(ep[0]) * 60 + parseInt(ep[1]);
+5494:         var rowName = (data[r][0] || '').toString().trim();
+5495:         var rowDate = cleanSheetDate(data[r][10]);
+5530:         var rowData = [
+5553:       var rowData = [
+5598:     if (parts[0] && parts[0].indexOf('image/png') !== -1) mimeType = 'image/png';
+5599:     var rawData = parts.length > 1 ? parts[1] : parts[0];
+5619:     const name = sheets[i].getName();
+5621:       targetSheet = sheets[i];
+5627:     targetSheet = sheets[0];
+5634:     headers: []
+5653:   const grades = ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+5654:   const suffixes = ['1', '2', '3'];
+5666:         const headers = [
+5675:           'สาขาเรียน',
+5676:           'สาขาที่เก็บเงิน'
+5680:           row5[idx] = h;
+5682:         row5[10] = 'ยอดรวม'; // Col 11
+5683:         row5[11] = 'ส่วนลด'; // Col 12
+5684:         row5[12] = 'คงเหลือ'; // Col 13
+5685:         row5[13] = 'ยอดจ่าย'; // Col 14
+5686:         row5[14] = 'รูดบัตร'; // Col 15
+5688:         sheet.getRange(5, 1, 1, 15).setValues([row5]);
+5702:       const headers = [
+5711:         'เรียน(สาขา)',
+5712:         'เก็บเงิน(สาขา)',
+5725:       sheet.getRange(11, 1, 1, 21).setValues([headers]);
+5730:   const subgroups = ['ย่อย 2-3', 'ย่อย 4-5', 'ย่อย 6-10'];
+5738:       const headers = [
+5747:         'เรียน(สาขา)',
+5748:         'เก็บเงิน(สาขา)',
+5761:       sheet.getRange(11, 1, 1, 21).setValues([headers]);
+5779:   const hrs = parseInt(matches[1], 10) || 0;
+5780:   const mins = parseInt(matches[2], 10) || 0;
+5804:       const hrs = parseInt(match[1], 10) || 0;
+5805:       const mins = parseInt(match[2], 10) || 0;
+5812:     const hrs = parseInt(parts[0], 10) || 0;
+5813:     const mins = parseInt(parts[1], 10) || 0;
+5835:   const dlNum = dlNumMatch ? dlNumMatch[0] : '';
+5836:   const studNum = studNumMatch ? studNumMatch[0] : '';
+5861:   const grades = ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+5876:   const results = [];
+5878:     const subject = data[i][0] ? data[i][0].toString() : '';
+5880:       results.push(`Row ${i + 1}: ${subject} (Live: ${data[i][6]}, Online: ${data[i][7]}, Makeup: ${data[i][10]}, Hours: ${data[i][12]}, Date: ${data[i][13]})`);
+5885:   const kgData = kgSheet ? kgSheet.getRange(12, 1, kgSheet.getLastRow() - 11, 21).getValues() : [];
+5886:   const kgResults = [];
+5888:     kgResults.push(`Row ${idx + 12}: Name: ${row[1]}, Nickname: ${row[2]}, Course: ${row[10]}, Note: ${row[11]}, CF: ${row[12]}, Full: ${row[13]}, Paid: ${row[14]}, Bal: ${row[15]}, Acc: ${row[19]}, Left: ${row[20]}`);
+5898:     const base = matches[1];
+5899:     const num = parseInt(matches[2], 10) + 1;
+5906:   const grades = ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+5941:     const rowsData = logs.map(log => [
+5968:     logActivity(logUser, 'บันทึกคาบสอนหลายรายการ', 'จำนวน: ' + logs.length + ' วิชา: ' + logs[0].subject);
+5971:     const teachers = [];
+5991:   const d = parts[0].length < 2 ? '0' + parts[0] : parts[0];
+5992:   const m = parts[1].length < 2 ? '0' + parts[1] : parts[1];
+5993:   const y = parts[2];
+6003:     const allStudents = [];
+6007:         const row = data[i];
+6008:         const stdName = row[1] ? row[1].toString().trim() : '';
+6009:         const stdNick = row[2] ? row[2].toString().trim() : '';
+6013:             id: row[0] ? row[0].toString().trim() : '',
+6016:             courseName: row[15] ? row[15].toString().trim() : '',
+6017:             carriedForward: parseFloat(row[20]) || 0,
+6018:             full: parseFloat(row[10]) || 0,
+6019:             paid: parseFloat(row[9]) || 0,
+6020:             outstanding: parseFloat(row[11]) || 0,
+6021:             paymentDate: row[12] ? row[12].toString().trim() : '',
+6022:             paymentChannel: row[13] ? row[13].toString().trim() : '',
+6023:             staff: row[14] ? row[14].toString().trim() : '',
+6024:             hours: row[21] ? row[21].toString().trim() : '',
+6025:             hoursLeft: row[22] ? row[22].toString().trim() : '',
+6026:             classType: row[23] ? row[23].toString().trim() : ''
+6033:     const matchedClasses = [];
+6037:         const row = cData[i];
+6038:         const subject = row[0] ? row[0].toString().trim() : '';
+6044:             teacherRegular: row[1] ? row[1].toString().trim() : '',
+6045:             teacherSub: row[2] ? row[2].toString().trim() : '',
+6046:             timeStart: row[3] ? row[3].toString().trim() : '',
+6047:             timeEnd: row[4] ? row[4].toString().trim() : '',
+6048:             note: row[5] ? row[5].toString().trim() : '',
+6049:             isPresentLive: parseInt(row[6], 10) || 0,
+6050:             isPresentOnline: parseInt(row[7], 10) || 0,
+6051:             isLeave: parseInt(row[8], 10) || 0,
+6052:             isAbsent: parseInt(row[9], 10) || 0,
+6053:             isMakeup: parseInt(row[10], 10) || 0,
+6054:             isOrange: parseInt(row[11], 10) || 0,
+6055:             hours: row[12] ? row[12].toString().trim() : '',
+6056:             date: cleanSheetDate(row[13]),
+6057:             roomBranch: row[14] ? row[14].toString().trim() : '',
+6088:       if (range[i][0].toString().trim() === id) {
+6130:     const rowVals = statusSheet.getRange(rowIndex, 1, 1, 24).getValues()[0];
+6131:     const name = rowVals[1] ? rowVals[1].toString().trim() : '';
+6132:     const nickname = rowVals[2] ? rowVals[2].toString().trim() : '';
+6133:     const school = rowVals[3] ? rowVals[3].toString().trim() : '';
+6134:     const contact = rowVals[4] ? rowVals[4].toString().trim() : '';
+6135:     const branchLearn = rowVals[5] ? rowVals[5].toString().trim() : '';
+6136:     const branchPay = rowVals[6] ? rowVals[6].toString().trim() : '';
+6137:     const round = rowVals[15] ? rowVals[15].toString().trim() : '';
+6138:     const grade = rowVals[16] ? rowVals[16].toString().trim() : '';
+6139:     const classSection = rowVals[17] ? rowVals[17].toString().trim() : '';
+6140:     const lineName = rowVals[18] ? rowVals[18].toString().trim() : '';
+6141:     const lineId = rowVals[19] ? rowVals[19].toString().trim() : '';
+6142:     const hours = rowVals[21] ? rowVals[21].toString().trim() : '';
+6143:     const classType = rowVals[23] ? rowVals[23].toString().trim() : '';
+6156:         minutes = (parseInt(parts[0], 10) * 60) + parseInt(parts[1], 10);
+6217:         if (allData[i][0].toString().trim() === up.id) {
+6229:         const rowVals = allData[rowIndex - 1];
+6232:           name: rowVals[1] ? rowVals[1].toString().trim() : '',
+6233:           nickname: rowVals[2] ? rowVals[2].toString().trim() : '',
+6234:           school: rowVals[3] ? rowVals[3].toString().trim() : '',
+6235:           classSection: rowVals[17] ? rowVals[17].toString().trim() : '',
+6236:           contact: rowVals[4] ? rowVals[4].toString().trim() : '',
+6237:           lineName: rowVals[18] ? rowVals[18].toString().trim() : '',
+6238:           lineId: rowVals[19] ? rowVals[19].toString().trim() : '',
+6239:           branchLearn: rowVals[5] ? rowVals[5].toString().trim() : '',
+6240:           branchPay: rowVals[6] ? rowVals[6].toString().trim() : '',
+6241:           round: rowVals[15] ? rowVals[15].toString().trim() : '',
+6242:           paymentTimeNote: rowVals[7] ? rowVals[7].toString().trim() : '',
+6243:           carriedForwardFee: parseFloat(rowVals[20]) || 0,
+6244:           full: parseFloat(rowVals[10]) || 0,
+6245:           paid: parseFloat(rowVals[9]) || 0,
+6246:           paymentDate: cleanSheetDate(rowVals[12]),
+6248:           staff: rowVals[14] ? rowVals[14].toString().trim() : '',
+6249:           classHours: rowVals[21] ? rowVals[21].toString().trim() : '',
+6250:           classHoursLeft: rowVals[22] ? rowVals[22].toString().trim() : '',
+6251:           classType: rowVals[23] ? rowVals[23].toString().trim() : 'เดี่ยว'
+6266:   if (!username) return [];
+6277:     users[username] = now;
+6279:     const activeUsernames = [];
+6282:       if (now - users[u] < 45000) {
+6283:         cleaned[u] = users[u];
+6297:       return [];
+6323:     if (branchLearn.includes('สาขา2') || branchLearn.includes('2')) suffix = '2';
+6324:     else if (branchLearn.includes('สาขา3') || branchLearn.includes('3')) suffix = '3';
+6327:     if (!mainGroupSheets[sheetName]) {
+6328:       mainGroupSheets[sheetName] = [];
+6330:     mainGroupSheets[sheetName].push(s);
+6344:       const headerRow1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+6348:       const sheetStudents = mainGroupSheets[sheetName];
+6353:           const name = row[1] ? row[1].toString().trim() : '';
+6358:           const courses = [];
+6360:             const val = foundRow[15 + i];
+6362:               courses.push(headerRow1[i].toString().trim());
+6365:           results[s.id] = courses;
+6367:           results[s.id] = [];
+6387:     const match = name.match(/^(.+)\/([1-3])$/);
+6403:     const courses = [];
+6405:       const headerRow1 = sheet.getRange(1, 71, 1, lastCol - 70).getValues()[0];
+6406:       const headerRow2 = sheet.getRange(2, 71, 1, lastCol - 70).getValues()[0];
+6407:       const headerRow3 = sheet.getRange(3, 71, 1, lastCol - 70).getValues()[0];
+6408:       const headerRow4 = sheet.getRange(4, 71, 1, lastCol - 70).getValues()[0];
+6411:         if (headerRow1[i]) {
+6414:             courseName: headerRow1[i].toString().trim(),
+6415:             price: parseFloat(headerRow2[i]) || 0,
+6416:             dayTime: headerRow3[i] ? headerRow3[i].toString().trim() : '',
+6417:             totalSessions: parseInt(headerRow4[i]) || 10
+6424:     const studentRows = [];
+6429:         const full = parseFloat(row[50]) || 0;
+6430:         const discount = parseFloat(row[61]) || 0;
+6431:         const outstanding = parseFloat(row[62]) || 0;
+6432:         const paid = parseFloat(row[63]) || 0;
+6433:         const isCard = parseInt(row[69]) === 1 ? 1 : 0;
+6435:         const courseValues = [];
+6437:           courseValues.push(row[c.colIndex - 1]);
+6457:       const hRow1 = [];
+6458:       const hRow2 = [];
+6459:       const hRow3 = [];
+6460:       const hRow4 = [];
+6467:       sheet.getRange(1, 16, 1, courses.length).setValues([hRow1]);
+6468:       sheet.getRange(2, 16, 1, courses.length).setValues([hRow2]);
+6469:       sheet.getRange(3, 16, 1, courses.length).setValues([hRow3]);
+6470:       sheet.getRange(4, 16, 1, courses.length).setValues([hRow4]);
+6474:     const row5Headers = [
+6476:       'เบอร์ติดต่อ', 'ชื่อโปรไฟล์ไลน์', 'ID LINE', 'สาขาเรียน', 'สาขาที่เก็บเงิน',
+6483:     sheet.getRange(5, 1, 1, row5Headers.length).setValues([row5Headers]);
+6487:       const valuesToWrite = [];
+6489:         const row = [];
+6499:       sheet.getRange(6, 1, valuesToWrite.length, valuesToWrite[0].length).setValues(valuesToWrite);
+6513:   const headerRow = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+6514:   const col8Val = headerRow[7] ? headerRow[7].toString().trim() : '';
+6522:   const migratedRows = [];
+6526:       migratedRows.push([
+6531:       migratedRows.push([
+6532:         row[0],
+6533:         row[1],
+6534:         row[2],
+6535:         row[3],
+6536:         row[4],
+6537:         row[5],
+6538:         row[6],
+6539:         row[8],
+6540:         row[10],
+6541:         row[11],
+6542:         row[12]
+6554:     const privateSheets = [
+6560:     const lowBalanceStudents = [];
+6571:         const name = row[1] ? row[1].toString().trim() : '';
+6572:         const nickname = row[2] ? row[2].toString().trim() : '';
+6573:         const courseName = row[10] ? row[10].toString().trim() : '';
+6574:         const note = row[11] ? row[11].toString().trim() : '';
+6575:         const hoursLeftStr = row[20] ? row[20].toString().trim() : '';
+6582:         const paidVal = parseFloat(row[14]) || 0;
+6662:       const idVal = teachersValues[i][8] ? teachersValues[i][8].toString().trim() : '';
+6677:     let usersValues = [];
+6683:     let usersToAppend = [];
+6684:     let usersToUpdate = {}; // { rowIndex: [rowValues] }
+6687:       const nickname = teachersValues[i][0] ? teachersValues[i][0].toString().trim() : '';
+6690:       let idVal = teachersValues[i][8] ? teachersValues[i][8].toString().trim() : '';
+6694:         teachersValues[i][8] = idVal;
+6701:         const uName = usersValues[j][0] ? usersValues[j][0].toString().trim().toLowerCase() : '';
+6702:         const uNick = usersValues[j][3] ? usersValues[j][3].toString().trim() : '';
+6713:         usersToAppend.push([idVal, '1234', 'Teacher', nickname, '', '', '']);
+6716:         const currentUname = usersValues[userIndex][0];
+6717:         const currentRole = usersValues[userIndex][2];
+6718:         const currentNick = usersValues[userIndex][3];
+6721:           usersValues[userIndex][0] = idVal;
+6722:           usersValues[userIndex][2] = 'Teacher';
+6723:           usersValues[userIndex][3] = nickname;
+6725:           usersToUpdate[userIndex + 2] = [idVal, usersValues[userIndex][1], 'Teacher', nickname, usersValues[userIndex][4], usersValues[userIndex][5], usersValues[userIndex][6]];
+6737:       usersSheet.getRange(parseInt(rowIndex), 1, 1, 7).setValues([usersToUpdate[rowIndex]]);
+6786:       const oldB = values[i][0] ? values[i][0].toString().trim() : '';
+6787:       const oldC = values[i][1] ? values[i][1].toString().trim() : '';
+6793:         values[i][0] = newB;
+6794:         values[i][1] = newC;
+6822:     const variations = [cleanTeacher, withoutKru, 'ครู' + withoutKru];
+6919:     const subgroupSheets = ["ย่อย 2-3", "ย่อย 4-5", "ย่อย 6-10"];
+6927:             if (vals[i][0] && vals[i][0].toString().trim().toLowerCase() === cleanSubject) {
+6936:     const privateSheets = [
+6947:             if (vals[i][0] && vals[i][0].toString().trim().toLowerCase() === cleanSubject) {
+6958:       const match = name.match(/^(.+)\/([1-3])$/);
+6962:           const vals = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+6964:             if (vals[i] && vals[i].toString().trim().toLowerCase() === cleanSubject) {
+7019:           const rowVals = sheet.getRange(rIndex, 1, 1, 15).getValues()[0];
+7020:           if (rowVals[0]) subjectsToRecalculate.add(rowVals[0].toString().trim());
+7021:           if (rowVals[1]) teachersToInvalidate.add(rowVals[1].toString().trim());
+7022:           if (rowVals[2]) teachersToInvalidate.add(rowVals[2].toString().trim());
+7023:           if (rowVals[13]) datesToClear.add(cleanSheetDate(rowVals[13]));
+7029:         const rowValues = [
+7030:           [
+7068:         return [
+7092:       const sortedIndexes = [...deletedRowIndexes].map(x => parseInt(x)).sort((a, b) => b - a);
+7096:           const rowVals = sheet.getRange(rIndex, 1, 1, 15).getValues()[0];
+7097:           if (rowVals[0]) subjectsToRecalculate.add(rowVals[0].toString().trim());
+7098:           if (rowVals[1]) teachersToInvalidate.add(rowVals[1].toString().trim());
+7099:           if (rowVals[2]) teachersToInvalidate.add(rowVals[2].toString().trim());
+7100:           if (rowVals[13]) datesToClear.add(cleanSheetDate(rowVals[13]));
+7135:   const grades = ['อนุบาล', 'ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
+7136:   const log = [];

@@ -1,0 +1,135 @@
+function renderGradeSheetTable() {
+  const table = document.getElementById('grade_sheet_grid_table');
+  table.innerHTML = '';
+  
+  const courses = state.gradeSheetData.courses || [];
+  const students = state.gradeSheetData.students || [];
+  
+  const filterRound = state.gradeSheetFilterRound || 'ALL';
+  const selectedBranch = document.getElementById('grade_sheet_branch_select').value;
+  
+  const displayedCourses = courses.filter(c => {
+    if (filterRound === 'ALL') {
+      return c.branch === selectedBranch;
+    } else {
+      if (filterRound === 'ไม่ระบุรอบเรียน') {
+        return getCourseRound(c.courseName) === 'None';
+      }
+      return c.courseName.toUpperCase().includes(filterRound.toUpperCase());
+    }
+  });
+
+  const displayedStudents = students.filter(s => {
+    if (filterRound === 'ALL') {
+      return s.branch === selectedBranch;
+    } else {
+      return true; // show all students across all branches when round filter is active
+    }
+  });
+  
+  state.displayedCourses = displayedCourses;
+  state.displayedStudents = displayedStudents;
+  
+  if (displayedCourses.length === 0 && displayedStudents.length === 0) {
+    table.innerHTML = `<tr><td style="padding: 40px; text-align: center; color: var(--text-muted);">ไม่พบประวัติคอร์สและเด็กของห้องนี้ กรุณาเพิ่มคอร์สวิชาใหม่เพื่อเริ่มต้น</td></tr>`;
+    document.getElementById('save_grade_sheet_btn').disabled = true;
+    return;
+  }
+  
+  // Build Header Row 1 (Course Names) & Row 2 (Prices) & Row 3 (Day details)
+  let theadHTML = `
+    <tr style="background: rgba(15,23,42,0.03);">
+      <th rowspan="2" style="min-width:120px; vertical-align:middle; font-size:0.7rem; white-space:nowrap;">ชื่อ-นามสกุลนักเรียน</th>
+      <th rowspan="2" style="min-width:50px; vertical-align:middle; font-size:0.7rem; white-space:nowrap;">ชื่อเล่น</th>
+      <th rowspan="2" style="min-width:50px; vertical-align:middle; font-size:0.7rem; white-space:nowrap;">ส่วนลด</th>
+      <th rowspan="2" style="min-width:50px; vertical-align:middle; font-size:0.7rem; white-space:nowrap;">จ่ายมา</th>
+      <th rowspan="2" style="min-width:40px; vertical-align:middle; font-size:0.7rem; text-align:center; white-space:nowrap;">รูดบัตร</th>
+      <th rowspan="2" style="min-width:55px; vertical-align:middle; font-size:0.7rem; text-align:right; white-space:nowrap;">ยอดรวม</th>
+      <th rowspan="2" style="min-width:55px; vertical-align:middle; font-size:0.7rem; text-align:right; white-space:nowrap;">คงเหลือ</th>
+  `;
+  
+  displayedCourses.forEach(c => {
+    // Calculate registered students for this column from displayedStudents
+    const registeredCount = displayedStudents.filter(s => {
+      if (s.sheetName === c.sheetName) {
+        const val = s.courseValues[c.colIndex];
+        return val !== undefined && val !== null && val !== '' && parseFloat(val) > 0;
+      }
+      return false;
+    }).length;
+
+    theadHTML += `
+      <th style="text-align:center; min-width:80px; font-size:0.65rem;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:4px; margin-bottom:4px;">
+          <input type="text" value="${c.courseName}" class="form-input grid-header-input" style="width:110px; display:inline-block; font-weight:600; font-size:0.75rem; text-align:center; padding:2px;" onchange="handleCourseHeaderNameChange(${c.colIndex}, '${c.sheetName}', this)">
+          <button class="btn btn-sm btn-icon" style="padding: 2px 6px; background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer;" title="ลบวิชานี้" onclick="handleDeleteCourse(${c.colIndex}, '${c.sheetName}', '${c.courseName}')">
+            🗑️
+          </button>
+        </div>
+
+        <div style="font-size:0.75rem; color:var(--color-primary); margin-top:2px; font-weight:600;">
+          นร. ลงทะเบียน: ${registeredCount} คน
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+          วัน/เวลา: <input type="text" value="${c.dayTime || ''}" class="form-input grid-header-input" style="width:100px; display:inline-block; padding:2px;" onchange="handleCourseHeaderDayTimeChange(${c.colIndex}, '${c.sheetName}', this)">
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+          ราคา: ฿<input type="number" value="${c.price}" class="form-input grid-header-input" style="width:70px; display:inline-block; padding:2px;" onchange="handleCourseHeaderPriceChange(${c.colIndex}, '${c.sheetName}', this)">
+        </div>
+        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
+          ครั้ง: <input type="number" value="${c.totalSessions}" class="form-input grid-header-input" style="width:40px; display:inline-block; padding:2px;" onchange="handleCourseHeaderSessionsChange(${c.colIndex}, '${c.sheetName}', this)">
+        </div>
+      </th>
+    `;
+  });
+  
+  theadHTML += `</tr>`;
+  
+  table.innerHTML = `<thead>${theadHTML}</thead><tbody id="grade_grid_tbody"></tbody>`;
+  
+  // Render student rows
+  const tbody = document.getElementById('grade_grid_tbody');
+  
+  displayedStudents.forEach((s, stdIdx) => {
+    const tr = document.createElement('tr');
+    
+    const isCardChecked = s.isCard ? 'checked' : '';
+    
+    let rowHTML = `
+      <td style="white-space:nowrap;">
+        <div style="font-weight:600; color:var(--text-main); font-size:0.76rem;">${s.name}</div>
+        <div style="margin-top:1px;">
+          <a href="#" onclick="editStudentFromGradeSheet('${s.name}'); return false;" style="font-size:0.65rem; color:var(--color-primary); text-decoration:underline; font-weight:600; white-space:nowrap;">✏️ แก้ไขการลงทะเบียนเรียน</a>
+        </div>
+      </td>
+      <td><div style="font-size:0.72rem; color:var(--text-main); font-weight:500; text-align:center; white-space:nowrap;">${s.nickname || '-'}</div></td>
+      <td><div style="font-size:0.72rem; color:var(--text-muted); text-align:center; white-space:nowrap;">฿${s.discount.toLocaleString()}</div></td>
+      <td><div style="font-size:0.72rem; color:var(--text-main); font-weight:600; text-align:center; white-space:nowrap;">฿${s.paid.toLocaleString()}</div></td>
+      <td style="text-align:center; font-size:0.72rem; color:var(--text-muted); white-space:nowrap;">${s.isCard ? 'รูดบัตร (3%)' : '-'}</td>
+      <td style="text-align:right; font-weight:700; font-size:0.76rem; white-space:nowrap;" id="grid_student_full_${stdIdx}">฿${s.full.toLocaleString()}</td>
+      <td style="text-align:right; font-weight:700; font-size:0.76rem; white-space:nowrap; color:${s.outstanding > 0 ? '#ef4444' : '#466352'};" id="grid_student_outstanding_${stdIdx}">฿${s.outstanding.toLocaleString()}</td>
+    `;
+    
+    displayedCourses.forEach(c => {
+      if (s.sheetName === c.sheetName) {
+        const val = s.courseValues[c.colIndex];
+        rowHTML += `
+          <td style="text-align: center;">
+            <input type="number" value="${val !== undefined && val !== null ? val : ''}" class="form-input grid-cell-input" style="width:70px; text-align:center;" placeholder="ครั้ง/ลด%" onchange="handleGridCellValueChange(${stdIdx}, ${c.colIndex}, this.value)">
+          </td>
+        `;
+      } else {
+        rowHTML += `
+          <td style="text-align: center; color: var(--text-muted); background: rgba(0,0,0,0.02); font-weight: bold;">
+            -
+          </td>
+        `;
+      }
+    });
+    
+    tr.innerHTML = rowHTML;
+    tbody.appendChild(tr);
+  });
+  
+  document.getElementById('save_grade_sheet_btn').disabled = false;
+}

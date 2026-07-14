@@ -1,0 +1,71 @@
+--- v655
+
++++ curr
+
+@@ -4,6 +4,7 @@
+
+   // Load initial configurations
+   google.script.run
+     .withSuccessHandler(settings => {
++      setLoading(false);
+       let initialPanel = 'dashboard';
+       if (settings && !settings.error) {
+         state.settings = settings;
+@@ -23,6 +24,7 @@
+
+       switchPanel(initialPanel);
+     })
+     .withFailureHandler(err => {
++      setLoading(false);
+       showToast('เชื่อมต่อฐานข้อมูลล้มเหลว: ' + err.message, 'error');
+       switchPanel('dashboard');
+     })
+@@ -82,6 +84,13 @@
+
+     document.getElementById('teacher_schedule_date').value = todayStr;
+   }
+   
++  if (document.getElementById('teacher_filter_start_date')) {
++    document.getElementById('teacher_filter_start_date').value = firstDayStr;
++  }
++  if (document.getElementById('teacher_filter_end_date')) {
++    document.getElementById('teacher_filter_end_date').value = lastDayStr;
++  }
++  
+   // Set display strings for dates
+   setTimeout(() => {
+     if (document.getElementById('daily_grid_date_display')) {
+@@ -109,6 +118,24 @@
+
+     document.getElementById('calc_end_date').value = `${currentYear}-${currentMonth < 10 ? '0' + currentMonth : currentMonth}-28`;
+   }
+ 
++  // Populate weekend planner filters
++  if (document.getElementById('weekend_year_filter')) {
++    const yrFilter = document.getElementById('weekend_year_filter');
++    yrFilter.innerHTML = '';
++    const yrNow = new Date().getFullYear();
++    for (let y = yrNow - 1; y <= yrNow + 2; y++) {
++      const opt = document.createElement('option');
++      opt.value = y;
++      opt.text = y + 543;
++      if (y === yrNow) opt.selected = true;
++      yrFilter.appendChild(opt);
++    }
++  }
++  if (document.getElementById('weekend_month_filter')) {
++    document.getElementById('weekend_month_filter').value = new Date().getMonth() + 1;
++  }
++
++
+   // Start background auto-refresh interval for daily grid, class logs, and teacher schedule
+   setInterval(() => {
+     const activeEl = document.querySelector('.nav-item.active');
+@@ -121,5 +148,5 @@
+
+     } else if (panelName === 'teacher_schedule') {
+       loadTeacherSchedule(true); // Silent reload
+     }
+-  }, 10000); // refresh every 10 seconds
++  }, 5000); // refresh every 5 seconds (real-time)
+ }

@@ -1,0 +1,7 @@
+2003:   const fin1 = data.branchFin['สาขา1'] || { full: 0, paid: 0, debt: 0 };
+2004:   const fin2 = data.branchFin['สาขา2'] || { full: 0, paid: 0, debt: 0 };
+2005:   const fin3 = data.branchFin['สาขา3'] || { full: 0, paid: 0, debt: 0 };
+2042:       const s1 = monthData['สาขา1'] || 0;
+2043:       const s2 = monthData['สาขา2'] || 0;
+2044:       const s3 = monthData['สาขา3'] || 0;
+4269:   const branches = ['สาขา1', 'สาขา2', 'สาขา3'];
