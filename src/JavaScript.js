@@ -3733,6 +3733,698 @@ function renderPrivateStudentsTable(sheetName) {
 function editPrivateStudent(idx) {
   const std = state.privateStudents[idx];
   if (!std) return;
+  editStudentFromGradeSheet(std.name, std.nickname);
+}
+
+function showPrivatePaymentModal(idx) {
+  const std = state.privateStudents[idx];
+  if (!std) return;
+  
+  state.selectedPrivateStudent = std;
+  
+  document.getElementById('p_student_name').value = std.name;
+  document.getElementById('p_course_name').value = std.courseName;
+  document.getElementById('p_student_display_name').innerText = 'นักเรียน: ' + std.name + ' (' + std.nickname + ')';
+  document.getElementById('p_course_display_name').innerText = 'คอร์ส: ' + std.courseName;
+  
+  document.getElementById('p_carried_forward').value = std.carriedForward;
+  document.getElementById('p_hours').value = std.hours || '08:00';
+  document.getElementById('p_paid').value = std.paid;
+  document.getElementById('p_payment_date').value = convertDateTimeFromSheet(std.paymentDate);
+  
+  const regChannelSelect = document.getElementById('pay_r1_channel');
+  const pChannel = document.getElementById('p_payment_channel');
+  if (regChannelSelect && pChannel) {
+    pChannel.innerHTML = regChannelSelect.innerHTML;
+  }
+  
+  document.getElementById('p_payment_channel').value = std.paymentChannel;
+  document.getElementById('p_staff').value = std.staff || '';
+  
+  document.getElementById('private_payment_modal').classList.add('active');
+}
+
+function closePrivatePaymentModal() {
+  document.getElementById('private_payment_modal').classList.remove('active');
+}
+
+function savePrivateStudentPayment(e) {
+  e.preventDefault();
+  const selectVal = document.getElementById('private_sheet_select').value;
+  const sheetName = (selectVal === 'all' && state.selectedPrivateStudent) ? state.selectedPrivateStudent.sheetName : selectVal;
+  const name = document.getElementById('p_student_name').value;
+  const courseName = document.getElementById('p_course_name').value;
+  
+  const paymentData = {
+    carriedForward: parseFloat(document.getElementById('p_carried_forward').value) || 0,
+    hours: document.getElementById('p_hours').value,
+    paid: parseFloat(document.getElementById('p_paid').value) || 0,
+    paymentDate: document.getElementById('p_payment_date').value,
+    paymentChannel: document.getElementById('p_payment_channel').value,
+    staff: document.getElementById('p_staff').value
+  };
+  
+  setLoading(true, 'กำลังบันทึกการชำระเงิน...');
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res.success) {
+        showToast('บันทึกการชำระเงินสำเร็จ', 'success');
+        closePrivatePaymentModal();
+        state.pendingPrivateStudentPayment = { name: name, courseName: courseName };
+        loadPrivateStudents(true);
+      } else {
+        showToast('เกิดข้อผิดพลาด: ' + res.error, 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: ' + err.message, 'error');
+    })
+    .savePrivateStudentPayment(sheetName, name, courseName, paymentData, getLogUser());
+}
+
+function editStudentFromGradeSheet(studentName, nickname = '') {
+  if (!state.students || state.students.length === 0) {
+    setLoading(true, 'กำลังดึงรายชื่อนักเรียน...');
+    google.script.run
+      .withSuccessHandler(data => {
+        setLoading(false);
+        if (Array.isArray(data)) {
+          state.students = data;
+          openEditModalByName(studentName, nickname);
+        } else {
+          showToast('ไม่สามารถดึงข้อมูลได้', 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        setLoading(false);
+        showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+      })
+      .getStudentsList(getLogUser());
+  } else {
+    openEditModalByName(studentName, nickname);
+  }
+}
+
+function openEditModalByName(studentName, nickname = '') {
+  const branchSelect = document.getElementById('grade_sheet_branch_select');
+  const gradeSelect = document.getElementById('grade_sheet_grade_select');
+  const selectedBranch = branchSelect ? branchSelect.value : '';
+  const selectedGrade = gradeSelect ? gradeSelect.value : '';
+  
+  let match = state.students.find(reg => 
+    reg.name.trim() === studentName.trim() && 
+    reg.grade === selectedGrade && 
+    reg.branchLearn === selectedBranch
+  );
+  
+  if (!match) {
+    match = state.students.find(reg => 
+      reg.name.trim() === studentName.trim() && 
+      reg.grade === selectedGrade
+    );
+  }
+  
+  if (!match) {
+    match = state.students.find(reg => reg.name.trim() === studentName.trim());
+  }
+  
+  if (!match) {
+    const cleanTarget = studentName.replace(/\s+/g, '');
+    match = state.students.find(reg => reg.name.replace(/\s+/g, '') === cleanTarget);
+  }
+  
+  if (!match) {
+    const cleanTargetName = studentName.replace(/\s+/g, '');
+    const cleanTargetNick = (nickname || '').replace(/\s+/g, '');
+    
+    match = state.students.find(reg => {
+      const cleanRegName = reg.name.replace(/\s+/g, '').replace(/^(ด\.ญ\.|ด\.ช\.|นาย|นางสาว)/, '');
+      const noPrefixTarget = cleanTargetName.replace(/^(ด\.ญ\.|ด\.ช\.|นาย|นางสาว)/, '');
+      const nameMatch = cleanRegName.includes(noPrefixTarget) || noPrefixTarget.includes(cleanRegName);
+      
+      if (nickname) {
+         const cleanRegNick = (reg.nickname || '').replace(/\s+/g, '');
+         const nickMatch = cleanRegNick.includes(cleanTargetNick) || cleanTargetNick.includes(cleanRegNick);
+         return nameMatch && nickMatch;
+      }
+      return nameMatch;
+    });
+  }
+  
+  if (match) {
+    showEditStudentModal(match.id);
+  } else {
+    if (window._didRefreshStudentsForEdit) {
+       window._didRefreshStudentsForEdit = false;
+       showToast('ไม่พบข้อมูลลงทะเบียนของนักเรียนชื่อนี้ในระบบ', 'warning');
+    } else {
+       window._didRefreshStudentsForEdit = true;
+       state.students = [];
+       editStudentFromGradeSheet(studentName, nickname);
+    }
+  }
+}
+
+function renderGradeSheetTable() {
+  const table = document.getElementById('grade_sheet_grid_table');
+  table.innerHTML = '';
+  
+  const courses = state.gradeSheetData.courses || [];
+  const students = state.gradeSheetData.students || [];
+  
+  const filterRound = state.gradeSheetFilterRound || 'ALL';
+  const selectedBranch = document.getElementById('grade_sheet_branch_select').value;
+  
+  const displayedCourses = courses.filter(c => {
+    if (filterRound === 'ALL') {
+      return c.branch === selectedBranch;
+    } else {
+      if (filterRound === 'ไม่ระบุรอบเรียน') {
+        return getCourseRound(c.courseName) === 'None';
+      }
+      return c.courseName.toUpperCase().includes(filterRound.toUpperCase());
+    }
+  });
+
+  const displayedStudents = students.filter(s => {
+    if (filterRound === 'ALL') {
+      return s.branch === selectedBranch;
+    } else {
+      return true; // show all students across all branches when round filter is active
+    }
+  });
+  
+  state.displayedCourses = displayedCourses;
+  state.displayedStudents = displayedStudents;
+  
+  if (displayedCourses.length === 0 && displayedStudents.length === 0) {
+    table.innerHTML = `<tr><td style="padding: 40px; text-align: center; color: var(--text-muted);">ไม่พบประวัติคอร์สและเด็กของห้องนี้ กรุณาเพิ่มคอร์สวิชาใหม่เพื่อเริ่มต้น</td></tr>`;
+    document.getElementById('save_grade_sheet_btn').disabled = true;
+    return;
+  }
+  
+  // Build Header Row 1 (Course Names) & Row 2 (Prices) & Row 3 (Day details)
+  let theadHTML = `
+    <tr style="background: rgba(15,23,42,0.03);">
+      <th rowspan="2" style="min-width: 180px; vertical-align: middle;">ชื่อ-นามสกุลนักเรียน</th>
+      <th rowspan="2" style="min-width: 80px; vertical-align: middle;">ชื่อเล่น</th>
+      <th rowspan="2" style="min-width: 80px; vertical-align: middle;">ส่วนลด</th>
+      <th rowspan="2" style="min-width: 80px; vertical-align: middle;">จ่ายมา</th>
+      <th rowspan="2" style="min-width: 60px; vertical-align: middle; text-align:center;">รูดบัตร</th>
+      <th rowspan="2" style="min-width: 90px; vertical-align: middle; text-align:right;">ยอดรวม</th>
+      <th rowspan="2" style="min-width: 90px; vertical-align: middle; text-align:right;">คงเหลือ</th>
+  `;
+  
+  displayedCourses.forEach(c => {
+    // Calculate registered students for this column from displayedStudents
+    const registeredCount = displayedStudents.filter(s => {
+      if (s.sheetName === c.sheetName) {
+        const val = s.courseValues[c.colIndex];
+        return val !== undefined && val !== null && val !== '' && parseFloat(val) > 0;
+      }
+      return false;
+    }).length;
+
+    theadHTML += `
+      <th style="text-align: center; min-width: 110px;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:4px; margin-bottom:4px;">
+          <input type="text" value="${c.courseName}" class="form-input grid-header-input" style="width:110px; display:inline-block; font-weight:600; font-size:0.75rem; text-align:center; padding:2px;" onchange="handleCourseHeaderNameChange(${c.colIndex}, '${c.sheetName}', this)">
+          <button class="btn btn-sm btn-icon" style="padding: 2px 6px; background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer;" title="ลบวิชานี้" onclick="handleDeleteCourse(${c.colIndex}, '${c.sheetName}', '${c.courseName}')">
+            🗑️
+          </button>
+        </div>
+        <div style="font-size:0.75rem; color:#f59e0b; font-weight:600; margin-top:2px;">
+          [${c.branch === 'สาขา1' ? 'สาขา 1' : c.branch === 'สาขา2' ? 'สาขา 2' : 'สาขา 3'}]
+        </div>
+        <div style="font-size:0.75rem; color:var(--color-primary); margin-top:2px; font-weight:600;">
+          นร. ลงทะเบียน: ${registeredCount} คน
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+          วัน/เวลา: <input type="text" value="${c.dayTime || ''}" class="form-input grid-header-input" style="width:100px; display:inline-block; padding:2px;" onchange="handleCourseHeaderDayTimeChange(${c.colIndex}, '${c.sheetName}', this)">
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+          ราคา: ฿<input type="number" value="${c.price}" class="form-input grid-header-input" style="width:70px; display:inline-block; padding:2px;" onchange="handleCourseHeaderPriceChange(${c.colIndex}, '${c.sheetName}', this)">
+        </div>
+        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
+          ครั้ง: <input type="number" value="${c.totalSessions}" class="form-input grid-header-input" style="width:40px; display:inline-block; padding:2px;" onchange="handleCourseHeaderSessionsChange(${c.colIndex}, '${c.sheetName}', this)">
+        </div>
+      </th>
+    `;
+  });
+  
+  theadHTML += `</tr>`;
+  
+  table.innerHTML = `<thead>${theadHTML}</thead><tbody id="grade_grid_tbody"></tbody>`;
+  
+  // Render student rows
+  const tbody = document.getElementById('grade_grid_tbody');
+  
+  displayedStudents.forEach((s, stdIdx) => {
+    const tr = document.createElement('tr');
+    
+    const isCardChecked = s.isCard ? 'checked' : '';
+    
+    let rowHTML = `
+      <td>
+        <div style="font-weight:600; color: var(--text-main); font-size: 0.9rem;">${s.name}</div>
+        <div style="font-size:0.75rem; color:var(--color-primary); margin-top:2px; font-weight:600;">
+          [${s.branch === 'สาขา1' ? 'สาขา 1' : s.branch === 'สาขา2' ? 'สาขา 2' : 'สาขา 3'}]
+        </div>
+        <div style="margin-top: 4px;">
+          <a href="#" onclick="editStudentFromGradeSheet('${s.name}'); return false;" style="font-size: 0.72rem; color: var(--color-primary); text-decoration: underline; font-weight: 600;">✏️ แก้ไขการลงทะเบียนเรียน</a>
+        </div>
+      </td>
+      <td><div style="font-size:0.85rem; color:var(--text-main); font-weight:500; text-align:center;">${s.nickname || '-'}</div></td>
+      <td><div style="font-size:0.85rem; color:var(--text-muted); text-align:center;">฿${s.discount.toLocaleString()}</div></td>
+      <td><div style="font-size:0.85rem; color:var(--text-main); font-weight:600; text-align:center;">฿${s.paid.toLocaleString()}</div></td>
+      <td style="text-align:center; font-size:0.85rem; color:var(--text-muted);">${s.isCard ? 'รูดบัตร (3%)' : '-'}</td>
+      <td style="text-align:right; font-weight:700; font-size:0.9rem;" id="grid_student_full_${stdIdx}">฿${s.full.toLocaleString()}</td>
+      <td style="text-align:right; font-weight:700; font-size:0.9rem; color:${s.outstanding > 0 ? '#ef4444' : '#466352'};" id="grid_student_outstanding_${stdIdx}">฿${s.outstanding.toLocaleString()}</td>
+    `;
+    
+    displayedCourses.forEach(c => {
+      if (s.sheetName === c.sheetName) {
+        const val = s.courseValues[c.colIndex];
+        rowHTML += `
+          <td style="text-align: center;">
+            <input type="number" value="${val !== undefined && val !== null ? val : ''}" class="form-input grid-cell-input" style="width:70px; text-align:center;" placeholder="ครั้ง/ลด%" onchange="handleGridCellValueChange(${stdIdx}, ${c.colIndex}, this.value)">
+          </td>
+        `;
+      } else {
+        rowHTML += `
+          <td style="text-align: center; color: var(--text-muted); background: rgba(0,0,0,0.02); font-weight: bold;">
+            -
+          </td>
+        `;
+      }
+    });
+    
+    tr.innerHTML = rowHTML;
+    tbody.appendChild(tr);
+  });
+  
+  document.getElementById('save_grade_sheet_btn').disabled = false;
+}
+function handleCourseHeaderNameChange(colIndex, sheetName, input) {
+  const val = input.value.trim();
+  if (!val) {
+    showToast('ชื่อคอร์สเรียนไม่สามารถเว้นว่างได้', 'error');
+    input.value = input.defaultValue || '';
+    return;
+  }
+  const course = state.displayedCourses.find(c => c.colIndex === colIndex && c.sheetName === sheetName);
+  if (course) {
+    course.courseName = val;
+  }
+}
+
+function handleDeleteCourse(colIndex, sheetName, courseName) {
+  const grade = document.getElementById('grade_sheet_grade_select').value;
+  const branch = document.getElementById('grade_sheet_branch_select').value;
+  
+  if (confirm(`⚠️ ยืนยันการลบวิชา "${courseName}"?\n\nการลบคอลัมน์วิชานี้จะทำให้ข้อมูลครั้งเรียนและยอดชำระเงินของเด็กที่บันทึกไว้ในวิชานี้หายไป และไม่สามารถเรียกคืนได้!`)) {
+    setLoading(true, 'กำลังลบคอลัมน์วิชาเรียนออกจากสเปรดชีต...');
+    const user = getLogUser();
+    
+    google.script.run
+      .withSuccessHandler(res => {
+        setLoading(false);
+        if (res && res.success) {
+          showToast(`ลบวิชา "${courseName}" เรียบร้อยแล้ว`, 'success');
+          loadGradeSheetGrid(); // reload table
+        } else {
+          showToast('ลบไม่สำเร็จ: ' + res.error, 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        setLoading(false);
+        showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      })
+      .deleteCourseColumn(grade, branch, sheetName, colIndex, courseName, user);
+  }
+}
+
+function handleCourseHeaderDayTimeChange(colIndex, sheetName, input) {
+  const val = input.value.trim();
+  const course = state.displayedCourses.find(c => c.colIndex === colIndex && c.sheetName === sheetName);
+  if (course) {
+    course.dayTime = val;
+  }
+}
+
+function handleCourseHeaderPriceChange(colIndex, sheetName, input) {
+  const val = parseFloat(input.value) || 0;
+  const course = state.displayedCourses.find(c => c.colIndex === colIndex && c.sheetName === sheetName);
+  if (course) {
+    course.price = val;
+    recalculateGridTotals();
+  }
+}
+
+function handleCourseHeaderSessionsChange(colIndex, sheetName, input) {
+  const val = parseInt(input.value) || 10;
+  const course = state.displayedCourses.find(c => c.colIndex === colIndex && c.sheetName === sheetName);
+  if (course) {
+    course.totalSessions = val;
+    recalculateGridTotals();
+  }
+}
+
+function handleStudentFieldChange(stdIdx, field, val) {
+  const std = state.displayedStudents[stdIdx];
+  if (std) {
+    std[field] = val;
+    recalculateGridTotals();
+  }
+}
+
+function handleGridCellValueChange(stdIdx, colIndex, val) {
+  const std = state.displayedStudents[stdIdx];
+  if (std) {
+    std.courseValues[colIndex] = val !== '' ? parseFloat(val) : '';
+    recalculateGridTotals();
+  }
+}
+
+function recalculateGridTotals() {
+  const courses = state.displayedCourses || [];
+  const students = state.displayedStudents || [];
+  
+  students.forEach((s, idx) => {
+    let subtotal = 0;
+    courses.forEach(c => {
+      if (s.sheetName === c.sheetName) {
+        const val = s.courseValues[c.colIndex];
+        if (val !== '' && val !== undefined && !isNaN(val)) {
+          const num = parseFloat(val);
+          const price = parseFloat(c.price) || 0;
+          const totalSessions = parseInt(c.totalSessions) || 10;
+          
+          if (num === 30) {
+            subtotal += price * 0.7;
+          } else if (num === 20) {
+            subtotal += price * 0.9;
+          } else if (num === 50) {
+            subtotal += price * 0.5;
+          } else if (num >= 1 && num <= 2) {
+            subtotal += num * 350;
+          } else if (num >= 3) {
+            subtotal += num * (price / totalSessions);
+          }
+        }
+      }
+    });
+    
+    if (s.isCard) {
+      subtotal *= 1.03;
+    }
+    
+    const full = subtotal - s.discount;
+    const outstanding = full - s.paid;
+    
+    s.full = Math.round(full * 100) / 100;
+    s.outstanding = Math.round(outstanding * 100) / 100;
+    
+    const fullEl = document.getElementById(`grid_student_full_${idx}`);
+    if (fullEl) fullEl.innerText = '฿' + s.full.toLocaleString();
+    const outEl = document.getElementById(`grid_student_outstanding_${idx}`);
+    if (outEl) {
+      outEl.innerText = '฿' + s.outstanding.toLocaleString();
+      outEl.style.color = s.outstanding > 0 ? '#ef4444' : '#466352';
+    }
+  });
+}
+
+function saveGradeSheetGrid() {
+  const grade = document.getElementById('grade_sheet_grade_select').value;
+  const branch = document.getElementById('grade_sheet_branch_select').value;
+  
+  setLoading(true, 'กำลังบันทึกค่าเรียน คอร์ส และผลการจัดชั้นเรียนลงชีตสเปรดชีต...');
+  const user = getLogUser();
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('บันทึกการจัดห้องและคำนวณเงินคอร์สกลุ่มหลักเรียบร้อย!', 'success');
+        loadGradeSheetGrid();
+      } else {
+        showToast('การบันทึกขัดข้อง: ' + res.error, 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('การเชื่อมต่อผิดพลาด: ' + err.message, 'error');
+    })
+    .saveGradeSheetData(grade, branch, state.displayedCourses, state.displayedStudents, user);
+}
+
+function initAddCourseRows() {
+  const tbody = document.getElementById('add_course_rows_tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  
+  const dayTimeSelectHtml = document.getElementById('new_course_day_time').innerHTML;
+  
+  for (let i = 1; i <= 15; i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="padding: 6px; text-align: center; font-weight: 600; color: var(--text-muted);">${i}</td>
+      <td style="padding: 6px;">
+        <input type="text" class="form-input course-name-input" list="main_courses_list" placeholder="พิมพ์ชื่อคอร์ส..." style="width: 100%; font-size: 0.82rem; padding: 6px 10px;">
+      </td>
+      <td style="padding: 6px;">
+        <select class="form-select course-daytime-select" style="width: 100%; font-size: 0.82rem; padding: 6px 10px;">
+          ${dayTimeSelectHtml}
+        </select>
+      </td>
+      <td style="padding: 6px;">
+        <input type="number" class="form-input course-price-input" placeholder="2500" value="2500" style="width: 100%; font-size: 0.82rem; padding: 6px 10px;">
+      </td>
+      <td style="padding: 6px; text-align: center;">
+        <input type="number" class="form-input course-sessions-input" placeholder="10" value="10" style="width: 100%; font-size: 0.82rem; padding: 6px 10px; text-align: center;">
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function showAddCourseColumnModal() {
+  try {
+    const gradeSelect = document.getElementById('grade_sheet_grade_select');
+    const branchSelect = document.getElementById('grade_sheet_branch_select');
+    
+    const grade = gradeSelect ? gradeSelect.value : 'ม.1';
+    const branch = branchSelect ? branchSelect.value : 'สาขา1';
+    
+    const form = document.getElementById('add_course_form');
+    if (form) form.reset();
+    
+    initAddCourseRows();
+    
+    const addBranch = document.getElementById('add_course_branch_select');
+    if (addBranch) addBranch.value = branch;
+    
+    const addGrade = document.getElementById('add_course_grade_select');
+    if (addGrade) addGrade.value = (grade === 'อนุบาล' || !grade) ? 'ป.1' : grade;
+    
+    const yearInput = document.getElementById('new_course_year');
+    if (yearInput) yearInput.value = new Date().getFullYear() + 543;
+    
+    const modal = document.getElementById('add_course_modal');
+    if (modal) {
+      modal.classList.add('active');
+    } else {
+      console.error('Modal element add_course_modal not found');
+    }
+  } catch (err) {
+    console.error('Error in showAddCourseColumnModal:', err);
+  }
+}
+
+function closeAddCourseModal() {
+  document.getElementById('add_course_modal').classList.remove('active');
+}
+
+function handleAddCourseColumn(e) {
+  e.preventDefault();
+  const grade = document.getElementById('add_course_grade_select').value;
+  const branch = document.getElementById('add_course_branch_select').value;
+  
+  const round = document.getElementById('new_course_round').value;
+  const year = document.getElementById('new_course_year').value.trim();
+  
+  const tbody = document.getElementById('add_course_rows_tbody');
+  if (!tbody) return;
+  
+  const trs = tbody.querySelectorAll('tr');
+  const courseList = [];
+  
+  trs.forEach(tr => {
+    const nameInput = tr.querySelector('.course-name-input');
+    const courseNameVal = nameInput ? nameInput.value.trim() : '';
+    if (!courseNameVal) return; // skip empty rows
+    
+    const daytime = tr.querySelector('.course-daytime-select').value;
+    const price = parseFloat(tr.querySelector('.course-price-input').value) || 2500;
+    const sessions = parseInt(tr.querySelector('.course-sessions-input').value) || 10;
+    
+    // Construct full courseName with round/year
+    let finalCourseName = courseNameVal;
+    if (round) {
+      if (year) {
+        finalCourseName = `${courseNameVal} ${round}/${year}`;
+      } else {
+        finalCourseName = `${courseNameVal} ${round}`;
+      }
+    }
+    
+    courseList.push({
+      courseName: finalCourseName,
+      price: price,
+      dayTime: daytime,
+      sessions: sessions
+    });
+  });
+  
+  if (courseList.length === 0) {
+    showToast('กรุณาระบุชื่อคอร์สอย่างน้อย 1 คอร์ส', 'warning');
+    return;
+  }
+  
+  setLoading(true, 'กำลังแทรกหัวคอลัมน์คอร์สรายวิชาใหม่ ' + courseList.length + ' รายการลงสเปรดชีต...');
+  const user = getLogUser();
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('เพิ่มวิชาลงสเปรดชีตย่อยสำเร็จ!', 'success');
+        closeAddCourseModal();
+        
+        // Reset filter round to show all so the new course is visible
+        state.gradeSheetFilterRound = 'ALL';
+        const filterSelect = document.getElementById('grade_sheet_round_filter');
+        if (filterSelect) filterSelect.value = 'ALL';
+        
+        loadGradeSheetGrid(); // refresh grid
+      } else {
+        showToast('เพิ่มไม่สำเร็จ: ' + res.error, 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('การติดต่อผิดพลาด: ' + err.message, 'error');
+    })
+    .addNewCoursesBatch(grade, branch, courseList, user);
+}
+
+// ----------------------------------------------------
+// 4. Private Students Editor Logic (เดี่ยว / กลุ่มย่อย)
+// ----------------------------------------------------
+function loadPrivateStudents(isSilent = false) {
+  const sheetName = document.getElementById('private_sheet_select').value;
+  
+  if (!isSilent) setLoading(true, 'กำลังดึงสมุดประวัติเด็กเรียนเดี่ยวกลุ่มย่อย ' + sheetName + '...');
+  google.script.run
+    .withSuccessHandler(res => {
+      if (!isSilent) setLoading(false);
+      if (res && res.success) {
+        state.privateStudents = res.students;
+        renderPrivateStudentsTable(res.sheetName);
+        if (state.pendingPrivateStudentPayment) {
+          const target = state.pendingPrivateStudentPayment;
+          state.pendingPrivateStudentPayment = null;
+          let idx = state.privateStudents.findIndex(s => s.name.trim() === target.name.trim() && s.courseName.trim() === target.courseName.trim());
+          if (idx === -1) {
+            idx = state.privateStudents.findIndex(s => s.name.trim() === target.name.trim());
+          }
+          if (idx !== -1) {
+            showPrivatePaymentModal(idx);
+          }
+        }
+      } else if (!isSilent) {
+        showToast('ไม่สามารถดึงข้อมูลเด็กเรียนเดี่ยวได้: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      if (!isSilent) {
+        setLoading(false);
+        showToast('เชื่อมต่อฐานข้อมูลชีตล้มเหลว: ' + err.message, 'error');
+      }
+    })
+    .getPrivateSheetData(sheetName);
+}
+
+function renderPrivateStudentsTable(sheetName) {
+  const tbody = document.getElementById('private_students_tbody');
+  tbody.innerHTML = '';
+  
+  const branchFilter = document.getElementById('private_branch_select') ? document.getElementById('private_branch_select').value : 'all';
+  
+  const filteredStudents = state.privateStudents.filter(s => {
+    if (branchFilter === 'all') return true;
+    
+    // Normalizing branch values (e.g. "สาขา2" vs "สาขา 2")
+    const sBranch = (s.branchLearn || s.branchPay || '').replace(/\s+/g, '');
+    const filterVal = branchFilter.replace(/\s+/g, '');
+    
+    return sBranch.indexOf(filterVal) !== -1 || filterVal.indexOf(sBranch) !== -1;
+  });
+  
+  filteredStudents.forEach((s, idx) => {
+    // Find the original index in state.privateStudents to pass to showPrivatePaymentModal correctly
+    const originalIdx = state.privateStudents.indexOf(s);
+    const tr = document.createElement('tr');
+    
+    // Balance: Positive outstanding means debt (ค้าง), negative outstanding means credit/overpaid
+    let balanceText = '';
+    if (s.outstanding > 0) {
+      balanceText = `<span style="color:#ef4444; font-weight:600;">ค้าง ฿${Math.round(s.outstanding).toLocaleString()}</span>`;
+    } else {
+      balanceText = `<span style="color:#466352; font-weight:600;">฿${Math.round(Math.abs(s.outstanding)).toLocaleString()}</span>`;
+    }
+    
+    tr.innerHTML = `
+      <td>
+        <div style="font-weight:600; color: var(--color-primary-hover); cursor: pointer; white-space:nowrap;" onclick="showStudentHistoryModal('${s.name}', '${s.nickname}')">🧒 ${s.name}</div>
+        <div style="font-size:0.68rem; color:var(--text-muted); white-space:nowrap;">${s.branchPay} | Line: ${s.lineName || '-'}</div>
+      </td>
+      <td>${s.nickname}</td>
+      <td>
+        <div style="font-weight:500; font-size:0.75rem; color: var(--color-primary-hover); cursor: pointer; white-space:nowrap;" onclick="showStudentHistoryModal('${s.name}', '${s.nickname}')">📚 ${s.courseName}</div>
+        <div style="font-size:0.68rem; color:var(--text-muted); white-space:nowrap;">${(s.note && !s.note.includes('1899') && !s.note.includes('1900') && !s.note.includes('เวลาอินโดจีน')) ? s.note : '-'}</div>
+      </td>
+      <td style="text-align:right; white-space:nowrap;">฿${s.carriedForward.toLocaleString()}</td>
+      <td style="text-align:right; white-space:nowrap;">฿${s.full.toLocaleString()}</td>
+      <td style="text-align:right; color:#466352; font-weight:600; white-space:nowrap;">฿${s.paid.toLocaleString()}</td>
+      <td style="text-align:right; white-space:nowrap;">${balanceText}</td>
+      <td style="white-space:nowrap;"><span style="font-weight:600; color:var(--color-primary-hover);">${formatHoursMinutes(s.hours)}</span></td>
+      <td style="white-space:nowrap;"><span style="font-weight:600;">${formatHoursMinutes(s.hoursLeft)}</span></td>
+      <td style="font-size:0.68rem; white-space:nowrap;">
+        <div>${formatDateTimeToThaiLong(s.paymentDate) || '-'}</div>
+        <div style="color:var(--text-muted);">${s.staff || '-'}</div>
+      </td>
+      <td style="white-space:nowrap;">
+        <div style="display: flex; gap: 4px; justify-content: center;">
+          <button class="btn btn-primary btn-icon" onclick="showPrivatePaymentModal(${originalIdx})" title="ลงยอดเงินชำระ">🪙</button>
+          <button class="btn btn-secondary btn-icon" onclick="editPrivateStudent(${originalIdx})" title="แก้ไขข้อมูลนักเรียน">✏️</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  if (filteredStudents.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบประวัติเด็กเรียนเดี่ยวในกลุ่มหรือสาขานี้</td></tr>`;
+  }
+}
+
+function editPrivateStudent(idx) {
+  const std = state.privateStudents[idx];
+  if (!std) return;
   editStudentFromGradeSheet(std.name);
 }
 
