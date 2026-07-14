@@ -5279,7 +5279,7 @@ function getAllTeachersMonthlyPay(year, month) {
 function toggleClassAbsentInSheet(rowIndex, type, isChecked) {
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(15000);
+    lock.waitLock(30000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
@@ -5332,7 +5332,7 @@ function toggleClassAbsentInSheet(rowIndex, type, isChecked) {
 function toggleTeacherConfirmInSheet(rowIndex, isChecked) {
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(15000);
+    lock.waitLock(30000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
@@ -5696,7 +5696,7 @@ function addClassLog(log, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(15000);
+    lock.waitLock(30000);
     ensureDataLearnMigrated(getDb());
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
@@ -5769,7 +5769,7 @@ function updateClassLog(rowIndex, log, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(15000);
+    lock.waitLock(30000);
     ensureDataLearnMigrated(getDb());
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
@@ -5870,7 +5870,7 @@ function updateClassAbsenceAndAttendance(rowIndex, type, checked, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(15000);
+    lock.waitLock(30000);
     const db = getDb();
     const sheet = db.getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
@@ -5929,7 +5929,7 @@ function deleteClassLog(rowIndex, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(15000);
+    lock.waitLock(30000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
@@ -6522,7 +6522,7 @@ function addMultipleClassLogs(logs, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(15000);
+    lock.waitLock(30000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     
@@ -6577,7 +6577,7 @@ function saveBatchClassLogs(adds, updates, deletes, logUser) {
   checkTeacherBlock(logUser);
   const lock = LockService.getScriptLock();
   try {
-    lock.waitLock(15000);
+    lock.waitLock(30000);
     const sheet = getDb().getSheetByName('Data Learn');
     if (!sheet) throw new Error('Data Learn sheet not found');
     const teachersToInvalidate = new Set();
@@ -7054,7 +7054,7 @@ function pingActiveUser(username) {
   const lock = LockService.getScriptLock();
   let hasLock = false;
   try {
-    lock.waitLock(3000);
+    lock.waitLock(15000);
     hasLock = true;
     const cache = CacheService.getScriptCache();
     let listStr = cache.get('active_users_list') || '{}';
