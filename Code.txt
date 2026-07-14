@@ -5008,8 +5008,10 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
           return; // No teacher in either column
         }
         
-        // Skip lessons with leave note
-        if ((c.note || '').includes('ครูลา')) return;
+        // Skip lessons with leave note ONLY if it's a private or small group class
+        const subjectName = c.subject || '';
+        const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
+        if (isPrivateOrSmallGroup && (c.note || '').includes('ลา')) return;
         
         // Parse hours
         const hoursStr = c.hours || '';
@@ -5308,8 +5310,10 @@ function getAllTeachersMonthlyPay(year, month) {
           return;
         }
         
-        // Skip leave notes
-        if ((c.note || '').includes('ครูลา')) return;
+        // Skip leave notes ONLY if it's a private or small group class
+        const subjectName = c.subject || '';
+        const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
+        if (isPrivateOrSmallGroup && (c.note || '').includes('ลา')) return;
         
         // Parse hours
         const hoursStr = c.hours || '';
