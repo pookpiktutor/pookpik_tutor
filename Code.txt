@@ -5175,7 +5175,7 @@ function getAllTeachersMonthlyPay(year, month) {
     }
     
     // For each teacher, calculate their monthly pay
-    const settings = getSettings();
+    const settings = getGeneralSettings();
     const teacherNames = settings.teachers || [];
     const results = [];
     
