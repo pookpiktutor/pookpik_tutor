@@ -5009,7 +5009,13 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         }
         
         // Skip lessons with leave note ONLY if it's a private or small group class
+        // If teacher takes leave (ครูลา), the regular teacher gets 0. Substitute still gets paid.
+        if (cellC === '' && (c.note || '').includes('ครูลา')) return;
+
+        // Skip lessons with leave note ONLY if it's a private or small group class
         const subjectName = c.subject || '';
+        const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
+        if (isPrivateOrSmallGroup && (c.note || '').includes('ลา')) return;
         const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
         if (isPrivateOrSmallGroup && (c.note || '').includes('ลา')) return;
         
@@ -5309,7 +5315,13 @@ function getAllTeachersMonthlyPay(year, month) {
         } else {
           return;
         }
-        
+        // If teacher takes leave (ครูลา), the regular teacher gets 0. Substitute still gets paid.
+        if (cellC === '' && (c.note || '').includes('ครูลา')) return;
+
+        // Skip leave notes ONLY if it's a private or small group class
+        const subjectName = c.subject || '';
+        const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
+        if (isPrivateOrSmallGroup && (c.note || '').includes('ลา')) return;
         // Skip leave notes ONLY if it's a private or small group class
         const subjectName = c.subject || '';
         const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
