@@ -4985,19 +4985,26 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         if (cDate < range.start || cDate > range.end) return;
         
         // Check column B (teacherRegular) and C (teacherSub)
-        const cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
-        const cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
+        let cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
+        let cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
         const cleanNick = cleanResolvedNick.replace(/^ครู/, '').trim();
         
-        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cellB.replace(/^ครู/, '').trim() === cleanNick);
-        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cellC.replace(/^ครู/, '').trim() === cleanNick);
+        if (cellC === '-' || cellC.includes('ไม่มี') || cellC.includes('รอครู')) {
+          cellC = '';
+        }
         
-        // If both B and C have values, use C (substitute teacher priority rule)
-        // If only one has value, use that one
+        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cellB.replace(/^ครู/, '').trim() === cleanNick || cellB.includes(cleanNick));
+        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cellC.replace(/^ครู/, '').trim() === cleanNick || cellC.includes(cleanNick));
+        
         let role = '';
         if (cellB !== '' && cellC !== '') {
-          if (!matchC) return; // Both filled but C doesn't match - skip
-          role = 'ครูแทน';
+          if (matchC) {
+             role = 'ครูแทน';
+          } else if (matchB) {
+             return; 
+          } else {
+             return;
+          }
         } else if (cellB !== '') {
           if (!matchB) return;
           role = 'ครูประจำ';
@@ -5005,19 +5012,21 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
           if (!matchC) return;
           role = 'ครูแทน';
         } else {
-          return; // No teacher in either column
+          return;
         }
-        
-        // Skip lessons with leave note ONLY if it's a private or small group class
-        // If teacher takes leave (ครูลา), the regular teacher gets 0. Substitute still gets paid.
-        if (cellC === '' && (c.note || '').includes('ครูลา')) return;
 
-        // Skip lessons with leave note ONLY if it's a private or small group class
         const subjectName = c.subject || '';
+        const note = c.note || '';
         const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
-        if (isPrivateOrSmallGroup && (c.note || '').includes('ลา')) return;
-        const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
-        if (isPrivateOrSmallGroup && (c.note || '').includes('ลา')) return;
+        
+        if (role === 'ครูประจำ') {
+           if (note.includes('ครูลา')) {
+               return; 
+           }
+           if (isPrivateOrSmallGroup && note.includes('ลา')) {
+               return; 
+           }
+        }
         
         // Parse hours
         const hoursStr = c.hours || '';
@@ -5300,32 +5309,48 @@ function getAllTeachersMonthlyPay(year, month) {
       let totalClasses = 0;
       
       monthLogs.forEach(c => {
-        const cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
-        const cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
+        let cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
+        let cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
+        const cleanNick = cleanResolvedNick.replace(/^ครู/, '').trim();
         
-        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cellB.replace(/^ครู/, '').trim() === cleanNick);
-        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cellC.replace(/^ครู/, '').trim() === cleanNick);
+        if (cellC === '-' || cellC.includes('ไม่มี') || cellC.includes('รอครู')) {
+          cellC = '';
+        }
         
+        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cellB.replace(/^ครู/, '').trim() === cleanNick || cellB.includes(cleanNick));
+        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cellC.replace(/^ครู/, '').trim() === cleanNick || cellC.includes(cleanNick));
+        
+        let role = '';
         if (cellB !== '' && cellC !== '') {
-          if (!matchC) return;
+          if (matchC) {
+             role = 'ครูแทน';
+          } else if (matchB) {
+             return; 
+          } else {
+             return;
+          }
         } else if (cellB !== '') {
           if (!matchB) return;
+          role = 'ครูประจำ';
         } else if (cellC !== '') {
           if (!matchC) return;
+          role = 'ครูแทน';
         } else {
           return;
         }
-        // If teacher takes leave (ครูลา), the regular teacher gets 0. Substitute still gets paid.
-        if (cellC === '' && (c.note || '').includes('ครูลา')) return;
 
-        // Skip leave notes ONLY if it's a private or small group class
         const subjectName = c.subject || '';
+        const note = c.note || '';
         const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
-        if (isPrivateOrSmallGroup && (c.note || '').includes('ลา')) return;
-        // Skip leave notes ONLY if it's a private or small group class
-        const subjectName = c.subject || '';
-        const isPrivateOrSmallGroup = subjectName.includes('เดี่ยว') || subjectName.includes('ย่อย');
-        if (isPrivateOrSmallGroup && (c.note || '').includes('ลา')) return;
+        
+        if (role === 'ครูประจำ') {
+           if (note.includes('ครูลา')) {
+               return; 
+           }
+           if (isPrivateOrSmallGroup && note.includes('ลา')) {
+               return; 
+           }
+        }
         
         // Parse hours
         const hoursStr = c.hours || '';
