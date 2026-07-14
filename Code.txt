@@ -5041,6 +5041,11 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         
         // Count only สด + ออนไลน์ + ชดเชย for totalHours calculation
         let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
+        const leaves = parseInt(c.isLeave) || 0;
+        
+        if (!isPrivateOrSmallGroup && numKids === 0 && leaves > 0) {
+           numKids = leaves;
+        }
         
         const subject = c.subject || '';
         const hasEx = subject.toLowerCase().includes('ex');
@@ -5365,6 +5370,11 @@ function getAllTeachersMonthlyPay(year, month) {
         
         // Count only สด + ออนไลน์ + ชดเชย
         let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
+        const leaves = parseInt(c.isLeave) || 0;
+        
+        if (!isPrivateOrSmallGroup && numKids === 0 && leaves > 0) {
+           numKids = leaves;
+        }
         
         const subject = c.subject || '';
         const hasEx = subject.toLowerCase().includes('ex');
