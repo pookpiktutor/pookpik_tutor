@@ -4126,3 +4126,67 @@ html, body { overflow-x: hidden !important; max-width: 100vw !important; }
 .table-responsive { overflow-x: auto !important; }
 .custom-table th, .custom-table td { white-space: nowrap !important; padding: 1px 2px !important; font-size: 0.7rem !important; line-height: 1.15; }
 @media (max-width: 768px) { .custom-table th, .custom-table td { padding: 1px 2px !important; font-size: 0.6rem !important; } }
+
+
+/* Override .loader-overlay for background saving */
+.loader-overlay {
+  position: fixed !important;
+  top: auto !important;
+  left: auto !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  width: auto !important;
+  height: auto !important;
+  background: #ffffff !important;
+  padding: 12px 20px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  z-index: 99999 !important;
+  pointer-events: none !important;
+  border-left: 4px solid var(--color-primary) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.loader-overlay .spinner {
+  width: 24px !important;
+  height: 24px !important;
+  border-width: 3px !important;
+}
+
+.loader-overlay .loader-text {
+  margin-top: 0 !important;
+  font-size: 0.95rem !important;
+  color: var(--text-dark) !important;
+}
+
+.saving-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: var(--color-primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  z-index: 10000;
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: all 0.3s ease;
+  font-family: 'Prompt', sans-serif;
+  font-size: 0.9rem;
+}
+.saving-toast.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

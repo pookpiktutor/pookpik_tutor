@@ -4826,7 +4826,7 @@ function getTeachersDB(logUser) {
         subjects: row[4] ? row[4].toString().trim() : '',
         bank: row[5] ? row[5].toString().trim() : '',
         accountNumber: row[6] ? row[6].toString().trim() : '',
-        compensation: row[7] ? row[7].toString().trim() : '150',
+        accountType: row[7] ? row[7].toString().trim() : 'บัญชีทั่วไป',
         teacherId: row[8] ? row[8].toString().trim() : ''
       });
     });
@@ -4862,7 +4862,7 @@ function saveTeacherProfile(teacher, logUser) {
       teacher.subjects || '',
       teacher.bank || '',
       teacher.accountNumber || '',
-      teacher.compensation || '150',
+      teacher.accountType || 'บัญชีทั่วไป',
       teacher.teacherId || ''
     ];
     
@@ -4934,6 +4934,24 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
       }
       return { start: parseDateString(startStr), end: parseDateString(endStr), startStr: startStr, endStr: endStr };
     };
+
+    const confirmSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
+    const confirmMap = {};
+    let totalInsAccumulated = 0;
+    if (confirmSheet) {
+      const confirmData = confirmSheet.getDataRange().getValues();
+      for (let i = 1; i < confirmData.length; i++) {
+        const tName = confirmData[i][3];
+        if (tName === teacher) {
+          const insDed = parseFloat(confirmData[i][6]) || 0;
+          totalInsAccumulated += insDed;
+          confirmMap[`${confirmData[i][0]}_${confirmData[i][1]}`] = {
+             confirmedAt: confirmData[i][5],
+             insuranceDeducted: insDed
+          };
+        }
+      }
+    }
 
     const monthlyResults = {};
     for (let m = 1; m <= 12; m++) {
@@ -5053,11 +5071,45 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         });
       });
       
+      let grossPay = Math.round(totalPay * 100) / 100;
+      let currentInsDeduction = 0;
+      let insStatus = '';
+      let isConfirmed = false;
+      let confirmedAt = null;
+      
+      const conf = confirmMap[`${year}_${m}`];
+      if (conf) {
+        isConfirmed = true;
+        confirmedAt = conf.confirmedAt;
+        currentInsDeduction = conf.insuranceDeducted || 0;
+        if (totalInsAccumulated >= 2000) {
+          insStatus = 'ครบแล้ว';
+        } else {
+          insStatus = 'หักแล้ว';
+        }
+      } else {
+        if (totalInsAccumulated >= 2000) {
+          insStatus = 'ครบแล้ว';
+        } else {
+          let expectedDeduction = grossPay * 0.15;
+          if (totalInsAccumulated + expectedDeduction > 2000) {
+            expectedDeduction = 2000 - totalInsAccumulated;
+          }
+          currentInsDeduction = Math.round(expectedDeduction * 100) / 100;
+          insStatus = `(สะสม ${totalInsAccumulated})`;
+        }
+      }
+
       monthlyResults[m] = {
         classes: matchedClasses,
         totalHours: Math.round(totalHours * 100) / 100,
         totalClasses: totalClasses,
-        totalPay: Math.round(totalPay * 100) / 100
+        totalPay: grossPay,
+        netPay: grossPay - currentInsDeduction,
+        insuranceDeduction: currentInsDeduction,
+        insuranceStatus: insStatus,
+        isConfirmed: isConfirmed,
+        confirmedAt: confirmedAt
       };
     }
     
@@ -5117,17 +5169,28 @@ function getAllTeachersMonthlyPay(year, month) {
       return cDate >= rangeStart && cDate <= rangeEnd;
     });
     
-    // Get confirmation data
+    // Get confirmation data & calculate insurance deduction sums
     const confirmSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
     const confirmMap = {};
+    const insuranceSums = {};
     if (confirmSheet) {
       const confirmData = confirmSheet.getDataRange().getValues();
       for (let i = 1; i < confirmData.length; i++) {
+        const tName = confirmData[i][3];
+        const insDed = parseFloat(confirmData[i][6]) || 0;
+        
+        // Sum past deductions (only if it's NOT the current month we are querying, so we know the sum *before* this month)
+        // Actually, it's easier to just sum all of them, and if this month is already confirmed, we don't calculate a new one.
+        if (!insuranceSums[tName]) insuranceSums[tName] = 0;
+        
         if (confirmData[i][0] == year && confirmData[i][1] == month) {
-          confirmMap[confirmData[i][3]] = {
+          confirmMap[tName] = {
             totalPay: confirmData[i][4],
-            confirmedAt: confirmData[i][5]
+            confirmedAt: confirmData[i][5],
+            insuranceDeducted: insDed
           };
+        } else {
+          insuranceSums[tName] += insDed;
         }
       }
     }
@@ -5258,9 +5321,42 @@ function getAllTeachersMonthlyPay(year, month) {
       });
       
       const conf = confirmMap[teacherName];
+      const grossPay = Math.round(totalPay * 100) / 100;
+      let sumIns = insuranceSums[teacherName] || 0;
+      let currentInsDeduction = 0;
+      let insStatus = '';
+      
+      if (conf) {
+        currentInsDeduction = conf.insuranceDeducted || 0;
+        if (sumIns + currentInsDeduction >= 2000) {
+          insStatus = 'ครบแล้ว';
+        } else {
+          insStatus = 'หักแล้ว';
+        }
+      } else {
+        if (sumIns >= 2000) {
+          insStatus = 'ครบแล้ว';
+        } else {
+          let expectedDeduction = grossPay * 0.15;
+          if (sumIns + expectedDeduction > 2000) {
+            expectedDeduction = 2000 - sumIns;
+          }
+          currentInsDeduction = Math.round(expectedDeduction * 100) / 100;
+          insStatus = `(สะสม ${sumIns})`;
+        }
+      }
+      
+      const netPay = grossPay - currentInsDeduction;
+
       results.push({
         teacherName: teacherName,
-        totalPay: Math.round(totalPay * 100) / 100,
+        teacherId: teacherProfile ? teacherProfile.teacherId : '',
+        bank: teacherProfile ? (teacherProfile.bank || '') : '',
+        accountNumber: teacherProfile ? (teacherProfile.accountNumber || '') : '',
+        totalPay: grossPay,
+        netPay: netPay,
+        insuranceDeduction: currentInsDeduction,
+        insuranceStatus: insStatus,
         totalHours: Math.round(totalHours * 100) / 100,
         totalClasses: totalClasses,
         isConfirmed: !!conf,
@@ -7908,10 +8004,12 @@ function getStudentData(id) {
 // =========================================================================
 // TEACHER SALARY CONFIRMATION
 // =========================================================================
-function confirmTeacherSalary(year, month, teacherId, teacherName, totalPay) {
+function confirmTeacherSalary(year, month, teacherId, teacherName, totalPay, insuranceDeducted) {
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
     if (!sheet) return { success: false, error: 'Sheet not found' };
+    
+    insuranceDeducted = parseFloat(insuranceDeducted) || 0;
     
     // Check if already confirmed
     const data = sheet.getDataRange().getValues();
@@ -7929,9 +8027,10 @@ function confirmTeacherSalary(year, month, teacherId, teacherName, totalPay) {
       sheet.getRange(rowIndex, 4).setValue(teacherName);
       sheet.getRange(rowIndex, 5).setValue(totalPay);
       sheet.getRange(rowIndex, 6).setValue(now);
+      sheet.getRange(rowIndex, 7).setValue(insuranceDeducted);
     } else {
       // Append new
-      sheet.appendRow([year, month, teacherId, teacherName, totalPay, now]);
+      sheet.appendRow([year, month, teacherId, teacherName, totalPay, now, insuranceDeducted]);
     }
     
     return { success: true, timestamp: now.toISOString() };
@@ -8071,117 +8170,37 @@ function updateDataLearnSubjects() {
   
   if (data.length <= 1) return 'No data to process.';
   
-  // Cache the headers of all grade sheets
-  const grades = ['อนุบาล', 'ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
-  const branches = ['1', '2', '3'];
-  const gradeSheetCache = {};
-  
-  for (let g of grades) {
-    for (let b of branches) {
-      const sheetName = `${g}/${b}`;
-      const sheet = db.getSheetByName(sheetName);
-      if (sheet) {
-        // Get Row 1 headers (which contain the full course names)
-        const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-        gradeSheetCache[sheetName] = headers.filter(h => h && String(h).trim() !== '');
-      }
-    }
-  }
-  
-  const thDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
   let updatedCount = 0;
+  const thDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
   
   for (let i = 1; i < data.length; i++) { 
     const row = data[i];
     let subject = row[0] ? String(row[0]).trim() : '';
     const dateStr = row[13]; // Col N (Date)
-    const roomStr = row[14] ? String(row[14]) : ''; // Col O (Branch/Room)
     
-    // Only process if it contains "หลัก"
-    if (subject.includes('หลัก')) {
-      // 1. Determine Branch
-      let branchNum = '1';
-      if (roomStr.includes('สาขา2') || roomStr.includes('สาขา 2') || roomStr.includes('สาขา-2')) branchNum = '2';
-      else if (roomStr.includes('สาขา3') || roomStr.includes('สาขา 3') || roomStr.includes('สาขา-3')) branchNum = '3';
-      
-      // 2. Determine Grade
-      let gradeFound = '';
-      for (let g of grades) {
-        if (subject.includes(g)) {
-          gradeFound = g;
-          break;
+    // Check if date is before 18/5/2569 (18 May 2026)
+    let dateObj = null;
+    if (dateStr instanceof Date) {
+      dateObj = dateStr;
+    } else if (typeof dateStr === 'string') {
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        const d = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        let y = parseInt(parts[2], 10);
+        if (y > 2500) y -= 543;
+        dateObj = new Date(y, m, d);
+        if (isNaN(dateObj.getTime())) {
+          dateObj = null;
         }
       }
-      
-      // 3. Determine Day of Week
-      let dayStr = '';
-      let dateObj = null;
-      if (dateStr instanceof Date) {
-        dayStr = thDays[dateStr.getDay()];
-        dateObj = dateStr;
-      } else if (typeof dateStr === 'string') {
-        const parts = dateStr.split('/');
-        if (parts.length === 3) {
-          const d = parseInt(parts[0], 10);
-          const m = parseInt(parts[1], 10) - 1;
-          let y = parseInt(parts[2], 10);
-          if (y > 2500) y -= 543;
-          dateObj = new Date(y, m, d);
-          if (!isNaN(dateObj.getTime())) {
-            dayStr = thDays[dateObj.getDay()];
-          } else {
-            dateObj = null;
-          }
-        }
-      }
-      
-      if (gradeFound && dayStr) {
-        // Determine core words to match (e.g. "วิทย์", "อังกฤษ")
-        let coreSubj = subject.replace('หลัก', '').replace(gradeFound, '').replace(/\d+/g, '').replace(/[()]/g, '').trim();
-        const coreWords = coreSubj.split(/[\s\/]+/).filter(w => w.trim() !== '' && w.trim() !== 'ป' && w.trim() !== 'ม');
-        
-        let matchedHeader = '';
-        
-        // Search across all 3 branches for this grade (e.g. ป.3/1, ป.3/2, ป.3/3)
-        for (let b of branches) {
-          const targetSheetName = `${gradeFound}/${b}`;
-          const headers = gradeSheetCache[targetSheetName];
-          
-          if (headers && headers.length > 0) {
-            for (let h of headers) {
-              const hStr = String(h);
-              // Must be a "หลัก" subject for the same grade on the same day
-              if (hStr.includes('หลัก') && hStr.includes(gradeFound) && hStr.includes(dayStr)) {
-                // Just check that core words match (subject)
-                let matchAll = true;
-                for (let w of coreWords) {
-                  if (!hStr.includes(w)) {
-                    matchAll = false;
-                    break;
-                  }
-                }
-                
-                if (matchAll) {
-                  matchedHeader = hStr;
-                  break; // Found matching header
-                }
-              }
-            }
-          }
-          if (matchedHeader) break; // Stop searching branches if found
-        }
-        
-        // If we found a match and it's different, update it in the array
-        if (matchedHeader) {
-          // Check if date is before 18/5/2569 (18 May 2026)
-          if (dateObj && dateObj.getTime() < new Date(2026, 4, 18).getTime()) {
-             matchedHeader = matchedHeader.replace('MIDTERM 1/2569', 'SUMMER2569');
-          }
-          if (subject !== matchedHeader) {
-            data[i][0] = matchedHeader;
-            updatedCount++;
-          }
-        }
+    }
+    
+    if (subject.includes('MIDTERM 1/2569')) {
+      if (dateObj && dateObj.getTime() < new Date(2026, 4, 18).getTime()) {
+        const newSubject = subject.replace('MIDTERM 1/2569', 'SUMMER2569');
+        data[i][0] = newSubject;
+        updatedCount++;
       }
     }
   }
@@ -8193,5 +8212,5 @@ function updateDataLearnSubjects() {
   }
   
   Logger.log('Updated ' + updatedCount + ' rows in Data Learn.');
-  return 'Updated ' + updatedCount + ' rows in Data Learn.';
+  return 'อัปเดตข้อมูล Data Learn จำนวน ' + updatedCount + ' แถวเรียบร้อยแล้ว';
 }

@@ -773,7 +773,46 @@ function renderTeacherSalaryDetail(res) {
   const sumMinPart = sumMinutes % 60;
   const formattedSumHours = `${sumHoursPart} ชม. ${sumMinPart} นาที`;
 
-  document.getElementById('teacher_salary_net_pay').innerText = 'รายได้สุทธิ: ฿' + (res.totalPay || 0).toLocaleString();
+  const grossPay = res.totalPay || 0;
+  const netPay = res.netPay !== undefined ? res.netPay : grossPay;
+  const insDed = res.insuranceDeduction || 0;
+  
+  let netPayHtml = `รายได้สุทธิ: ฿${Math.round(netPay).toLocaleString()}`;
+  if (insDed > 0) {
+    netPayHtml += ` <span style="font-size: 0.75rem; color: var(--color-error); font-weight: 500;">(หักประกัน ฿${Math.round(insDed).toLocaleString()})</span>`;
+  } else if (res.insuranceStatus && res.insuranceStatus.includes('ครบแล้ว')) {
+    netPayHtml += ` <span style="font-size: 0.75rem; color: var(--color-success); font-weight: 500;">(ประกันครบแล้ว)</span>`;
+  }
+  
+  document.getElementById('teacher_salary_net_pay').innerHTML = netPayHtml;
+
+  // Update confirmation status UI
+  const statusText = document.getElementById('salary_confirm_status_text');
+  const confirmChk = document.getElementById('teacher_salary_confirm_chk');
+  if (res.isConfirmed) {
+    if (confirmChk) {
+      confirmChk.checked = true;
+      confirmChk.disabled = true;
+    }
+    if (statusText) {
+      statusText.style.display = 'block';
+      let dateStr = res.confirmedAt;
+      const cDate = new Date(res.confirmedAt);
+      if (!isNaN(cDate.getTime())) {
+        dateStr = cDate.toLocaleString('th-TH');
+      }
+      statusText.innerText = '✔️ ยืนยันแล้วเมื่อ ' + dateStr;
+    }
+  } else {
+    if (confirmChk) {
+      confirmChk.checked = false;
+      confirmChk.disabled = false;
+    }
+    if (statusText) {
+      statusText.style.display = 'none';
+    }
+  }
+
   document.getElementById('teacher_salary_total_hours').innerText = formattedSumHours;
   document.getElementById('teacher_salary_total_classes').innerText = (res.totalClasses || 0).toLocaleString() + ' คลาส';
   
@@ -972,7 +1011,7 @@ function bootApp() {
   google.script.run
     .withSuccessHandler(settings => {
       setLoading(false);
-      let initialPanel = 'dashboard';
+      let initialPanel = 'daily_grid';
       if (settings && !settings.error) {
         state.settings = settings;
         state.rooms = settings.rooms || [];
@@ -1695,14 +1734,36 @@ function convertDateFromSheet(dateVal) {
   return '';
 }
 
-function setLoading(show, text = 'กำลังโหลดข้อมูล...') {
+function setLoading(show, text = 'กำลังโหลด...') {
+  if (text.includes('บันทึก') || text.includes('save') || text.includes('Save')) {
+    setSavingToast(show, text);
+    return;
+  }
   const overlay = document.getElementById('loader_overlay');
   const loaderText = document.getElementById('loader_text');
   if (show) {
     loaderText.innerText = text;
-    overlay.classList.add('active');
+    if (overlay) overlay.classList.add('active');
   } else {
-    overlay.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+    setSavingToast(false);
+  }
+}
+
+let savingToastElement = null;
+function setSavingToast(show, text) {
+  if (show) {
+    if (!savingToastElement) {
+      savingToastElement = document.createElement('div');
+      savingToastElement.className = 'saving-toast';
+      document.body.appendChild(savingToastElement);
+    }
+    savingToastElement.innerHTML = `<span class="spinner" style="width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;display:inline-block;animation:spin 1s linear infinite;"></span> <span style="margin-left:8px;">${text}</span>`;
+    savingToastElement.classList.add('active');
+  } else {
+    if (savingToastElement) {
+      savingToastElement.classList.remove('active');
+    }
   }
 }
 
@@ -2152,6 +2213,13 @@ function switchPanel(panelName) {
     document.getElementById('grade_sheet_grid_table').innerHTML = `<tr><td style="padding: 40px; text-align: center; color: var(--text-muted);">กรุณาเลือกตารางระดับชั้นด้านบน</td></tr>`;
     document.getElementById('save_grade_sheet_btn').disabled = true;
   } else if (panelName === 'daily_grid') {
+    const dateInput = document.getElementById('daily_grid_filter_date');
+    if (dateInput && !dateInput.value) {
+      dateInput.value = new Date().toISOString().split('T')[0];
+    }
+    if (typeof switchDailyGridView === 'function') {
+      switchDailyGridView('daily');
+    }
     loadDailyGrid();
   } else if (panelName === 'private_students') {
     if (!state.navigatingToPayment) {
@@ -4207,6 +4275,10 @@ function loadDailyGrid(isSilent = false) {
   if (monthlyViewState.mode !== 'daily') {
     switchDailyGridView('daily');
   }
+  const dateInputEl = document.getElementById('daily_grid_filter_date');
+  if (dateInputEl && !dateInputEl.value) {
+    dateInputEl.value = new Date().toISOString().split('T')[0];
+  }
   const dateInput = document.getElementById('daily_grid_filter_date').value;
   const sheetDate = convertDateToSheet(dateInput);
   
@@ -5938,7 +6010,16 @@ function renderTeacherProfilesTable(teachers) {
   
   teachers.forEach(t => {
     const tr = document.createElement('tr');
-    const compVal = t.compensation || '150';
+    const actType = t.accountType || 'บัญชีทั่วไป';
+    const safeNick = (t.nickname || '').replace(/'/g, "\\'");
+    const safeFull = (t.fullName || '-').replace(/'/g, "\\'");
+    const safeSchool = (t.school || '-').replace(/'/g, "\\'");
+    const safePhone = (formatPhone(t.phone) || '-').replace(/'/g, "\\'");
+    const safeSubj = (t.subjects || '-').replace(/'/g, "\\'");
+    const safeBank = (t.bank || '-').replace(/'/g, "\\'");
+    const safeAcc = (t.accountNumber || '-').replace(/'/g, "\\'");
+    const safeType = actType.replace(/'/g, "\\'");
+
     tr.innerHTML = `
       <td style="font-weight:600;">${t.nickname}</td>
       <td>${t.fullName || '-'}</td>
@@ -5947,9 +6028,9 @@ function renderTeacherProfilesTable(teachers) {
       <td>${t.subjects || '-'}</td>
       <td>${t.bank || '-'}</td>
       <td>${t.accountNumber || '-'}</td>
-      <td style="text-align: right; font-weight: 600; color: var(--color-primary-hover);">฿${parseFloat(compVal).toLocaleString()}</td>
+      <td style="color: var(--color-primary); font-weight: 500;">${actType}</td>
       <td>
-        <button class="btn btn-secondary btn-icon" onclick="showEditTeacherModal('${t.nickname}', '${t.fullName}', '${t.school}', '${formatPhone(t.phone)}', '${t.subjects}', '${t.bank}', '${t.accountNumber}', '${compVal}')">✏️</button>
+        <button class="btn btn-secondary btn-icon" onclick="showEditTeacherModal('${safeNick}', '${safeFull}', '${safeSchool}', '${safePhone}', '${safeSubj}', '${safeBank}', '${safeAcc}', '${safeType}')">✏️</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -6100,19 +6181,18 @@ function showAddTeacherModal() {
   document.getElementById('teacher_modal').classList.add('active');
 }
 
-function showEditTeacherModal(nickname, fullName, school, phone, subjects, bank, accountNumber, compensation) {
+function showEditTeacherModal(nickname, fullName, school, phone, subjects, bank, accountNumber, accountType) {
   document.getElementById('teacher_form').reset();
   document.getElementById('teacher_modal_title').innerText = 'แก้ไขประวัติคุณครู';
   document.getElementById('t_nickname').value = nickname;
-  document.getElementById('t_nickname').readOnly = true; // Nickname is primary key
+  document.getElementById('t_nickname').readOnly = true;
   document.getElementById('t_fullname').value = fullName !== '-' ? fullName : '';
   document.getElementById('t_school').value = school !== '-' ? school : '';
   document.getElementById('t_phone').value = phone !== '-' ? phone : '';
   document.getElementById('t_subjects').value = subjects !== '-' ? subjects : '';
   document.getElementById('t_bank').value = bank !== '-' ? bank : '';
   document.getElementById('t_account_number').value = accountNumber !== '-' ? accountNumber : '';
-  document.getElementById('t_compensation').value = compensation && compensation !== '-' ? compensation : '150';
-    document.getElementById('t_account_type').value = accountType && accountType !== '-' ? accountType : 'บัญชีทั่วไป';
+  document.getElementById('t_account_type').value = accountType && accountType !== '-' ? accountType : 'บัญชีทั่วไป';
   
   document.getElementById('teacher_modal').classList.add('active');
 }
@@ -6131,8 +6211,7 @@ function saveTeacherProfile(e) {
     subjects: document.getElementById('t_subjects').value.trim(),
     bank: document.getElementById('t_bank').value.trim(),
     accountNumber: document.getElementById('t_account_number').value.trim(),
-    compensation: document.getElementById('t_compensation').value.trim(),
-      accountType: document.getElementById('t_account_type').value
+    accountType: document.getElementById('t_account_type').value
   };
   
   setLoading(true, 'กำลังจัดเก็บประวัติอาจารย์...');
@@ -6209,8 +6288,8 @@ function loadStaffSalarySummary() {
           
           if (isConfirmed) {
             confirmedCount++;
-            totalConfirmedPay += parseFloat(match.totalPay || 0);
-            payText = '฿' + Math.round(parseFloat(match.totalPay)).toLocaleString();
+            totalConfirmedPay += parseFloat(match.netPay || match.totalPay || 0);
+            payText = '฿' + Math.round(parseFloat(match.netPay || match.totalPay || 0)).toLocaleString();
             
             const confirmedDate = new Date(match.confirmedAt);
             if (!isNaN(confirmedDate.getTime())) {
@@ -6225,6 +6304,15 @@ function loadStaffSalarySummary() {
               timeText = match.confirmedAt;
             }
             statusHtml = '<span style="color: var(--color-success); font-weight: 700;">✔️ ยืนยันแล้ว</span>';
+          } else {
+            payText = '฿' + Math.round(parseFloat(match.netPay || match.totalPay || 0)).toLocaleString();
+          }
+          
+          let insText = match.insuranceDeduction ? '฿' + Math.round(match.insuranceDeduction).toLocaleString() : '-';
+          if (match.insuranceStatus && match.insuranceStatus.includes('ครบแล้ว')) {
+             insText = '<span style="color: var(--color-success); font-weight: bold;">ครบแล้ว</span>';
+          } else if (match.insuranceDeduction > 0) {
+             insText += ` <span style="font-size: 0.75rem; color: var(--text-muted);">${match.insuranceStatus || ''}</span>`;
           }
           
           html += `
@@ -6235,6 +6323,7 @@ function loadStaffSalarySummary() {
               <td style="color: var(--text-muted); white-space: nowrap; padding: 4px 8px;">${getMonthName(month)}</td>
               <td style="color: var(--text-muted); white-space: nowrap; padding: 4px 8px;">${year + 543}</td>
               <td style="text-align: right; font-weight: 700; color: ${isConfirmed ? 'var(--color-success)' : 'var(--text-muted)'}; white-space: nowrap; padding: 4px 8px;">${payText}</td>
+              <td style="text-align: right; white-space: nowrap; padding: 4px 8px;">${insText}</td>
               <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; padding: 4px 8px;">${timeText}</td>
               <td style="text-align: center; font-size: 0.82rem; white-space: nowrap; padding: 4px 8px;">${statusHtml}</td>
             </tr>
@@ -10373,3 +10462,50 @@ function populateMonthSelect() {
     }
   }
 }
+
+window.handleSalaryConfirmationChange = function(cb) {
+  if (!state.currentUser || !state.yearlySalaryData) return;
+  const teacherNick = state.currentUser.nickname || state.currentUser.username;
+  const yearPicker = document.getElementById('teacher_salary_year_picker');
+  const monthPicker = document.getElementById('teacher_salary_month_picker');
+  if (!yearPicker || !monthPicker) return;
+  
+  const year = parseInt(yearPicker.value);
+  const month = parseInt(monthPicker.value);
+  
+  const monthRes = state.yearlySalaryData.months[month];
+  if (!monthRes) return;
+  
+  const totalPay = monthRes.totalPay || 0;
+  const insDed = monthRes.insuranceDeduction || 0;
+  const teacherId = state.currentUser.teacherId || state.currentUser.username; // fallback to username
+  
+  if (cb.checked) {
+    setLoading(true, 'กำลังยืนยันข้อมูล...');
+    google.script.run
+      .withSuccessHandler(res => {
+        setLoading(false);
+        if (res && res.success) {
+          showToast('บันทึกการยืนยันเรียบร้อยแล้ว!', 'success');
+          // Update UI
+          const statusText = document.getElementById('salary_confirm_status_text');
+          if (statusText) {
+            statusText.style.display = 'block';
+            statusText.innerText = '✔️ ยืนยันแล้วเมื่อ ' + new Date().toLocaleString('th-TH');
+          }
+          monthRes.isConfirmed = true;
+          monthRes.confirmedAt = res.timestamp;
+          cb.disabled = true; // Lock checkbox after confirm
+        } else {
+          showToast('เกิดข้อผิดพลาด: ' + (res ? res.error : 'unknown'), 'error');
+          cb.checked = false;
+        }
+      })
+      .withFailureHandler(err => {
+        setLoading(false);
+        showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+        cb.checked = false;
+      })
+      .confirmTeacherSalary(year, month, teacherId, teacherNick, totalPay, insDed);
+  }
+};
