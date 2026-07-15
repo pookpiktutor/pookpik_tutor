@@ -1571,7 +1571,7 @@ function checkTeacherLeaves() {
             : `<span style="background:#e5e7eb; color:#6b7280; padding:0 4px; border-radius:3px; font-size:0.6rem;">${l.date || ''}</span>`;
           const borderColor = isToday ? '#f59e0b' : '#fbd58d';
           const bgColor = isToday ? '#fef3c7' : '#fffbeb';
-          return `<span style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 2px 4px; font-size: 0.68rem; text-align: center; line-height: 1.4;">
+          return `<span onclick="jumpToLeaveClass('${l.date}', ${l.rowIndex})" class="leave-card-clickable" style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 4px; font-size: 0.68rem; text-align: center; line-height: 1.4; cursor: pointer; transition: all 0.2s;">
             ${dateBadge}👨‍🏫 <strong>ครู ${l.teacher} ลา</strong> — ${formatSubjectName(l.subject)} (${cleanTimeStr(l.timeStart)}-${cleanTimeStr(l.timeEnd)})${l.teacherSub ? ` ครูแทน: ${l.teacherSub}` : ' ⚠️ไม่มีครูแทน'}
           </span>`;
         });
@@ -4455,7 +4455,7 @@ function renderDailyGrid() {
         }
         
         classesHTML += `
-          <div class="scheduled-item ${statusClass}" style="position: relative; padding: 6px 8px; border-radius: 8px; margin-bottom: 0px; border: 1.2px solid var(--border-color); ${cardBgStyle} ${cardBorderStyle}">
+          <div id="scheduled_item_${c.rowIndex}" class="scheduled-item ${statusClass}" style="position: relative; padding: 6px 8px; border-radius: 8px; margin-bottom: 0px; border: 1.2px solid var(--border-color); ${cardBgStyle} ${cardBorderStyle}">
             <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 2px;">
               <span class="scheduled-subject" style="font-family: var(--font-heading); font-weight: 700; font-size: 0.85rem; color: var(--text-main); line-height: 1.2; white-space: normal; word-break: break-word; overflow-wrap: anywhere;">${formatSubjectName(c.subject)}</span>
               <span style="font-size: 0.72rem; font-weight: bold; color: var(--color-primary-hover); white-space: nowrap; background: rgba(0, 132, 255, 0.06); padding: 1px 6px; border-radius: 10px; display: inline-block; margin-top: 2px;">
@@ -4527,6 +4527,14 @@ function renderDailyGrid() {
   
   if (filteredRooms.length === 0) {
     container.innerHTML = `<div style="grid-column: span 3; text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลห้องเรียนในสาขานี้</div>`;
+  }
+
+  if (state.pendingScrollRowIndex) {
+    const targetRowIndex = state.pendingScrollRowIndex;
+    state.pendingScrollRowIndex = null;
+    setTimeout(() => {
+      highlightScheduledItem(targetRowIndex);
+    }, 400);
   }
 }
 
@@ -10294,6 +10302,47 @@ function initializeApp() {
     });
   }
   setupCharCounting();
+}
+function jumpToLeaveClass(dateStr, rowIndex) {
+  // Switch to daily_grid panel first
+  switchPanel('daily_grid');
+  
+  // Convert date format
+  const formattedDate = convertDateFromSheet(dateStr);
+  const dateInput = document.getElementById('daily_grid_filter_date');
+  
+  if (dateInput) {
+    if (dateInput.value !== formattedDate) {
+      dateInput.value = formattedDate;
+      state.pendingScrollRowIndex = rowIndex;
+      loadDailyGrid();
+    } else {
+      highlightScheduledItem(rowIndex);
+    }
+  }
+}
+
+function highlightScheduledItem(rowIndex) {
+  const el = document.getElementById(`scheduled_item_${rowIndex}`);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // Add border/glow highlight
+    const originalBorder = el.style.border;
+    const originalShadow = el.style.boxShadow;
+    const originalBg = el.style.backgroundColor;
+    el.style.border = '2.5px solid #f59e0b';
+    el.style.boxShadow = '0 0 20px rgba(245, 158, 11, 0.7)';
+    el.style.backgroundColor = 'rgb(254, 243, 199)';
+    
+    setTimeout(() => {
+      el.style.border = originalBorder;
+      el.style.boxShadow = originalShadow;
+      el.style.backgroundColor = originalBg;
+    }, 2500);
+  } else {
+    showToast('ไม่พบคลาสเรียนในหน้านี้ (อาจถูกลบหรือเปลี่ยนห้อง)', 'warning');
+  }
 }
 
 if (document.readyState === 'loading') {
