@@ -5558,15 +5558,22 @@ function saveClassLog(e) {
   // Create recurring copies if any
   const additionalRecurringLogs = [];
   recurringLogsPerTab.forEach(r => {
-    const current = parseISODate(convertDateToIso(r.log.date));
-    const end = parseISODate(r.endDate);
-    if (!current || !end || current >= end) return;
+    // r.log.date is 'DD/MM/YYYY', convert Date from sheet converts to YYYY-MM-DD
+    const currentStr = convertDateFromSheet(r.log.date);
+    if (!currentStr) return;
+    const current = new Date(currentStr);
+    const end = new Date(r.endDate);
+    
+    if (isNaN(current.getTime()) || isNaN(end.getTime()) || current >= end) return;
     
     const nextDate = new Date(current);
     nextDate.setDate(nextDate.getDate() + 7);
     while (nextDate <= end) {
       const copy = { ...r.log };
-      copy.date = convertDateToSheet(formatDateToIso(nextDate));
+      const y = nextDate.getFullYear();
+      const m = String(nextDate.getMonth() + 1).padStart(2, '0');
+      const d = String(nextDate.getDate()).padStart(2, '0');
+      copy.date = convertDateToSheet(`${y}-${m}-${d}`);
       additionalRecurringLogs.push(copy);
       nextDate.setDate(nextDate.getDate() + 7);
     }
