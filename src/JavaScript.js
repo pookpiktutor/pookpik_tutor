@@ -327,16 +327,17 @@ function initTeacherFilterDates() {
 }
 
 function switchTeacherPanel(panelId) {
+  // Hide ALL teacher panels explicitly with display: none (most reliable)
   if(document.getElementById('teacher_daily_schedule_panel')) {
-    document.getElementById('teacher_daily_schedule_panel').style.display = '';
+    document.getElementById('teacher_daily_schedule_panel').style.display = 'none';
     document.getElementById('teacher_daily_schedule_panel').classList.remove('active');
   }
   if(document.getElementById('teacher_monthly_salary_panel')) {
-    document.getElementById('teacher_monthly_salary_panel').style.display = '';
+    document.getElementById('teacher_monthly_salary_panel').style.display = 'none';
     document.getElementById('teacher_monthly_salary_panel').classList.remove('active');
   }
   if (document.getElementById('evaluation_form_panel')) {
-    document.getElementById('evaluation_form_panel').style.display = '';
+    document.getElementById('evaluation_form_panel').style.display = 'none';
     document.getElementById('evaluation_form_panel').classList.remove('active');
   }
   
@@ -345,9 +346,10 @@ function switchTeacherPanel(panelId) {
     item.classList.remove('active');
   });
   
+  // Show target panel with display: flex (correct layout, not 'block' which breaks flexbox)
   const targetPanel = document.getElementById(panelId + '_panel');
   if (targetPanel) {
-    targetPanel.style.display = '';
+    targetPanel.style.display = 'flex';
     targetPanel.classList.add('active');
   }
   
