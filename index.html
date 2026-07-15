@@ -2810,7 +2810,7 @@
         </div>
         
         <!-- PANEL: MONTHLY SALARY -->
-        <div class="view-panel" id="teacher_monthly_salary_panel" style="display: none; padding-right: 4px; padding-bottom: 20px;">
+        <div class="view-panel" id="teacher_monthly_salary_panel" style="display: none; padding-right: 4px; padding-bottom: 20px; flex-grow: 1; overflow-y: auto; height: 100%;">
           <div class="toolbar teacher-salary-sticky-toolbar" style="flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
             <div class="filter-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; width: 100%;">
               <div style="display: flex; align-items: center; gap: 6px;">
@@ -2830,17 +2830,13 @@
           <!-- Month Selector styling style tag -->
           <style>
           .teacher-salary-sticky-toolbar {
-            position: sticky;
-            top: 0;
+            position: relative;
             z-index: 100;
             background: var(--bg-body, #ffffff);
-            padding: 8px 0;
+            padding: 16px 0 8px 0;
+            margin-bottom: 16px;
           }
-          @media (max-width: 768px) {
-            .teacher-salary-sticky-toolbar {
-              top: 46px !important;
-            }
-          }
+
           .month-tab-btn {
             flex: 1;
             min-width: 60px;
