@@ -3224,12 +3224,10 @@ function getTeacherCoursesAndStudents(logUser) {
           const cellCourse = (courseRow[c] || '').toString().toLowerCase().trim();
           const cellDayTime = (dayTimeRow[c] || '').toString().toLowerCase().trim();
           
-          let isMatch = false;
-          if (cellCourse === targetCourseName) {
-            isMatch = true;
-          } else if (cellCourse && (cellCourse.includes(targetCourseName) || targetCourseName.includes(cellCourse))) {
-            if (!targetDayTime || (cellDayTime && cellDayTime.includes(targetDayTime)) || (targetDayTime && targetDayTime.includes(cellDayTime)) || cellCourse.includes(targetDayTime)) {
-              isMatch = true;
+          let isMatch = matchCourseName(targetCourseName, cellCourse);
+          if (isMatch && targetDayTime) {
+            if (cellDayTime && !cellDayTime.includes(targetDayTime) && !targetDayTime.includes(cellDayTime) && !cellCourse.includes(targetDayTime)) {
+               isMatch = false;
             }
           }
           

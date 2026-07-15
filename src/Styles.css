@@ -1,4 +1,3 @@
-
 /* Version 58.0.0: ปรับธีมสีเป็นสีสันสดใส ฟ้า เขียว เหลือง สไตล์วัยรุ่นพรีเมียม */
 
 /* CSS Reset & Variable Definitions */
@@ -4120,4 +4119,3 @@ html, body { overflow-x: hidden !important; max-width: 100vw !important; }
 .table-responsive { overflow-x: auto !important; }
 .custom-table th, .custom-table td { white-space: nowrap !important; padding: 1px 2px !important; font-size: 0.7rem !important; line-height: 1.15; }
 @media (max-width: 768px) { .custom-table th, .custom-table td { padding: 1px 2px !important; font-size: 0.6rem !important; } }
-

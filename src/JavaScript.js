@@ -1,5 +1,3 @@
-
-
 function safeSetValue(id, val) {
     const el = document.getElementById(id);
     if (el) el.value = val;
@@ -10295,4 +10293,3 @@ if (document.readyState === 'loading') {
 } else {
   initializeApp();
 }
-
