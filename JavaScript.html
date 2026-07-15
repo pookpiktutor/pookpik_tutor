@@ -5558,14 +5558,31 @@ function saveClassLog(e) {
 
   // Create recurring copies if any
   const additionalRecurringLogs = [];
-  recurringLogsPerTab.forEach(r => {
-    // r.log.date is 'DD/MM/YYYY', convert Date from sheet converts to YYYY-MM-DD
+  let hasRecurringError = false;
+
+  for (const r of recurringLogsPerTab) {
+    if (!r.log.date || !r.endDate) {
+      showToast('กรุณาระบุวันที่เริ่มต้นและสิ้นสุดของคอร์สสำหรับการบันทึกซ้ำ', 'error');
+      hasRecurringError = true;
+      break;
+    }
+
     const currentStr = convertDateFromSheet(r.log.date);
-    if (!currentStr) return;
+    if (!currentStr) continue;
     const current = new Date(currentStr);
     const end = new Date(r.endDate);
     
-    if (isNaN(current.getTime()) || isNaN(end.getTime()) || current >= end) return;
+    if (isNaN(current.getTime()) || isNaN(end.getTime())) {
+      showToast('รูปแบบวันที่ไม่ถูกต้อง', 'error');
+      hasRecurringError = true;
+      break;
+    }
+    
+    if (end < current) {
+      showToast('วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่มต้น', 'error');
+      hasRecurringError = true;
+      break;
+    }
     
     const nextDate = new Date(current);
     nextDate.setDate(nextDate.getDate() + 7);
@@ -5578,7 +5595,11 @@ function saveClassLog(e) {
       additionalRecurringLogs.push(copy);
       nextDate.setDate(nextDate.getDate() + 7);
     }
-  });
+  }
+
+  if (hasRecurringError) {
+    return; // Stop saving if validation failed
+  }
   
   logsToAdd.push(...additionalRecurringLogs);
 
@@ -5589,7 +5610,11 @@ function saveClassLog(e) {
   google.script.run
     .withSuccessHandler(res => {
       if (res && res.success) {
-        showToast('บันทึก/แก้ไขข้อมูลคลาสเรียนสำเร็จแล้ว!', 'success');
+        if (additionalRecurringLogs.length > 0) {
+          showToast('บันทึกคลาสเรียนซ้ำสำเร็จจำนวน ' + logsToAdd.length + ' คาบ!', 'success');
+        } else {
+          showToast('บันทึก/แก้ไขข้อมูลคลาสเรียนสำเร็จแล้ว!', 'success');
+        }
         state.forceReloadGrid = true;
         const activePanel = document.querySelector('.nav-item.active')?.getAttribute('data-panel');
         if (activePanel === 'daily_grid') loadDailyGrid();
