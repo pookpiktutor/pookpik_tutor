@@ -157,8 +157,7 @@ body {
 
   width: 100vw;
 
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 
 }
 
@@ -579,7 +578,7 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  
 }
 
 
@@ -657,7 +656,7 @@ body {
   flex-grow: 1;
   min-height: 0;
   padding: 32px;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -670,11 +669,9 @@ body {
   flex-direction: column;
   gap: 12px;
   animation: fadeIn 0.3s ease-out;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: visible;
   
-  flex: 1;
-  min-height: 0;
+  
   
   padding-right: 4px;
   padding-bottom: 20px;
