@@ -830,7 +830,7 @@
                     <th>วิชาที่รับสอน</th>
                     <th>ธนาคาร</th>
                     <th>เลขบัญชี</th>
-                    <th>ประเภทบัญชี</th>
+                    <th>ค่าตอบแทน (บาท/ชม.)</th>
                     <th>แก้ไข</th>
                   </tr>
                 </thead>
@@ -896,7 +896,23 @@
             </div>
 
             <!-- Staff Yearly Summary Banner -->
-            
+            <!-- Staff Yearly Summary Banner -->
+            <div id="staff_yearly_summary_banner" style="display: none; margin-bottom: 10px;">
+              <div class="form-grid-3" style="gap: 8px;">
+                <div class="widget-card glass-panel" style="padding: 8px 12px; border-left: 3px solid var(--color-success); display: flex; align-items: center; justify-content: space-between;">
+                  <span class="widget-label" style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0;">💵 รายได้รวมทั้งปี:</span>
+                  <span class="widget-value" id="staff_yearly_total_pay" style="font-size: 1.05rem; font-weight: 800; color: var(--color-success); font-family: 'Outfit', sans-serif;">฿0</span>
+                </div>
+                <div class="widget-card glass-panel" style="padding: 8px 12px; border-left: 3px solid var(--color-primary); display: flex; align-items: center; justify-content: space-between;">
+                  <span class="widget-label" style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0;">⏱️ ชั่วโมงสอนรวมทั้งปี:</span>
+                  <span class="widget-value" id="staff_yearly_total_hours" style="font-size: 1.05rem; font-weight: 800; color: var(--color-primary); font-family: 'Outfit', sans-serif;">0 ชม.</span>
+                </div>
+                <div class="widget-card glass-panel" style="padding: 8px 12px; border-left: 3px solid var(--color-purple); display: flex; align-items: center; justify-content: space-between;">
+                  <span class="widget-label" style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0;">📚 คลาสสอนรวมทั้งปี:</span>
+                  <span class="widget-value" id="staff_yearly_total_classes" style="font-size: 1.05rem; font-weight: 800; color: var(--color-purple); font-family: 'Outfit', sans-serif;">0 คลาส</span>
+                </div>
+              </div>
+            </div>
 
             <!-- Calculation Result card -->
             <div id="calc_result_card" style="display: none; padding: 10px 14px; margin-bottom: 8px;" class="glass-panel">
@@ -1000,8 +1016,7 @@
                       <th>เดือน</th>
                       <th>ปี</th>
                       <th style="text-align: right;">ยอดเงินเดือนสุทธิ</th>
-                      <th style="text-align: right;">หักประกัน</th>
-                      <th>ยืนยัน</th>
+                      <th>เวลาที่กดยืนยัน</th>
                       <th style="text-align: center;">สถานะ</th>
                     </tr>
                   </thead>
@@ -2133,7 +2148,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <form id="teacher_form" onsubmit="submitTeacherProfile(event)">
+          <form id="teacher_form" onsubmit="saveTeacherProfile(event)">
             <div class="form-grid">
               <div class="form-group">
                 <label class="form-label">ชื่อเล่นคุณครู</label>
@@ -2581,17 +2596,16 @@
         }
         /* Teacher schedule container */
         #teacher_schedule_scroll_wrapper {
-          
-          overflow-y: auto !important;
-          -webkit-overflow-scrolling: touch !important;
+          max-height: calc(100vh - 170px) !important;
         }
         /* Salary panel padding */
         #teacher_monthly_salary_panel {
+          max-height: calc(100vh - 150px) !important;
           padding: 10px !important;
         }
         /* Evaluation form */
         #evaluation_form_panel {
-          
+          max-height: calc(100vh - 150px) !important;
           overflow-y: auto;
           padding: 10px !important;
         }
@@ -2802,7 +2816,7 @@
               <button class="btn btn-primary" onclick="loadTeacherDailySchedule()">🔄 ดึงข้อมูลตารางสอน</button>
             </div>
           </div>
-          <div id="teacher_schedule_scroll_wrapper" style="flex-grow: 1; overflow-y: auto; padding-right: 4px;  border-radius: var(--radius-lg);">
+          <div id="teacher_schedule_scroll_wrapper" style="flex-grow: 1; overflow-y: auto; padding-right: 4px; max-height: calc(100vh - 210px); border-radius: var(--radius-lg);">
             <div id="teacher_schedule_container" class="teacher-grid">
               <div style="text-align: center; color: var(--text-muted); padding: 40px; width: 100%;">ไม่มีข้อมูลตารางเรียนในช่วงเวลาที่เลือก</div>
             </div>
@@ -2810,33 +2824,26 @@
         </div>
         
         <!-- PANEL: MONTHLY SALARY -->
-        <div class="view-panel" id="teacher_monthly_salary_panel" style="display: none; padding-right: 4px; padding-bottom: 20px; flex-grow: 1; overflow-y: auto; height: 100%;">
-          <div class="toolbar teacher-salary-sticky-toolbar" style="flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
-            <div class="filter-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; width: 100%;">
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">ปี:</label>
-                <select id="teacher_salary_year_picker" class="form-select" style="width: 280px;" onchange="loadTeacherYearlySalary()"></select>
+        <div class="view-panel" id="teacher_monthly_salary_panel" style="display: none; overflow-y: auto; max-height: calc(100vh - 100px); padding-right: 4px; padding-bottom: 20px;">
+          <div class="glass-panel" style="margin-bottom: 8px; padding: 8px 12px;">
+            <div class="section-title-group" style="margin-top: 0; margin-bottom: 4px;">
+              <div class="section-label" style="font-size: 0.82rem; font-weight: 700;">เลือกปีและเดือนเพื่อดูสรุปรายได้และเงินเดือน</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <label class="form-label" style="margin-bottom: 0; font-size: 0.78rem;">ปีการศึกษา:</label>
+                <select id="teacher_salary_year_picker" class="form-select" style="width: 180px; font-size: 0.78rem; padding: 2px 6px;" onchange="loadTeacherYearlySalary()"></select>
               </div>
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">เดือน:</label>
-                <select id="teacher_salary_month_picker" class="form-select" style="width: 240px;" onchange="handleMonthPickerChange()"></select>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <label class="form-label" style="margin-bottom: 0; font-size: 0.78rem;">เดือน:</label>
+                <select id="teacher_salary_month_picker" class="form-select" style="width: 180px; font-size: 0.78rem; padding: 2px 6px;" onchange="handleMonthPickerChange()"></select>
               </div>
-              <button class="btn btn-primary" onclick="loadTeacherYearlySalary()">
-                <span>📊</span> คำนวณ
-              </button>
+              <button class="btn btn-primary" style="padding: 2px 10px; font-size: 0.78rem;" onclick="loadTeacherYearlySalary()">🧮 คำนวณ</button>
             </div>
           </div>
           
           <!-- Month Selector styling style tag -->
           <style>
-          .teacher-salary-sticky-toolbar {
-            position: relative;
-            z-index: 100;
-            background: var(--bg-body, #ffffff);
-            padding: 16px 0 8px 0;
-            margin-bottom: 16px;
-          }
-
           .month-tab-btn {
             flex: 1;
             min-width: 60px;
@@ -2879,6 +2886,27 @@
           }
           </style>
 
+          <!-- Yearly Summary Header Banner -->
+          <div class="glass-panel" id="teacher_yearly_summary_banner" style="margin-bottom: 6px; padding: 6px 10px; border-left: 3px solid var(--color-success); background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,253,244,0.9) 100%);">
+            <h3 style="font-family: var(--font-heading); font-weight: 700; font-size: 0.75rem; color: var(--color-success-hover); margin-top: 0; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+              <span>📊</span> สรุปยอดเงินสอนชุณครูทั้งปี
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px;">
+              <div style="padding: 4px 8px; background: rgba(255,255,255,0.75); border-radius: 6px; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.62rem; color: var(--text-muted); font-weight: 600;">เงินเดือนรวมทั้ปี:</div>
+                <div style="font-size: 0.95rem; font-weight: 800; color: var(--color-success); font-family: 'Outfit', sans-serif;" id="yearly_salary_total_pay">฿0</div>
+              </div>
+              <div style="padding: 4px 8px; background: rgba(255,255,255,0.75); border-radius: 6px; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.62rem; color: var(--text-muted); font-weight: 600;">ชั่วโมงสอนรวมทั้งปี:</div>
+                <div style="font-size: 0.95rem; font-weight: 800; color: var(--color-primary); font-family: 'Outfit', sans-serif;" id="yearly_salary_total_hours">0 ชม.</div>
+              </div>
+              <div style="padding: 4px 8px; background: rgba(255,255,255,0.75); border-radius: 6px; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.62rem; color: var(--text-muted); font-weight: 600;">คาบเรียนรวมทั้งปี:</div>
+                <div style="font-size: 0.95rem; font-weight: 800; color: var(--color-purple); font-family: 'Outfit', sans-serif;" id="yearly_salary_total_classes">0 คลาส</div>
+              </div>
+            </div>
+          </div>
+          
           <!-- Month Selector Tabs -->
           <div class="month-tabs-container" id="teacher_salary_tabs_container" style="display: none;">
             <button class="month-tab-btn active" onclick="switchMonthTab(1)" id="month_tab_1">ม.ค.</button>
@@ -2951,7 +2979,7 @@
           </div>
         </div>
           <!-- EVALUATION FORM PANEL -->
-          <div class="view-panel" id="evaluation_form_panel" style="overflow-y: auto;  padding-right: 6px; padding-bottom: 30px;">
+          <div class="view-panel" id="evaluation_form_panel" style="overflow-y: auto; max-height: calc(100vh - 110px); padding-right: 6px; padding-bottom: 30px;">
             <form id="evaluation_form_submit" onsubmit="submitStudentEvaluation(event)">
               <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;" class="grid-cols-3">
                 <!-- Left: Form -->
@@ -3466,14 +3494,6 @@
 #grade_sheet_grid_table td div {
   white-space: nowrap !important;
 }
-.leave-card-clickable:hover {
-  transform: translateY(-1.5px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.08) !important;
-  filter: brightness(0.97);
-}
-.leave-card-clickable:active {
-  transform: translateY(0);
-}
 </style>
 
 
@@ -3523,6 +3543,6 @@ function editStudentFromGradeSheet(studentName) {
 }
 </script>
     <datalist id="teachers_datalist"></datalist>
-    <script src="src/JavaScript.js?v=1784111392" charset="utf-8"></script>
+    <script src="src/JavaScript.js?v=1784119999" charset="utf-8"></script>
 </body>
 </html>
