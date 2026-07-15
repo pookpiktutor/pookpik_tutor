@@ -327,10 +327,17 @@ function initTeacherFilterDates() {
 }
 
 function switchTeacherPanel(panelId) {
-  if(document.getElementById('teacher_daily_schedule_panel')) document.getElementById('teacher_daily_schedule_panel').style.display = 'none';
-  if(document.getElementById('teacher_monthly_salary_panel')) document.getElementById('teacher_monthly_salary_panel').style.display = 'none';
+  if(document.getElementById('teacher_daily_schedule_panel')) {
+    document.getElementById('teacher_daily_schedule_panel').style.display = '';
+    document.getElementById('teacher_daily_schedule_panel').classList.remove('active');
+  }
+  if(document.getElementById('teacher_monthly_salary_panel')) {
+    document.getElementById('teacher_monthly_salary_panel').style.display = '';
+    document.getElementById('teacher_monthly_salary_panel').classList.remove('active');
+  }
   if (document.getElementById('evaluation_form_panel')) {
-    if(document.getElementById('evaluation_form_panel')) document.getElementById('evaluation_form_panel').style.display = 'none';
+    document.getElementById('evaluation_form_panel').style.display = '';
+    document.getElementById('evaluation_form_panel').classList.remove('active');
   }
   
   // Remove active from all matching nav elements (desktop sidebar & mobile bottom nav)
@@ -338,7 +345,11 @@ function switchTeacherPanel(panelId) {
     item.classList.remove('active');
   });
   
-  document.getElementById(panelId + '_panel').style.display = 'block';
+  const targetPanel = document.getElementById(panelId + '_panel');
+  if (targetPanel) {
+    targetPanel.style.display = '';
+    targetPanel.classList.add('active');
+  }
   
   // Add active to all elements with matching panelId
   document.querySelectorAll(`[data-teacher-panel="${panelId}"]`).forEach(item => {
