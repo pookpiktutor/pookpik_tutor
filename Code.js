@@ -7474,6 +7474,7 @@ function getTeacherLeaveToday(logUser) {
       }
 
       leaves.push({
+        rowIndex: i + 2,
         teacher: teacherName,
         subject: subject,
         timeStart: timeStart,
