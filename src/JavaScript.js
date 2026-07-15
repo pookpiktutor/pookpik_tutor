@@ -6446,6 +6446,9 @@ function handleStaffPayrollMonthChange() {
       
       const tr = document.createElement('tr');
       tr.style.fontSize = '0.70rem';
+      if (displayRole === 'ครูแทน') {
+        tr.style.backgroundColor = '#fff9cc';
+      }
       tr.innerHTML = `
         <td style="white-space: nowrap;">${formatDateToThai(c.date)}</td>
         <td style="white-space: nowrap;"><div style="font-weight:600;">${c.subject}</div></td>
