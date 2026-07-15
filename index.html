@@ -2814,20 +2814,19 @@
         
         <!-- PANEL: MONTHLY SALARY -->
         <div class="view-panel" id="teacher_monthly_salary_panel" style="display: none; overflow-y: auto;  padding-right: 4px; padding-bottom: 20px;">
-          <div class="glass-panel" style="position: sticky; top: 0; z-index: 100; margin-bottom: 8px; padding: 8px 12px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
-            <div class="section-title-group" style="margin-top: 0; margin-bottom: 4px;">
-              <div class="section-label" style="font-size: 0.82rem; font-weight: 700;">เลือกปีและเดือนเพื่อดูสรุปรายได้และเงินเดือน</div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <div style="display: flex; align-items: center; gap: 4px;">
-                <label class="form-label" style="margin-bottom: 0; font-size: 0.78rem;">ปีการศึกษา:</label>
-                <select id="teacher_salary_year_picker" class="form-select" style="width: 180px; font-size: 0.78rem; padding: 2px 6px;" onchange="loadTeacherYearlySalary()"></select>
+          <div class="toolbar" style="flex-wrap: wrap; gap: 12px; margin-bottom: 8px; position: sticky; top: 0; z-index: 100; background: var(--bg-body); padding: 8px 0;">
+            <div class="filter-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; width: 100%;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">ปี:</label>
+                <select id="teacher_salary_year_picker" class="form-select" style="width: 280px;" onchange="loadTeacherYearlySalary()"></select>
               </div>
-              <div style="display: flex; align-items: center; gap: 4px;">
-                <label class="form-label" style="margin-bottom: 0; font-size: 0.78rem;">เดือน:</label>
-                <select id="teacher_salary_month_picker" class="form-select" style="width: 180px; font-size: 0.78rem; padding: 2px 6px;" onchange="handleMonthPickerChange()"></select>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <label class="form-label" style="margin-bottom: 0; white-space: nowrap;">เดือน:</label>
+                <select id="teacher_salary_month_picker" class="form-select" style="width: 240px;" onchange="handleMonthPickerChange()"></select>
               </div>
-              <button class="btn btn-primary" style="padding: 2px 10px; font-size: 0.78rem;" onclick="loadTeacherYearlySalary()">🧮 คำนวณ</button>
+              <button class="btn btn-primary" onclick="loadTeacherYearlySalary()">
+                <span>📊</span> คำนวณ
+              </button>
             </div>
           </div>
           
