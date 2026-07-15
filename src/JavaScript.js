@@ -5582,6 +5582,31 @@ function saveClassLog(e) {
       hasRecurringError = true;
       break;
     }
+
+    const subject = r.log.subject || '';
+    let maxWeeks = -1; // unlimited
+    let typeName = '';
+    
+    if (subject.includes('เดี่ยว')) {
+      maxWeeks = 4;
+      typeName = 'เดี่ยว';
+    } else if (subject.includes('ย่อย')) {
+      maxWeeks = 8;
+      typeName = 'ย่อย';
+    } else if (subject.includes('หลัก')) {
+      maxWeeks = -1;
+    }
+    
+    const timeDiff = end.getTime() - current.getTime();
+    const diffWeeks = Math.floor(timeDiff / (1000 * 3600 * 24 * 7));
+    
+    // If diffWeeks is e.g. 4, it means 5 total classes (start + 4 extra).
+    // So if maxWeeks is 4, diffWeeks must be < 4 (max 3 extra classes, 4 total).
+    if (maxWeeks !== -1 && diffWeeks >= maxWeeks) {
+      showToast(`วิชาเรียนที่มีคำว่า "${typeName}" สามารถบันทึกซ้ำได้ไม่เกิน ${maxWeeks} สัปดาห์ (รวมสัปดาห์แรก)`, 'error');
+      hasRecurringError = true;
+      break;
+    }
     
     const nextDate = new Date(current);
     nextDate.setDate(nextDate.getDate() + 7);
