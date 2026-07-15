@@ -763,10 +763,12 @@ function renderTeacherSalaryDetail(res) {
     const tr = document.createElement('tr');
     
     let isSub = false;
-    let displayRole = c.role;
-    if (displayRole && (displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน'))) {
+    let displayRole = c.role || 'ครูประจำ';
+    if (displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน')) {
       displayRole = 'ครูแทน';
       isSub = true;
+    } else {
+      displayRole = 'ครูประจำ';
     }
     
     if (isSub) {
@@ -785,7 +787,7 @@ function renderTeacherSalaryDetail(res) {
       <td>${(c.room || '-').replace(/\s*zoom\s*\d*/gi, '').trim() || '-'}</td>
       <td>${formatHoursMinutes(c.hours)}</td>
       <td style="text-align: center;">${c.numKids} คน</td>
-      <td><span class="badge ${isSub ? 'badge-warning' : 'badge-success'}">${displayRole}</span></td>
+      <td><span class="badge ${isSub ? 'badge-warning' : 'badge-info'}" style="font-size: 0.65rem; padding: 4px 8px; font-weight: 600; border-radius: 6px;">${displayRole}</span></td>
       <td style="text-align: right;">฿${c.rate.toLocaleString()}</td>
       <td style="text-align: right; font-weight:600; color:var(--color-success);">฿${c.pay.toLocaleString()}</td>
       <td style="text-align: center;">
@@ -6435,9 +6437,11 @@ function handleStaffPayrollMonthChange() {
     
     monthRes.classes.forEach(c => {
       // Clean roles
-      let displayRole = c.role || '';
-      if (displayRole.includes('สอนแทน')) {
-        displayRole = 'สอนแทน';
+      let displayRole = c.role || 'ครูประจำ';
+      if (displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน')) {
+        displayRole = 'ครูแทน';
+      } else {
+        displayRole = 'ครูประจำ';
       }
       
       const tr = document.createElement('tr');
@@ -6450,7 +6454,7 @@ function handleStaffPayrollMonthChange() {
         <td style="text-align: center; white-space: nowrap;">${c.numKids} คน</td>
         <td style="text-align: right; white-space: nowrap;">฿${c.rate.toLocaleString()}</td>
         <td style="text-align: right; font-weight:600; color:var(--color-success); white-space: nowrap;">฿${c.pay.toLocaleString()}</td>
-        <td style="white-space: nowrap;"><span class="badge ${displayRole === 'สอนแทน' ? 'badge-warning' : 'badge-primary'}" style="font-size: 0.65rem; padding: 2px 6px;">${displayRole}</span></td>
+        <td style="white-space: nowrap;"><span class="badge ${displayRole === 'ครูแทน' ? 'badge-warning' : 'badge-info'}" style="font-size: 0.65rem; padding: 4px 8px; font-weight: 600; border-radius: 6px;">${displayRole}</span></td>
       `;
       tbody.appendChild(tr);
     });
