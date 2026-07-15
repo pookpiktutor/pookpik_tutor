@@ -801,8 +801,11 @@ function renderTeacherSalaryDetail(res) {
     tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบรายการสอนของคุณครูในช่วงเวลาที่ระบุ</td></tr>`;
   }
   
-  // Smooth scroll to details container
-  resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Smooth scroll to top of panel so toolbar is visible
+  const panel = document.getElementById('teacher_monthly_salary_panel');
+  if (panel) {
+    panel.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
 
 function updateTeacherConfirm(rowIndex, cb, isSub) {
