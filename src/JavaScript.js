@@ -900,9 +900,11 @@ function initTeacherFilterDates() {
 
     yearPicker.innerHTML = '';
 
-    // Show current year +/- 2 years
+    // Fixed range: start from 2569 B.E. (2026 C.E.) for 10 years
+    const startYear = 2026; // 2569 B.E.
+    const endYear = startYear + 9; // 10 years forward
 
-    for (let y = year - 2; y <= year + 2; y++) {
+    for (let y = startYear; y <= endYear; y++) {
 
       const opt = document.createElement('option');
 
@@ -3840,7 +3842,11 @@ function populateDropdowns() {
 
     const optionsHtml = [];
 
-    for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+    // Fixed range: start from 2569 B.E. (2026 C.E.) for 10 years
+    const startYearStaff = 2026;
+    const endYearStaff = startYearStaff + 9;
+
+    for (let y = startYearStaff; y <= endYearStaff; y++) {
 
       const selected = y === currentYear ? ' selected' : '';
 
@@ -8802,9 +8808,11 @@ function renderDailyAttendanceSummary() {
 
   const filteredLogs = (state.classLogs || []).filter(log => {
 
+    // roomBranch may contain extra text like "ห้อง 33 สาขา 2\niPad025"
+    // so use includes() instead of exact match
     const logBranchClean = (log.roomBranch || '').replace(/\s+/g, '');
 
-    return logBranchClean === branchFilter;
+    return logBranchClean.includes(branchFilter) || branchFilter.includes(logBranchClean);
 
   });
 
