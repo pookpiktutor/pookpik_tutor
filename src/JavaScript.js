@@ -4399,8 +4399,14 @@ function renderDailyAttendanceSummary() {
   const container = document.getElementById('daily_attendance_summary_container');
   if (!container) return;
   
-  if (!state.classLogs || state.classLogs.length === 0) {
-    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">ไม่มีข้อมูลคลาสเรียนในวันนี้</div>`;
+  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  const filteredLogs = (state.classLogs || []).filter(log => {
+    const logBranchClean = (log.roomBranch || '').replace(/\s+/g, '');
+    return logBranchClean === branchFilter;
+  });
+  
+  if (filteredLogs.length === 0) {
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">ไม่มีข้อมูลคลาสเรียนในสาขานี้สำหรับวันนี้</div>`;
     return;
   }
   
@@ -4435,7 +4441,7 @@ function renderDailyAttendanceSummary() {
     return cleanVal.includes('หลัก') || cleanVal.includes('ѡ') || ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'].some(g => cleanVal.includes(g));
   };
   
-  (state.classLogs || []).forEach(log => {
+  filteredLogs.forEach(log => {
     const startClean = cleanTimeStr(log.timeStart);
     const mappedStart = startClean ? startClean.substring(0, 2) + ':00' : '';
     const subject = log.subject || '';
@@ -4495,7 +4501,7 @@ function renderDailyAttendanceSummary() {
   let allMainUniqueNames = [];
   
   // Pre-calculate unique student names (main + private, including subgroup)
-  (state.classLogs || []).forEach(log => {
+  filteredLogs.forEach(log => {
     const subject = log.subject || '';
     const enrolledStudents = (state.enrollments && state.enrollments[subject]) || [];
     if (Array.isArray(enrolledStudents)) {
