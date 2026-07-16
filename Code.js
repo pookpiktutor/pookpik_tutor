@@ -4958,21 +4958,24 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         // Check column B (teacherRegular) and C (teacherSub)
         const cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
         const cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
+        const cleanB = cellB.replace(/^ครู/, '').trim();
+        const cleanC = cellC.replace(/^ครู/, '').trim();
         const cleanNick = cleanResolvedNick.replace(/^ครู/, '').trim();
         
-        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cellB.replace(/^ครู/, '').trim() === cleanNick);
-        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cellC.replace(/^ครู/, '').trim() === cleanNick);
+        const matchB = cleanB !== '' && (cleanB === cleanNick || cleanB.includes(cleanNick) || cleanNick.includes(cleanB));
+        const matchC = cleanC !== '' && (cleanC === cleanNick || cleanC.includes(cleanNick) || cleanNick.includes(cleanC) || 
+                       (cellC.includes(cleanNick) && cellC !== '⚠️ไม่มีครูแทน' && cellC !== '-' && cellC !== '(ไม่มีผู้สอนแทน)'));
         
         // If both B and C have values, use C (substitute teacher priority rule)
         // If only one has value, use that one
         let role = '';
-        if (cellB !== '' && cellC !== '') {
+        if (cellB !== '' && cellC !== '' && cellC !== '⚠️ไม่มีครูแทน' && cellC !== '-' && cellC !== '(ไม่มีผู้สอนแทน)') {
           if (!matchC) return; // Both filled but C doesn't match - skip
           role = 'ครูแทน';
         } else if (cellB !== '') {
           if (!matchB) return;
           role = 'ครูประจำ';
-        } else if (cellC !== '') {
+        } else if (cellC !== '' && cellC !== '⚠️ไม่มีครูแทน' && cellC !== '-' && cellC !== '(ไม่มีผู้สอนแทน)') {
           if (!matchC) return;
           role = 'ครูแทน';
         } else {
@@ -5221,18 +5224,21 @@ function getAllTeachersMonthlyPay(year, month) {
       monthLogs.forEach(c => {
         const cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
         const cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
+        const cleanB = cellB.replace(/^ครู/, '').trim();
+        const cleanC = cellC.replace(/^ครู/, '').trim();
         
-        const matchB = cellB !== '' && (cellB === cleanResolvedNick || cellB.replace(/^ครู/, '').trim() === cleanNick);
-        const matchC = cellC !== '' && (cellC === cleanResolvedNick || cellC.replace(/^ครู/, '').trim() === cleanNick);
+        const matchB = cleanB !== '' && (cleanB === cleanNick || cleanB.includes(cleanNick) || cleanNick.includes(cleanB));
+        const matchC = cleanC !== '' && (cleanC === cleanNick || cleanC.includes(cleanNick) || cleanNick.includes(cleanC) || 
+                       (cellC.includes(cleanNick) && cellC !== '⚠️ไม่มีครูแทน' && cellC !== '-' && cellC !== '(ไม่มีผู้สอนแทน)'));
         
         let role = '';
-        if (cellB !== '' && cellC !== '') {
+        if (cellB !== '' && cellC !== '' && cellC !== '⚠️ไม่มีครูแทน' && cellC !== '-' && cellC !== '(ไม่มีผู้สอนแทน)') {
           if (!matchC) return;
           role = 'ครูแทน';
         } else if (cellB !== '') {
           if (!matchB) return;
           role = 'ครูประจำ';
-        } else if (cellC !== '') {
+        } else if (cellC !== '' && cellC !== '⚠️ไม่มีครูแทน' && cellC !== '-' && cellC !== '(ไม่มีผู้สอนแทน)') {
           if (!matchC) return;
           role = 'ครูแทน';
         } else {
@@ -6804,6 +6810,7 @@ function saveBatchClassLogs(adds, updates, deletes, logUser) {
           log.isLeave ? parseInt(log.isLeave, 10) || 0 : 0,
           log.isAbsent ? parseInt(log.isAbsent, 10) || 0 : 0,
           log.isMakeup ? parseInt(log.isMakeup, 10) || 0 : 0,
+          log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
           log.hours || '', log.date || '', log.roomBranch || ''
         ]];
         sheet.getRange(rowIndex, 1, 1, 15).setValues(newVals);
@@ -6831,6 +6838,7 @@ function saveBatchClassLogs(adds, updates, deletes, logUser) {
         log.isLeave ? parseInt(log.isLeave, 10) || 0 : 0,
         log.isAbsent ? parseInt(log.isAbsent, 10) || 0 : 0,
         log.isMakeup ? parseInt(log.isMakeup, 10) || 0 : 0,
+        log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
         log.hours || '', log.date || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'd/M/yyyy'),
         log.roomBranch || ''
       ]);
