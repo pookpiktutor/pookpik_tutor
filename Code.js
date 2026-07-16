@@ -814,7 +814,17 @@ function cleanSheetTimestamp(val) {
   return str;
 }
 
+var _dataLearnMigrated = false;
 function ensureDataLearnMigrated(db) {
+  if (_dataLearnMigrated) return;
+  var cacheService = CacheService.getScriptCache();
+  try {
+    if (cacheService.get('data_learn_migrated') === 'true') {
+      _dataLearnMigrated = true;
+      return;
+    }
+  } catch (e) {}
+
   try {
     const learnSheet = db.getSheetByName('Data Learn');
     if (!learnSheet) return;
@@ -828,6 +838,10 @@ function ensureDataLearnMigrated(db) {
         Logger.log('Deleted column "แสด" at index ' + (idxOrange + 1));
       }
     }
+    _dataLearnMigrated = true;
+    try {
+      cacheService.put('data_learn_migrated', 'true', 21600); // Cache for 6 hours
+    } catch (e) {}
   } catch (e) {
     Logger.log('Error migrating Data Learn (remover): ' + e.message);
   }
@@ -4403,6 +4417,7 @@ function recalculatePrivateSheetHours(sName) {
   while (needsReRun && iterations < 3) {
     needsReRun = false;
     iterations++;
+    var hasChanges = false;
     
     const lastRow = sheet.getLastRow();
     const lastCol = sheet.getLastColumn();
@@ -4495,15 +4510,11 @@ function recalculatePrivateSheetHours(sName) {
         const currentFull = parseFloat(row[13]) || 0;
         
         if (hoursAccumulatedStr !== currentHours || hoursLeftStr !== currentHoursLeft || Math.abs(realTimeOutstanding - currentOutstanding) > 0.01 || Math.abs(realTimeFull - currentFull) > 0.01) {
-          sheet.getRange(rowIndex, 20).setValue(hoursAccumulatedStr);
-          sheet.getRange(rowIndex, 21).setValue(hoursLeftStr);
-          sheet.getRange(rowIndex, 14).setValue(realTimeFull); // Update full cost based on real studied hours
-          sheet.getRange(rowIndex, 16).setValue(realTimeOutstanding); // Update outstanding based on real studied hours
-          
           row[19] = hoursAccumulatedStr;
           row[20] = hoursLeftStr;
           row[13] = realTimeFull;
           row[15] = realTimeOutstanding;
+          hasChanges = true;
         }
         
         let note = row[11] ? row[11].toString().trim() : '';
@@ -4555,7 +4566,7 @@ function recalculatePrivateSheetHours(sName) {
             sheet.appendRow(nextRow);
             note = 'เรียนครบแล้ว (ต่อคอร์สใหม่: ' + nextCourseName + ')';
             row[11] = note;
-            sheet.getRange(rowIndex, 12).setValue(note);
+            hasChanges = true;
             
             syncStudentToStatusDB({
               name: name,
@@ -4581,7 +4592,7 @@ function recalculatePrivateSheetHours(sName) {
           } else {
             note = 'เรียนครบแล้ว (ต่อคอร์สใหม่: ' + nextCourseName + ')';
             row[11] = note;
-            sheet.getRange(rowIndex, 12).setValue(note);
+            hasChanges = true;
           }
         }
         
@@ -4613,6 +4624,10 @@ function recalculatePrivateSheetHours(sName) {
           hoursLeft: hoursLeftStr
         });
       }
+    }
+    
+    if (hasChanges) {
+      rawRange.setValues(rawData);
     }
   }
   return studentsList;
