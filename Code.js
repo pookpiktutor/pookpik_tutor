@@ -2144,7 +2144,7 @@ function getEvaluationsList(logUser) {
             const dlSubj = (dlRow[0] || '').toString().trim();
             const dlTeacher = (dlRow[1] || '').toString().trim().toLowerCase();
             const dlTeacherSub = (dlRow[2] || '').toString().trim().toLowerCase();
-            const dlDate = cleanSheetDate(dlRow[13]);
+            const dlDate = cleanSheetDate(dlRow[12]);
             const isTeacherMatch = teacherNicknames.some(alias =>
               dlTeacher === alias || dlTeacher.indexOf(alias) !== -1 || alias.indexOf(dlTeacher) !== -1 ||
               dlTeacherSub === alias || dlTeacherSub.indexOf(alias) !== -1 || alias.indexOf(dlTeacherSub) !== -1
@@ -2276,7 +2276,7 @@ function getMonthlyGridData(year, month, dayOfWeek, logUser) {
       if (idx === 0) return;
       if (!row[0] || row[0] === '0') return;
       
-      const dateRaw = cleanSheetDate(row[13]);
+      const dateRaw = cleanSheetDate(row[12]);
       const weekNum = targetDateSet[dateRaw];
       if (!weekNum) return; // not a matching date
       
@@ -2292,11 +2292,11 @@ function getMonthlyGridData(year, month, dayOfWeek, logUser) {
         isLeave: parseInt(row[8]) || 0,
         isAbsent: parseInt(row[9]) || 0,
         isMakeup: parseInt(row[10]) || 0,
-        isOrange: parseInt(row[11]) || 0,
-        hours: row[12] ? row[12].toString().trim() : '',
+        isOrange: 0,
+        hours: row[11] ? row[11].toString().trim() : '',
         date: dateRaw,
-        roomBranch: row[14] ? row[14].toString().trim() : '',
-        teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
+        roomBranch: row[13] ? row[13].toString().trim() : '',
+        teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
         rowIndex: idx + 1
       });
     });
@@ -2381,8 +2381,8 @@ function debugExportData() {
           isLeave: parseInt(data[i][8]) || 0,
           isAbsent: parseInt(data[i][9]) || 0,
           isMakeup: parseInt(data[i][10]) || 0,
-          isOrange: parseInt(data[i][11]) || 0,
-          hours: data[i][12] ? data[i][12].toString().trim() : '',
+          isOrange: 0,
+          hours: data[i][11] ? data[i][11].toString().trim() : '',
           date: dateRaw,
           roomBranch: data[i][14] ? data[i][14].toString().trim() : ''
         });
@@ -4456,7 +4456,7 @@ function recalculatePrivateSheetHours(sName) {
                           (parseInt(dlRow[7], 10) || 0) >= 1 || 
                           (parseInt(dlRow[10], 10) || 0) >= 1;
         if (isPresent) {
-          const hoursStr = dlRow[12] ? dlRow[12].toString().trim() : '';
+          const hoursStr = dlRow[11] ? dlRow[11].toString().trim() : '';
           const mins = parseHoursStrToMinutes(hoursStr);
           const nameMatch = (nickname && dlSubject.indexOf(nickname) !== -1) || (name && dlSubject.indexOf(name) !== -1);
           if (nameMatch && matchCourseNameIgnoringRound(dlSubject, baseCourseName)) {
@@ -5434,7 +5434,7 @@ function getClassLogs(filterDate, logUser) {
       if (idx === 0) return;
       if (!row[0] || row[0] === '0') return;
       
-      const dateRaw = cleanSheetDate(row[13]);
+      const dateRaw = cleanSheetDate(row[12]);
       if (filterDate && !areDatesSame(dateRaw, filterDate)) return;
       
       logs.push({
@@ -5449,11 +5449,11 @@ function getClassLogs(filterDate, logUser) {
         isLeave: parseInt(row[8]) || 0,
         isAbsent: parseInt(row[9]) || 0,
         isMakeup: parseInt(row[10]) || 0,
-        isOrange: parseInt(row[11]) || 0,
-        hours: parseHoursValue(row[12]),
+        isOrange: 0,
+        hours: parseHoursValue(row[11]),
         date: dateRaw,
-                roomBranch: row[14] ? row[14].toString().trim() : '',
-        teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
+                roomBranch: row[13] ? row[13].toString().trim() : '',
+        teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
         numKids: row[16] ? (parseInt(row[16]) || 0) : 0,
         rowIndex: idx + 1
       });
@@ -5502,10 +5502,10 @@ function getClassLogByRow(rowIndex) {
         isLeave: parseInt(row[8]) || 0,
         isAbsent: parseInt(row[9]) || 0,
         isMakeup: parseInt(row[10]) || 0,
-        isOrange: parseInt(row[11]) || 0,
-        hours: parseHoursValue(row[12]),
-        date: cleanSheetDate(row[13]),
-        roomBranch: row[14] ? row[14].toString().trim() : '',
+        isOrange: 0,
+        hours: parseHoursValue(row[11]),
+        date: cleanSheetDate(row[12]),
+        roomBranch: row[13] ? row[13].toString().trim() : '',
         teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
         numKids: row[16] ? (parseInt(row[16]) || 0) : 0,
         rowIndex: rowIndex
@@ -5558,7 +5558,7 @@ function getClassLogsForTeacher(teacherName, nickname) {
                       (cleanNick !== '' && (teacherRegular === cleanNick || teacherSub === cleanNick));
       if (!isMatch) return;
       
-      const dateRaw = cleanSheetDate(row[13]);
+      const dateRaw = cleanSheetDate(row[12]);
       
       logs.push({
         subject: row[0] ? row[0].toString().trim() : '',
@@ -5572,11 +5572,11 @@ function getClassLogsForTeacher(teacherName, nickname) {
         isLeave: parseInt(row[8]) || 0,
         isAbsent: parseInt(row[9]) || 0,
         isMakeup: parseInt(row[10]) || 0,
-        isOrange: parseInt(row[11]) || 0,
-        hours: parseHoursValue(row[12]),
+        isOrange: 0,
+        hours: parseHoursValue(row[11]),
         date: dateRaw,
-                roomBranch: row[14] ? row[14].toString().trim() : '',
-        teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
+                roomBranch: row[13] ? row[13].toString().trim() : '',
+        teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
         numKids: row[16] ? (parseInt(row[16]) || 0) : 0,
         rowIndex: idx + 1
       });
@@ -5737,7 +5737,6 @@ function addClassLog(log, logUser) {
       log.isLeave ? parseInt(log.isLeave) || 0 : 0,
       log.isAbsent ? parseInt(log.isAbsent) || 0 : 0,
       iMakeup,
-      log.isOrange ? parseInt(log.isOrange) || 0 : 0,
       log.hours || '',
       log.date || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'd/M/yyyy'),
       log.roomBranch || '',
@@ -5791,9 +5790,9 @@ function updateClassLog(rowIndex, log, logUser) {
       isLeave: parseInt(rowVals[8]) || 0,
       isAbsent: parseInt(rowVals[9]) || 0,
       isMakeup: parseInt(rowVals[10]) || 0,
-      isOrange: parseInt(rowVals[11]) || 0,
-      hours: rowVals[12] ? rowVals[12].toString().trim() : '',
-      date: cleanSheetDate(rowVals[13]),
+      isOrange: 0,
+      hours: rowVals[11] ? rowVals[11].toString().trim() : '',
+      date: cleanSheetDate(rowVals[12]),
       roomBranch: rowVals[14] ? rowVals[14].toString().trim() : ''
     };
     
@@ -5949,9 +5948,9 @@ function deleteClassLog(rowIndex, logUser) {
       isLeave: parseInt(rowVals[8]) || 0,
       isAbsent: parseInt(rowVals[9]) || 0,
       isMakeup: parseInt(rowVals[10]) || 0,
-      isOrange: parseInt(rowVals[11]) || 0,
-      hours: rowVals[12] ? rowVals[12].toString().trim() : '',
-      date: cleanSheetDate(rowVals[13]),
+      isOrange: 0,
+      hours: rowVals[11] ? rowVals[11].toString().trim() : '',
+      date: cleanSheetDate(rowVals[12]),
       roomBranch: rowVals[14] ? rowVals[14].toString().trim() : ''
     };
     
@@ -6541,7 +6540,6 @@ function addMultipleClassLogs(logs, logUser) {
       log.isLeave ? parseInt(log.isLeave, 10) || 0 : 0,
       log.isAbsent ? parseInt(log.isAbsent, 10) || 0 : 0,
       log.isMakeup ? parseInt(log.isMakeup, 10) || 0 : 0,
-      log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
       log.hours || '',
       log.date || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'd/M/yyyy'),
       log.roomBranch || ''
@@ -6604,9 +6602,9 @@ function saveBatchClassLogs(adds, updates, deletes, logUser) {
           isLeave: parseInt(rowVals[8]) || 0,
           isAbsent: parseInt(rowVals[9]) || 0,
           isMakeup: parseInt(rowVals[10]) || 0,
-          isOrange: parseInt(rowVals[11]) || 0,
-          hours: rowVals[12] ? rowVals[12].toString().trim() : '',
-          date: rowVals[13] ? rowVals[13].toString().trim() : '',
+          isOrange: 0,
+          hours: rowVals[11] ? rowVals[11].toString().trim() : '',
+          date: rowVals[12] ? rowVals[12].toString().trim() : '',
           roomBranch: rowVals[14] ? rowVals[14].toString().trim() : ''
         };
         try { processClassHoursDeduction(oldLog, true); } catch(e){}
@@ -6620,7 +6618,6 @@ function saveBatchClassLogs(adds, updates, deletes, logUser) {
           log.isLeave ? parseInt(log.isLeave, 10) || 0 : 0,
           log.isAbsent ? parseInt(log.isAbsent, 10) || 0 : 0,
           log.isMakeup ? parseInt(log.isMakeup, 10) || 0 : 0,
-          log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
           log.hours || '', log.date || '', log.roomBranch || ''
         ]];
         sheet.getRange(rowIndex, 1, 1, 15).setValues(newVals);
@@ -6648,7 +6645,6 @@ function saveBatchClassLogs(adds, updates, deletes, logUser) {
         log.isLeave ? parseInt(log.isLeave, 10) || 0 : 0,
         log.isAbsent ? parseInt(log.isAbsent, 10) || 0 : 0,
         log.isMakeup ? parseInt(log.isMakeup, 10) || 0 : 0,
-        log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
         log.hours || '', log.date || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'd/M/yyyy'),
         log.roomBranch || ''
       ]);

@@ -1850,6 +1850,9 @@ function setLoading(show, text = 'กำลังโหลดข้อมูล.
 
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast_container');
+  while (container.children.length >= 3) {
+    container.removeChild(container.firstChild);
+  }
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   
@@ -4497,26 +4500,26 @@ function renderDailyAttendanceSummary() {
       const hasData = (s.live > 0 || s.online > 0 || s.leave > 0 || s.absent > 0 || s.makeup > 0 || s.enrolled > 0);
       
       if (hasData) {
-        const tooltip = \`นร.ลงทะเบียน:${s.enrolled} สด:${s.live} ออนไลน์:${s.online} ลา:${s.leave} ขาด:${s.absent} ชดเชย:${s.makeup} รวมมาเรียน:${totalAttended}\`;
-        html += \`
-          <td style="padding: 4px 3px; border-right: 1px solid var(--border-color); vertical-align: middle;" title="\${tooltip}">
+        const tooltip = `นร.ลงทะเบียน:${s.enrolled} สด:${s.live} ออนไลน์:${s.online} ลา:${s.leave} ขาด:${s.absent} ชดเชย:${s.makeup} รวมมาเรียน:${totalAttended}`;
+        html += `
+          <td style="padding: 4px 3px; border-right: 1px solid var(--border-color); vertical-align: middle;" title="${tooltip}">
             <div style="display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; align-items: center;">
-              \${cat === 'main' ? \`<span style="background:#e0f7fa; color:#00838f; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.6rem;">นร.\${s.enrolled}</span>\` : ''}
-              \${s.live > 0 ? \`<span style="background:#e8f5e9; color:#2e7d32; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">สด \${s.live}</span>\` : ''}
-              \${s.online > 0 ? \`<span style="background:#e3f2fd; color:#1565c0; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ออน \${s.online}</span>\` : ''}
-              \${s.leave > 0 ? \`<span style="background:#fff3e0; color:#ef6c00; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ลา \${s.leave}</span>\` : ''}
-              \${s.absent > 0 ? \`<span style="background:#ffebee; color:#c62828; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ขาด \${s.absent}</span>\` : ''}
-              \${s.makeup > 0 ? \`<span style="background:#f3e5f5; color:#6a1b9a; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ชด \${s.makeup}</span>\` : ''}
-              \${totalAttended > 0 ? \`<span style="font-weight:800; color:#0f172a; font-size:0.62rem; border-left:1px solid #e2e8f0; padding-left:3px; margin-left:1px;">⭐\${totalAttended}</span>\` : ''}
+              ${cat === 'main' ? `<span style="background:#e0f7fa; color:#00838f; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.6rem;">นร.${s.enrolled}</span>` : ''}
+              ${s.live > 0 ? `<span style="background:#e8f5e9; color:#2e7d32; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">สด ${s.live}</span>` : ''}
+              ${s.online > 0 ? `<span style="background:#e3f2fd; color:#1565c0; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ออน ${s.online}</span>` : ''}
+              ${s.leave > 0 ? `<span style="background:#fff3e0; color:#ef6c00; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ลา ${s.leave}</span>` : ''}
+              ${s.absent > 0 ? `<span style="background:#ffebee; color:#c62828; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ขาด ${s.absent}</span>` : ''}
+              ${s.makeup > 0 ? `<span style="background:#f3e5f5; color:#6a1b9a; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ชด ${s.makeup}</span>` : ''}
+              ${totalAttended > 0 ? `<span style="font-weight:800; color:#0f172a; font-size:0.62rem; border-left:1px solid #e2e8f0; padding-left:3px; margin-left:1px;">⭐${totalAttended}</span>` : ''}
             </div>
           </td>
-        \`;
+        `;
       } else {
-        html += \`<td style="padding: 4px; color: #e2e8f0; border-right: 1px solid var(--border-color); font-size: 0.6rem;">-</td>\`;
+        html += `<td style="padding: 4px; color: #e2e8f0; border-right: 1px solid var(--border-color); font-size: 0.6rem;">-</td>`;
       }
     });
     
-    html += \`</tr>\`;
+    html += `</tr>`;
   });
   
   const grandTotal = totalMainLiveOnline + totalPrivateLiveOnline;
