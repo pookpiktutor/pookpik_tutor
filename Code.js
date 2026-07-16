@@ -7516,6 +7516,10 @@ function migrateManagerLogSheet() {
 }
 
 function getLowBalancePrivateStudents() {
+  const cacheKey = 'low_balance_private_students';
+  const cached = getCacheObject(cacheKey);
+  if (cached) return cached;
+  
   try {
     const db = getDb();
     const privateSheets = [
@@ -7561,7 +7565,9 @@ function getLowBalancePrivateStudents() {
       });
     });
     
-    return { success: true, students: lowBalanceStudents };
+    const result = { success: true, students: lowBalanceStudents };
+    setCacheObject(cacheKey, result, 600); // Cache for 10 minutes
+    return result;
   } catch (err) {
     return { success: false, error: err.message };
   }
@@ -7777,6 +7783,7 @@ function deleteCacheObject(key) {
 
 function invalidateStudentCache() {
   clearCacheObject('students_list');
+  clearCacheObject('low_balance_private_students');
   
   // Invalidate sheet-specific enrollment mappings
   try {
