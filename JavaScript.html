@@ -28,17 +28,21 @@ function updateTaskWidget() {
   count.innerText = activeCount;
 
   list.innerHTML = '';
-  window._bgTaskQueue.forEach(t => {
+  const displayTask = window._bgTaskQueue.find(t => t.status === 'running')
+                      || window._bgTaskQueue.find(t => t.status === 'queued')
+                      || window._bgTaskQueue[0];
+                      
+  if (displayTask) {
     let icon = '⏳';
-    if (t.status === 'running') icon = '🔄';
-    else if (t.status === 'success') icon = '✅';
-    else if (t.status === 'error') icon = '❌';
+    if (displayTask.status === 'running') icon = '🔄';
+    else if (displayTask.status === 'success') icon = '✅';
+    else if (displayTask.status === 'error') icon = '❌';
 
     const item = document.createElement('div');
-    item.className = 'tq-item status-' + t.status;
-    item.innerHTML = `<span class="tq-icon">${icon}</span> <span class="tq-text">${t.title}</span>`;
+    item.className = 'tq-item status-' + displayTask.status;
+    item.innerHTML = `<span class="tq-icon">${icon}</span> <span class="tq-text">${displayTask.title}</span>`;
     list.appendChild(item);
-  });
+  }
 }
 
 function processBgTaskQueue() {
