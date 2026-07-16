@@ -1829,11 +1829,19 @@ function convertDateToSheet(dateVal) {
 
 function convertDateFromSheet(dateVal) {
   if (!dateVal) return '';
-  const parts = dateVal.split('/');
+  if (dateVal instanceof Date) {
+    const y = dateVal.getFullYear();
+    const m = String(dateVal.getMonth() + 1).padStart(2, '0');
+    const d = String(dateVal.getDate()).padStart(2, '0');
+    return `${y > 2400 ? y - 543 : y}-${m}-${d}`;
+  }
+  const parts = dateVal.toString().split('/');
   if (parts.length === 3) {
-    let day = parts[0];
-    let month = parts[1];
-    const year = parts[2];
+    let day = parts[0].trim();
+    let month = parts[1].trim();
+    let year = parseInt(parts[2].trim(), 10);
+    if (isNaN(year)) return '';
+    if (year > 2400) year -= 543; // Convert BE to CE
     if (day.length < 2) day = '0' + day;
     if (month.length < 2) month = '0' + month;
     return `${year}-${month}-${day}`;
@@ -4417,7 +4425,8 @@ function renderDailyAttendanceSummary() {
   
   const isMainGroup = (subject) => {
     if (!subject) return false;
-    return /^(อนุบาล|ป\.|ม\.)[1-6]\/[1-3]$/.test(subject.trim());
+    const cleanVal = subject.toString().trim();
+    return cleanVal.includes('หลัก') || cleanVal.includes('ѡ') || ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'].some(g => cleanVal.includes(g));
   };
   
   (state.classLogs || []).forEach(log => {
@@ -4434,17 +4443,15 @@ function renderDailyAttendanceSummary() {
         stats[cat][slot.label].absent += parseInt(log.isAbsent) || 0;
         stats[cat][slot.label].makeup += parseInt(log.isMakeup) || 0;
         
-        if (cat === 'main') {
-          const courseName = subject;
-          const enrolledStudents = (state.enrollments && state.enrollments[courseName]) || [];
-          if (Array.isArray(enrolledStudents)) {
-            stats[cat][slot.label].enrolled += enrolledStudents.length;
-            enrolledStudents.forEach(name => {
-              if (stats[cat][slot.label].studentNames.indexOf(name) === -1) {
-                stats[cat][slot.label].studentNames.push(name);
-              }
-            });
-          }
+        const courseName = subject;
+        const enrolledStudents = (state.enrollments && state.enrollments[courseName]) || [];
+        if (Array.isArray(enrolledStudents)) {
+          stats[cat][slot.label].enrolled += enrolledStudents.length;
+          enrolledStudents.forEach(name => {
+            if (stats[cat][slot.label].studentNames.indexOf(name) === -1) {
+              stats[cat][slot.label].studentNames.push(name);
+            }
+          });
         }
       }
     });
@@ -4456,7 +4463,7 @@ function renderDailyAttendanceSummary() {
         🏫 สรุปจำนวนนักเรียนแยกช่วงเวลา
       </h3>
       <div style="font-size: 0.65rem; color: var(--text-muted); display: flex; gap: 8px; flex-wrap: wrap;">
-        <span>🟦นร.</span><span>🟢สด</span><span>🔵ออน</span><span>🟡ลา</span><span>🔴ขาด</span><span>🟣ชด</span><span>⭐รวม</span>
+        <span><span>🟦นร.</span><span>🟢สด</span><span>🔵ออน</span><span>🟡ลา</span><span>🔴ขาด</span><span>🟣ชด</span><span>⭐รวม</span></span>
       </div>
     </div>
     
@@ -4481,6 +4488,20 @@ function renderDailyAttendanceSummary() {
   let totalPrivateLiveOnline = 0;
   let allMainUniqueNames = [];
   
+  // Pre-calculate unique student names (main + private, excluding subgroup)
+  (state.classLogs || []).forEach(log => {
+    const subject = log.subject || '';
+    if (subject.includes('ย่อย')) return; // exclude subgroup
+    const enrolledStudents = (state.enrollments && state.enrollments[subject]) || [];
+    if (Array.isArray(enrolledStudents)) {
+      enrolledStudents.forEach(name => {
+        if (allMainUniqueNames.indexOf(name) === -1) {
+          allMainUniqueNames.push(name);
+        }
+      });
+    }
+  });
+
   categories.forEach(cat => {
     const catLabel = cat === 'main' ? 'แบบกลุ่มหลัก' : 'แบบเดี่ยวและกลุ่มย่อย';
     html += `
@@ -4494,9 +4515,6 @@ function renderDailyAttendanceSummary() {
       
       if (cat === 'main') {
         totalMainLiveOnline += totalAttended;
-        s.studentNames.forEach(name => {
-          if (allMainUniqueNames.indexOf(name) === -1) allMainUniqueNames.push(name);
-        });
       } else {
         totalPrivateLiveOnline += totalAttended;
       }
@@ -5684,157 +5702,162 @@ function handleTeacherLeaveToggle(rowIndex, checkbox) {
 
 function saveClassLog(e) {
   e.preventDefault();
-  const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
-  const isTeacher = (role === 'Teacher' || role === 'ครู');
-  if (isTeacher) {
-    showToast('คุณไม่มีสิทธิ์ในการบันทึกหรือแก้ไขคลาสเรียน', 'error');
-    return;
-  }
-
-  const roomBranch = document.getElementById('class_room').value.trim();
-  const user = getLogUser();
-  const logsToAdd = [];
-  const logsToUpdate = [];
-  const recurringLogsPerTab = [];
-
-  for (let i = 0; i < 4; i++) {
-    const g = id => document.getElementById(id + '_' + i);
-    const subject = g('class_subject')?.value.trim() || '';
-    if (!subject) continue; // skip empty tabs
-
-    const logData = {
-      subject: subject,
-      teacherRegular: g('class_teacher_reg')?.value || '',
-      teacherSub: g('class_teacher_sub')?.value || '',
-      timeStart: g('class_time_start')?.value || '',
-      timeEnd: g('class_time_end')?.value || '',
-      hours: g('class_hours')?.value.trim() || '',
-      date: convertDateToSheet(g('class_date')?.value || ''),
-      roomBranch,
-      note: g('class_note')?.value.trim() || '',
-      isPresentLive: parseInt(g('class_kids_live')?.value) || 0,
-      isPresentOnline: parseInt(g('class_kids_online')?.value) || 0,
-      isLeave: parseInt(g('class_kids_leave')?.value) || 0,
-      isAbsent: parseInt(g('class_kids_absent')?.value) || 0,
-      isMakeup: parseInt(g('class_kids_makeup')?.value) || 0,
-      isOrange: parseInt(g('class_kids_orange')?.value) || 0
-    };
-
-    if (modalState.editingIndexes && modalState.editingIndexes[i] !== -1) {
-      logsToUpdate.push({ rowIndex: modalState.editingIndexes[i], log: logData });
-    } else {
-      logsToAdd.push(logData);
-      
-      const isRecurring = g('class_is_recurring')?.checked;
-      const recurringEnd = g('class_recurring_end_date')?.value;
-      if (isRecurring && recurringEnd) {
-        recurringLogsPerTab.push({ log: logData, endDate: recurringEnd });
-      }
-    }
-  }
-  
-  if (logsToAdd.length === 0 && logsToUpdate.length === 0) {
-    showToast('กรุณากรอกวิชาเรียนอย่างน้อย 1 คลาส', 'error');
-    return;
-  }
-
-  // Create recurring copies if any
-  const additionalRecurringLogs = [];
-  let hasRecurringError = false;
-
-  for (const r of recurringLogsPerTab) {
-    if (!r.log.date || !r.endDate) {
-      showToast('กรุณาระบุวันที่เริ่มต้นและสิ้นสุดของคอร์สสำหรับการบันทึกซ้ำ', 'error');
-      hasRecurringError = true;
-      break;
+  try {
+    const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
+    const isTeacher = (role === 'Teacher' || role === 'ครู');
+    if (isTeacher) {
+      showToast('คุณไม่มีสิทธิ์ในการบันทึกหรือแก้ไขคลาสเรียน', 'error');
+      return;
     }
 
-    const currentStr = convertDateFromSheet(r.log.date);
-    if (!currentStr) continue;
-    const current = new Date(currentStr);
-    const end = new Date(r.endDate);
-    
-    if (isNaN(current.getTime()) || isNaN(end.getTime())) {
-      showToast('รูปแบบวันที่ไม่ถูกต้อง', 'error');
-      hasRecurringError = true;
-      break;
-    }
-    
-    if (end < current) {
-      showToast('วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่มต้น', 'error');
-      hasRecurringError = true;
-      break;
-    }
+    const roomBranch = document.getElementById('class_room').value.trim();
+    const user = getLogUser();
+    const logsToAdd = [];
+    const logsToUpdate = [];
+    const recurringLogsPerTab = [];
 
-    const subject = r.log.subject || '';
-    let maxWeeks = -1; // unlimited
-    let typeName = '';
-    
-    if (subject.includes('เดี่ยว')) {
-      maxWeeks = 4;
-      typeName = 'เดี่ยว';
-    } else if (subject.includes('ย่อย')) {
-      maxWeeks = 8;
-      typeName = 'ย่อย';
-    } else if (subject.includes('หลัก')) {
-      maxWeeks = -1;
-    }
-    
-    const timeDiff = end.getTime() - current.getTime();
-    const diffWeeks = Math.floor(timeDiff / (1000 * 3600 * 24 * 7));
-    
-    // If diffWeeks is e.g. 4, it means 5 total classes (start + 4 extra).
-    // So if maxWeeks is 4, diffWeeks must be < 4 (max 3 extra classes, 4 total).
-    if (maxWeeks !== -1 && diffWeeks >= maxWeeks) {
-      showToast(`วิชาเรียนที่มีคำว่า "${typeName}" สามารถบันทึกซ้ำได้ไม่เกิน ${maxWeeks} สัปดาห์ (รวมสัปดาห์แรก)`, 'error');
-      hasRecurringError = true;
-      break;
-    }
-    
-    const nextDate = new Date(current);
-    nextDate.setDate(nextDate.getDate() + 7);
-    while (nextDate <= end) {
-      const copy = { ...r.log };
-      const y = nextDate.getFullYear();
-      const m = String(nextDate.getMonth() + 1).padStart(2, '0');
-      const d = String(nextDate.getDate()).padStart(2, '0');
-      copy.date = convertDateToSheet(`${y}-${m}-${d}`);
-      additionalRecurringLogs.push(copy);
-      nextDate.setDate(nextDate.getDate() + 7);
-    }
-  }
+    for (let i = 0; i < 4; i++) {
+      const g = id => document.getElementById(id + '_' + i);
+      const subject = g('class_subject')?.value.trim() || '';
+      if (!subject) continue; // skip empty tabs
 
-  if (hasRecurringError) {
-    return; // Stop saving if validation failed
-  }
-  
-  logsToAdd.push(...additionalRecurringLogs);
+      const logData = {
+        subject: subject,
+        teacherRegular: g('class_teacher_reg')?.value || '',
+        teacherSub: g('class_teacher_sub')?.value || '',
+        timeStart: g('class_time_start')?.value || '',
+        timeEnd: g('class_time_end')?.value || '',
+        hours: g('class_hours')?.value.trim() || '',
+        date: convertDateToSheet(g('class_date')?.value || ''),
+        roomBranch,
+        note: g('class_note')?.value.trim() || '',
+        isPresentLive: parseInt(g('class_kids_live')?.value) || 0,
+        isPresentOnline: parseInt(g('class_kids_online')?.value) || 0,
+        isLeave: parseInt(g('class_kids_leave')?.value) || 0,
+        isAbsent: parseInt(g('class_kids_absent')?.value) || 0,
+        isMakeup: parseInt(g('class_kids_makeup')?.value) || 0,
+        isOrange: parseInt(g('class_kids_orange')?.value) || 0
+      };
 
-  // Close the modal immediately so the user can continue their work
-  closeClassLogModal();
-  showToast('กำลังบันทึกข้อมูลคลาสเรียนในเบื้องหลัง...', 'info');
-
-  google.script.run
-    .withSuccessHandler(res => {
-      if (res && res.success) {
-        if (additionalRecurringLogs.length > 0) {
-          showToast('บันทึกคลาสเรียนซ้ำสำเร็จจำนวน ' + logsToAdd.length + ' คาบ!', 'success');
-        } else {
-          showToast('บันทึก/แก้ไขข้อมูลคลาสเรียนสำเร็จแล้ว!', 'success');
-        }
-        state.forceReloadGrid = true;
-        const activePanel = document.querySelector('.nav-item.active')?.getAttribute('data-panel');
-        if (activePanel === 'daily_grid') loadDailyGrid();
-        else loadRevenueLogs();
-        checkLowBalanceStudents();
+      if (modalState.editingIndexes && modalState.editingIndexes[i] !== -1) {
+        logsToUpdate.push({ rowIndex: modalState.editingIndexes[i], log: logData });
       } else {
-        showToast('บันทึกล้มเหลว: ' + (res?.error || ''), 'error');
+        logsToAdd.push(logData);
+        
+        const isRecurring = g('class_is_recurring')?.checked;
+        const recurringEnd = g('class_recurring_end_date')?.value;
+        if (isRecurring && recurringEnd) {
+          recurringLogsPerTab.push({ log: logData, endDate: recurringEnd });
+        }
       }
-    })
-    .withFailureHandler(err => {
-      showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
-    })
-    .saveBatchClassLogs(logsToAdd, logsToUpdate, [], user);
+    }
+    
+    if (logsToAdd.length === 0 && logsToUpdate.length === 0) {
+      showToast('กรุณากรอกวิชาเรียนอย่างน้อย 1 คลาส', 'error');
+      return;
+    }
+
+    // Create recurring copies if any
+    const additionalRecurringLogs = [];
+    let hasRecurringError = false;
+
+    for (const r of recurringLogsPerTab) {
+      if (!r.log.date || !r.endDate) {
+        showToast('กรุณาระบุวันที่เริ่มต้นและสิ้นสุดของคอร์สสำหรับการบันทึกซ้ำ', 'error');
+        hasRecurringError = true;
+        break;
+      }
+
+      const currentStr = convertDateFromSheet(r.log.date);
+      if (!currentStr) continue;
+      const current = new Date(currentStr);
+      const end = new Date(r.endDate);
+      
+      if (isNaN(current.getTime()) || isNaN(end.getTime())) {
+        showToast('รูปแบบวันที่ไม่ถูกต้อง', 'error');
+        hasRecurringError = true;
+        break;
+      }
+      
+      if (end < current) {
+        showToast('วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่มต้น', 'error');
+        hasRecurringError = true;
+        break;
+      }
+
+      const subject = r.log.subject || '';
+      let maxWeeks = -1; // unlimited
+      let typeName = '';
+      
+      if (subject.includes('เดี่ยว')) {
+        maxWeeks = 4;
+        typeName = 'เดี่ยว';
+      } else if (subject.includes('ย่อย')) {
+        maxWeeks = 8;
+        typeName = 'ย่อย';
+      } else if (subject.includes('หลัก')) {
+        maxWeeks = -1;
+      }
+      
+      const timeDiff = end.getTime() - current.getTime();
+      const diffWeeks = Math.floor(timeDiff / (1000 * 3600 * 24 * 7));
+      
+      // If diffWeeks is e.g. 4, it means 5 total classes (start + 4 extra).
+      // So if maxWeeks is 4, diffWeeks must be < 4 (max 3 extra classes, 4 total).
+      if (maxWeeks !== -1 && diffWeeks >= maxWeeks) {
+        showToast(`วิชาเรียนที่มีคำว่า "${typeName}" สามารถบันทึกซ้ำได้ไม่เกิน ${maxWeeks} สัปดาห์ (รวมสัปดาห์แรก)`, 'error');
+        hasRecurringError = true;
+        break;
+      }
+      
+      const nextDate = new Date(current);
+      nextDate.setDate(nextDate.getDate() + 7);
+      while (nextDate <= end) {
+        const copy = { ...r.log };
+        const y = nextDate.getFullYear();
+        const m = String(nextDate.getMonth() + 1).padStart(2, '0');
+        const d = String(nextDate.getDate()).padStart(2, '0');
+        copy.date = convertDateToSheet(`${y}-${m}-${d}`);
+        additionalRecurringLogs.push(copy);
+        nextDate.setDate(nextDate.getDate() + 7);
+      }
+    }
+
+    if (hasRecurringError) {
+      return; // Stop saving if validation failed
+    }
+    
+    logsToAdd.push(...additionalRecurringLogs);
+
+    // Close the modal immediately so the user can continue their work
+    closeClassLogModal();
+    showToast('กำลังบันทึกข้อมูลคลาสเรียนในเบื้องหลัง...', 'info');
+
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res && res.success) {
+          if (additionalRecurringLogs.length > 0) {
+            showToast('บันทึกคลาสเรียนซ้ำสำเร็จจำนวน ' + logsToAdd.length + ' คาบ!', 'success');
+          } else {
+            showToast('บันทึก/แก้ไขข้อมูลคลาสเรียนสำเร็จแล้ว!', 'success');
+          }
+          state.forceReloadGrid = true;
+          const activePanel = document.querySelector('.nav-item.active')?.getAttribute('data-panel');
+          if (activePanel === 'daily_grid') loadDailyGrid();
+          else loadRevenueLogs();
+          checkLowBalanceStudents();
+        } else {
+          showToast('บันทึกล้มเหลว: ' + (res?.error || ''), 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      })
+      .saveBatchClassLogs(logsToAdd, logsToUpdate, [], user);
+  } catch (err) {
+    console.error('Error in saveClassLog:', err);
+    showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+  }
 }
 
 function submitBatchClassLogs() {

@@ -1414,23 +1414,16 @@ body {
 }
 
 .modal, .modal-container {
-
   border-radius: var(--radius-lg);
-
   border: 1px solid var(--border-color-hover);
-
   box-shadow: var(--shadow-lg);
-
   width: 100%;
-
   max-width: 500px;
-
   max-height: 90vh;
-
   overflow: hidden;
-
   animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-
+  display: flex;
+  flex-direction: column;
 }
 
 
@@ -1557,9 +1550,9 @@ body {
 
 
 .modal-body {
-
   padding: 12px;
-
+  overflow-y: auto;
+  flex: 1;
 }
 
 
