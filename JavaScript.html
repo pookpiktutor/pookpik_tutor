@@ -1,4 +1,58 @@
 <script>
+// Polyfill for google.script.run so GitHub Pages can use GAS Backend API
+if (typeof google === 'undefined' || typeof google.script === 'undefined' || typeof google.script.run === 'undefined') {
+  window.google = window.google || {};
+  window.google.script = window.google.script || {};
+  
+  const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxZdtCU5oSYMho7Fsne3nXXE4IFWVNj_wFagCrGi86ycFxPJiPsRbAu4KGm_-wN2YJRlQ/exec';
+  
+  window.google.script.run = new Proxy({}, {
+    get: function(target, prop) {
+      if (prop === 'withSuccessHandler') {
+        return function(handler) {
+          target._successHandler = handler;
+          return window.google.script.run;
+        };
+      }
+      if (prop === 'withFailureHandler') {
+        return function(handler) {
+          target._failureHandler = handler;
+          return window.google.script.run;
+        };
+      }
+      return function(...args) {
+        const successHandler = target._successHandler;
+        const failureHandler = target._failureHandler;
+        target._successHandler = undefined;
+        target._failureHandler = undefined;
+        
+        fetch(GAS_API_URL, {
+          redirect: 'follow',
+          method: 'POST',
+          body: JSON.stringify({
+            functionName: prop,
+            arguments: args
+          }),
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          }
+        })
+        .then(response => response.json())
+        .then(result => {
+          if (result && result.error && failureHandler) {
+            failureHandler(new Error(result.error));
+          } else if (successHandler) {
+            successHandler(result);
+          }
+        })
+        .catch(err => {
+          if (failureHandler) failureHandler(err);
+        });
+      };
+    }
+  });
+}
+
 function safeSetValue(id, val) {
     const el = document.getElementById(id);
     if (el) el.value = val;
@@ -10422,5 +10476,7 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeApp);
 } else {
   initializeApp();
-}
-</script>
+}
+
+</script>
+
