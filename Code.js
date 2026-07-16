@@ -75,7 +75,7 @@ const SHEET_REGISTRY = [
     headers: [
       'วิชา', 'ครูประจำ', 'ครูแทน', 'เวลาเริ่ม', 'เวลาจบ',
       'หมายเหตุ', 'สด', 'ออน', 'ลา', 'ขาด',
-      'ชด', 'แสด', 'ชม.', 'วันที่', 'ห้อง/สาขา/iPad'
+      'ชด', 'ชม.', 'วันที่', 'ห้อง/สาขา/iPad'
     ],
     headerRow: 1
   },
@@ -822,23 +822,14 @@ function ensureDataLearnMigrated(db) {
     if (lastCol >= 11) {
       const headers = learnSheet.getRange(1, 1, 1, lastCol).getValues()[0];
       const headersStr = headers.map(h => h ? h.toString().trim() : '');
-      const hasOrange = headersStr.includes('แสด');
-      if (!hasOrange) {
-        const idxChod = headersStr.indexOf('ชด');
-        if (idxChod !== -1) {
-          const colIndex = idxChod + 1; // 1-indexed column number for 'ชด'
-          learnSheet.insertColumnAfter(colIndex);
-          learnSheet.getRange(1, colIndex + 1).setValue('แสด');
-          const lastRow = learnSheet.getLastRow();
-          if (lastRow > 1) {
-            const zeros = Array(lastRow - 1).fill([0]);
-            learnSheet.getRange(2, colIndex + 1, lastRow - 1, 1).setValues(zeros);
-          }
-        }
+      const idxOrange = headersStr.indexOf('แสด');
+      if (idxOrange !== -1) {
+        learnSheet.deleteColumn(idxOrange + 1);
+        Logger.log('Deleted column "แสด" at index ' + (idxOrange + 1));
       }
     }
   } catch (e) {
-    Logger.log('Error migrating Data Learn: ' + e.message);
+    Logger.log('Error migrating Data Learn (remover): ' + e.message);
   }
 }
 
@@ -8255,7 +8246,7 @@ function testResolveDynamicCourseName() {
       var colA = data[i][0] ? data[i][0].toString().trim() : '';
       if (colA.indexOf('หลัก') < 0) continue;
       
-      var dateStr = cleanSheetDate(data[i][13]);
+      var dateStr = cleanSheetDate(data[i][12]);
       // Check if date >= 18/5/2026
       var parts = dateStr.split('/');
       if (parts.length !== 3) continue;
@@ -8263,7 +8254,7 @@ function testResolveDynamicCourseName() {
       if (new Date(y, m-1, d) < new Date(2026, 4, 18)) continue;
       
       count++;
-      var roomBranch = data[i][14] ? data[i][14].toString().trim() : '';
+      var roomBranch = data[i][13] ? data[i][13].toString().trim() : '';
       var actualRow = startRow + i;
       
       results.push('=== Row ' + actualRow + ' ===');
@@ -8302,7 +8293,7 @@ function testResolveDynamicCourseName() {
       results.push('⚠️ No "หลัก" rows found with date >= 18/5/2026 in last 200 rows');
       results.push('Showing last 3 rows dates:');
       for (var j = Math.max(0, data.length - 3); j < data.length; j++) {
-        results.push('  Row ' + (startRow + j) + ': A="' + (data[j][0] || '') + '" Date=' + cleanSheetDate(data[j][13]));
+        results.push('  Row ' + (startRow + j) + ': A="' + (data[j][0] || '') + '" Date=' + cleanSheetDate(data[j][12]));
       }
     }
     
@@ -8364,9 +8355,9 @@ function backfillDataLearnCourseNames() {
     
     for (var i = 0; i < values.length; i++) {
       var subject = values[i][0] ? values[i][0].toString().trim() : '';
-      var dateVal = values[i][13];
+      var dateVal = values[i][12];
       var dateStr = cleanSheetDate(dateVal);
-      var roomBranch = values[i][14] ? values[i][14].toString().trim() : '';
+      var roomBranch = values[i][13] ? values[i][13].toString().trim() : '';
       
       if (subject.indexOf('หลัก') >= 0 && dateStr) {
         var resolved = resolveDynamicCourseName(subject, dateStr, roomBranch);
