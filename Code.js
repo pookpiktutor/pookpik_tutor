@@ -5445,9 +5445,8 @@ function resolveDynamicCourseName(originalSubject, dateStr, roomBranch) {
   if (!originalSubject || !dateStr) return originalSubject;
   var subj = originalSubject.toString().trim();
   
-  // Only process courses containing "หลัก"
-  if (subj.indexOf('หลัก') !== 0 && subj.indexOf('หลัก') < 0) return subj;
-  if (!subj.match(/หลัก/)) return subj;
+  // Only process courses starting with or containing "หลัก"
+  if (subj.indexOf('หลัก') < 0) return subj;
   
   // Check date >= 18/5/2026
   var dateParts = dateStr.toString().split('/');
@@ -5456,72 +5455,80 @@ function resolveDynamicCourseName(originalSubject, dateStr, roomBranch) {
   var month = parseInt(dateParts[1], 10);
   var year = parseInt(dateParts[2], 10);
   var dateObj = new Date(year, month - 1, day);
-  var cutoffDate = new Date(2026, 4, 18); // 18/5/2026 (month is 0-indexed)
+  var cutoffDate = new Date(2026, 4, 18); // 18/5/2026
   if (dateObj < cutoffDate) return subj;
   
   // Extract day of week name
   var dayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
   var dayOfWeek = dayNames[dateObj.getDay()];
   
-  // Extract branch number from roomBranch (e.g., "ห้อง 03 สาขา 3 iPad014 Zoom020")
+  // Extract branch number from roomBranch
   var branch = '1';
   if (roomBranch) {
-    var rb = roomBranch.toString();
-    var branchMatch = rb.match(/สาขา\s*(\d)/);
+    var branchMatch = roomBranch.toString().match(/สาขา\s*(\d)/);
     if (branchMatch) branch = branchMatch[1];
   }
   
   // Extract grade from subject (e.g., "หลัก ภาษาไทย ป.3" → "ป.3")
   var gradeMatch = subj.match(/(อนุบาล|ป\.\d|ม\.\d)/);
-  if (!gradeMatch) return subj;
-  var grade = gradeMatch[1];
   
-  // Extract base subject keyword: from "หลัก" to before the grade
-  // e.g., "หลัก ภาษาไทย ป.3" → "หลัก ภาษาไทย"
-  var baseSubject = subj.substring(0, gradeMatch.index).trim();
-  if (!baseSubject || baseSubject.length < 3) return subj;
-  
-  // Remove "หลัก" prefix to get the subject keyword for matching
-  // "หลัก ภาษาไทย" → "ภาษาไทย", "หลัก คณิต" → "คณิต"
-  var subjectKeyword = baseSubject.replace(/^หลัก\s*/, '').trim();
+  // Extract keyword: everything after "หลัก " minus the grade part
+  var subjectKeyword = '';
+  if (gradeMatch) {
+    // Has grade: keyword = between "หลัก" and grade
+    // "หลัก ภาษาไทย ป.3" → "ภาษาไทย"
+    subjectKeyword = subj.substring(subj.indexOf('หลัก') + 4, gradeMatch.index).trim();
+  } else {
+    // No grade (e.g., "หลัก อังกฤษ แข่ง3"): keyword = everything after "หลัก "
+    subjectKeyword = subj.substring(subj.indexOf('หลัก') + 4).trim();
+  }
   if (!subjectKeyword) return subj;
-  
-  // Determine target sheet name (e.g., "ป.3/3")
-  var targetSheet = grade + '/' + branch;
   
   // Build/get header cache
   var headerCache = buildGradeHeaderCache_();
-  var headers = headerCache[targetSheet];
-  if (!headers || headers.length === 0) return subj;
   
-  // Search headers for one that contains both the subject keyword AND the day name
-  for (var i = 0; i < headers.length; i++) {
-    var header = headers[i];
-    var headerLower = header.toLowerCase();
-    var keyLower = subjectKeyword.toLowerCase();
-    
-    // Check if header contains the subject keyword AND day name
-    if (headerLower.indexOf(keyLower) >= 0 && header.indexOf(dayOfWeek) >= 0) {
-      return header;
+  // Determine which sheets to search
+  var sheetsToSearch = [];
+  if (gradeMatch) {
+    // Has grade: search specific sheet only
+    sheetsToSearch.push(gradeMatch[1] + '/' + branch);
+  } else {
+    // No grade (แข่ง etc.): search ALL grade sheets for this branch
+    var allGrades = ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+    for (var g = 0; g < allGrades.length; g++) {
+      sheetsToSearch.push(allGrades[g] + '/' + branch);
     }
   }
   
-  // If no exact match found, try partial matching on shorter keywords
-  // e.g., "ภาษาไทย" → try "ไทย", "อังกฤษ" → try "อังกฤษ"
-  var shortKeywords = subjectKeyword.replace(/^ภาษา/, '').trim();
-  if (shortKeywords !== subjectKeyword && shortKeywords.length > 0) {
-    for (var j = 0; j < headers.length; j++) {
-      var h2 = headers[j];
-      var h2Lower = h2.toLowerCase();
-      var skLower = shortKeywords.toLowerCase();
-      if (h2Lower.indexOf(skLower) >= 0 && h2.indexOf(dayOfWeek) >= 0) {
-        return h2;
-      }
-    }
+  // Helper: search headers in a list of sheets
+  var searchResult = searchHeadersInSheets_(headerCache, sheetsToSearch, subjectKeyword, dayOfWeek);
+  if (searchResult) return searchResult;
+  
+  // Fallback: try shorter keyword (e.g., "ภาษาไทย" → "ไทย")
+  var shortKeyword = subjectKeyword.replace(/^ภาษา/, '').trim();
+  if (shortKeyword !== subjectKeyword && shortKeyword.length > 0) {
+    var fallback = searchHeadersInSheets_(headerCache, sheetsToSearch, shortKeyword, dayOfWeek);
+    if (fallback) return fallback;
   }
   
   return subj;
 }
+
+function searchHeadersInSheets_(headerCache, sheetNames, keyword, dayOfWeek) {
+  var keyLower = keyword.toLowerCase();
+  for (var s = 0; s < sheetNames.length; s++) {
+    var headers = headerCache[sheetNames[s]];
+    if (!headers) continue;
+    for (var i = 0; i < headers.length; i++) {
+      var header = headers[i];
+      if (header.toLowerCase().indexOf(keyLower) >= 0 && header.indexOf(dayOfWeek) >= 0) {
+        return header;
+      }
+    }
+  }
+  return null;
+}
+
 
 function getClassLogs(filterDate, logUser) {
   // ครูสามารถดูข้อมูลตารางเรียนได้
@@ -8230,39 +8237,57 @@ function testResolveDynamicCourseName() {
     var sheet = db.getSheetByName('Data Learn');
     if (!sheet) return 'Data Learn sheet not found';
     
-    var lastRow = Math.min(sheet.getLastRow(), 100);
-    var data = sheet.getRange(1, 1, lastRow, 20).getValues();
+    var totalRows = sheet.getLastRow();
     var results = [];
-    
-    // Show header row first
-    var headerRow = data[0];
-    var headerInfo = [];
-    for (var h = 0; h < Math.min(headerRow.length, 16); h++) {
-      headerInfo.push('Col ' + h + ' (' + String.fromCharCode(65 + h) + '): ' + (headerRow[h] || '(empty)'));
-    }
-    results.push('=== HEADER ROW ===');
-    results.push(headerInfo.join('\n'));
+    results.push('Total rows in Data Learn: ' + totalRows);
     results.push('');
     
-    // Test first 10 rows with "หลัก"
+    // Read LAST 200 rows (where recent data is)
+    var startRow = Math.max(2, totalRows - 200);
+    var numRows = totalRows - startRow + 1;
+    var data = sheet.getRange(startRow, 1, numRows, 16).getValues();
+    
+    // Find rows with "หลัก" AND date >= 18/5/2026
     var count = 0;
-    for (var i = 1; i < data.length && count < 10; i++) {
+    for (var i = 0; i < data.length && count < 5; i++) {
       var colA = data[i][0] ? data[i][0].toString().trim() : '';
       if (colA.indexOf('หลัก') < 0) continue;
-      count++;
       
-      var rawDate = data[i][13];
       var dateStr = cleanSheetDate(data[i][13]);
-      var roomBranch = data[i][14] ? data[i][14].toString().trim() : '';
+      // Check if date >= 18/5/2026
+      var parts = dateStr.split('/');
+      if (parts.length !== 3) continue;
+      var d = parseInt(parts[0]), m = parseInt(parts[1]), y = parseInt(parts[2]);
+      if (new Date(y, m-1, d) < new Date(2026, 4, 18)) continue;
       
-      results.push('=== Row ' + (i + 1) + ' ===');
-      results.push('Col A (0): ' + colA);
-      results.push('Col L (11): ' + (data[i][11] || ''));
-      results.push('Col M (12): ' + (data[i][12] || ''));
-      results.push('Col N (13) raw: ' + rawDate + ' | type: ' + typeof rawDate + ' | isDate: ' + (rawDate instanceof Date));
-      results.push('Col N (13) cleaned: ' + dateStr);
-      results.push('Col O (14): ' + roomBranch);
-      results.push('Col P (15): ' + (data[i][15] || ''));
+      count++;
+      var roomBranch = data[i][14] ? data[i][14].toString().trim() : '';
+      var actualRow = startRow + i;
+      
+      results.push('=== Row ' + actualRow + ' ===');
+      results.push('Col A: ' + colA);
+      results.push('Date: ' + dateStr);
+      results.push('RoomBranch: ' + roomBranch);
+      
+      // Show what grade+branch we'd look for
+      var gradeMatch = colA.match(/(อนุบาล|ป\.\d|ม\.\d)/);
+      var branchMatch = roomBranch.match(/สาขา\s*(\d)/);
+      var grade = gradeMatch ? gradeMatch[1] : 'NO_GRADE';
+      var branch = branchMatch ? branchMatch[1] : '1';
+      var targetSheet = grade + '/' + branch;
+      results.push('Target sheet: ' + targetSheet);
+      
+      // Extract keyword
+      if (gradeMatch) {
+        var baseSubject = colA.substring(0, gradeMatch.index).trim();
+        var keyword = baseSubject.replace(/^หลัก\s*/, '').trim();
+        results.push('Keyword: "' + keyword + '"');
+      }
+      
+      // Day of week
+      var dayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+      var dayOfWeek = dayNames[new Date(y, m-1, d).getDay()];
+      results.push('Day: ' + dayOfWeek);
       
       // Try resolving
       var resolved = resolveDynamicCourseName(colA, dateStr, roomBranch);
@@ -8271,23 +8296,48 @@ function testResolveDynamicCourseName() {
       results.push('');
     }
     
-    // Show grade sheet header sample
-    results.push('=== GRADE SHEET HEADERS SAMPLE ===');
-    var testSheets = ['ป.3/3', 'ม.1/2', 'ป.1/1'];
-    for (var ts = 0; ts < testSheets.length; ts++) {
-      var gsName = testSheets[ts];
-      var gs = db.getSheetByName(gsName);
-      if (!gs) {
-        results.push(gsName + ': NOT FOUND');
-        continue;
+    if (count === 0) {
+      results.push('⚠️ No "หลัก" rows found with date >= 18/5/2026 in last 200 rows');
+      results.push('Showing last 3 rows dates:');
+      for (var j = Math.max(0, data.length - 3); j < data.length; j++) {
+        results.push('  Row ' + (startRow + j) + ': A="' + (data[j][0] || '') + '" Date=' + cleanSheetDate(data[j][13]));
       }
+    }
+    
+    // Show grade sheet headers - FULL scan
+    results.push('');
+    results.push('=== GRADE SHEET HEADERS (ป.6/2) ===');
+    var gs = db.getSheetByName('ป.6/2');
+    if (!gs) {
+      results.push('ป.6/2: NOT FOUND');
+    } else {
       var gLastCol = gs.getLastColumn();
+      results.push('Total columns: ' + gLastCol);
       var gRow1 = gs.getRange(1, 1, 1, gLastCol).getValues()[0];
-      var gHeaders = [];
-      for (var gc = 4; gc < gRow1.length && gc < 15; gc++) {
-        if (gRow1[gc]) gHeaders.push('Col' + gc + ': ' + gRow1[gc].toString().trim().substring(0, 60));
+      for (var gc = 4; gc < gRow1.length; gc++) {
+        if (gRow1[gc]) {
+          var hdr = gRow1[gc].toString().trim();
+          results.push('  Col ' + gc + ' (' + columnLetter_(gc) + '): ' + hdr.substring(0, 80));
+        }
       }
-      results.push(gsName + ' headers: ' + gHeaders.join(' | '));
+    }
+    
+    // Also check ม.3/2
+    results.push('');
+    results.push('=== GRADE SHEET HEADERS (ม.3/2) ===');
+    var gs2 = db.getSheetByName('ม.3/2');
+    if (!gs2) {
+      results.push('ม.3/2: NOT FOUND');
+    } else {
+      var gLastCol2 = gs2.getLastColumn();
+      results.push('Total columns: ' + gLastCol2);
+      var gRow12 = gs2.getRange(1, 1, 1, gLastCol2).getValues()[0];
+      for (var gc2 = 4; gc2 < gRow12.length; gc2++) {
+        if (gRow12[gc2]) {
+          var hdr2 = gRow12[gc2].toString().trim();
+          results.push('  Col ' + gc2 + ' (' + columnLetter_(gc2) + '): ' + hdr2.substring(0, 80));
+        }
+      }
     }
     
     Logger.log(results.join('\n'));
@@ -8295,5 +8345,15 @@ function testResolveDynamicCourseName() {
   } catch (e) {
     return 'Error: ' + e.message + '\n' + e.stack;
   }
+}
+
+function columnLetter_(colIndex) {
+  var letter = '';
+  var temp = colIndex;
+  while (temp >= 0) {
+    letter = String.fromCharCode(65 + (temp % 26)) + letter;
+    temp = Math.floor(temp / 26) - 1;
+  }
+  return letter;
 }
 
