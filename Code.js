@@ -5844,6 +5844,7 @@ function addClassLog(log, logUser) {
     const resolvedTeacherRegular = resolveId(log.teacherRegular);
     const resolvedTeacherSub = resolveId(log.teacherSub);
     log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd);
+    log.subject = resolveDynamicCourseName(log.subject, log.date, log.roomBranch);
     
     const iPresentLive = log.isPresentLive ? parseInt(log.isPresentLive) || 0 : 0;
     const iPresentOnline = log.isPresentOnline ? parseInt(log.isPresentOnline) || 0 : 0;
@@ -5937,6 +5938,7 @@ function updateClassLog(rowIndex, log, logUser) {
     const resolvedTeacherRegular = resolveId(log.teacherRegular);
     const resolvedTeacherSub = resolveId(log.teacherSub);
     log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd);
+    log.subject = resolveDynamicCourseName(log.subject, log.date, log.roomBranch);
     
     const iPresentLive = log.isPresentLive ? parseInt(log.isPresentLive) || 0 : 0;
     const iPresentOnline = log.isPresentOnline ? parseInt(log.isPresentOnline) || 0 : 0;
@@ -8344,6 +8346,50 @@ function testResolveDynamicCourseName() {
     return results.join('\n');
   } catch (e) {
     return 'Error: ' + e.message + '\n' + e.stack;
+  }
+}
+
+function backfillDataLearnCourseNames() {
+  try {
+    var db = getDb();
+    var sheet = db.getSheetByName('Data Learn');
+    if (!sheet) return 'Data Learn sheet not found';
+    
+    var lastRow = sheet.getLastRow();
+    if (lastRow < 2) return 'No data to backfill';
+    
+    var range = sheet.getRange(2, 1, lastRow - 1, 15);
+    var values = range.getValues();
+    var updatedCount = 0;
+    
+    for (var i = 0; i < values.length; i++) {
+      var subject = values[i][0] ? values[i][0].toString().trim() : '';
+      var dateVal = values[i][13];
+      var dateStr = cleanSheetDate(dateVal);
+      var roomBranch = values[i][14] ? values[i][14].toString().trim() : '';
+      
+      if (subject.indexOf('หลัก') >= 0 && dateStr) {
+        var resolved = resolveDynamicCourseName(subject, dateStr, roomBranch);
+        if (resolved !== subject) {
+          values[i][0] = resolved;
+          updatedCount++;
+        }
+      }
+    }
+    
+    if (updatedCount > 0) {
+      // Write back only column A to minimize sheet updates and avoid conflicts with other columns
+      var colARange = sheet.getRange(2, 1, lastRow - 1, 1);
+      var colAValues = values.map(function(row) { return [row[0]]; });
+      colARange.setValues(colAValues);
+      
+      // Clear all caches
+      clearClassLogsCache('');
+    }
+    
+    return 'Completed backfill. Updated ' + updatedCount + ' rows.';
+  } catch (e) {
+    return 'Error in backfill: ' + e.message;
   }
 }
 
