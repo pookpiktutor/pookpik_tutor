@@ -4129,7 +4129,7 @@ html, body { overflow-x: hidden !important; max-width: 100vw !important; }
 /* Task Queue Widget CSS */
 .task-queue-widget {
   position: fixed;
-  top: 75px;
+  top: 15px;
   right: 20px;
   width: 320px;
   max-width: calc(100vw - 40px);
