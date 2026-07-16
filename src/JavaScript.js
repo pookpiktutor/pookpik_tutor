@@ -2,6 +2,7 @@
 window._bgTaskQueue = [];
 window._isBgTaskRunning = false;
 window._nextTaskTitle = '';
+window._nextTaskSilent = false;
 
 function updateTaskWidget() {
   const widget = document.getElementById('task_queue_widget');
@@ -17,19 +18,22 @@ function updateTaskWidget() {
      return true;
   });
 
-  if (window._bgTaskQueue.length === 0) {
+  // Filter out silent tasks for widget display
+  const visibleTasks = window._bgTaskQueue.filter(t => !t.isSilent);
+
+  if (visibleTasks.length === 0) {
     widget.style.display = 'none';
     return;
   }
   
   widget.style.display = 'flex';
-  const activeCount = window._bgTaskQueue.filter(t => t.status !== 'success' && t.status !== 'error').length;
+  const activeCount = visibleTasks.filter(t => t.status !== 'success' && t.status !== 'error').length;
   count.innerText = activeCount;
 
   list.innerHTML = '';
-  const displayTask = window._bgTaskQueue.find(t => t.status === 'running')
-                      || window._bgTaskQueue.find(t => t.status === 'queued')
-                      || window._bgTaskQueue[0];
+  const displayTask = visibleTasks.find(t => t.status === 'running')
+                      || visibleTasks.find(t => t.status === 'queued')
+                      || visibleTasks[0];
                       
   if (displayTask) {
     let icon = '⏳';
@@ -125,6 +129,9 @@ window.google.script.run = new Proxy({}, {
       
       const title = window._nextTaskTitle || 'ประมวลผลข้อมูล...';
       window._nextTaskTitle = ''; 
+      
+      const isSilent = window._nextTaskSilent || false;
+      window._nextTaskSilent = false;
 
       window._bgTaskQueue.push({
         id: Date.now() + Math.random(),
@@ -133,7 +140,8 @@ window.google.script.run = new Proxy({}, {
         args: args,
         successHandler: successHandler,
         failureHandler: failureHandler,
-        status: 'queued'
+        status: 'queued',
+        isSilent: isSilent
       });
 
       processBgTaskQueue();
@@ -1066,13 +1074,14 @@ function getLogUser() {
 function startHeartbeat() {
   if (state.heartbeatInterval) clearInterval(state.heartbeatInterval);
   runUserHeartbeat(); // run immediately
-  state.heartbeatInterval = setInterval(runUserHeartbeat, 15000); // every 15s
+  state.heartbeatInterval = setInterval(runUserHeartbeat, 60000); // every 60s
 }
 
 function runUserHeartbeat() {
   const user = getLogUser();
   if (!user || user === 'System') return;
   
+  window._nextTaskSilent = true;
   google.script.run
     .withSuccessHandler(activeUsers => {
       if (Array.isArray(activeUsers)) {
@@ -1235,35 +1244,19 @@ function bootApp() {
     document.getElementById('calc_end_date').value = `${currentYear}-${currentMonth < 10 ? '0' + currentMonth : currentMonth}-28`;
   }
 
-  // Start background auto-refresh interval for all dynamic data panels
+  // Start background auto-refresh interval for critical dynamic data panels
   setInterval(() => {
     const activeEl = document.querySelector('.nav-item.active');
     if (!activeEl) return;
     const panelName = activeEl.getAttribute('data-panel');
     if (panelName === 'daily_grid') {
+      window._nextTaskSilent = true;
       loadDailyGrid(true); // Silent reload
-    } else if (panelName === 'class_logs') {
-      loadRevenueLogs(true); // Silent reload
     } else if (panelName === 'teacher_schedule') {
+      window._nextTaskSilent = true;
       loadTeacherSchedule(true); // Silent reload
-    } else if (panelName === 'dashboard') {
-      loadDashboard(true); // Silent reload
-    } else if (panelName === 'round_summary') {
-      loadRoundSummary(true); // Silent reload
-    } else if (panelName === 'student_registrations') {
-      loadStudents(true); // Silent reload
-    } else if (panelName === 'class_grid') {
-      loadGradeSheetGrid(true); // Silent reload
-    } else if (panelName === 'private_students') {
-      loadPrivateStudents(true); // Silent reload
-    } else if (panelName === 'debtors') {
-      loadDebtors(true); // Silent reload
-    } else if (panelName === 'receipt_printer') {
-      loadReceipts(true); // Silent reload
-    } else if (panelName === 'admin_evaluation_dashboard') {
-      loadAdminEvaluationsDashboard(true); // Silent reload
     }
-  }, 5000); // refresh every 5 seconds (real-time)
+  }, 60000); // refresh every 60 seconds (1 minute)
 }
 
 function applyRoleAccessControl() {
