@@ -8223,3 +8223,77 @@ function debugCheckUsers() {
   }
 }
 
+
+function testResolveDynamicCourseName() {
+  try {
+    var db = getDb();
+    var sheet = db.getSheetByName('Data Learn');
+    if (!sheet) return 'Data Learn sheet not found';
+    
+    var lastRow = Math.min(sheet.getLastRow(), 100);
+    var data = sheet.getRange(1, 1, lastRow, 20).getValues();
+    var results = [];
+    
+    // Show header row first
+    var headerRow = data[0];
+    var headerInfo = [];
+    for (var h = 0; h < Math.min(headerRow.length, 16); h++) {
+      headerInfo.push('Col ' + h + ' (' + String.fromCharCode(65 + h) + '): ' + (headerRow[h] || '(empty)'));
+    }
+    results.push('=== HEADER ROW ===');
+    results.push(headerInfo.join('\n'));
+    results.push('');
+    
+    // Test first 10 rows with "หลัก"
+    var count = 0;
+    for (var i = 1; i < data.length && count < 10; i++) {
+      var colA = data[i][0] ? data[i][0].toString().trim() : '';
+      if (colA.indexOf('หลัก') < 0) continue;
+      count++;
+      
+      var rawDate = data[i][13];
+      var dateStr = cleanSheetDate(data[i][13]);
+      var roomBranch = data[i][14] ? data[i][14].toString().trim() : '';
+      
+      results.push('=== Row ' + (i + 1) + ' ===');
+      results.push('Col A (0): ' + colA);
+      results.push('Col L (11): ' + (data[i][11] || ''));
+      results.push('Col M (12): ' + (data[i][12] || ''));
+      results.push('Col N (13) raw: ' + rawDate + ' | type: ' + typeof rawDate + ' | isDate: ' + (rawDate instanceof Date));
+      results.push('Col N (13) cleaned: ' + dateStr);
+      results.push('Col O (14): ' + roomBranch);
+      results.push('Col P (15): ' + (data[i][15] || ''));
+      
+      // Try resolving
+      var resolved = resolveDynamicCourseName(colA, dateStr, roomBranch);
+      results.push('RESOLVED: ' + resolved);
+      results.push('CHANGED: ' + (resolved !== colA ? 'YES ✅' : 'NO ❌'));
+      results.push('');
+    }
+    
+    // Show grade sheet header sample
+    results.push('=== GRADE SHEET HEADERS SAMPLE ===');
+    var testSheets = ['ป.3/3', 'ม.1/2', 'ป.1/1'];
+    for (var ts = 0; ts < testSheets.length; ts++) {
+      var gsName = testSheets[ts];
+      var gs = db.getSheetByName(gsName);
+      if (!gs) {
+        results.push(gsName + ': NOT FOUND');
+        continue;
+      }
+      var gLastCol = gs.getLastColumn();
+      var gRow1 = gs.getRange(1, 1, 1, gLastCol).getValues()[0];
+      var gHeaders = [];
+      for (var gc = 4; gc < gRow1.length && gc < 15; gc++) {
+        if (gRow1[gc]) gHeaders.push('Col' + gc + ': ' + gRow1[gc].toString().trim().substring(0, 60));
+      }
+      results.push(gsName + ' headers: ' + gHeaders.join(' | '));
+    }
+    
+    Logger.log(results.join('\n'));
+    return results.join('\n');
+  } catch (e) {
+    return 'Error: ' + e.message + '\n' + e.stack;
+  }
+}
+
