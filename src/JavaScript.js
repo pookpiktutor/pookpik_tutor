@@ -4494,10 +4494,9 @@ function renderDailyAttendanceSummary() {
   let totalPrivateLiveOnline = 0;
   let allMainUniqueNames = [];
   
-  // Pre-calculate unique student names (main + private, excluding subgroup)
+  // Pre-calculate unique student names (main + private, including subgroup)
   (state.classLogs || []).forEach(log => {
     const subject = log.subject || '';
-    if (subject.includes('ย่อย')) return; // exclude subgroup
     const enrolledStudents = (state.enrollments && state.enrollments[subject]) || [];
     if (Array.isArray(enrolledStudents)) {
       enrolledStudents.forEach(name => {
@@ -4574,7 +4573,7 @@ function renderDailyAttendanceSummary() {
             <span style="color: #2e7d32;">${grandTotal} คน</span>
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700;">
-            <span style="color: #6a1b9a;">4. รวมแบบไม่ซ้ำชื่อ (ไม่รวมกลุ่มย่อย)</span>
+            <span style="color: #6a1b9a;">4. รวมแบบไม่ซ้ำชื่อ (รวมกลุ่มย่อยด้วย)</span>
             <span style="color: #6a1b9a;">${allMainUniqueNames.length} คน</span>
           </div>
         </div>
