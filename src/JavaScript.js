@@ -1137,6 +1137,7 @@ function bootApp() {
         populateRoomsDatalist();
         
         // Load student list for unique attendance calculations
+        window._nextTaskSilent = true;
         google.script.run
           .withSuccessHandler(students => {
             if (Array.isArray(students)) {
@@ -1155,6 +1156,12 @@ function bootApp() {
         showToast('ไม่สามารถโหลดข้อมูลการตั้งค่าได้: ' + (settings ? settings.error : 'unknown'), 'error');
       }
       switchPanel(initialPanel);
+      
+      // Run global checks silently on boot
+      window._nextTaskSilent = true;
+      checkLowBalanceStudents();
+      window._nextTaskSilent = true;
+      checkTeacherLeaves();
     })
     .withFailureHandler(err => {
       setLoading(false);
@@ -1256,6 +1263,12 @@ function bootApp() {
       window._nextTaskSilent = true;
       loadTeacherSchedule(true); // Silent reload
     }
+    
+    // Also periodically check global banners (silently)
+    window._nextTaskSilent = true;
+    checkLowBalanceStudents();
+    window._nextTaskSilent = true;
+    checkTeacherLeaves();
   }, 60000); // refresh every 60 seconds (1 minute)
 }
 
@@ -1671,6 +1684,7 @@ function getPrivateStudentRate(sheetName, courseName) {
 }
 
 function checkLowBalanceStudents() {
+  window._nextTaskSilent = true;
   google.script.run
     .withSuccessHandler(res => {
       const banner = document.getElementById('low_balance_warning_banner');
@@ -1710,6 +1724,7 @@ function checkLowBalanceStudents() {
 }
 
 function checkTeacherLeaves() {
+  window._nextTaskSilent = true;
   google.script.run
     .withSuccessHandler(res => {
       const banner = document.getElementById('teacher_leave_warning_banner');
@@ -2341,8 +2356,6 @@ function switchPanel(panelName) {
   } else if (panelName === 'staff_salary_summary') {
     loadStaffSalarySummary();
   }
-  checkLowBalanceStudents();
-  checkTeacherLeaves();
 }
 
 // ----------------------------------------------------

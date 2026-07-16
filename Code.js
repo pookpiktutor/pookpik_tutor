@@ -4897,7 +4897,7 @@ function saveTeacherProfile(teacher, logUser) {
 function calculateTeacherYearlyPay(teacher, year, logUser) {
   const cacheKey = 'yearly_pay_v2_' + teacher.toString().trim().toLowerCase() + '_' + year;
   const cached = getCacheObject(cacheKey);
-  if (cached) return cached;
+  // if (cached) return cached;
   
   try {
     logActivity(logUser || teacher || 'System', 'คำนวณเงินเดือนรายปีเริ่ม', 'คุณครู: ' + teacher + ', ปี: ' + year);
@@ -5089,7 +5089,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 function getAllTeachersMonthlyPay(year, month) {
   const cacheKey = 'all_teachers_monthly_' + year + '_' + month;
   const cached = getCacheObject(cacheKey);
-  if (cached) return cached;
+  // if (cached) return cached;
   
   try {
     const classLogs = getClassLogs('');
