@@ -1902,7 +1902,7 @@ function renderTeacherSalaryDetail(res) {
 
       <td>${formatHoursMinutes(c.hours)}</td>
 
-      <td style="text-align: center;">${(parseInt(c.isPresentLive)||0) + (parseInt(c.isPresentOnline)||0) + (parseInt(c.isMakeup)||0)} คน</td>
+      <td style="text-align: center;">${c.numKids} คน<br><span style="font-size: 0.6rem; color: #6c757d;">(สด:${c.isPresentLive || 0}, ออน:${c.isPresentOnline || 0}, ชด:${c.isMakeup || 0})</span></td>
 
       <td><span class="badge ${isSub ? 'badge-warning' : 'badge-info'}" style="font-size: 0.65rem; padding: 4px 8px; font-weight: 600; border-radius: 6px;">${displayRole}</span></td>
 
@@ -13482,7 +13482,7 @@ function handleStaffPayrollMonthChange() {
 
         <td style="white-space: nowrap; font-weight: 600; color: var(--color-primary-hover);">${formatHoursMinutes(c.hours)}</td>
 
-        <td style="text-align: center; white-space: nowrap;">${(parseInt(c.isPresentLive)||0) + (parseInt(c.isPresentOnline)||0) + (parseInt(c.isMakeup)||0)} คน</td>
+        <td style="text-align: center; white-space: nowrap;">${c.numKids} คน<br><span style="font-size: 0.6rem; color: #6c757d;">(สด:${c.isPresentLive || 0}, ออน:${c.isPresentOnline || 0}, ชด:${c.isMakeup || 0})</span></td>
 
         <td style="text-align: right; white-space: nowrap;">฿${c.rate.toLocaleString()}</td>
 

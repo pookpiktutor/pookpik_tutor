@@ -9841,6 +9841,9 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
           role: role,
 
           numKids: numKids,
+          isPresentLive: c.isPresentLive || 0,
+          isPresentOnline: c.isPresentOnline || 0,
+          isMakeup: c.isMakeup || 0,
 
           hours: hoursStr,
 
