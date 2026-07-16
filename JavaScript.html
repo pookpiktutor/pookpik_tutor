@@ -1,57 +1,143 @@
 <script>
-// Polyfill for google.script.run so GitHub Pages can use GAS Backend API
-if (typeof google === 'undefined' || typeof google.script === 'undefined' || typeof google.script.run === 'undefined') {
-  window.google = window.google || {};
-  window.google.script = window.google.script || {};
+// --- BACKGROUND TASK QUEUE MANAGER ---
+window._bgTaskQueue = [];
+window._isBgTaskRunning = false;
+window._nextTaskTitle = '';
+
+function updateTaskWidget() {
+  const widget = document.getElementById('task_queue_widget');
+  const list = document.getElementById('tq_list');
+  const count = document.getElementById('tq_count');
+  if (!widget || !list || !count) return;
+
+  const now = Date.now();
+  window._bgTaskQueue = window._bgTaskQueue.filter(t => {
+     if (t.status === 'success' || t.status === 'error') {
+        return now - t.endTime < 5000;
+     }
+     return true;
+  });
+
+  if (window._bgTaskQueue.length === 0) {
+    widget.style.display = 'none';
+    return;
+  }
   
-  const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxZdtCU5oSYMho7Fsne3nXXE4IFWVNj_wFagCrGi86ycFxPJiPsRbAu4KGm_-wN2YJRlQ/exec';
-  
-  window.google.script.run = new Proxy({}, {
-    get: function(target, prop) {
-      if (prop === 'withSuccessHandler') {
-        return function(handler) {
-          target._successHandler = handler;
-          return window.google.script.run;
-        };
-      }
-      if (prop === 'withFailureHandler') {
-        return function(handler) {
-          target._failureHandler = handler;
-          return window.google.script.run;
-        };
-      }
-      return function(...args) {
-        const successHandler = target._successHandler;
-        const failureHandler = target._failureHandler;
-        target._successHandler = undefined;
-        target._failureHandler = undefined;
-        
-        fetch(GAS_API_URL, {
-          redirect: 'follow',
-          method: 'POST',
-          body: JSON.stringify({
-            functionName: prop,
-            arguments: args
-          }),
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-          }
-        })
-        .then(response => response.json())
-        .then(result => {
-          if (result && result.error && failureHandler) {
-            failureHandler(new Error(result.error));
-          } else if (successHandler) {
-            successHandler(result);
-          }
-        })
-        .catch(err => {
-          if (failureHandler) failureHandler(err);
-        });
-      };
-    }
+  widget.style.display = 'flex';
+  const activeCount = window._bgTaskQueue.filter(t => t.status !== 'success' && t.status !== 'error').length;
+  count.innerText = activeCount;
+
+  list.innerHTML = '';
+  window._bgTaskQueue.forEach(t => {
+    let icon = '⏳';
+    if (t.status === 'running') icon = '🔄';
+    else if (t.status === 'success') icon = '✅';
+    else if (t.status === 'error') icon = '❌';
+
+    const item = document.createElement('div');
+    item.className = 'tq-item status-' + t.status;
+    item.innerHTML = `<span class="tq-icon">${icon}</span> <span class="tq-text">${t.title}</span>`;
+    list.appendChild(item);
   });
 }
+
+function processBgTaskQueue() {
+  updateTaskWidget();
+  if (window._isBgTaskRunning) return;
+
+  const nextTask = window._bgTaskQueue.find(t => t.status === 'queued');
+  if (!nextTask) return;
+
+  window._isBgTaskRunning = true;
+  nextTask.status = 'running';
+  updateTaskWidget();
+
+  const completeTask = (status, resultOrError) => {
+    nextTask.status = status;
+    nextTask.endTime = Date.now();
+    window._isBgTaskRunning = false;
+    updateTaskWidget();
+    
+    if (status === 'success' && nextTask.successHandler) {
+      nextTask.successHandler(resultOrError);
+    } else if (status === 'error' && nextTask.failureHandler) {
+      nextTask.failureHandler(resultOrError);
+    }
+    
+    setTimeout(processBgTaskQueue, 100);
+  };
+
+  if (window._originalGSR) {
+     const runner = nextTask.successHandler ? window._originalGSR.withSuccessHandler(res => completeTask('success', res)) : window._originalGSR;
+     const finalRunner = nextTask.failureHandler ? runner.withFailureHandler(err => completeTask('error', err)) : runner;
+     finalRunner[nextTask.funcName](...nextTask.args);
+  } else {
+     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxZdtCU5oSYMho7Fsne3nXXE4IFWVNj_wFagCrGi86ycFxPJiPsRbAu4KGm_-wN2YJRlQ/exec';
+     fetch(GAS_API_URL, {
+        redirect: 'follow',
+        method: 'POST',
+        body: JSON.stringify({ functionName: nextTask.funcName, arguments: nextTask.args }),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+     })
+     .then(response => response.json())
+     .then(result => {
+        if (result && result.error) {
+           completeTask('error', new Error(result.error));
+        } else {
+           completeTask('success', result);
+        }
+     })
+     .catch(err => {
+        completeTask('error', err);
+     });
+  }
+}
+
+if (typeof google !== 'undefined' && google.script && google.script.run) {
+   window._originalGSR = google.script.run;
+} else {
+   window.google = window.google || {};
+   window.google.script = window.google.script || {};
+}
+
+window.google.script.run = new Proxy({}, {
+  get: function(target, prop) {
+    if (prop === 'withSuccessHandler') {
+      return function(handler) {
+        target._successHandler = handler;
+        return window.google.script.run;
+      };
+    }
+    if (prop === 'withFailureHandler') {
+      return function(handler) {
+        target._failureHandler = handler;
+        return window.google.script.run;
+      };
+    }
+    return function(...args) {
+      const successHandler = target._successHandler;
+      const failureHandler = target._failureHandler;
+      target._successHandler = undefined;
+      target._failureHandler = undefined;
+      
+      const title = window._nextTaskTitle || 'ประมวลผลข้อมูล...';
+      window._nextTaskTitle = ''; 
+
+      window._bgTaskQueue.push({
+        id: Date.now() + Math.random(),
+        title: title,
+        funcName: prop,
+        args: args,
+        successHandler: successHandler,
+        failureHandler: failureHandler,
+        status: 'queued'
+      });
+
+      processBgTaskQueue();
+    };
+  }
+});
+// --- END BACKGROUND TASK QUEUE MANAGER ---
 
 function safeSetValue(id, val) {
     const el = document.getElementById(id);
@@ -1753,15 +1839,15 @@ function convertDateFromSheet(dateVal) {
 }
 
 function setLoading(show, text = 'กำลังโหลดข้อมูล...') {
-  const overlay = document.getElementById('loader_overlay');
-  const loaderText = document.getElementById('loader_text');
   if (show) {
-    loaderText.innerText = text;
-    overlay.classList.add('active');
-  } else {
+    window._nextTaskTitle = text;
+  }
+  const overlay = document.getElementById('loader_overlay');
+  if (overlay) {
     overlay.classList.remove('active');
   }
 }
+
 
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast_container');
@@ -10477,6 +10563,4 @@ if (document.readyState === 'loading') {
 } else {
   initializeApp();
 }
-
 </script>
-

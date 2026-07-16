@@ -4122,3 +4122,67 @@ html, body { overflow-x: hidden !important; max-width: 100vw !important; }
 .table-responsive { overflow-x: auto !important; }
 .custom-table th, .custom-table td { white-space: nowrap !important; padding: 1px 2px !important; font-size: 0.7rem !important; line-height: 1.15; }
 @media (max-width: 768px) { .custom-table th, .custom-table td { padding: 1px 2px !important; font-size: 0.6rem !important; } }
+/* Task Queue Widget CSS */
+.task-queue-widget {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 320px;
+  max-width: calc(100vw - 40px);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.tq-header {
+  padding: 10px 15px;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tq-count {
+  background: rgba(255,255,255,0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+.tq-list {
+  max-height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.tq-item {
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dark);
+}
+.tq-item:last-child {
+  border-bottom: none;
+}
+.tq-item.status-queued .tq-icon {
+  color: var(--text-light);
+}
+.tq-item.status-running .tq-icon {
+  color: var(--primary);
+  animation: spin 1.5s linear infinite;
+}
+.tq-item.status-success .tq-icon {
+  color: var(--success);
+}
+.tq-item.status-error .tq-icon {
+  color: var(--danger);
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
