@@ -142,7 +142,7 @@ const SHEET_REGISTRY = [
 
     headers: [
 
-      'à¸§à¸´à¸Šà¸²', 'à¸„à¸£à¸¹à¸›à¸£à¸°à¸ˆà¸³', 'à¸„à¸£à¸¹à¹�à¸—à¸™', 'à¹€à¸§à¸¥à¸²à¹€à¸£à¸´à¹ˆà¸¡', 'à¹€à¸§à¸¥à¸²à¸ˆà¸š',
+      'à¸§à¸´à¸Šà¸²', 'ครูประจำ', 'à¸„à¸£à¸¹à¹�à¸—à¸™', 'à¹€à¸§à¸¥à¸²à¹€à¸£à¸´à¹ˆà¸¡', 'à¹€à¸§à¸¥à¸²à¸ˆà¸š',
 
       'à¸«à¸¡à¸²à¸¢à¹€à¸«à¸•à¸¸', 'à¸ªà¸”', 'à¸­à¸­à¸™', 'à¸¥à¸²', 'à¸‚à¸²à¸”',
 
@@ -2042,7 +2042,7 @@ function verifyLogin(username, password) {
 
         
 
-        logActivity(rows[i][0].toString().trim(), 'à¹€à¸‚à¹‰à¸²à¸ªà¸¹à¹ˆà¸£à¸°à¸šà¸š', 'à¹€à¸ˆà¹‰à¸²à¸«à¸™à¹‰à¸²à¸—à¸µà¹ˆà¹€à¸‚à¹‰à¸²à¹ƒà¸Šà¹‰à¸£à¸°à¸šà¸šà¸ªà¸³à¹€à¸£à¹‡à¸ˆ' + (role === 'Teacher' ? ' (à¸ˆà¸³à¸�à¸±à¸”à¸ªà¸´à¸—à¸˜à¸´à¹Œà¸„à¸£à¸¹à¸œà¸¹à¹‰à¸ªà¸­à¸™)' : ''));
+        logActivity(rows[i][0].toString().trim(), 'เข้าสู่ระบบ', 'เจ้าหน้าที่เข้าใช้ระบบสำเร็จ' + (role === 'Teacher' ? ' (จำกัดสิทธิ์ครูผู้สอน)' : ''));
 
         return { 
 
@@ -9660,7 +9660,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
         const matchC = cleanC !== '' && (cleanC === cleanNick || cleanC.includes(cleanNick) || cleanNick.includes(cleanC) || 
 
-                       (cellC.includes(cleanNick) && cellC !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)'));
+                       (cellC.includes(cleanNick) && cellC !== '⚠️�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)'));
 
         
 
@@ -9670,23 +9670,23 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
         let role = '';
 
-        if (cellB !== '' && cellC !== '' && cellC !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
+        if (cellB !== '' && cellC !== '' && cellC !== '⚠️�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
 
           if (!matchC) return; // Both filled but C doesn't match - skip
 
-          role = 'à¸„à¸£à¸¹à¹�à¸—à¸™';
+          role = 'ครูแทน';
 
         } else if (cellB !== '') {
 
           if (!matchB) return;
 
-          role = 'à¸„à¸£à¸¹à¸›à¸£à¸°à¸ˆà¸³';
+          role = 'ครูประจำ';
 
-        } else if (cellC !== '' && cellC !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
+        } else if (cellC !== '' && cellC !== '⚠️�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
 
           if (!matchC) return;
 
-          role = 'à¸„à¸£à¸¹à¹�à¸—à¸™';
+          role = 'ครูแทน';
 
         } else {
 
@@ -9698,7 +9698,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
         // Skip lessons with leave note only for regular teacher
 
-        if (role === 'à¸„à¸£à¸¹à¸›à¸£à¸°à¸ˆà¸³' && (c.note || '').includes('à¸„à¸£à¸¹à¸¥à¸²')) return;
+        if (role === 'ครูประจำ' && (c.note || '').includes('ครูลา')) return;
 
         
 
@@ -9734,7 +9734,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
         const hasEx = subject.toLowerCase().includes('ex');
 
-        const hasRyw = cleanResolvedNick.includes('à¸£à¸¢à¸§.') || resolvedNickname.includes('à¸£à¸¢à¸§.');
+        const hasRyw = cleanResolvedNick.includes('รยว.') || resolvedNickname.includes('รยว.');
 
         
 
@@ -10186,29 +10186,29 @@ function getAllTeachersMonthlyPay(year, month) {
 
         const matchC = cleanC !== '' && (cleanC === cleanNick || cleanC.includes(cleanNick) || cleanNick.includes(cleanC) || 
 
-                       (cellC.includes(cleanNick) && cellC !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)'));
+                       (cellC.includes(cleanNick) && cellC !== '⚠️�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)'));
 
         
 
         let role = '';
 
-        if (cellB !== '' && cellC !== '' && cellC !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
+        if (cellB !== '' && cellC !== '' && cellC !== '⚠️�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
 
           if (!matchC) return;
 
-          role = 'à¸„à¸£à¸¹à¹�à¸—à¸™';
+          role = 'ครูแทน';
 
         } else if (cellB !== '') {
 
           if (!matchB) return;
 
-          role = 'à¸„à¸£à¸¹à¸›à¸£à¸°à¸ˆà¸³';
+          role = 'ครูประจำ';
 
-        } else if (cellC !== '' && cellC !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
+        } else if (cellC !== '' && cellC !== '⚠️�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
 
           if (!matchC) return;
 
-          role = 'à¸„à¸£à¸¹à¹�à¸—à¸™';
+          role = 'ครูแทน';
 
         } else {
 
@@ -10220,7 +10220,7 @@ function getAllTeachersMonthlyPay(year, month) {
 
         // Skip leave notes only for regular teacher
 
-        if (role === 'à¸„à¸£à¸¹à¸›à¸£à¸°à¸ˆà¸³' && (c.note || '').includes('à¸„à¸£à¸¹à¸¥à¸²')) return;
+        if (role === 'ครูประจำ' && (c.note || '').includes('ครูลา')) return;
 
         
 
@@ -10256,7 +10256,7 @@ function getAllTeachersMonthlyPay(year, month) {
 
         const hasEx = subject.toLowerCase().includes('ex');
 
-        const hasRyw = cleanResolvedNick.includes('à¸£à¸¢à¸§.') || resolvedNickname.includes('à¸£à¸¢à¸§.');
+        const hasRyw = cleanResolvedNick.includes('รยว.') || resolvedNickname.includes('รยว.');
 
         
 
@@ -10376,15 +10376,15 @@ function toggleClassAbsentInSheet(rowIndex, type, isChecked) {
 
       if (isChecked) {
 
-        if (!note.includes('à¸„à¸£à¸¹à¸¥à¸²')) {
+        if (!note.includes('ครูลา')) {
 
-          note = (note ? note + ' ' : '') + 'à¸„à¸£à¸¹à¸¥à¸²';
+          note = (note ? note + ' ' : '') + 'ครูลา';
 
         }
 
       } else {
 
-        note = note.replace(/à¸„à¸£à¸¹à¸¥à¸²/g, '').trim();
+        note = note.replace(/ครูลา/g, '').trim();
 
       }
 
@@ -14852,7 +14852,7 @@ function getTeacherLeaveToday(logUser) {
 
       const note = (data[i][5] || '').toString();
 
-      if (note.indexOf('à¸„à¸£à¸¹à¸¥à¸²') === -1) continue;
+      if (note.indexOf('ครูลา') === -1) continue;
 
       
 
@@ -14924,7 +14924,7 @@ function getTeacherLeaveToday(logUser) {
 
       // If there is a substitute teacher, DO NOT show it in the leave list
 
-      if (teacherSub !== '' && teacherSub !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && teacherSub !== '-' && teacherSub !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
+      if (teacherSub !== '' && teacherSub !== '⚠️�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && teacherSub !== '-' && teacherSub !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
 
         continue;
 
@@ -16286,7 +16286,7 @@ function testResolveDynamicCourseName() {
 
     if (count === 0) {
 
-      results.push('âš ï¸� No "à¸«à¸¥à¸±à¸�" rows found with date >= 18/5/2026 in last 200 rows');
+      results.push('⚠️� No "à¸«à¸¥à¸±à¸�" rows found with date >= 18/5/2026 in last 200 rows');
 
       results.push('Showing last 3 rows dates:');
 
