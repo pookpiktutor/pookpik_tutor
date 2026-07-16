@@ -4895,7 +4895,7 @@ function saveTeacherProfile(teacher, logUser) {
 }
 
 function calculateTeacherYearlyPay(teacher, year, logUser) {
-  const cacheKey = 'yearly_pay_' + teacher.toString().trim().toLowerCase() + '_' + year;
+  const cacheKey = 'yearly_pay_v2_' + teacher.toString().trim().toLowerCase() + '_' + year;
   const cached = getCacheObject(cacheKey);
   if (cached) return cached;
   
@@ -4979,8 +4979,8 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
           return; // No teacher in either column
         }
         
-        // Skip lessons with leave note
-        if ((c.note || '').includes('ครูลา')) return;
+        // Skip lessons with leave note only for regular teacher
+        if (role === 'ครูประจำ' && (c.note || '').includes('ครูลา')) return;
         
         // Parse hours
         const hoursStr = c.hours || '';
@@ -5225,18 +5225,22 @@ function getAllTeachersMonthlyPay(year, month) {
         const matchB = cellB !== '' && (cellB === cleanResolvedNick || cellB.replace(/^ครู/, '').trim() === cleanNick);
         const matchC = cellC !== '' && (cellC === cleanResolvedNick || cellC.replace(/^ครู/, '').trim() === cleanNick);
         
+        let role = '';
         if (cellB !== '' && cellC !== '') {
           if (!matchC) return;
+          role = 'ครูแทน';
         } else if (cellB !== '') {
           if (!matchB) return;
+          role = 'ครูประจำ';
         } else if (cellC !== '') {
           if (!matchC) return;
+          role = 'ครูแทน';
         } else {
           return;
         }
         
-        // Skip leave notes
-        if ((c.note || '').includes('ครูลา')) return;
+        // Skip leave notes only for regular teacher
+        if (role === 'ครูประจำ' && (c.note || '').includes('ครูลา')) return;
         
         // Parse hours
         const hoursStr = c.hours || '';
@@ -7870,7 +7874,7 @@ function invalidateTeacherSalaryCache(namesArray) {
     const variations = [cleanTeacher, withoutKru, 'ครู' + withoutKru];
     variations.forEach(t => {
       for (let y = thisYear - 2; y <= thisYear + 2; y++) {
-        clearCacheObject('yearly_pay_' + t + '_' + y);
+        clearCacheObject('yearly_pay_v2_' + t + '_' + y);
       }
     });
   });
