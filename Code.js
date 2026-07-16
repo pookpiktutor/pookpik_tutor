@@ -5405,8 +5405,30 @@ function parseHoursValue(val) {
 // =============================================
 var _gradeHeaderCache = null;
 
+function clearGradeHeaderCache() {
+  try {
+    CacheService.getScriptCache().remove('grade_header_cache');
+    _gradeHeaderCache = null;
+  } catch (e) {
+    Logger.log('Error clearing cache: ' + e.message);
+  }
+}
+
 function buildGradeHeaderCache_() {
   if (_gradeHeaderCache) return _gradeHeaderCache;
+  
+  var cacheService = CacheService.getScriptCache();
+  try {
+    var cached = cacheService.get('grade_header_cache');
+    if (cached) {
+      var parsed = JSON.parse(cached);
+      _gradeHeaderCache = parsed;
+      return parsed;
+    }
+  } catch (e) {
+    Logger.log('Cache read error: ' + e.message);
+  }
+
   var db = getDb();
   var cache = {};
   var sheetNames = [
@@ -5429,8 +5451,17 @@ function buildGradeHeaderCache_() {
     cache[sn] = headers;
   }
   _gradeHeaderCache = cache;
+  
+  try {
+    cacheService.put('grade_header_cache', JSON.stringify(cache), 3600); // Cache for 1 hour
+  } catch (e) {
+    Logger.log('Cache write error: ' + e.message);
+  }
+  
   return cache;
 }
+
+var _resolvedNamesLocalCache = {};
 
 function resolveDynamicCourseName(originalSubject, dateStr, roomBranch) {
   if (!originalSubject || !dateStr) return originalSubject;
@@ -5439,15 +5470,26 @@ function resolveDynamicCourseName(originalSubject, dateStr, roomBranch) {
   // Only process courses starting with or containing "หลัก"
   if (subj.indexOf('หลัก') < 0) return subj;
   
+  var cacheKey = subj + '_' + dateStr + '_' + (roomBranch || '');
+  if (_resolvedNamesLocalCache[cacheKey]) {
+    return _resolvedNamesLocalCache[cacheKey];
+  }
+  
   // Check date >= 18/5/2026
   var dateParts = dateStr.toString().split('/');
-  if (dateParts.length !== 3) return subj;
+  if (dateParts.length !== 3) {
+    _resolvedNamesLocalCache[cacheKey] = subj;
+    return subj;
+  }
   var day = parseInt(dateParts[0], 10);
   var month = parseInt(dateParts[1], 10);
   var year = parseInt(dateParts[2], 10);
   var dateObj = new Date(year, month - 1, day);
   var cutoffDate = new Date(2026, 4, 18); // 18/5/2026
-  if (dateObj < cutoffDate) return subj;
+  if (dateObj < cutoffDate) {
+    _resolvedNamesLocalCache[cacheKey] = subj;
+    return subj;
+  }
   
   // Extract day of week name
   var dayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
@@ -5493,15 +5535,22 @@ function resolveDynamicCourseName(originalSubject, dateStr, roomBranch) {
   
   // Helper: search headers in a list of sheets
   var searchResult = searchHeadersInSheets_(headerCache, sheetsToSearch, subjectKeyword, dayOfWeek);
-  if (searchResult) return searchResult;
+  if (searchResult) {
+    _resolvedNamesLocalCache[cacheKey] = searchResult;
+    return searchResult;
+  }
   
   // Fallback: try shorter keyword (e.g., "ภาษาไทย" → "ไทย")
   var shortKeyword = subjectKeyword.replace(/^ภาษา/, '').trim();
   if (shortKeyword !== subjectKeyword && shortKeyword.length > 0) {
     var fallback = searchHeadersInSheets_(headerCache, sheetsToSearch, shortKeyword, dayOfWeek);
-    if (fallback) return fallback;
+    if (fallback) {
+      _resolvedNamesLocalCache[cacheKey] = fallback;
+      return fallback;
+    }
   }
   
+  _resolvedNamesLocalCache[cacheKey] = subj;
   return subj;
 }
 
@@ -8342,6 +8391,7 @@ function testResolveDynamicCourseName() {
 
 function backfillDataLearnCourseNames() {
   try {
+    clearGradeHeaderCache();
     var db = getDb();
     var sheet = db.getSheetByName('Data Learn');
     if (!sheet) return 'Data Learn sheet not found';
