@@ -1642,7 +1642,7 @@ function loadTeacherYearlySalary() {
 
         const monthRes = res.months[m];
 
-        if (monthRes && monthRes.success) {
+        if (monthRes) {
 
           yearlyPay += monthRes.totalPay || 0;
 
@@ -13300,7 +13300,7 @@ function handleStaffPayrollFilterChange() {
 
         const monthRes = res.months[m];
 
-        if (monthRes && monthRes.success) {
+        if (monthRes) {
 
           yearlyPay += monthRes.totalPay || 0;
 
