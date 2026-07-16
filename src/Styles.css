@@ -357,11 +357,11 @@ body {
 
 .nav-item.active {
 
-  background: linear-gradient(90deg, rgba(27, 58, 75, 0.15) 0%, rgba(27, 58, 75, 0.04) 100%);
+  background: linear-gradient(90deg, rgba(46, 125, 50, 0.15) 0%, rgba(46, 125, 50, 0.04) 100%);
 
-  color: var(--color-primary); /* ฟ้าไฟฟ้าเรืองแสง */
+  color: #2e7d32; /* เขียวเข้ม */
 
-  border-color: rgba(27, 58, 75, 0.30);
+  border-color: rgba(46, 125, 50, 0.30);
 
   font-weight: 600;
 
@@ -4125,7 +4125,7 @@ html, body { overflow-x: hidden !important; max-width: 100vw !important; }
 /* Task Queue Widget CSS */
 .task-queue-widget {
   position: fixed;
-  bottom: 20px;
+  top: 75px;
   right: 20px;
   width: 320px;
   max-width: calc(100vw - 40px);
@@ -4155,7 +4155,7 @@ html, body { overflow-x: hidden !important; max-width: 100vw !important; }
   font-size: 0.8rem;
 }
 .tq-list {
-  max-height: 250px;
+  max-height: 125px; /* ประมาณ 3 บรรทัด */
   overflow-y: auto;
   display: flex;
   flex-direction: column;

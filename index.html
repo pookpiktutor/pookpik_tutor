@@ -213,8 +213,8 @@
                 </div>
               </div>
               
-              <div class="glass-panel widget-card" style="border-left: 4px solid var(--color-success); flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px;">
-                <div style="font-weight: 600; font-size: 1.05rem; color: var(--color-success); display: flex; align-items: center; gap: 8px;">
+              <div class="glass-panel widget-card" style="border-left: 4px solid var(--color-warning); flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px;">
+                <div style="font-weight: 600; font-size: 1.05rem; color: var(--color-warning); display: flex; align-items: center; gap: 8px;">
                   <span>🏫</span> สาขา 2 ข้างโรงเรียนระยองวิทยาคม
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: 4px;">
@@ -830,7 +830,7 @@
                     <th>วิชาที่รับสอน</th>
                     <th>ธนาคาร</th>
                     <th>เลขบัญชี</th>
-                    <th>ค่าตอบแทน (บาท/ชม.)</th>
+                    <th>ยอดหักเงินประกันรวม</th>
                     <th>แก้ไข</th>
                   </tr>
                 </thead>
@@ -1015,6 +1015,7 @@
                       <th>เลขที่บัญชี</th>
                       <th>เดือน</th>
                       <th>ปี</th>
+                      <th style="text-align: right;">ยอดหักเงินประกัน</th>
                       <th style="text-align: right;">ยอดเงินเดือนสุทธิ</th>
                       <th>เวลาที่กดยืนยัน</th>
                       <th style="text-align: center;">สถานะ</th>
@@ -2179,8 +2180,8 @@
                 <input type="text" id="t_account_number" class="form-input" placeholder="เลขที่บัญชีธนาคาร">
               </div>
               <div class="form-group">
-                <label class="form-label">ค่าตอบแทน (บาท/ชั่วโมง)</label>
-                <input type="number" id="t_compensation" class="form-input" placeholder="เช่น 150" value="150" min="0">
+                <label class="form-label">ยอดหักเงินประกันรวม</label>
+                <input type="number" id="t_compensation" class="form-input" placeholder="เช่น 3000" value="0" min="0">
               </div>
               <div class="form-group">
                 <label class="form-label">ประเภทบัญชี</label>

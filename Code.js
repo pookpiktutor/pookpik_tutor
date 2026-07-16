@@ -5196,7 +5196,8 @@ function getAllTeachersMonthlyPay(year, month) {
           totalHours: 0,
           totalClasses: 0,
           isConfirmed: !!conf,
-          confirmedAt: conf ? conf.confirmedAt : null
+          confirmedAt: conf ? conf.confirmedAt : null,
+          guaranteeDeduction: 0
         });
         return;
       }
@@ -5264,7 +5265,8 @@ function getAllTeachersMonthlyPay(year, month) {
         totalHours: Math.round(totalHours * 100) / 100,
         totalClasses: totalClasses,
         isConfirmed: !!conf,
-        confirmedAt: conf ? conf.confirmedAt : null
+        confirmedAt: conf ? conf.confirmedAt : null,
+        guaranteeDeduction: teacherProfile.compensation || 0
       });
     });
     

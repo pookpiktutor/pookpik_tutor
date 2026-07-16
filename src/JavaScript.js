@@ -4200,7 +4200,6 @@ function renderMonthlyGrid(data) {
     </div>`;
   
   // === ROOM-BASED WEEKLY VIEW ===
-  // === ROOM-BASED WEEKLY VIEW ===
   filteredRooms.forEach(room => {
     // Collect classes for this room across all weeks
     const roomWeekData = weekLabels.map(w => {
@@ -4379,6 +4378,11 @@ function renderDailyAttendanceSummary() {
   const container = document.getElementById('daily_attendance_summary_container');
   if (!container) return;
   
+  if (!state.classLogs || state.classLogs.length === 0) {
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">ไม่มีข้อมูลคลาสเรียนในวันนี้</div>`;
+    return;
+  }
+  
   const timeSlots = [
     { label: '08.00', start: '08:00' },
     { label: '09.00', start: '09:00' },
@@ -4395,45 +4399,45 @@ function renderDailyAttendanceSummary() {
     { label: '20.00', start: '20:00' }
   ];
   
-  const branches = ['สาขา1', 'สาขา2', 'สาขา3'];
-  const stats = {};
+  const categories = ['main', 'private'];
+  const stats = { 'main': {}, 'private': {} };
   
-  branches.forEach(b => {
-    stats[b] = {};
+  categories.forEach(cat => {
     timeSlots.forEach(slot => {
-      stats[b][slot.label] = { live: 0, online: 0, leave: 0, absent: 0, makeup: 0, orange: 0, enrolled: 0, studentNames: [] };
+      stats[cat][slot.label] = { live: 0, online: 0, leave: 0, absent: 0, makeup: 0, enrolled: 0, studentNames: [] };
     });
   });
   
+  const isMainGroup = (subject) => {
+    if (!subject) return false;
+    return /^(อนุบาล|ป\.|ม\.)[1-6]\/[1-3]$/.test(subject.trim());
+  };
+  
   (state.classLogs || []).forEach(log => {
-    let logBranch = '';
-    const roomBranchStr = (log.roomBranch || '').replace(/\s+/g, '');
-    if (roomBranchStr.includes('สาขา1')) logBranch = 'สาขา1';
-    else if (roomBranchStr.includes('สาขา2')) logBranch = 'สาขา2';
-    else if (roomBranchStr.includes('สาขา3')) logBranch = 'สาขา3';
-    
-    if (!branches.includes(logBranch)) return;
-    
     const startClean = cleanTimeStr(log.timeStart);
     const mappedStart = startClean ? startClean.substring(0, 2) + ':00' : '';
+    const subject = log.subject || '';
+    const cat = isMainGroup(subject) ? 'main' : 'private';
+    
     timeSlots.forEach(slot => {
       if (mappedStart === slot.start) {
-        stats[logBranch][slot.label].live += parseInt(log.isPresentLive) || 0;
-        stats[logBranch][slot.label].online += parseInt(log.isPresentOnline) || 0;
-        stats[logBranch][slot.label].leave += parseInt(log.isLeave) || 0;
-        stats[logBranch][slot.label].absent += parseInt(log.isAbsent) || 0;
-        stats[logBranch][slot.label].makeup += parseInt(log.isMakeup) || 0;
-        stats[logBranch][slot.label].orange += parseInt(log.isOrange) || 0;
+        stats[cat][slot.label].live += parseInt(log.isPresentLive) || 0;
+        stats[cat][slot.label].online += parseInt(log.isPresentOnline) || 0;
+        stats[cat][slot.label].leave += parseInt(log.isLeave) || 0;
+        stats[cat][slot.label].absent += parseInt(log.isAbsent) || 0;
+        stats[cat][slot.label].makeup += parseInt(log.isMakeup) || 0;
         
-        const courseName = log.subject;
-        const enrolledStudents = (state.enrollments && state.enrollments[courseName]) || [];
-        if (Array.isArray(enrolledStudents)) {
-          stats[logBranch][slot.label].enrolled += enrolledStudents.length;
-          enrolledStudents.forEach(name => {
-            if (stats[logBranch][slot.label].studentNames.indexOf(name) === -1) {
-              stats[logBranch][slot.label].studentNames.push(name);
-            }
-          });
+        if (cat === 'main') {
+          const courseName = subject;
+          const enrolledStudents = (state.enrollments && state.enrollments[courseName]) || [];
+          if (Array.isArray(enrolledStudents)) {
+            stats[cat][slot.label].enrolled += enrolledStudents.length;
+            enrolledStudents.forEach(name => {
+              if (stats[cat][slot.label].studentNames.indexOf(name) === -1) {
+                stats[cat][slot.label].studentNames.push(name);
+              }
+            });
+          }
         }
       }
     });
@@ -4453,7 +4457,7 @@ function renderDailyAttendanceSummary() {
       <table style="width: 100%; border-collapse: collapse; font-size: 0.68rem; text-align: center; background: #fff;">
         <thead>
           <tr style="background: rgba(0,132,255,0.05); border-bottom: 1px solid var(--border-color);">
-            <th style="padding: 6px 10px; text-align: left; font-weight: 700; border-right: 1px solid var(--border-color); color: var(--color-primary-hover); white-space: nowrap; font-size: 0.68rem;">สาขา</th>
+            <th style="padding: 6px 10px; text-align: left; font-weight: 700; border-right: 1px solid var(--border-color); color: var(--color-primary-hover); white-space: nowrap; font-size: 0.68rem;">รูปแบบกลุ่มเรียน</th>
   `;
   
   timeSlots.forEach(slot => {
@@ -4466,67 +4470,86 @@ function renderDailyAttendanceSummary() {
         <tbody>
   `;
   
-  branches.forEach(b => {
-    const branchShort = b === 'สาขา1' ? 'สาขา 1' : b === 'สาขา2' ? 'สาขา 2' : 'สาขา 3';
+  let totalMainLiveOnline = 0;
+  let totalPrivateLiveOnline = 0;
+  let allMainUniqueNames = [];
+  
+  categories.forEach(cat => {
+    const catLabel = cat === 'main' ? 'แบบกลุ่มหลัก' : 'แบบเดี่ยวและกลุ่มย่อย';
     html += `
       <tr style="border-bottom: 1px solid var(--border-color);" onmouseover="this.style.backgroundColor='rgba(0,132,255,0.02)'" onmouseout="this.style.backgroundColor=''">
-        <td style="padding: 5px 10px; text-align: left; font-weight: 700; color: var(--color-primary-hover); border-right: 1px solid var(--border-color); white-space: nowrap; font-size: 0.7rem;">${branchShort}</td>
+        <td style="padding: 5px 10px; text-align: left; font-weight: 700; color: var(--color-primary-hover); border-right: 1px solid var(--border-color); white-space: nowrap; font-size: 0.7rem;">${catLabel}</td>
     `;
     
     timeSlots.forEach(slot => {
-      const s = stats[b][slot.label];
-      const total = s.live + s.online + s.leave;
+      const s = stats[cat][slot.label];
+      const totalAttended = s.live + s.online;
+      
+      if (cat === 'main') {
+        totalMainLiveOnline += totalAttended;
+        s.studentNames.forEach(name => {
+          if (allMainUniqueNames.indexOf(name) === -1) allMainUniqueNames.push(name);
+        });
+      } else {
+        totalPrivateLiveOnline += totalAttended;
+      }
+      
       const hasData = (s.live > 0 || s.online > 0 || s.leave > 0 || s.absent > 0 || s.makeup > 0 || s.enrolled > 0);
       
       if (hasData) {
-        const tooltip = `นร.ลงทะเบียน:${s.enrolled} สด:${s.live} ออนไลน์:${s.online} ลา:${s.leave} ขาด:${s.absent} ชดเชย:${s.makeup} รวม:${total}`;
-        html += `
-          <td style="padding: 4px 3px; border-right: 1px solid var(--border-color); vertical-align: middle;" title="${tooltip}">
+        const tooltip = \`นร.ลงทะเบียน:${s.enrolled} สด:${s.live} ออนไลน์:${s.online} ลา:${s.leave} ขาด:${s.absent} ชดเชย:${s.makeup} รวมมาเรียน:${totalAttended}\`;
+        html += \`
+          <td style="padding: 4px 3px; border-right: 1px solid var(--border-color); vertical-align: middle;" title="\${tooltip}">
             <div style="display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; align-items: center;">
-              <span style="background:#e0f7fa; color:#00838f; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.6rem;">นร.${s.enrolled}</span>
-              ${s.live > 0 ? `<span style="background:#e8f5e9; color:#2e7d32; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">สด ${s.live}</span>` : ''}
-              ${s.online > 0 ? `<span style="background:#e3f2fd; color:#1565c0; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ออน ${s.online}</span>` : ''}
-              ${s.leave > 0 ? `<span style="background:#fff3e0; color:#ef6c00; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ลา ${s.leave}</span>` : ''}
-              ${s.absent > 0 ? `<span style="background:#ffebee; color:#c62828; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ขาด ${s.absent}</span>` : ''}
-              ${s.makeup > 0 ? `<span style="background:#f3e5f5; color:#6a1b9a; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ชด ${s.makeup}</span>` : ''}
-              <span style="font-weight:800; color:#0f172a; font-size:0.62rem; border-left:1px solid #e2e8f0; padding-left:3px; margin-left:1px;">⭐${total}</span>
+              \${cat === 'main' ? \`<span style="background:#e0f7fa; color:#00838f; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.6rem;">นร.\${s.enrolled}</span>\` : ''}
+              \${s.live > 0 ? \`<span style="background:#e8f5e9; color:#2e7d32; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">สด \${s.live}</span>\` : ''}
+              \${s.online > 0 ? \`<span style="background:#e3f2fd; color:#1565c0; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ออน \${s.online}</span>\` : ''}
+              \${s.leave > 0 ? \`<span style="background:#fff3e0; color:#ef6c00; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ลา \${s.leave}</span>\` : ''}
+              \${s.absent > 0 ? \`<span style="background:#ffebee; color:#c62828; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ขาด \${s.absent}</span>\` : ''}
+              \${s.makeup > 0 ? \`<span style="background:#f3e5f5; color:#6a1b9a; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ชด \${s.makeup}</span>\` : ''}
+              \${totalAttended > 0 ? \`<span style="font-weight:800; color:#0f172a; font-size:0.62rem; border-left:1px solid #e2e8f0; padding-left:3px; margin-left:1px;">⭐\${totalAttended}</span>\` : ''}
             </div>
           </td>
-        `;
+        \`;
       } else {
-        html += `<td style="padding: 4px; color: #e2e8f0; border-right: 1px solid var(--border-color); font-size: 0.6rem;">-</td>`;
+        html += \`<td style="padding: 4px; color: #e2e8f0; border-right: 1px solid var(--border-color); font-size: 0.6rem;">-</td>\`;
       }
     });
     
-    // Calculate unique total enrolled students for this branch (all slots combined)
-    const branchUniqueStudents = [];
-    let totalAttendedBranch = 0;
-    timeSlots.forEach(sl => {
-      stats[b][sl.label].studentNames.forEach(name => {
-        if (branchUniqueStudents.indexOf(name) === -1) {
-          branchUniqueStudents.push(name);
-        }
-      });
-      totalAttendedBranch += ((stats[b][sl.label].live || 0) + (stats[b][sl.label].online || 0) + (stats[b][sl.label].orange || 0));
-    });
-    const totalEnrolledBranch = branchUniqueStudents.length;
-    html += `
-      <td style="padding: 5px 10px; border-left: 2px solid var(--border-color); font-size: 0.65rem; background: rgba(0,131,143,0.04); vertical-align: middle; white-space: nowrap;">
-        <div style="color: #00838f; font-weight: 800; margin-bottom: 2px;">📋 รวม ${totalEnrolledBranch} นร.</div>
-        <div style="color: #2e7d32; font-weight: 700;">✅ มาเรียน ${totalAttendedBranch} คน</div>
-      </td>
-    `;
-    
-    html += `</tr>`;
+    html += \`</tr>\`;
   });
-
+  
+  const grandTotal = totalMainLiveOnline + totalPrivateLiveOnline;
   
   html += `
         </tbody>
       </table>
     </div>
+    
+    <div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 10px;">
+      <div style="flex: 1; min-width: 200px; background: rgba(0, 132, 255, 0.05); border-radius: 8px; padding: 10px; border: 1px solid rgba(0, 132, 255, 0.1);">
+        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;">ยอดรวมนักเรียนที่มาเรียนสดและออนไลน์</div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
+            <span style="color: #00838f;">1. ยอดรวมกลุ่มหลัก</span>
+            <span style="color: #00838f;">${totalMainLiveOnline} คน</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
+            <span style="color: #ef6c00;">2. ยอดรวมเดี่ยว-กลุ่มย่อย</span>
+            <span style="color: #ef6c00;">${totalPrivateLiveOnline} คน</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
+            <span style="color: #2e7d32;">3. รวมทั้งหมด</span>
+            <span style="color: #2e7d32;">${grandTotal} คน</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700;">
+            <span style="color: #6a1b9a;">4. รวมแบบไม่ซ้ำชื่อ (ไม่รวมกลุ่มย่อย)</span>
+            <span style="color: #6a1b9a;">${allMainUniqueNames.length} คน</span>
+          </div>
+        </div>
+      </div>
+    </div>
   `;
-  
   container.innerHTML = html;
 }
 
@@ -6399,12 +6422,14 @@ function loadStaffSalarySummary() {
       // Render table rows
       let html = '';
       if (filteredData.length === 0) {
-        html = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</td></tr>`;
+        html = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</td></tr>`;
       } else {
         filteredData.forEach(match => {
           const isConfirmed = match.isConfirmed;
           
           let payText = '-';
+          let deduction = parseFloat(match.guaranteeDeduction || 0);
+          let deductionText = deduction > 0 ? '-฿' + Math.round(deduction).toLocaleString() : '฿0';
           let timeText = '-';
           let statusHtml = '<span style="color: var(--text-muted); font-weight: 500;">⏳ รอยืนยัน</span>';
           
@@ -6435,6 +6460,7 @@ function loadStaffSalarySummary() {
               <td style="color: var(--text-muted); font-size: 0.85rem; font-family: monospace; white-space: nowrap; padding: 4px 8px;">${match.accountNumber || '-'}</td>
               <td style="color: var(--text-muted); white-space: nowrap; padding: 4px 8px;">${getMonthName(month)}</td>
               <td style="color: var(--text-muted); white-space: nowrap; padding: 4px 8px;">${year + 543}</td>
+              <td style="text-align: right; font-weight: 600; color: var(--color-danger); white-space: nowrap; padding: 4px 8px;">${deductionText}</td>
               <td style="text-align: right; font-weight: 700; color: ${isConfirmed ? 'var(--color-success)' : 'var(--text-muted)'}; white-space: nowrap; padding: 4px 8px;">${payText}</td>
               <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; padding: 4px 8px;">${timeText}</td>
               <td style="text-align: center; font-size: 0.82rem; white-space: nowrap; padding: 4px 8px;">${statusHtml}</td>
