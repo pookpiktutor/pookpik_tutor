@@ -4131,11 +4131,11 @@ html, body { overflow-x: hidden !important; max-width: 100vw !important; }
   position: fixed;
   top: 15px;
   right: 20px;
-  width: 320px;
+  width: 220px;
   max-width: calc(100vw - 40px);
   background: var(--surface);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-md);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   z-index: 10000;
   display: flex;
   flex-direction: column;
@@ -4143,34 +4143,34 @@ html, body { overflow-x: hidden !important; max-width: 100vw !important; }
   border: 1px solid var(--border);
 }
 .tq-header {
-  padding: 10px 15px;
+  padding: 4px 8px;
   background: var(--primary);
   color: white;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.72rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 .tq-count {
   background: rgba(255,255,255,0.2);
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
+  padding: 1px 5px;
+  border-radius: 8px;
+  font-size: 0.65rem;
 }
 .tq-list {
-  max-height: 125px; /* ประมาณ 3 บรรทัด */
+  max-height: 40px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
 .tq-item {
-  padding: 10px 15px;
+  padding: 4px 8px;
   border-bottom: 1px solid var(--border);
-  font-size: 0.85rem;
+  font-size: 0.68rem;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   color: var(--text-dark);
 }
 .tq-item:last-child {
