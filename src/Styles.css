@@ -3625,35 +3625,23 @@ body {
   /* Collapsible / responsive Sidebar */
 
   .sidebar {
-
     width: 100% !important;
-
     height: auto !important;
-
     min-height: auto;
-
     border-right: none;
-
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-
     padding: 12px 16px;
-
     flex-direction: row !important;
-
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
     align-items: center;
-
     justify-content: space-between;
-
     overflow-x: auto;
-
     overflow-y: hidden;
-
     position: sticky;
-
     top: 0;
-
     z-index: 1000;
-
   }
 
   .brand {
