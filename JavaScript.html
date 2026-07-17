@@ -269,6 +269,68 @@ window.google.script.run = new Proxy({}, {
 
 
 
+      const isMutation = /^(save|add|update|delete|submit|clear|toggle|confirm|migrate|fix|init|ensure|change)/i.test(prop);
+
+
+
+      if (!isMutation) {
+
+        // Execute immediately (Bypass Queue for read operations)
+
+        if (window._originalGSR) {
+
+          const runner = successHandler ? window._originalGSR.withSuccessHandler(successHandler) : window._originalGSR;
+
+          const finalRunner = failureHandler ? runner.withFailureHandler(failureHandler) : runner;
+
+          finalRunner[prop](...args);
+
+        } else {
+
+          const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxZdtCU5oSYMho7Fsne3nXXE4IFWVNj_wFagCrGi86ycFxPJiPsRbAu4KGm_-wN2YJRlQ/exec';
+
+          fetch(GAS_API_URL, {
+
+            redirect: 'follow',
+
+            method: 'POST',
+
+            body: JSON.stringify({ functionName: prop, arguments: args }),
+
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+
+          })
+
+          .then(response => response.json())
+
+          .then(result => {
+
+            if (result && result.error) {
+
+              if (failureHandler) failureHandler(new Error(result.error));
+
+            } else {
+
+              if (successHandler) successHandler(result);
+
+            }
+
+          })
+
+          .catch(err => {
+
+            if (failureHandler) failureHandler(err);
+
+          });
+
+        }
+
+        return; // Don't push to queue
+
+      }
+
+
+
       window._bgTaskQueue.push({
 
         id: Date.now() + Math.random(),
@@ -903,7 +965,7 @@ function initTeacherFilterDates() {
 
     // Show current year +/- 2 years
 
-    for (let y = year - 2; y <= year + 2; y++) {
+    for (let y = 2026; y <= 2032; y++) {
 
       const opt = document.createElement('option');
 
@@ -1859,7 +1921,7 @@ function renderTeacherSalaryDetail(res) {
 
     let displayRole = c.role || 'ครูประจำ';
 
-    if (displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน')) {
+    if (displayRole === 'sub' || displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน')) {
 
       displayRole = 'ครูแทน';
 
@@ -1903,7 +1965,7 @@ function renderTeacherSalaryDetail(res) {
 
       <td>${formatHoursMinutes(c.hours)}</td>
 
-      <td style="text-align: center;">${(parseInt(c.isPresentLive)||0) + (parseInt(c.isPresentOnline)||0) + (parseInt(c.isMakeup)||0)} คน</td>
+      <td style="text-align: center;">${c.numKids} คน<br><span style="font-size: 0.6rem; color: #6c757d;">(สด:${c.isPresentLive || 0}, ออน:${c.isPresentOnline || 0}, ชด:${c.isMakeup || 0})</span></td>
 
       <td><span class="badge ${isSub ? 'badge-warning' : 'badge-info'}" style="font-size: 0.65rem; padding: 4px 8px; font-weight: 600; border-radius: 6px;">${displayRole}</span></td>
 
@@ -3153,7 +3215,7 @@ function matchRoomAndBranch(roomBranch, roomName, branchName) {
 
   const escapedRN = cleanRN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
-  const roomRegex = new RegExp('^' + escapedRN + '(?!\\d|/)', 'i');
+  const roomRegex = new RegExp('(?:^|\\s)' + escapedRN + '(?!\\d|/)', 'i');
 
   if (!roomRegex.test(cleanRB)) {
 
@@ -3477,7 +3539,9 @@ function checkTeacherLeaves() {
 
           const bgColor = isToday ? '#fef3c7' : '#fffbeb';
 
-          return `<span onclick="jumpToLeaveClass('${l.date}', ${l.rowIndex})" class="leave-card-clickable" style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 4px; font-size: 0.68rem; text-align: center; line-height: 1.4; cursor: pointer; transition: all 0.2s;">
+          const safeRoom = (l.room || '').replace(/'/g, "\\'");
+
+          return `<span onclick="jumpToLeaveClass('${l.date}', ${l.rowIndex}, '${safeRoom}')" class="leave-card-clickable" style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 4px; font-size: 0.68rem; text-align: center; line-height: 1.4; cursor: pointer; transition: all 0.2s;">
 
             ${dateBadge}👨‍🏫 <strong>ครู ${l.teacher} ลา</strong> — ${formatSubjectName(l.subject)} (${cleanTimeStr(l.timeStart)}-${cleanTimeStr(l.timeEnd)})${l.teacherSub ? ` ครูแทน: ${l.teacherSub}` : ' ⚠️ไม่มีครูแทน'}
 
@@ -3723,11 +3787,45 @@ function setLoading(show, text = 'กำลังโหลดข้อมูล.
 
   }
 
+  
+
   const overlay = document.getElementById('loader_overlay');
 
   if (overlay) {
 
-    overlay.classList.remove('active');
+    overlay.classList.remove('active'); // Ensure full-screen loader is always hidden
+
+  }
+
+
+
+  const inlineLoader = document.getElementById('inline_loading_indicator');
+
+  const inlineText = document.getElementById('inline_loading_text');
+
+
+
+  if (show) {
+
+    if (inlineLoader) {
+
+      inlineLoader.style.display = 'flex';
+
+    }
+
+    if (inlineText) {
+
+      inlineText.innerText = text;
+
+    }
+
+  } else {
+
+    if (inlineLoader) {
+
+      inlineLoader.style.display = 'none';
+
+    }
 
   }
 
@@ -3841,7 +3939,7 @@ function populateDropdowns() {
 
     const optionsHtml = [];
 
-    for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+    for (let y = 2026; y <= 2032; y++) {
 
       const selected = y === currentYear ? ' selected' : '';
 
@@ -6609,9 +6707,13 @@ function renderGradeSheetTable() {
 
   const displayedCourses = courses.filter(c => {
 
+    if (c.branch !== selectedBranch) return false;
+
+    
+
     if (filterRound === 'ALL') {
 
-      return c.branch === selectedBranch;
+      return true;
 
     } else {
 
@@ -6631,15 +6733,7 @@ function renderGradeSheetTable() {
 
   const displayedStudents = students.filter(s => {
 
-    if (filterRound === 'ALL') {
-
-      return s.branch === selectedBranch;
-
-    } else {
-
-      return true; // show all students across all branches when round filter is active
-
-    }
+    return s.branch === selectedBranch;
 
   });
 
@@ -7951,7 +8045,7 @@ function switchDailyGridView(mode) {
 
     monthlyControls.style.display = 'none';
 
-    dowTabs.style.display = 'none';
+    dowTabs.style.display = 'block';
 
     dailyContainer.style.display = 'block';
 
@@ -8037,7 +8131,41 @@ function selectDayOfWeek(dow) {
 
   updateDowTabsActive();
 
-  loadMonthlyGrid();
+  if (monthlyViewState.mode === 'daily') {
+
+    // In daily view: change the date to the corresponding day of the same week
+
+    const dateInput = document.getElementById('daily_grid_filter_date');
+
+    if (dateInput && dateInput.value) {
+
+      const currentDate = new Date(dateInput.value);
+
+      const currentDow = currentDate.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+
+      const diff = dow - currentDow;
+
+      const targetDate = new Date(currentDate);
+
+      targetDate.setDate(currentDate.getDate() + diff);
+
+      const y = targetDate.getFullYear();
+
+      const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+
+      const d = String(targetDate.getDate()).padStart(2, '0');
+
+      dateInput.value = `${y}-${m}-${d}`;
+
+      loadDailyGrid();
+
+    }
+
+  } else {
+
+    loadMonthlyGrid();
+
+  }
 
 }
 
@@ -8743,6 +8871,22 @@ function loadDailyGrid(isSilent = false) {
 
   }
 
+  // Update day-of-week tabs to match the selected date
+
+  if (dateInput) {
+
+    const selectedDate = new Date(dateInput);
+
+    if (!isNaN(selectedDate.getTime())) {
+
+      monthlyViewState.selectedDow = selectedDate.getDay();
+
+      updateDowTabsActive();
+
+    }
+
+  }
+
   
 
   if (!isSilent) {
@@ -8764,6 +8908,18 @@ function loadDailyGrid(isSilent = false) {
         state.classLogs = data.classes;
 
         state.enrollments = data.enrollments || {};
+
+        // DEBUG: log summary
+        console.log('[DailyGrid] rooms:', (data.rooms||[]).length, 'classLogs:', (data.classes||[]).length, 'date:', sheetDate);
+        if (data.classes && data.classes.length > 0) {
+          console.log('[DailyGrid] sample log[0]:', JSON.stringify(data.classes[0]));
+          const roomBranches = [...new Set((data.classes||[]).map(c=>c.roomBranch))];
+          console.log('[DailyGrid] unique roomBranches:', roomBranches);
+        }
+        if (data.rooms && data.rooms.length > 0) {
+          console.log('[DailyGrid] sample room[0]:', JSON.stringify(data.rooms[0]));
+        }
+        window._lastDailyGridDebug = data.debug || null;
 
         renderDailyGrid();
 
@@ -8805,7 +8961,7 @@ function renderDailyAttendanceSummary() {
 
     const logBranchClean = (log.roomBranch || '').replace(/\s+/g, '');
 
-    return logBranchClean === branchFilter;
+    return logBranchClean.includes(branchFilter);
 
   });
 
@@ -9183,9 +9339,8 @@ function renderDailyGrid() {
 
   const container = document.getElementById('rooms_grid_container');
 
+  if (!container) return;
   container.innerHTML = '';
-
-  
 
   // Render daily statistics summary at the top
 
@@ -9196,11 +9351,8 @@ function renderDailyGrid() {
   const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
 
   const filteredRooms = (state.rooms || []).filter(room => {
-
     const roomBranchClean = (room.branch || '').replace(/\s+/g, '');
-
-    return roomBranchClean === branchFilter;
-
+    return roomBranchClean.includes(branchFilter);
   });
 
 
@@ -13447,11 +13599,9 @@ function handleStaffPayrollMonthChange() {
 
     monthRes.classes.forEach(c => {
 
-      // Clean roles
-
       let displayRole = c.role || 'ครูประจำ';
 
-      if (displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน')) {
+      if (displayRole === 'sub' || displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน')) {
 
         displayRole = 'ครูแทน';
 
@@ -13483,7 +13633,7 @@ function handleStaffPayrollMonthChange() {
 
         <td style="white-space: nowrap; font-weight: 600; color: var(--color-primary-hover);">${formatHoursMinutes(c.hours)}</td>
 
-        <td style="text-align: center; white-space: nowrap;">${(parseInt(c.isPresentLive)||0) + (parseInt(c.isPresentOnline)||0) + (parseInt(c.isMakeup)||0)} คน</td>
+        <td style="text-align: center; white-space: nowrap;">${c.numKids} คน<br><span style="font-size: 0.6rem; color: #6c757d;">(สด:${c.isPresentLive || 0}, ออน:${c.isPresentOnline || 0}, ชด:${c.isMakeup || 0})</span></td>
 
         <td style="text-align: right; white-space: nowrap;">฿${c.rate.toLocaleString()}</td>
 
@@ -21163,11 +21313,61 @@ function initializeApp() {
 
 }
 
-function jumpToLeaveClass(dateStr, rowIndex) {
+function jumpToLeaveClass(dateStr, rowIndex, roomBranch) {
 
   // Switch to daily_grid panel first
 
   switchPanel('daily_grid');
+
+  
+
+  // Ensure we are in daily view mode
+
+  if (monthlyViewState.mode !== 'daily') {
+
+    switchDailyGridView('daily');
+
+  }
+
+  
+
+  // Switch to the correct branch tab if room info is available
+
+  if (roomBranch) {
+
+    const roomStr = roomBranch.toString().replace(/\s+/g, '');
+
+    let targetBranch = 'สาขา1';
+
+    if (roomStr.includes('สาขา3')) targetBranch = 'สาขา3';
+
+    else if (roomStr.includes('สาขา2')) targetBranch = 'สาขา2';
+
+    else if (roomStr.includes('ออนไลน์')) targetBranch = 'สาขา2'; // online defaults to branch 2
+
+    
+
+    if (state.activeBranchFilter !== targetBranch) {
+
+      state.activeBranchFilter = targetBranch;
+
+      document.querySelectorAll('.branch-tab[data-branch]').forEach(t => {
+
+        if (t.getAttribute('data-branch') === targetBranch) {
+
+          t.classList.add('active');
+
+        } else {
+
+          t.classList.remove('active');
+
+        }
+
+      });
+
+    }
+
+  }
 
   
 
@@ -21181,17 +21381,19 @@ function jumpToLeaveClass(dateStr, rowIndex) {
 
   if (dateInput) {
 
+    state.pendingScrollRowIndex = rowIndex;
+
     if (dateInput.value !== formattedDate) {
 
       dateInput.value = formattedDate;
-
-      state.pendingScrollRowIndex = rowIndex;
 
       loadDailyGrid();
 
     } else {
 
-      highlightScheduledItem(rowIndex);
+      // Same date — just re-render with correct branch and scroll
+
+      renderDailyGrid();
 
     }
 
@@ -21257,4 +21459,3 @@ if (document.readyState === 'loading') {
 
 }
 </script>
-
