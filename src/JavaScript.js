@@ -3042,7 +3042,7 @@ function formatSubjectName(subject) {
 
     if (part1 && part2) {
 
-      return `${part1}<br><span class="subject-term-part" style="font-weight: 500; font-size: 0.8rem; color: var(--text-muted); display: block; margin-top: 1px;">${part2}</span>`;
+      return `${part1}<br><span class="subject-term-part" style="font-weight: 500; font-size: 0.62rem; color: var(--text-muted); display: block; margin-top: 1px;">${part2}</span>`;
 
     }
 
@@ -9494,7 +9494,7 @@ function renderDailyGrid() {
 
             <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 2px;">
 
-              <span class="scheduled-subject" style="font-family: var(--font-heading); font-weight: 700; font-size: 0.85rem; color: var(--text-main); line-height: 1.2; white-space: normal; word-break: break-word; overflow-wrap: anywhere;">${formatSubjectName(c.subject)}</span>
+              <span class="scheduled-subject" style="font-family: var(--font-heading); font-weight: 700; font-size: 0.72rem; color: var(--text-main); line-height: 1.25; white-space: normal; word-break: keep-all; overflow-wrap: break-word;">${formatSubjectName(c.subject)}</span>
 
               <span style="font-size: 0.72rem; font-weight: bold; color: var(--color-primary-hover); white-space: nowrap; background: rgba(0, 132, 255, 0.06); padding: 1px 6px; border-radius: 10px; display: inline-block; margin-top: 2px;">
 
