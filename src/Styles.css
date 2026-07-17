@@ -3634,7 +3634,7 @@ body {
     flex-direction: row !important;
     margin: 0 !important;
     border-radius: 0 !important;
-    box-shadow: none !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
     align-items: center;
     justify-content: space-between;
     overflow-x: auto;
