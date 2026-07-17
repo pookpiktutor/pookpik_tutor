@@ -10936,10 +10936,9 @@ function getClassLogs(filterDate, logUser) {
 
     
 
-    let targetDateStr = null;
+    let targetDt = null;
     if (filterDate) {
-      const dt = parseDateString(filterDate);
-      if (dt) targetDateStr = Utilities.formatDate(dt, 'Asia/Bangkok', 'dd/MM/yyyy');
+      targetDt = parseDateString(filterDate);
     }
 
     const logs = [];
@@ -10949,7 +10948,12 @@ function getClassLogs(filterDate, logUser) {
       if (!row[0] || row[0] === '0') return;
 
       const dateRaw = cleanSheetDate(row[12]);
-      if (targetDateStr && dateRaw !== targetDateStr) return;
+      if (targetDt) {
+        const rawDt = parseDateString(dateRaw);
+        if (!rawDt || rawDt.getFullYear() !== targetDt.getFullYear() || rawDt.getMonth() !== targetDt.getMonth() || rawDt.getDate() !== targetDt.getDate()) {
+          return;
+        }
+      }
 
       const roomBranchVal = row[13] ? row[13].toString().trim() : '';
 
