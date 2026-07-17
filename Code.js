@@ -10941,13 +10941,35 @@ function getClassLogs(filterDate, logUser) {
       targetDt = parseDateString(filterDate);
     }
 
+    const headers = rawData[0] || [];
+    let idxDate = 12, idxRoom = 13, idxHrs = 11, idxMakeup = 10, idxLive = 6, idxOnline = 7, idxLeave = 8, idxAbsent = 9, idxNote = 5, idxT1 = 1, idxT2 = 2, idxSubj = 0, idxStart = 3, idxEnd = 4, idxConf = 14;
+    
+    headers.forEach((h, i) => {
+      const hStr = (h || '').toString().trim();
+      if (hStr.includes('วันที่')) idxDate = i;
+      else if (hStr.includes('ห้อง') || hStr.includes('สาขา')) idxRoom = i;
+      else if (hStr === 'ชม.') idxHrs = i;
+      else if (hStr === 'ชด') idxMakeup = i;
+      else if (hStr === 'สด') idxLive = i;
+      else if (hStr === 'ออน') idxOnline = i;
+      else if (hStr === 'ลา') idxLeave = i;
+      else if (hStr === 'ขาด') idxAbsent = i;
+      else if (hStr === 'หมายเหตุ') idxNote = i;
+      else if (hStr.includes('ประจำ')) idxT1 = i;
+      else if (hStr.includes('แทน')) idxT2 = i;
+      else if (hStr === 'วิชา') idxSubj = i;
+      else if (hStr === 'เวลาเริ่ม') idxStart = i;
+      else if (hStr === 'เวลาจบ') idxEnd = i;
+      else if (hStr.includes('ยืนยัน')) idxConf = i;
+    });
+
     const logs = [];
 
     rawData.forEach((row, idx) => {
       if (idx === 0) return;
       if (!row[0] || row[0] === '0') return;
 
-      const dateRaw = cleanSheetDate(row[12]);
+      const dateRaw = cleanSheetDate(row[idxDate]);
       if (targetDt) {
         const rawDt = parseDateString(dateRaw);
         if (!rawDt || rawDt.getFullYear() !== targetDt.getFullYear() || rawDt.getMonth() !== targetDt.getMonth() || rawDt.getDate() !== targetDt.getDate()) {
@@ -10955,50 +10977,27 @@ function getClassLogs(filterDate, logUser) {
         }
       }
 
-      const roomBranchVal = row[13] ? row[13].toString().trim() : '';
-
-      
+      const roomBranchVal = row[idxRoom] ? row[idxRoom].toString().trim() : '';
 
       logs.push({
-
-        subject: resolveDynamicCourseName(row[0] ? row[0].toString().trim() : '', dateRaw, roomBranchVal),
-
-        teacherRegular: resolveNick(row[1]),
-
-        teacherSub: resolveNick(row[2]),
-
-        timeStart: formatTimeValue(row[3]),
-
-        timeEnd: formatTimeValue(row[4]),
-
-        note: row[5] ? row[5].toString().trim() : '',
-
-        isPresentLive: parseInt(row[6]) || 0,
-
-        isPresentOnline: parseInt(row[7]) || 0,
-
-        isLeave: parseInt(row[8]) || 0,
-
-        isAbsent: parseInt(row[9]) || 0,
-
-        isMakeup: parseInt(row[10]) || 0,
-
-        // isOrange removed
-
-        hours: parseHoursValue(row[11]),
-
+        subject: resolveDynamicCourseName(row[idxSubj] ? row[idxSubj].toString().trim() : '', dateRaw, roomBranchVal),
+        teacherRegular: resolveNick(row[idxT1]),
+        teacherSub: resolveNick(row[idxT2]),
+        timeStart: formatTimeValue(row[idxStart]),
+        timeEnd: formatTimeValue(row[idxEnd]),
+        note: row[idxNote] ? row[idxNote].toString().trim() : '',
+        isPresentLive: parseInt(row[idxLive]) || 0,
+        isPresentOnline: parseInt(row[idxOnline]) || 0,
+        isLeave: parseInt(row[idxLeave]) || 0,
+        isAbsent: parseInt(row[idxAbsent]) || 0,
+        isMakeup: parseInt(row[idxMakeup]) || 0,
+        hours: parseHoursValue(row[idxHrs]),
         date: dateRaw,
-
-                roomBranch: roomBranchVal,
-
-        teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
-
-        numKids: (parseInt(row[6]) || 0) + (parseInt(row[7]) || 0) + (parseInt(row[10]) || 0),
-
+        roomBranch: roomBranchVal,
+        teacherConfirmed: row[idxConf] ? (parseInt(row[idxConf]) || 0) : 0,
+        numKids: (parseInt(row[idxLive]) || 0) + (parseInt(row[idxOnline]) || 0) + (parseInt(row[idxMakeup]) || 0),
         rowIndex: idx + 1
-
       });
-
     });
 
     
