@@ -15382,6 +15382,35 @@ function dumpData() {
 
 }
 
+function debugDataLearnHeaders() {
+  const sheet = getDb().getSheetByName('Data Learn');
+  if (!sheet) return { error: 'Sheet not found' };
+  const lastCol = sheet.getLastColumn();
+  const lastRow = sheet.getLastRow();
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  const sampleRows = lastRow > 1 ? sheet.getRange(2, 1, Math.min(3, lastRow - 1), lastCol).getValues() : [];
+  return {
+    totalCols: lastCol,
+    totalRows: lastRow,
+    headers: headers.map((h, i) => ({ index: i, col: i + 1, name: h ? h.toString() : '' })),
+    sampleRows: sampleRows.map((row, ri) => {
+      const obj = {};
+      row.forEach((val, ci) => {
+        obj['col' + ci + '_' + (headers[ci] || '?')] = val instanceof Date ? val.toISOString() : val;
+      });
+      return obj;
+    }),
+    classlogs_sample: (function() {
+      const today = new Date();
+      const dd = String(today.getDate()).padStart(2,'0');
+      const mm = String(today.getMonth()+1).padStart(2,'0');
+      const yyyy = today.getFullYear();
+      const todayStr = dd + '/' + mm + '/' + yyyy;
+      return 'Today filter: ' + todayStr;
+    })()
+  };
+}
+
 function exportAllDataToJson() {
 
   const db = getDb();

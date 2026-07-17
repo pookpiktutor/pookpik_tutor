@@ -8764,6 +8764,17 @@ function loadDailyGrid(isSilent = false) {
 
         state.enrollments = data.enrollments || {};
 
+        // DEBUG: log summary
+        console.log('[DailyGrid] rooms:', (data.rooms||[]).length, 'classLogs:', (data.classes||[]).length, 'date:', sheetDate);
+        if (data.classes && data.classes.length > 0) {
+          console.log('[DailyGrid] sample log[0]:', JSON.stringify(data.classes[0]));
+          const roomBranches = [...new Set((data.classes||[]).map(c=>c.roomBranch))];
+          console.log('[DailyGrid] unique roomBranches:', roomBranches);
+        }
+        if (data.rooms && data.rooms.length > 0) {
+          console.log('[DailyGrid] sample room[0]:', JSON.stringify(data.rooms[0]));
+        }
+
         renderDailyGrid();
 
         populateRoomsDatalist();
