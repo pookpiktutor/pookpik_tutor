@@ -1858,7 +1858,7 @@ function renderTeacherSalaryDetail(res) {
 
     let displayRole = c.role || 'ครูประจำ';
 
-    if (displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน')) {
+    if (displayRole === 'sub' || displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน')) {
 
       displayRole = 'ครูแทน';
 
@@ -13446,11 +13446,9 @@ function handleStaffPayrollMonthChange() {
 
     monthRes.classes.forEach(c => {
 
-      // Clean roles
-
       let displayRole = c.role || 'ครูประจำ';
 
-      if (displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน')) {
+      if (displayRole === 'sub' || displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน')) {
 
         displayRole = 'ครูแทน';
 
