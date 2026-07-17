@@ -3324,6 +3324,17 @@ function getDailyGridData(dateStr, logUser) {
 
     
 
+    // Determine dynamic indices to pass as debug info
+    const dbRaw = getSheetRows('Data Learn');
+    const headers = dbRaw ? dbRaw[0] || [] : [];
+    let dIdxDate = 12, dIdxRoom = 13, dIdxHrs = 11;
+    headers.forEach((h, i) => {
+      const hStr = (h || '').toString().trim();
+      if (hStr.includes('วันที่')) dIdxDate = i;
+      else if (hStr.includes('ห้อง') || hStr.includes('สาขา')) dIdxRoom = i;
+      else if (hStr === 'ชม.') dIdxHrs = i;
+    });
+
     return {
 
       rooms: rooms,
@@ -3334,7 +3345,7 @@ function getDailyGridData(dateStr, logUser) {
 
       thaiDay: thaiDay,
 
-      debug: debugHeaders
+      debug: { dateIdx: dIdxDate, roomIdx: dIdxRoom, hrsIdx: dIdxHrs, totalHeaders: headers.length, firstClassRaw: classes.length > 0 ? classes[0] : null }
 
     };
 

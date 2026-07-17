@@ -8774,6 +8774,7 @@ function loadDailyGrid(isSilent = false) {
         if (data.rooms && data.rooms.length > 0) {
           console.log('[DailyGrid] sample room[0]:', JSON.stringify(data.rooms[0]));
         }
+        window._lastDailyGridDebug = data.debug || null;
 
         renderDailyGrid();
 
@@ -9193,9 +9194,19 @@ function renderDailyGrid() {
 
   const container = document.getElementById('rooms_grid_container');
 
+  if (!container) return;
   container.innerHTML = '';
-
   
+  let debugHtml = '';
+  if (window._lastDailyGridDebug) {
+     debugHtml = `<div style="background:#ffeb3b; padding:10px; margin-bottom:10px; border-radius:5px; font-weight:bold; color:black; font-size:12px;">
+       [DEBUG] classLogs.length: ${state.classLogs ? state.classLogs.length : 0} | 
+       rooms.length: ${state.rooms ? state.rooms.length : 0} <br/>
+       Backend Indices: Date=${window._lastDailyGridDebug.dateIdx}, Room=${window._lastDailyGridDebug.roomIdx}, Hrs=${window._lastDailyGridDebug.hrsIdx}, TotalCols=${window._lastDailyGridDebug.totalHeaders}<br/>
+       First Class Sample: ${window._lastDailyGridDebug.firstClassRaw ? JSON.stringify(window._lastDailyGridDebug.firstClassRaw) : 'None'}
+     </div>`;
+  }
+  container.insertAdjacentHTML('beforeend', debugHtml);
 
   // Render daily statistics summary at the top
 
