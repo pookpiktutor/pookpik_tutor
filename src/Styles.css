@@ -196,8 +196,10 @@ body {
 
   overflow-y: auto;
   position: sticky;
-  top: 0;
-  height: 100vh;
+  top: 12px;
+  height: calc(100vh - 24px);
+  margin: 12px 0;
+  border-radius: 16px;
 
   scrollbar-width: none;
 
