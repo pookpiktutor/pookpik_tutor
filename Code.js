@@ -44,11 +44,11 @@ function doPost(e) {
 
 // ============================================================
 
-// SHEET_REGISTRY — ศà¸¹นยà¹Œà¸�ลà¸²งนิยà¸²มตà¸²รà¸²งà¸�à¸²นขà¹‰อมà¸¹ลทัà¹‰งหมด
+// SHEET_REGISTRY — ศูนย์กลางนิยามตารางฐานข้อมูลทั้งหมด
 
-// à¹€มืà¹ˆอตà¹‰องà¸�à¸²รà¹€à¸žิà¹ˆมตà¸²รà¸²งà¹ƒหมà¹ˆ à¹ƒหà¹‰à¹€à¸žิà¹ˆมรà¸²ยà¸�à¸²รทà¸µà¹ˆนà¸µà¹ˆà¹€ทà¹ˆà¸²นัà¹‰น
+// เมื่อต้องการเพิ่มตารางใหม่ ให้เพิ่มรายการที่นี่เท่านั้น
 
-// ระà¸šà¸šà¸ˆะà¸ªรà¹‰à¸²งà¸Šà¸µตà¸žรà¹‰อม headers à¹ƒหà¹‰อัตà¹‚นมัติทุà¸�ครัà¹‰งทà¸µà¹ˆ init
+// ระบบจะสร้างชีตพร้อม headers ให้อัตโนมัติทุกครั้งที่ init
 
 // ============================================================
 
@@ -108,17 +108,17 @@ const SHEET_REGISTRY = [
 
     headers: [
 
-      'ID', 'à¸Šืà¹ˆอ-นà¸²มà¸ªà¸�ุล', 'à¸Šืà¹ˆอà¹€ลà¹ˆน', 'à¹‚รงà¹€รà¸µยน', 'à¹€à¸šอรà¹Œติดตà¹ˆอ',
+      'ID', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'โรงเรียน', 'เบอร์ติดต่อ',
 
-      'à¸ªà¸²ขà¸²à¹€รà¸µยน', 'à¸ªà¸²ขà¸²ทà¸µà¹ˆà¹€à¸�à¹‡à¸šà¹€งิน', 'หมà¸²ยà¹€หตุà¹€วลà¸²à¸ˆà¹ˆà¸²ยà¹€งิน', 'หมà¸²ยà¹€หตุà¹€à¸žิà¹ˆมà¹€ติม',
+      'สาขาเรียน', 'สาขาที่เก็บเงิน', 'หมายเหตุเวลาจ่ายเงิน', 'หมายเหตุเพิ่มเติม',
 
-      'ยอดà¸ˆà¹ˆà¸²ยมà¸²', 'คà¹ˆà¸²à¹€รà¸µยน', 'คงà¹€หลือ', 'วันทà¸µà¹ˆà¸Šà¸³ระà¹€งิน', 'à¸Šà¹ˆองทà¸²งà¸Šà¸³ระà¹€งิน',
+      'ยอดจ่ายมา', 'ค่าเรียน', 'คงเหลือ', 'วันที่ชำระเงิน', 'ช่องทางชำระเงิน',
 
-      'à¸œà¸¹à¹‰รัà¸šà¹€งิน', 'รอà¸šà¸�à¸²รà¹€รà¸µยน', 'ระดัà¸šà¸Šัà¹‰น', 'หà¹‰องà¹€รà¸µยนยà¹ˆอย', 'à¸Šืà¹ˆอà¹„ลนà¹Œà¹‚ปรà¹„à¸Ÿลà¹Œ',
+      'ผู้รับเงิน', 'รอบการเรียน', 'ระดับชั้น', 'ห้องเรียนย่อย', 'ชื่อไลน์โปรไฟล์',
 
-      'ID LINE', 'คà¹ˆà¸²à¹€รà¸µยนยà¸�มà¸²', 'à¸Šัà¹ˆวà¹‚มงà¹€รà¸µยน', 'à¸Šัà¹ˆวà¹‚มงคงà¹€หลือ', 'ประà¹€à¸ ทคลà¸²à¸ª',
+      'ID LINE', 'ค่าเรียนยกมา', 'ชั่วโมงเรียน', 'ชั่วโมงคงเหลือ', 'ประเภทคลาส',
 
-      'ตรวà¸ˆà¸ªอà¸š'
+      'ตรวจสอบ'
 
     ],
 
@@ -130,7 +130,7 @@ const SHEET_REGISTRY = [
 
     name: 'DATA General',
 
-    headers: ['รà¸²ยà¸Šืà¹ˆอครà¸¹', 'รà¸²ยà¸Šืà¹ˆอà¹‚รงà¹€รà¸µยน'],
+    headers: ['รายชื่อครู', 'รายชื่อโรงเรียน'],
 
     headerRow: 1
 
@@ -142,11 +142,11 @@ const SHEET_REGISTRY = [
 
     headers: [
 
-      'วิà¸Šà¸²', 'ครูประจำ', 'ครà¸¹à¹�ทน', 'à¹€วลà¸²à¹€ริà¹ˆม', 'à¹€วลà¸²à¸ˆà¸š',
+      'วิชา', 'ครูประจำ', 'ครูแทน', 'เวลาเริ่ม', 'เวลาจบ',
 
-      'หมà¸²ยà¹€หตุ', 'à¸ªด', 'ออน', 'ลà¸²', 'ขà¸²ด',
+      'หมายเหตุ', 'สด', 'ออน', 'ลา', 'ขาด',
 
-      'à¸Šด', 'à¸Šม.', 'วันทà¸µà¹ˆ', 'หà¹‰อง/à¸ªà¸²ขà¸²/iPad'
+      'ชด', 'ชม.', 'วันที่', 'ห้อง/สาขา/iPad'
 
     ],
 
@@ -184,13 +184,13 @@ const SHEET_REGISTRY = [
 
   {
 
-    name: 'Data à¸œà¸ˆà¸�.',
+    name: 'Data ผจก.',
 
     headers: [
 
-      'à¸Šืà¹ˆอà¸œà¸¹à¹‰à¸ˆัดà¸�à¸²ร', 'à¹€วลà¸²à¹€ขà¹‰à¸²OT', 'à¹€วลà¸²ออà¸�OT', 'à¹€วลà¸²à¹€ขà¹‰à¸²งà¸²น', 'à¹€วลà¸²ออà¸�งà¸²น',
+      'ชื่อผู้จัดการ', 'เวลาเข้าOT', 'เวลาออกOT', 'เวลาเข้างาน', 'เวลาออกงาน',
 
-      'หมà¸²ยà¹€หตุ รà¸²ยละà¹€อà¸µยด OT', 'มà¸²', 'หยุด', 'à¸Šม.OT', 'à¸Šม.งà¸²น', 'วันทà¸µà¹ˆ',
+      'หมายเหตุ รายละเอียด OT', 'มา', 'หยุด', 'ชม.OT', 'ชม.งาน', 'วันที่',
 
       'Latitude', 'Longitude'
 
@@ -210,9 +210,9 @@ const SHEET_REGISTRY = [
 
   }
 
-  // âœ… à¹€à¸žิà¹ˆมตà¸²รà¸²งà¹ƒหมà¹ˆà¹„ดà¹‰ทà¸µà¹ˆนà¸µà¹ˆ — ระà¸šà¸šà¸ˆะà¸ªรà¹‰à¸²งà¸Šà¸µตà¹�ละ headers à¹ƒหà¹‰อัตà¹‚นมัติ
+  // ✅ เพิ่มตารางใหม่ได้ที่นี่ — ระบบจะสร้างชีตและ headers ให้อัตโนมัติ
 
-  // ตัวอยà¹ˆà¸²ง:
+  // ตัวอย่าง:
 
   // {
 
@@ -232,11 +232,11 @@ const SHEET_REGISTRY = [
 
  * ensureAllRegisteredSheets()
 
- * วนตรวà¸ˆà¸ªอà¸š SHEET_REGISTRY ทุà¸�รà¸²ยà¸�à¸²ร
+ * วนตรวจสอบ SHEET_REGISTRY ทุกรายการ
 
- * ถà¹‰à¸²à¸Šà¸µตยังà¹„มà¹ˆมà¸µ → à¸ªรà¹‰à¸²งà¹ƒหมà¹ˆà¸žรà¹‰อม headers à¹�ละ defaultData (ถà¹‰à¸²มà¸µ)
+ * ถ้าชีตยังไม่มี → สร้างใหม่พร้อม headers และ defaultData (ถ้ามี)
 
- * ถà¹‰à¸²à¸Šà¸µตมà¸µอยà¸¹à¹ˆà¹�ลà¹‰วà¹�ตà¹ˆยังà¹„มà¹ˆมà¸µ headers → à¹€ติม headers à¹ƒหà¹‰
+ * ถ้าชีตมีอยู่แล้วแต่ยังไม่มี headers → เติม headers ให้
 
  */
 
@@ -258,7 +258,7 @@ function ensureAllRegisteredSheets() {
 
     if (!sheet) {
 
-      // à¸ªรà¹‰à¸²งà¸Šà¸µตà¹ƒหมà¹ˆ
+      // สร้างชีตใหม่
 
       sheet = db.insertSheet(def.name);
 
@@ -266,7 +266,7 @@ function ensureAllRegisteredSheets() {
 
       
 
-      // à¹€ติมขà¹‰อมà¸¹ลà¹€ริà¹ˆมตà¹‰น (ถà¹‰à¸²มà¸µ)
+      // เติมข้อมูลเริ่มต้น (ถ้ามี)
 
       if (def.defaultData && def.defaultData.length > 0) {
 
@@ -280,17 +280,17 @@ function ensureAllRegisteredSheets() {
 
       createdCount++;
 
-      Logger.log('âœ… Auto-created sheet: ' + def.name + ' with ' + def.headers.length + ' columns');
+      Logger.log('✅ Auto-created sheet: ' + def.name + ' with ' + def.headers.length + ' columns');
 
     } else {
 
-      // à¸Šà¸µตมà¸µอยà¸¹à¹ˆà¹�ลà¹‰ว ตรวà¸ˆà¸ªอà¸šวà¹ˆà¸²มà¸µ headers หรือยัง
+      // ชีตมีอยู่แล้ว ตรวจสอบว่ามี headers หรือยัง
 
       if (sheet.getLastRow() < hRow) {
 
         sheet.getRange(hRow, 1, 1, def.headers.length).setValues([def.headers]);
 
-        Logger.log('ðŸ“� Added headers to existing sheet: ' + def.name);
+        Logger.log('📋 Added headers to existing sheet: ' + def.name);
 
       }
 
@@ -302,7 +302,7 @@ function ensureAllRegisteredSheets() {
 
   if (createdCount > 0) {
 
-    Logger.log('ðŸ†• Auto-created ' + createdCount + ' new sheet(s) from SHEET_REGISTRY');
+    Logger.log('🆕 Auto-created ' + createdCount + ' new sheet(s) from SHEET_REGISTRY');
 
   }
 
@@ -316,7 +316,7 @@ function ensureAllRegisteredSheets() {
 
  * getRegistryDef(sheetName)
 
- * คà¹‰นหà¸²นิยà¸²มของà¸Šà¸µตà¸ˆà¸²à¸� SHEET_REGISTRY
+ * ค้นหานิยามของชีตจาก SHEET_REGISTRY
 
  */
 
@@ -352,7 +352,7 @@ if (e && e.parameter && e.parameter.debug_headers === '1') {
 
   const db = getDb();
 
-  const s1 = db.getSheetByName('à¹€ดà¸µà¹ˆยว ป.1');
+  const s1 = db.getSheetByName('เดี่ยว ป.1');
 
   const s2 = db.getSheetByName('ป.1/1');
 
@@ -450,7 +450,7 @@ if (e && e.parameter && e.parameter.fix_logs === '1') {
 
           headerRowIdx = 5;
 
-        } else if (name.includes('à¹€ดà¸µà¹ˆยว') || name.includes('ยà¹ˆอย')) {
+        } else if (name.includes('เดี่ยว') || name.includes('ย่อย')) {
 
           headerRowIdx = 11;
 
@@ -552,11 +552,11 @@ if (e && e.parameter && e.parameter.fix_logs === '1') {
 
       initAllDatabases();
 
-      return HtmlService.createHtmlOutput('<h1>âœ“ à¸ˆัดà¹€ตรà¸µยมà¸�à¸²นขà¹‰อมà¸¹ลà¸ªà¸³à¹€รà¹‡à¸ˆà¹€รà¸µยà¸šรà¹‰อยà¹�ลà¹‰ว! (Database Initialized Successfully)</h1>');
+      return HtmlService.createHtmlOutput('<h1>✓ จัดเตรียมฐานข้อมูลสำเร็จเรียบร้อยแล้ว! (Database Initialized Successfully)</h1>');
 
     } catch (err) {
 
-      return HtmlService.createHtmlOutput('<h1>â�Œ à¹€à¸�ิดขà¹‰อà¸œิดà¸žลà¸²ด: ' + err.toString() + '</h1>');
+      return HtmlService.createHtmlOutput('<h1>❌ เกิดข้อผิดพลาด: ' + err.toString() + '</h1>');
 
     }
 
@@ -598,11 +598,11 @@ if (e && e.parameter && e.parameter.fix_logs === '1') {
 
       
 
-      return HtmlService.createHtmlOutput('<h1>âœ“ debug_sheets.json written: ' + sheets.join(', ') + '<br/>Headers: ' + JSON.stringify(headersData) + '</h1>');
+      return HtmlService.createHtmlOutput('<h1>✓ debug_sheets.json written: ' + sheets.join(', ') + '<br/>Headers: ' + JSON.stringify(headersData) + '</h1>');
 
     } catch (err) {
 
-      return HtmlService.createHtmlOutput('<h1>â�Œ Error: ' + err.toString() + '</h1>');
+      return HtmlService.createHtmlOutput('<h1>❌ Error: ' + err.toString() + '</h1>');
 
     }
 
@@ -620,7 +620,7 @@ if (e && e.parameter && e.parameter.fix_logs === '1') {
 
       .evaluate()
 
-      .setTitle('ลงทะà¹€à¸šà¸µยนà¹€รà¸µยน - à¸šà¹‰à¸²นครà¸¹ปุà¹Šà¸�ปิà¹Šà¸�')
+      .setTitle('ลงทะเบียนเรียน - บ้านครูปุ๊กปิ๊ก')
 
       .addMetaTag('viewport', 'width=device-width, initial-scale=1')
 
@@ -632,7 +632,7 @@ if (e && e.parameter && e.parameter.fix_logs === '1') {
 
     .evaluate()
 
-    .setTitle('ระà¸šà¸šดà¸¹à¹�ลà¹‚รงà¹€รà¸µยนà¸�วดวิà¸Šà¸²à¸šà¹‰à¸²นครà¸¹ปุà¹Šà¸�ปิà¹Šà¸�')
+    .setTitle('ระบบดูแลโรงเรียนกวดวิชาบ้านครูปุ๊กปิ๊ก')
 
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
 
@@ -726,7 +726,7 @@ function debugDumpDatabase() {
 
 function getDebugDiagnosticHtml() {
 
-  let html = '<h1>ระà¸šà¸šตรวà¸ˆà¸ªอà¸šควà¸²มถà¸¹à¸�ตà¹‰องของà¸�à¸²นขà¹‰อมà¸¹ล (Diagnostic Page)</h1>';
+  let html = '<h1>ระบบตรวจสอบความถูกต้องของฐานข้อมูล (Diagnostic Page)</h1>';
 
   try {
 
@@ -740,7 +740,7 @@ function getDebugDiagnosticHtml() {
 
     const sheets = db.getSheets().map(s => s.getName());
 
-    html += `<p><b>ตà¸²รà¸²งทัà¹‰งหมดà¹ƒนà¸ªà¹€ปรดà¸Šà¸µต:</b> ${sheets.join(', ')}</p>`;
+    html += `<p><b>ตารางทั้งหมดในสเปรดชีต:</b> ${sheets.join(', ')}</p>`;
 
     
 
@@ -750,17 +750,17 @@ function getDebugDiagnosticHtml() {
 
     if (!usersSheet) {
 
-      html += '<p style="color:red;"><b>â�Œ à¹„มà¹ˆà¸žà¸šตà¸²รà¸²ง UsersDB</b></p>';
+      html += '<p style="color:red;"><b>❌ ไม่พบตาราง UsersDB</b></p>';
 
     } else {
 
       const data = usersSheet.getDataRange().getValues();
 
-      html += '<h3>รà¸²ยà¸Šืà¹ˆอà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰ทà¸µà¹ˆอยà¸¹à¹ˆà¹ƒนระà¸šà¸š (UsersDB):</h3>';
+      html += '<h3>รายชื่อผู้ใช้ที่อยู่ในระบบ (UsersDB):</h3>';
 
       html += '<table border="1" cellpadding="5" style="border-collapse:collapse; width: 100%; max-width: 600px;">';
 
-      html += '<tr><th>à¹�ถวทà¸µà¹ˆ</th><th>Username</th><th>Password Length</th><th>Role</th></tr>';
+      html += '<tr><th>แถวที่</th><th>Username</th><th>Password Length</th><th>Role</th></tr>';
 
       for (let i = 0; i < data.length; i++) {
 
@@ -772,13 +772,13 @@ function getDebugDiagnosticHtml() {
 
         if (i === 0) {
 
-          html += `<tr style="background:#eee;"><td>หัวตà¸²รà¸²ง</td><td>${username}</td><td>${password}</td><td>${role}</td></tr>`;
+          html += `<tr style="background:#eee;"><td>หัวตาราง</td><td>${username}</td><td>${password}</td><td>${role}</td></tr>`;
 
         } else {
 
           const passLen = password ? password.toString().length : 0;
 
-          html += `<tr><td>${i + 1}</td><td>"${username}"</td><td>${passLen} ตัวอัà¸�ษร</td><td>"${role}"</td></tr>`;
+          html += `<tr><td>${i + 1}</td><td>"${username}"</td><td>${passLen} ตัวอักษร</td><td>"${role}"</td></tr>`;
 
         }
 
@@ -796,11 +796,11 @@ function getDebugDiagnosticHtml() {
 
     if (!roomsSheet) {
 
-      html += '<p style="color:red;"><b>â�Œ à¹„มà¹ˆà¸žà¸šตà¸²รà¸²ง RoomsDB</b></p>';
+      html += '<p style="color:red;"><b>❌ ไม่พบตาราง RoomsDB</b></p>';
 
     } else {
 
-      html += `<p style="color:green;"><b>âœ“ à¸žà¸šตà¸²รà¸²ง RoomsDB</b> (${roomsSheet.getLastRow()} à¹�ถว)</p>`;
+      html += `<p style="color:green;"><b>✓ พบตาราง RoomsDB</b> (${roomsSheet.getLastRow()} แถว)</p>`;
 
     }
 
@@ -812,23 +812,23 @@ function getDebugDiagnosticHtml() {
 
     if (!teachersSheet) {
 
-      html += '<p style="color:red;"><b>â�Œ à¹„มà¹ˆà¸žà¸šตà¸²รà¸²ง TeachersDB</b></p>';
+      html += '<p style="color:red;"><b>❌ ไม่พบตาราง TeachersDB</b></p>';
 
     } else {
 
-      html += `<p style="color:green;"><b>âœ“ à¸žà¸šตà¸²รà¸²ง TeachersDB</b> (${teachersSheet.getLastRow()} à¹�ถว)</p>`;
+      html += `<p style="color:green;"><b>✓ พบตาราง TeachersDB</b> (${teachersSheet.getLastRow()} แถว)</p>`;
 
       if (teachersSheet.getLastRow() > 0) {
 
         const tHeaders = teachersSheet.getRange(1, 1, 1, teachersSheet.getLastColumn()).getValues()[0];
 
-        html += `<p><b>คอลัมนà¹Œà¹ƒน TeachersDB:</b> ${JSON.stringify(tHeaders)}</p>`;
+        html += `<p><b>คอลัมน์ใน TeachersDB:</b> ${JSON.stringify(tHeaders)}</p>`;
 
         if (teachersSheet.getLastRow() >= 2) {
 
           const tRow = teachersSheet.getRange(2, 1, 1, teachersSheet.getLastColumn()).getValues()[0];
 
-          html += `<p><b>ตัวอยà¹ˆà¸²งขà¹‰อมà¸¹ลครà¸¹à¹�ถวà¹�รà¸�:</b> ${JSON.stringify(tRow)}</p>`;
+          html += `<p><b>ตัวอย่างข้อมูลครูแถวแรก:</b> ${JSON.stringify(tRow)}</p>`;
 
         }
 
@@ -842,23 +842,23 @@ function getDebugDiagnosticHtml() {
 
     if (!learnSheet) {
 
-      html += '<p style="color:red;"><b>â�Œ à¹„มà¹ˆà¸žà¸šตà¸²รà¸²ง Data Learn</b></p>';
+      html += '<p style="color:red;"><b>❌ ไม่พบตาราง Data Learn</b></p>';
 
     } else {
 
-      html += `<p style="color:green;"><b>âœ“ à¸žà¸šตà¸²รà¸²ง Data Learn</b> (${learnSheet.getLastRow()} à¹�ถว)</p>`;
+      html += `<p style="color:green;"><b>✓ พบตาราง Data Learn</b> (${learnSheet.getLastRow()} แถว)</p>`;
 
       if (learnSheet.getLastRow() > 0) {
 
         const lHeaders = learnSheet.getRange(1, 1, 1, learnSheet.getLastColumn()).getValues()[0];
 
-        html += `<p><b>คอลัมนà¹Œà¹ƒน Data Learn:</b> ${JSON.stringify(lHeaders)}</p>`;
+        html += `<p><b>คอลัมน์ใน Data Learn:</b> ${JSON.stringify(lHeaders)}</p>`;
 
         if (learnSheet.getLastRow() >= 2) {
 
           const lRow = learnSheet.getRange(2, 1, 1, learnSheet.getLastColumn()).getValues()[0];
 
-          html += `<p><b>ตัวอยà¹ˆà¸²งขà¹‰อมà¸¹ลตà¸²รà¸²งà¹€รà¸µยนà¹�ถวà¹�รà¸�:</b> ${JSON.stringify(lRow)}</p>`;
+          html += `<p><b>ตัวอย่างข้อมูลตารางเรียนแถวแรก:</b> ${JSON.stringify(lRow)}</p>`;
 
         }
 
@@ -874,7 +874,7 @@ function getDebugDiagnosticHtml() {
 
       const lastR = logSheet.getLastRow();
 
-      html += `<h3>à¸šันทึà¸�à¸�ิà¸ˆà¸�รรมลà¹ˆà¸²à¸ªุด (ActivityLog - ${lastR} à¹�ถว):</h3>`;
+      html += `<h3>บันทึกกิจกรรมล่าสุด (ActivityLog - ${lastR} แถว):</h3>`;
 
       if (lastR > 1) {
 
@@ -902,15 +902,15 @@ function getDebugDiagnosticHtml() {
 
     // Force initialize button/link
 
-    html += '<h3>à¸�à¸²รà¸ˆัดà¸�à¸²ร:</h3>';
+    html += '<h3>การจัดการ:</h3>';
 
-    html += '<button onclick="google.script.run.withSuccessHandler(function(){alert(\'à¸ˆัดà¹€ตรà¸µยมà¸�à¸²นขà¹‰อมà¸¹ลà¸ªà¸³à¹€รà¹‡à¸ˆ!\');location.reload();}).initAllDatabases()">ðŸ”„ à¸ªัà¹ˆงรัน initAllDatabases() à¹€à¸žืà¹ˆอà¸ªรà¹‰à¸²งà¹�ละรà¸µà¹€ซà¹‡ตตà¸²รà¸²งà¹€ริà¹ˆมตà¹‰น</button>';
+    html += '<button onclick="google.script.run.withSuccessHandler(function(){alert(\'จัดเตรียมฐานข้อมูลสำเร็จ!\');location.reload();}).initAllDatabases()">🔄 สั่งรัน initAllDatabases() เพื่อสร้างและรีเซ็ตตารางเริ่มต้น</button>';
 
     
 
   } catch (e) {
 
-    html += `<p style="color:red;"><b>à¹€à¸�ิดขà¹‰อà¸œิดà¸žลà¸²ดà¹ƒนà¸�à¸²รà¹€à¸Šืà¹ˆอมตà¹ˆอà¸�à¸²นขà¹‰อมà¸¹ล:</b> ${e.toString()}</p>`;
+    html += `<p style="color:red;"><b>เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล:</b> ${e.toString()}</p>`;
 
   }
 
@@ -934,17 +934,17 @@ function onOpen() {
 
   const ui = SpreadsheetApp.getUi();
 
-  ui.createMenu('ðŸ�« ระà¸šà¸šครà¸¹ปุà¹Šà¸�ปิà¹Šà¸�')
+  ui.createMenu('🏫 ระบบครูปุ๊กปิ๊ก')
 
-      .addItem('ðŸ”„ à¸ªรà¹‰à¸²ง/รà¸µà¹€ซà¹‡ตà¸�à¸²นขà¹‰อมà¸¹ลตà¸²รà¸²งà¹€รà¸µยน', 'initAllDatabases')
+      .addItem('🔄 สร้าง/รีเซ็ตฐานข้อมูลตารางเรียน', 'initAllDatabases')
 
-      .addItem('ðŸ”„ อัปà¹€ดตà¸Šืà¹ˆอà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰งà¸²นà¹ƒนประวัติยà¹‰อนหลัง', 'fixHistoricalActivityLogs')
+      .addItem('🔄 อัปเดตชื่อผู้ใช้งานในประวัติย้อนหลัง', 'fixHistoricalActivityLogs')
 
-      .addItem('ðŸ“¥ คัดลอà¸�ขà¹‰อมà¸¹ลทุà¸�à¹�à¸œà¹ˆนงà¸²นà¹„ปยังà¸ªà¹€ปรดà¸Šà¸µตà¹ƒหมà¹ˆ', 'copyAllSheetsFromOldDb')
+      .addItem('📥 คัดลอกข้อมูลทุกแผ่นงานไปยังสเปรดชีตใหม่', 'copyAllSheetsFromOldDb')
 
-      .addItem('ðŸ“¥ นà¸³à¹€ขà¹‰à¸²ขà¹‰อมà¸¹ลนัà¸�à¹€รà¸µยนà¸ˆà¸²à¸�à¹„à¸Ÿลà¹Œà¸ à¸²ยนอà¸�', 'importExternalStudentData')
+      .addItem('📥 นำเข้าข้อมูลนักเรียนจากไฟล์ภายนอก', 'importExternalStudentData')
 
-      .addItem('ðŸŒ� à¹€ปิดระà¸šà¸šà¹€วà¹‡à¸šà¹„ซตà¹Œดà¸¹à¹�ลà¹‚รงà¹€รà¸µยน', 'openWebAppUrl')
+      .addItem('🌐 เปิดระบบเว็บไซต์ดูแลโรงเรียน', 'openWebAppUrl')
 
       .addToUi();
 
@@ -956,7 +956,7 @@ function openWebAppUrl() {
 
   if (!url) {
 
-    SpreadsheetApp.getUi().alert('à¸�รุณà¸²ทà¸³à¸�à¸²ร Deploy Web App à¸�à¹ˆอนà¹€รà¸µยà¸�à¹ƒà¸Šà¹‰งà¸²นà¹€มนà¸¹นà¸µà¹‰');
+    SpreadsheetApp.getUi().alert('กรุณาทำการ Deploy Web App ก่อนเรียกใช้งานเมนูนี้');
 
     return;
 
@@ -974,7 +974,7 @@ function openWebAppUrl() {
 
   `).setWidth(300).setHeight(100);
 
-  SpreadsheetApp.getUi().showModalDialog(html, 'à¸�à¸³ลังà¹€ปิดหนà¹‰à¸²à¹€วà¹‡à¸šà¹„ซตà¹Œ...');
+  SpreadsheetApp.getUi().showModalDialog(html, 'กำลังเปิดหน้าเว็บไซต์...');
 
 }
 
@@ -990,9 +990,9 @@ function copyAllSheetsFromOldDb() {
 
   const response = ui.alert(
 
-    'ยืนยันà¸�à¸²รคัดลอà¸�ขà¹‰อมà¸¹ล',
+    'ยืนยันการคัดลอกข้อมูล',
 
-    'คุณตà¹‰องà¸�à¸²รคัดลอà¸�à¹�à¸œà¹ˆนงà¸²นทัà¹‰งหมดà¸ˆà¸²à¸�à¸ªà¹€ปรดà¸Šà¸µตà¹€à¸�à¹ˆà¸²à¹„ปà¸ªà¹€ปรดà¸Šà¸µตà¹ƒหมà¹ˆหรือà¹„มà¹ˆ? (หà¸²à¸�มà¸µà¹�à¸œà¹ˆนงà¸²นà¸Šืà¹ˆอซà¹‰à¸³à¹ƒนà¹„à¸Ÿลà¹Œà¹ƒหมà¹ˆà¸ˆะถà¸¹à¸�à¹€ขà¸µยนทัà¸š)',
+    'คุณต้องการคัดลอกแผ่นงานทั้งหมดจากสเปรดชีตเก่าไปสเปรดชีตใหม่หรือไม่? (หากมทีแผ่นงานชื่อซ้ำในไฟล์ใหม่จะถูกเขียนทับ)',
 
     ui.ButtonSet.YES_NO
 
@@ -1054,11 +1054,11 @@ function copyAllSheetsFromOldDb() {
 
     
 
-    ui.alert('à¹€à¸ªรà¹‡à¸ˆà¸ªิà¹‰น', 'คัดลอà¸�à¹�à¸œà¹ˆนงà¸²นà¸ªà¸³à¹€รà¹‡à¸ˆà¸ˆà¸³นวน ' + copiedCount + ' à¹�à¸œà¹ˆนงà¸²นà¹„ปยังà¸ªà¹€ปรดà¸Šà¸µตà¹ƒหมà¹ˆà¹€รà¸µยà¸šรà¹‰อยà¹�ลà¹‰ว!', ui.ButtonSet.OK);
+    ui.alert('เสร็จสิ้น', 'คัดลอกแผ่นงานสำเร็จจำนวน ' + copiedCount + ' แผ่นงานไปยังสเปรดชีตใหม่เรียบร้อยแล้ว!', ui.ButtonSet.OK);
 
   } catch (err) {
 
-    ui.alert('ขà¹‰อà¸œิดà¸žลà¸²ด', 'à¹„มà¹ˆà¸ªà¸²มà¸²รถคัดลอà¸�ขà¹‰อมà¸¹ลà¹„ดà¹‰: ' + err.toString(), ui.ButtonSet.OK);
+    ui.alert('ข้อผิดพลาด', 'ไม่สามารถคัดลอกข้อมูลได้: ' + err.toString(), ui.ButtonSet.OK);
 
   }
 
@@ -1076,9 +1076,9 @@ function importExternalStudentData() {
 
   const response = ui.alert(
 
-    'ยืนยันà¸�à¸²รนà¸³à¹€ขà¹‰à¸²ขà¹‰อมà¸¹ลนัà¸�à¹€รà¸µยน',
+    'ยืนยันการนำเข้าข้อมูลนักเรียน',
 
-    'คุณตà¹‰องà¸�à¸²รดึงขà¹‰อมà¸¹ลนัà¸�à¹€รà¸µยนà¸ˆà¸²à¸�à¹„à¸Ÿลà¹Œà¸ à¸²ยนอà¸�มà¸²à¸ˆัดà¹€รà¸µยงà¹ƒà¸ªà¹ˆà¹ƒนà¸�à¸²นขà¹‰อมà¸¹ลนà¸µà¹‰หรือà¹„มà¹ˆ?\n(ขà¹‰อมà¸¹ลà¹€ดิมà¹ƒนà¹�ตà¹ˆละà¸Šà¸µตหà¹‰องà¹€รà¸µยนà¸ˆะถà¸¹à¸�à¹€ขà¸µยนทัà¸š)',
+    'คุณต้องการดึงข้อมูลนักเรียนจากไฟล์ภายนอกมาจัดเรียงใส่ในฐานข้อมูลนี้หรือไม่?\n(ข้อมูลเดิมในแต่ละชีตห้องเรียนจะถูกเขียนทับ)',
 
     ui.ButtonSet.YES_NO
 
@@ -1118,7 +1118,7 @@ function importExternalStudentData() {
 
       // Determine if this is a sheet we want to copy and map it if necessary
 
-      if (sourceName.indexOf('à¹€ดà¸µà¹ˆยว ') === 0 || sourceName.indexOf('ยà¹ˆอย ') === 0) {
+      if (sourceName.indexOf('เดี่ยว ') === 0 || sourceName.indexOf('ย่อย ') === 0) {
 
         targetName = sourceName;
 
@@ -1154,7 +1154,7 @@ function importExternalStudentData() {
 
       // Classroom sheets: headers at 6, data starts at 7 (for source), but target classroom starts data at 6
 
-      const isPrivate = (targetName.indexOf('à¹€ดà¸µà¹ˆยว ') === 0 || targetName.indexOf('ยà¹ˆอย ') === 0);
+      const isPrivate = (targetName.indexOf('เดี่ยว ') === 0 || targetName.indexOf('ย่อย ') === 0);
 
       const startRow = isPrivate ? 12 : 7;
 
@@ -1226,35 +1226,35 @@ function importExternalStudentData() {
 
           const newRow = new Array(15).fill('');
 
-          newRow[0] = row[0] !== undefined ? row[0] : '';   // ระดัà¸šà¸Šัà¹‰น (à¸Šัà¹‰นà¹€รà¸µยน)
+          newRow[0] = row[0] !== undefined ? row[0] : '';   // ระดับชั้น (ชั้นเรียน)
 
-          newRow[1] = row[1] !== undefined ? row[1] : '';   // à¸Šืà¹ˆอ-นà¸²มà¸ªà¸�ุล
+          newRow[1] = row[1] !== undefined ? row[1] : '';   // ชื่อ-นามสกุล
 
-          newRow[2] = row[2] !== undefined ? row[2] : '';   // à¸Šืà¹ˆอà¹€ลà¹ˆน
+          newRow[2] = row[2] !== undefined ? row[2] : '';   // ชื่อเล่น
 
-          newRow[3] = row[3] !== undefined ? row[3] : '';   // à¹‚รงà¹€รà¸µยน
+          newRow[3] = row[3] !== undefined ? row[3] : '';   // โรงเรียน
 
-          newRow[4] = row[4] !== undefined ? row[4] : '';   // หà¹‰องà¹€รà¸µยนยà¹ˆอย (หà¹‰อง)
+          newRow[4] = row[4] !== undefined ? row[4] : '';   // ห้องเรียนย่อย (ห้อง)
 
-          newRow[5] = row[5] !== undefined ? row[5] : '';   // à¹€à¸šอรà¹Œติดตà¹ˆอ (à¹€à¸šอรà¹Œ)
+          newRow[5] = row[5] !== undefined ? row[5] : '';   // เบอร์ติดต่อ (เบอร์)
 
-          newRow[6] = row[6] !== undefined ? row[6] : '';   // à¸Šืà¹ˆอà¹‚ปรà¹„à¸Ÿลà¹Œà¹„ลนà¹Œ (à¸Šืà¹ˆอà¹„ลนà¹Œ/à¸�ลุà¹ˆมติดตà¹ˆอ)
+          newRow[6] = row[6] !== undefined ? row[6] : '';   // ชื่อโปรไฟล์ไลน์ (ชื่อไลน์/กลุ่มติดต่อ)
 
           newRow[7] = row[7] !== undefined ? row[7] : '';   // ID LINE (ID Line)
 
-          newRow[8] = row[8] !== undefined ? row[8] : '';   // à¸ªà¸²ขà¸²à¹€รà¸µยน (à¹€รà¸µยน)
+          newRow[8] = row[8] !== undefined ? row[8] : '';   // สาขาเรียน (เรียน)
 
-          newRow[9] = row[9] !== undefined ? row[9] : '';   // à¸ªà¸²ขà¸²ทà¸µà¹ˆà¹€à¸�à¹‡à¸šà¹€งิน (à¹€à¸�à¹‡à¸šà¹€งิน)
+          newRow[9] = row[9] !== undefined ? row[9] : '';   // สาขาที่เก็บเงิน (เก็บเงิน)
 
-          newRow[10] = row[12] !== undefined ? row[12] : ''; // ยอดà¸Šà¸³ระ/ยอดรวม (ยอดà¹€ตà¹‡ม)
+          newRow[10] = row[12] !== undefined ? row[12] : ''; // ยอดชำระ/ยอดรวม (ยอดเต็ม)
 
-          newRow[11] = row[11] !== undefined ? row[11] : ''; // à¸ªà¹ˆวนลด (à¸ªà¹ˆวนลด)
+          newRow[11] = row[11] !== undefined ? row[11] : ''; // ส่วนลด (ส่วนลด)
 
-          newRow[12] = row[14] !== undefined ? row[14] : ''; // รอà¸š/คงà¹€หลือ (คงà¹€หลือ)
+          newRow[12] = row[14] !== undefined ? row[14] : ''; // รอบ/คงเหลือ (คงเหลือ)
 
-          newRow[13] = row[13] !== undefined ? row[13] : ''; // ยอดà¹€รà¸µยนคงà¹€หลือ/ยอดà¸ˆà¹ˆà¸²ย (à¸ˆà¹ˆà¸²ยมà¸²)
+          newRow[13] = row[13] !== undefined ? row[13] : ''; // ยอดเรียนคงเหลือ/ยอดจ่าย (จ่ายมา)
 
-          newRow[14] = row[15] !== undefined ? row[15] : ''; // รหัà¸ªà¸šัตร/รà¸¹ดà¸šัตร (วัน/à¹€ดือน/ปà¸µ)
+          newRow[14] = row[15] !== undefined ? row[15] : ''; // รหัสบัตร/รูดบัตร (วัน/เดือน/ปี)
 
           return newRow;
 
@@ -1270,11 +1270,11 @@ function importExternalStudentData() {
 
     
 
-    ui.alert('นà¸³à¹€ขà¹‰à¸²ขà¹‰อมà¸¹ลà¸ªà¸³à¹€รà¹‡à¸ˆ', 'ดึงขà¹‰อมà¸¹ลà¹�ละà¸ˆัดà¹€รà¸µยงà¹€ขà¹‰à¸²à¸ªà¸¹à¹ˆà¸�à¸²นขà¹‰อมà¸¹ลà¸ªà¸³à¹€รà¹‡à¸ˆà¸ˆà¸³นวน ' + importedCount + ' à¹�à¸œà¹ˆนงà¸²นà¹€รà¸µยà¸šรà¹‰อยà¹�ลà¹‰ว!', ui.ButtonSet.OK);
+    ui.alert('นำเข้าข้อมูลสำเร็จ', 'ดึงข้อมูลและจัดเรียงเข้าสู่ฐานข้อมูลสำเร็จจำนวน ' + importedCount + ' แผ่นงานเรียบร้อยแล้ว!', ui.ButtonSet.OK);
 
   } catch (err) {
 
-    ui.alert('ขà¹‰อà¸œิดà¸žลà¸²ด', 'à¹„มà¹ˆà¸ªà¸²มà¸²รถนà¸³à¹€ขà¹‰à¸²ขà¹‰อมà¸¹ลà¹„ดà¹‰: ' + err.toString(), ui.ButtonSet.OK);
+    ui.alert('ข้อผิดพลาด', 'ไม่สามารถนำเข้าข้อมูลได้: ' + err.toString(), ui.ButtonSet.OK);
 
   }
 
@@ -1316,21 +1316,21 @@ function getOrCreateSheet(sheetName) {
 
     sheet.clear();
 
-    const headers = ['ระดัà¸šà¸Šัà¹‰น', 'à¸Šืà¹ˆอ-นà¸²มà¸ªà¸�ุล', 'à¸Šืà¹ˆอ', 'à¹‚รงà¹€รà¸µยน', 'หà¹‰องà¹€รà¸µยนทà¸µà¹ˆ', 'à¹€à¸šอรà¹Œติดตà¹ˆอ', 'à¹€à¸šอรà¹Œà¸œà¸¹à¹‰ปà¸�ครอง/à¹€à¸šอรà¹Œติดตà¹ˆอ', 'ID LINE', 'à¸ªà¸²ขà¸²ทà¸µà¹ˆà¹€รà¸µยน', 'à¸ªà¸²ขà¸²ทà¸µà¹ˆà¸ˆà¹ˆà¸²ยà¹€งิน'];
+    const headers = ['ระดับชั้น', 'ชื่อ-นามสกุล', 'ชื่อ', 'โรงเรียน', 'ห้องเรียนที่', 'เบอร์ติดต่อ', 'เบอร์ผู้ปกครอง/เบอร์ติดต่อ', 'ID LINE', 'สาขาที่เรียน', 'สาขาที่จ่ายเงิน'];
 
     const row5 = new Array(18).fill('');
 
     headers.forEach((h, idx) => { row5[idx] = h; });
 
-    row5[10] = 'ยอดà¸Šà¸³ระ';
+    row5[10] = 'ยอดชำระ';
 
-    row5[11] = 'à¸ªà¹ˆวนลด';
+    row5[11] = 'ส่วนลด';
 
-    row5[12] = 'รอà¸š';
+    row5[12] = 'รอบ';
 
-    row5[13] = 'ยอดà¹€รà¸µยนคงà¹€หลือ';
+    row5[13] = 'ยอดเรียนคงเหลือ';
 
-    row5[14] = 'รหัà¸ªà¸šัตร';
+    row5[14] = 'รหัสบัตร';
 
     sheet.getRange(5, 1, 1, 15).setValues([row5]);
 
@@ -1340,15 +1340,15 @@ function getOrCreateSheet(sheetName) {
 
   
 
-  // 2. Private Sheets (e.g., "à¹€ดà¸µà¹ˆยว อนุà¸šà¸²ล", "à¹€ดà¸µà¹ˆยว ม.1")
+  // 2. Private Sheets (e.g., "เดี่ยว อนุบาล", "เดี่ยว ม.1")
 
-  if (sheetName.indexOf('à¹€ดà¸µà¹ˆยว ') === 0) {
+  if (sheetName.indexOf('เดี่ยว ') === 0) {
 
     sheet = db.insertSheet(sheetName);
 
     sheet.clear();
 
-    const headers = ['à¸Šืà¹ˆอ', 'à¸Šืà¹ˆอ-นà¸²มà¸ªà¸�ุล', 'à¸Šืà¹ˆอà¹€ลà¹ˆน', 'à¹‚รงà¹€รà¸µยน', 'คอรà¹Œà¸ª', 'à¹€à¸šอรà¹Œติดตà¹ˆอ', 'à¹€à¸šอรà¹Œà¸œà¸¹à¹‰ปà¸�ครอง/à¹€à¸šอรà¹Œติดตà¹ˆอ', 'ID LINE', 'à¸ªà¸²ขà¸²à¹€รà¸µยน(à¸ªà¸²ขà¸²)', 'à¸ªà¸²ขà¸²à¹€งิน(à¸ªà¸²ขà¸²)', 'รอà¸šà¹€รà¸µยน', 'หมà¸²ยà¹€หตุ', 'à¹€รà¸µยนà¸ˆริง(รอà¸š)', 'à¹€รà¸µยน', 'à¸ˆà¹ˆà¸²ย', 'คงà¹€หลือ', 'วันทà¸µà¹ˆรัà¸šà¹€งิน', 'à¸Šà¹ˆองทà¸²งà¸�à¸²รรัà¸šà¹€งิน', 'à¸œà¸¹à¹‰รัà¸šà¹€งิน', 'à¹ƒà¸šà¹€à¸ªรà¹‡à¸ˆ', 'ตรวà¸ˆà¸ªอà¸š'];
+    const headers = ['ชื่อ', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'โรงเรียน', 'คอร์ส', 'เบอร์ติดต่อ', 'เบอร์ผู้ปกครอง/เบอร์ติดต่อ', 'ID LINE', 'สาขาเรียน(สาขา)', 'สาขาเงิน(สาขา)', 'รอบเรียน', 'หมายเหตุ', 'เรียนจริง(รอบ)', 'เรียน', 'จ่าย', 'คงเหลือ', 'วันที่รับเงิน', 'ช่องทางการรับเงิน', 'ผู้รับเงิน', 'ใบเสร็จ', 'ตรวจสอบ'];
 
     sheet.getRange(11, 1, 1, 21).setValues([headers]);
 
@@ -1358,15 +1358,15 @@ function getOrCreateSheet(sheetName) {
 
   
 
-  // 3. Subgroup Sheets (e.g., "à¸�ลุà¹ˆม 2-3", "à¸�ลุà¹ˆม 4-5")
+  // 3. Subgroup Sheets (e.g., "กลุ่ม 2-3", "กลุ่ม 4-5")
 
-  if (sheetName.indexOf('à¸�ลุà¹ˆม ') === 0) {
+  if (sheetName.indexOf('กลุ่ม ') === 0) {
 
     sheet = db.insertSheet(sheetName);
 
     sheet.clear();
 
-    const headers = ['à¸Šืà¹ˆอ', 'à¸Šืà¹ˆอ-นà¸²มà¸ªà¸�ุล', 'à¸Šืà¹ˆอà¹€ลà¹ˆน', 'à¹‚รงà¹€รà¸µยน', 'คอรà¹Œà¸ª', 'à¹€à¸šอรà¹Œติดตà¹ˆอ', 'à¹€à¸šอรà¹Œà¸œà¸¹à¹‰ปà¸�ครอง/à¹€à¸šอรà¹Œติดตà¹ˆอ', 'ID LINE', 'à¸ªà¸²ขà¸²à¹€รà¸µยน(à¸ªà¸²ขà¸²)', 'à¸ªà¸²ขà¸²à¹€งิน(à¸ªà¸²ขà¸²)', 'รอà¸šà¹€รà¸µยน', 'หมà¸²ยà¹€หตุ', 'à¹€รà¸µยนà¸ˆริง(รอà¸š)', 'à¹€รà¸µยน', 'à¸ˆà¹ˆà¸²ย', 'คงà¹€หลือ', 'วันทà¸µà¹ˆรัà¸šà¹€งิน', 'à¸Šà¹ˆองทà¸²งà¸�à¸²รรัà¸šà¹€งิน', 'à¸œà¸¹à¹‰รัà¸šà¹€งิน', 'à¹ƒà¸šà¹€à¸ªรà¹‡à¸ˆ', 'ตรวà¸ˆà¸ªอà¸š'];
+    const headers = ['ชื่อ', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'โรงเรียน', 'คอร์ส', 'เบอร์ติดต่อ', 'เบอร์ผู้ปกครอง/เบอร์ติดต่อ', 'ID LINE', 'สาขาเรียน(สาขา)', 'สาขาเงิน(สาขา)', 'รอบเรียน', 'หมายเหตุ', 'เรียนจริง(รอบ)', 'เรียน', 'จ่าย', 'คงเหลือ', 'วันที่รับเงิน', 'ช่องทางการรับเงิน', 'ผู้รับเงิน', 'ใบเสร็จ', 'ตรวจสอบ'];
 
     sheet.getRange(11, 1, 1, 21).setValues([headers]);
 
@@ -1376,7 +1376,7 @@ function getOrCreateSheet(sheetName) {
 
   
 
-  // 4. ตรวà¸ˆà¸ªอà¸šà¸ˆà¸²à¸� SHEET_REGISTRY (fallback à¸ªà¸³หรัà¸šà¸Šà¸µตทà¸µà¹ˆลงทะà¹€à¸šà¸µยนà¹„วà¹‰)
+  // 4. ตรวจสอลบจาก SHEET_REGISTRY (fallback สำหรับชีตที่ลงทะเบียนไว้)
 
   const regDef = getRegistryDef(sheetName);
 
@@ -1396,7 +1396,7 @@ function getOrCreateSheet(sheetName) {
 
     }
 
-    Logger.log('âœ… Auto-created registered sheet: ' + sheetName);
+    Logger.log('✅ Auto-created registered sheet: ' + sheetName);
 
     return sheet;
 
@@ -1482,7 +1482,7 @@ function cleanSheetDate(val) {
 
   var str = val ? val.toString().trim() : '';
 
-  if (str.indexOf('1899') !== -1 || str.indexOf('1900') !== -1 || str.indexOf('à¹€วลà¸²อินà¹‚ดà¸ˆà¸µน') !== -1) {
+  if (str.indexOf('1899') !== -1 || str.indexOf('1900') !== -1 || str.indexOf('เวลาอินโดจีน') !== -1) {
 
     return '';
 
@@ -1562,7 +1562,7 @@ function cleanSheetTimestamp(val) {
 
   const str = val ? val.toString().trim() : '';
 
-  if (str.indexOf('1899') !== -1 || str.indexOf('1900') !== -1 || str.indexOf('à¹€วลà¸²อินà¹‚ดà¸ˆà¸µน') !== -1) {
+  if (str.indexOf('1899') !== -1 || str.indexOf('1900') !== -1 || str.indexOf('เวลาอินโดจีน') !== -1) {
 
     return '';
 
@@ -1618,13 +1618,13 @@ function ensureDataLearnMigrated(db) {
 
       const headersStr = headers.map(h => h ? h.toString().trim() : '');
 
-      const idxOrange = headersStr.indexOf('à¹�à¸ªด');
+      const idxOrange = headersStr.indexOf('แสด');
 
       if (idxOrange !== -1) {
 
         learnSheet.deleteColumn(idxOrange + 1);
 
-        Logger.log('Deleted column "à¹�à¸ªด" at index ' + (idxOrange + 1));
+        Logger.log('Deleted column "แสด" at index ' + (idxOrange + 1));
 
       }
 
@@ -1684,7 +1684,7 @@ function initRoomsDatabase() {
 
     // Branch 1
 
-    defaultRooms.push(['à¸ªà¸²ขà¸²1', 'ออนà¹„ลนà¹Œ à¸ªà¸²ขà¸²1', 'IPAD 001', 'Zoom 001']);
+    defaultRooms.push(['สาขา1', 'ออนไลน์ สาขา1', 'IPAD 001', 'Zoom 001']);
 
     for (let i = 1; i <= 10; i++) {
 
@@ -1692,7 +1692,7 @@ function initRoomsDatabase() {
 
         for (let j = 1; j <= 6; j++) {
 
-          defaultRooms.push(['à¸ªà¸²ขà¸²1', `หà¹‰อง 05/${j}`, `IPAD 005`, `Zoom 005`]);
+          defaultRooms.push(['สาขา1', `ห้อง 05/${j}`, `IPAD 005`, `Zoom 005`]);
 
         }
 
@@ -1700,7 +1700,7 @@ function initRoomsDatabase() {
 
         const pad = i < 10 ? '0' + i : i;
 
-        defaultRooms.push(['à¸ªà¸²ขà¸²1', `หà¹‰อง ${pad}`, `IPAD 0${pad}`, `Zoom 0${pad}`]);
+        defaultRooms.push(['สาขา1', `ห้อง ${pad}`, `IPAD 0${pad}`, `Zoom 0${pad}`]);
 
       }
 
@@ -1710,9 +1710,9 @@ function initRoomsDatabase() {
 
     // Branch 2
 
-    defaultRooms.push(['à¸ªà¸²ขà¸²2', 'ออนà¹„ลนà¹Œ à¸ªà¸²ขà¸²2', 'IPAD 020', 'Zoom 020']);
+    defaultRooms.push(['สาขา2', 'ออนไลน์ สาขา2', 'IPAD 020', 'Zoom 020']);
 
-    defaultRooms.push(['à¸ªà¸²ขà¸²2', 'หà¹‰อง à¹€อนà¸�ประà¸ªงคà¹Œ', 'IPAD 021', 'Zoom 021']);
+    defaultRooms.push(['สาขา2', 'ห้อง เอนกประสงค์', 'IPAD 021', 'Zoom 021']);
 
     const b2Rooms = [1,2,3,4,5,6,7,8,9,21,22,23,24,25,26,31,32,33,34,35,36,41,42,43,44,45,52,53];
 
@@ -1720,7 +1720,7 @@ function initRoomsDatabase() {
 
       const pad = r < 10 ? '0' + r : r;
 
-      defaultRooms.push(['à¸ªà¸²ขà¸²2', `หà¹‰อง ${pad}`, `IPAD 0${pad}`, `Zoom 0${pad}`]);
+      defaultRooms.push(['สาขา2', `ห้อง ${pad}`, `IPAD 0${pad}`, `Zoom 0${pad}`]);
 
     });
 
@@ -1728,13 +1728,13 @@ function initRoomsDatabase() {
 
     // Branch 3
 
-    defaultRooms.push(['à¸ªà¸²ขà¸²3', 'ออนà¹„ลนà¹Œ à¸ªà¸²ขà¸²3', 'IPAD 030', 'Zoom 030']);
+    defaultRooms.push(['สาขา3', 'ออนไลน์ สาขา3', 'IPAD 030', 'Zoom 030']);
 
     const b3Rooms = ['01', '02', '03', '04', '21', '30', '31', '32/1', '32/2', '32/3', '32/4', '33', '34', '40', '41', '42', '43', '44', '50'];
 
     b3Rooms.forEach(r => {
 
-      defaultRooms.push(['à¸ªà¸²ขà¸²3', `หà¹‰อง ${r}`, `IPAD 0${r.replace('/', '')}`, `Zoom 0${r.replace('/', '')}`]);
+      defaultRooms.push(['สาขา3', `ห้อง ${r}`, `IPAD 0${r.replace('/', '')}`, `Zoom 0${r.replace('/', '')}`]);
 
     });
 
@@ -1754,9 +1754,9 @@ function initAllDatabases() {
 
   // ========================================
 
-  // ขัà¹‰นตอนทà¸µà¹ˆ 1: à¸ªรà¹‰à¸²งà¸Šà¸µตà¸ˆà¸²à¸� SHEET_REGISTRY อัตà¹‚นมัติ
+  // ขั้นตอนที่ 1: สร้างชีตจาก SHEET_REGISTRY อัตโนมัติ
 
-  // (à¸Šà¸µตà¹ƒหมà¹ˆทà¸µà¹ˆà¹€à¸žิà¹ˆมà¹ƒน registry à¸ˆะถà¸¹à¸�à¸ªรà¹‰à¸²งทà¸µà¹ˆนà¸µà¹ˆ)
+  // (ชีตใหม่ที่เพิ่มใน registry จะถูกสร้างที่นี่)
 
   // ========================================
 
@@ -1772,19 +1772,19 @@ function initAllDatabases() {
 
   // ========================================
 
-  // ขัà¹‰นตอนทà¸µà¹ˆ 2: à¹€ติมขà¹‰อมà¸¹ลà¹€ริà¹ˆมตà¹‰นà¸žิà¹€ศษ (ทà¸µà¹ˆà¹„มà¹ˆà¹„ดà¹‰อยà¸¹à¹ˆà¹ƒน registry)
+  // ขั้นตอนที่ 2: เติมข้อมูลเริ่มต้นพิเศษ (ที่ไม่ได้อยู่ใน registry)
 
   // ========================================
 
   
 
-  // 2a. RoomsDB — à¹€ติมหà¹‰องà¹€รà¸µยนà¹€ริà¹ˆมตà¹‰น
+  // 2a. RoomsDB — เติมห้องเรียนเริ่มต้น
 
   initRoomsDatabase();
 
   
 
-  // 2b. TeachersDB — seed ครà¸¹à¸ˆà¸²à¸� DATA General (ถà¹‰à¸²ยังวà¹ˆà¸²ง)
+  // 2b. TeachersDB — seed ครรู้จาก DATA General (ถ้ายังว่าง)
 
   try {
 
@@ -1844,7 +1844,7 @@ function initAllDatabases() {
 
   // ========================================
 
-  // ขัà¹‰นตอนทà¸µà¹ˆ 3: à¸ªรà¹‰à¸²งà¸Šà¸µตระดัà¸šà¸Šัà¹‰น/à¹€ดà¸µà¹ˆยว/ยà¹ˆอย
+  // ขั้นตอนที่ 3: สร้างชีตระดับชั้น/เดี่ยว/ย่อย
 
   // ========================================
 
@@ -1854,7 +1854,7 @@ function initAllDatabases() {
 
   // ========================================
 
-  // ขัà¹‰นตอนทà¸µà¹ˆ 4: Run database migrations
+  // ขั้นตอนที่ 4: Run database migrations
 
   // ========================================
 
@@ -1886,7 +1886,7 @@ function isTeacherUser(username, nickname) {
 
   const cleanNickname = (nickname || '').toString().trim().toLowerCase();
 
-  if (cleanUsername.includes('ครà¸¹') || cleanNickname.includes('ครà¸¹') || cleanUsername.startsWith('tutor_')) {
+  if (cleanUsername.includes('ครู') || cleanNickname.includes('ครู') || cleanUsername.startsWith('tutor_')) {
 
     return true;
 
@@ -1900,7 +1900,7 @@ function checkTeacherBlock(logUser) {
 
   if (logUser && isTeacherUser(logUser)) {
 
-    throw new Error('คุณà¹„มà¹ˆมà¸µà¸ªิทธิà¹Œทà¸³รà¸²ยà¸�à¸²รนà¸µà¹‰à¹€นืà¹ˆองà¸ˆà¸²à¸�ลà¹‡อà¸�อินดà¹‰วยà¸šัà¸�à¸Šà¸µà¸ªิทธิà¹Œครà¸¹à¸œà¸¹à¹‰à¸ªอน');
+    throw new Error('คุณไม่มีสิทธิ์ทำรายการนี้เนื่องจากล็อกอินด้วยบักชีสิทธิ์ครูผู้สอน');
 
   }
 
@@ -1982,7 +1982,7 @@ function verifyLogin(username, password) {
 
   if (!cleanUsername || !cleanPassword) {
 
-    return { success: false, error: 'à¸�รุณà¸²à¸�รอà¸�à¸Šืà¹ˆอà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰งà¸²นà¹�ละรหัà¸ªà¸œà¹ˆà¸²น' };
+    return { success: false, error: 'กรุณากรอกชื่อผู้ใช้งานและรหัสผ่าน' };
 
   }
 
@@ -1998,7 +1998,7 @@ function verifyLogin(username, password) {
 
     if (!sheet) {
 
-      return { success: false, error: 'à¹„มà¹ˆà¸žà¸šตà¸²รà¸²งà¸�à¸²นขà¹‰อมà¸¹ลà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰งà¸²น UsersDB' };
+      return { success: false, error: 'ไม่พบตารางฐานข้อมูลผู้ใช้งาน UsersDB' };
 
     }
 
@@ -2032,7 +2032,7 @@ function verifyLogin(username, password) {
 
         
 
-        // ถà¹‰à¸²à¸Šืà¹ˆอ user (username หรือ nickname) ตรงà¸�ัà¸šà¸�à¸²นขà¹‰อมà¸¹ล TeachersDB คอลัมนà¹Œ A หรือมà¸µคà¸³วà¹ˆà¸² "ครà¸¹" à¹ƒหà¹‰à¸ˆà¸³à¸�ัดà¸ªิทธิà¹Œà¹€ปà¹‡นครà¸¹à¸œà¸¹à¹‰à¸ªอนทันทà¸µ
+        // ถ้าชื่อ user (username หรือ nickname) ตรงกับฐานข้อมูล TeachersDB คอลัมน์ A หรือมีคำว่า "ครู" ให้จำกัดสิทธิ์เป็นครูผู้สอนทันที
 
         if (isTeacherUser(dbUsername, nickname)) {
 
@@ -2068,7 +2068,7 @@ function verifyLogin(username, password) {
 
   }
 
-  return { success: false, error: 'à¸Šืà¹ˆอà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰งà¸²นหรือรหัà¸ªà¸œà¹ˆà¸²นà¹„มà¹ˆถà¸¹à¸�ตà¹‰อง' };
+  return { success: false, error: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง' };
 
 }
 
@@ -2076,7 +2076,7 @@ function changePassword(username, newPassword, logUser) {
 
   if (logUser && isTeacherUser(logUser) && logUser !== username) {
 
-    throw new Error('คุณà¹„มà¹ˆมà¸µà¸ªิทธิà¹Œà¹€ปลà¸µà¹ˆยนรหัà¸ªà¸œà¹ˆà¸²นà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰อืà¹ˆน');
+    throw new Error('คุณไม่มีสิทธิ์เปลี่ยนรหัสผ่านผู้ใช้อื่น');
 
   }
 
@@ -2092,7 +2092,7 @@ function changePassword(username, newPassword, logUser) {
 
       sheet.getRange(i + 1, 2).setValue(newPassword);
 
-      logActivity(logUser, 'à¹€ปลà¸µà¹ˆยนรหัà¸ªà¸œà¹ˆà¸²น', `à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰: ${username} à¹€ปลà¸µà¹ˆยนรหัà¸ªà¸œà¹ˆà¸²นà¹ƒหมà¹ˆ`);
+      logActivity(logUser, 'เปลี่ยนรหัสผ่าน', `ผู้ใช้: ${username} เปลี่ยนรหัสผ่านใหม่`);
 
       return { success: true };
 
@@ -2100,7 +2100,7 @@ function changePassword(username, newPassword, logUser) {
 
   }
 
-  return { success: false, error: 'à¹„มà¹ˆà¸žà¸šà¸Šืà¹ˆอà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰งà¸²นนà¸µà¹‰' };
+  return { success: false, error: 'ไม่พบชื่อผู้ใช้งานนี้' };
 
 }
 
@@ -2120,7 +2120,7 @@ function getUserProfile(username) {
 
   if (!sheet) {
 
-    return { success: false, error: 'à¹„มà¹ˆà¸žà¸šตà¸²รà¸²ง UsersDB' };
+    return { success: false, error: 'ไม่พบตาราง UsersDB' };
 
   }
 
@@ -2258,7 +2258,7 @@ function getUserProfile(username) {
 
     }
 
-    return { success: false, error: 'à¹„มà¹ˆà¸žà¸šขà¹‰อมà¸¹ลà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰งà¸²น' };
+    return { success: false, error: 'ไม่พบข้อมูลผู้ใช้งาน' };
 
   }
 
@@ -2350,7 +2350,7 @@ function saveUserProfile(username, data, logUser) {
 
   if (logUser && isTeacherUser(logUser) && logUser !== username) {
 
-    throw new Error('คุณà¹„มà¹ˆมà¸µà¸ªิทธิà¹Œà¹�à¸�à¹‰à¹„ขประวัติà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰อืà¹ˆน');
+    throw new Error('คุณไม่มีสิทธิ์แก้ไขประวัติผู้ใช้อื่น');
 
   }
 
@@ -2360,7 +2360,7 @@ function saveUserProfile(username, data, logUser) {
 
   if (!sheet) {
 
-    return { success: false, error: 'à¹„มà¹ˆà¸žà¸šตà¸²รà¸²ง UsersDB' };
+    return { success: false, error: 'ไม่พบตาราง UsersDB' };
 
   }
 
@@ -2394,7 +2394,7 @@ function saveUserProfile(username, data, logUser) {
 
         }
 
-        logActivity(logUser, 'à¹�à¸�à¹‰à¹„ขà¹‚ปรà¹„à¸Ÿลà¹Œ', `à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰: ${username} à¹�à¸�à¹‰à¹„ขขà¹‰อมà¸¹ลà¹‚ปรà¹„à¸Ÿลà¹Œของตนà¹€อง`);
+        logActivity(logUser, 'แก้ไขโปรไฟล์', `ผู้ใช้: ${username} แก้ไขข้อมูลโปรไฟล์ของตนเอง`);
 
         return { success: true };
 
@@ -2404,7 +2404,7 @@ function saveUserProfile(username, data, logUser) {
 
   }
 
-  return { success: false, error: 'à¹„มà¹ˆà¸žà¸šà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰ทà¸µà¹ˆตà¹‰องà¸�à¸²รà¸šันทึà¸�' };
+  return { success: false, error: 'ไม่พบผู้ใช้ที่ต้องการบันทึก' };
 
 }
 
@@ -2414,7 +2414,7 @@ function addEmployee(data, logUser) {
 
     if (!data || !data.username || !data.password) {
 
-      return { success: false, error: 'à¸�รุณà¸²à¸�รอà¸�à¸Šืà¹ˆอà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰à¹�ละรหัà¸ªà¸œà¹ˆà¸²น' };
+      return { success: false, error: 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน' };
 
     }
 
@@ -2424,7 +2424,7 @@ function addEmployee(data, logUser) {
 
     if (!sheet) {
 
-      return { success: false, error: 'à¹„มà¹ˆà¸žà¸šตà¸²รà¸²ง UsersDB' };
+      return { success: false, error: 'ไม่พบตาราง UsersDB' };
 
     }
 
@@ -2438,7 +2438,7 @@ function addEmployee(data, logUser) {
 
       if (rows[i][0] && rows[i][0].toString().trim().toLowerCase() === cleanUsername) {
 
-        return { success: false, error: 'à¸Šืà¹ˆอà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰นà¸µà¹‰มà¸µอยà¸¹à¹ˆà¹ƒนระà¸šà¸šà¹�ลà¹‰ว' };
+        return { success: false, error: 'ชื่อผู้ใช้นี้มีอยู่ในระบบแล้ว' };
 
       }
 
@@ -2464,13 +2464,13 @@ function addEmployee(data, logUser) {
 
     clearCacheObject('usersdb_raw');
 
-    logActivity(logUser, 'à¹€à¸žิà¹ˆมà¸žนัà¸�งà¸²น', `à¹€à¸žิà¹ˆมà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰à¹ƒหมà¹ˆ: ${data.username} à¸šทà¸šà¸²ท: ${data.role || 'Staff'}`);
+    logActivity(logUser, 'เพิ่มพนักงาน', `เพิ่มผู้ใช้ใหม่: ${data.username} บทบาท: ${data.role || 'Staff'}`);
 
     return { success: true };
 
   } catch (e) {
 
-    return { success: false, error: e.message || 'à¹€à¸�ิดขà¹‰อà¸œิดà¸žลà¸²ดทà¸µà¹ˆà¹„มà¹ˆทรà¸²à¸šà¸ªà¸²à¹€หตุ' };
+    return { success: false, error: e.message || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ' };
 
   }
 
@@ -2530,7 +2530,7 @@ function changeUserPasswordOwn(username, currentPassword, newPassword) {
 
   if (!sheet) {
 
-    return { success: false, error: 'à¹„มà¹ˆà¸žà¸šตà¸²รà¸²ง UsersDB' };
+    return { success: false, error: 'ไม่พบตาราง UsersDB' };
 
   }
 
@@ -2556,13 +2556,13 @@ function changeUserPasswordOwn(username, currentPassword, newPassword) {
 
         if (dbPassword !== currentPassword.toString().trim()) {
 
-          return { success: false, error: 'รหัà¸ªà¸œà¹ˆà¸²นปัà¸ˆà¸ˆุà¸šันà¹„มà¹ˆถà¸¹à¸�ตà¹‰อง' };
+          return { success: false, error: 'รหัสผ่านปัจจุบันไม่ถูกต้อง' };
 
         }
 
         sheet.getRange(i + 1, 2).setValue(newPassword.toString().trim());
 
-        logActivity(username, 'à¹€ปลà¸µà¹ˆยนรหัà¸ªà¸œà¹ˆà¸²นà¹€อง', `à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰: ${username} à¹€ปลà¸µà¹ˆยนรหัà¸ªà¸œà¹ˆà¸²นของตนà¹€องà¸ªà¸³à¹€รà¹‡à¸ˆ`);
+        logActivity(username, 'เปลี่ยนรหัสผ่านเอง', `ผู้ใช้: ${username} เปลี่ยนรหัสผ่านของตนเองสำเร็จ`);
 
         return { success: true };
 
@@ -2572,7 +2572,7 @@ function changeUserPasswordOwn(username, currentPassword, newPassword) {
 
   }
 
-  return { success: false, error: 'à¹„มà¹ˆà¸žà¸šขà¹‰อมà¸¹ลà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰งà¸²น' };
+  return { success: false, error: 'ไม่พบข้อมูลผู้ใช้งาน' };
 
 }
 
@@ -2586,7 +2586,7 @@ function changeEmployeePasswordByAdmin(username, newPassword, logUser) {
 
     if (!sheet) {
 
-      return { success: false, error: 'à¹„มà¹ˆà¸žà¸šตà¸²รà¸²ง UsersDB' };
+      return { success: false, error: 'ไม่พบตาราง UsersDB' };
 
     }
 
@@ -2606,7 +2606,7 @@ function changeEmployeePasswordByAdmin(username, newPassword, logUser) {
 
           clearCacheObject('usersdb_raw');
 
-          logActivity(logUser, 'à¹�à¸�à¹‰à¹„ขรหัà¸ªà¸œà¹ˆà¸²นà¸žนัà¸�งà¸²น', `à¹€ปลà¸µà¹ˆยนรหัà¸ªà¸œà¹ˆà¸²นà¸žนัà¸�งà¸²นà¹ƒหà¹‰à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰: ${username}`);
+          logActivity(logUser, 'แก้ไขรหัสผ่านพนักงาน', `เปลี่ยนรหัสผ่านพนักงานให้ผู้ใช้: ${username}`);
 
           return { success: true };
 
@@ -2616,11 +2616,11 @@ function changeEmployeePasswordByAdmin(username, newPassword, logUser) {
 
     }
 
-    return { success: false, error: 'à¹„มà¹ˆà¸žà¸šà¸žนัà¸�งà¸²นà¹ƒนระà¸šà¸š' };
+    return { success: false, error: 'ไม่พบพนักงานในระบบ' };
 
   } catch (e) {
 
-    return { success: false, error: e.message || 'à¹€à¸�ิดขà¹‰อà¸œิดà¸žลà¸²ดà¹ƒนà¸�à¸²รà¹�à¸�à¹‰à¹„ขรหัà¸ªà¸œà¹ˆà¸²น' };
+    return { success: false, error: e.message || 'เกิดข้อผิดพลาดในการแก้ไขรหัสผ่าน' };
 
   }
 
@@ -3130,7 +3130,7 @@ function updateRoomSettings(branch, roomName, ipad, zoom, logUser) {
 
     }
 
-    logActivity(logUser, 'ตัà¹‰งคà¹ˆà¸²หà¹‰องà¹€รà¸µยน', `หà¹‰อง: ${roomName} (iPad: ${ipad}, Zoom: ${zoom})`);
+    logActivity(logUser, 'ตั้งค่าห้องเรียน', `ห้อง: ${roomName} (iPad: ${ipad}, Zoom: ${zoom})`);
 
     
 
@@ -3184,7 +3184,7 @@ function deleteRoom(branch, roomName, logUser) {
 
       sheet.deleteRow(rowIndex);
 
-      logActivity(logUser, 'ลà¸šหà¹‰องà¹€รà¸µยน', `à¸ªà¸²ขà¸²: ${branch} หà¹‰อง: ${roomName}`);
+      logActivity(logUser, 'ลบห้องเรียน', `สาขา: ${branch} ห้อง: ${roomName}`);
 
       clearCacheObject('rooms_list');
 
@@ -3192,7 +3192,7 @@ function deleteRoom(branch, roomName, logUser) {
 
     }
 
-    return { success: false, error: 'à¹„มà¹ˆà¸žà¸šหà¹‰องà¹€รà¸µยนทà¸µà¹ˆตà¹‰องà¸�à¸²รลà¸š' };
+    return { success: false, error: 'ไม่พบห้องเรียนที่ต้องการลบ' };
 
   } catch (err) {
 
@@ -3226,7 +3226,7 @@ function testDumpSheet(sheetName) {
 
 function getDailyGridData(dateStr, logUser) {
 
-  // ครà¸¹à¸ªà¸²มà¸²รถดà¸¹ตà¸²รà¸²งà¹€รà¸µยนรà¸²ยหà¹‰องà¹€รà¸µยนรà¸²ยวันà¹„ดà¹‰
+  // ครูสามารถดูตารางเรียนรายห้องเรียนรายวันได้
 
   try {
 
@@ -3242,7 +3242,7 @@ function getDailyGridData(dateStr, logUser) {
 
     try {
 
-      const thaiDayNames = ['วันอà¸²ทิตยà¹Œ','วันà¸ˆันทรà¹Œ','วันอังคà¸²ร','วันà¸žุธ','วันà¸žฤหัà¸ªà¸šดà¸µ','วันศุà¸�รà¹Œ','วันà¹€à¸ªà¸²รà¹Œ'];
+      const thaiDayNames = ['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์'];
 
       let dt;
 
@@ -3421,11 +3421,11 @@ function getCachedSheetEnrollments(sheetName) {
 
     
 
-    const shortDayMap = { 'อà¸²ทิตยà¹Œ': 'อà¸².', 'à¸ˆันทรà¹Œ': 'à¸ˆ.', 'อังคà¸²ร': 'อ.', 'à¸žุธ': 'à¸ž.', 'à¸žฤหัà¸ªà¸šดà¸µ': 'à¸žฤ.', 'ศุà¸�รà¹Œ': 'ศ.', 'à¹€à¸ªà¸²รà¹Œ': 'à¸ª.' };
+    const shortDayMap = { 'อาทิตย์': 'อา.', 'จันทร์': 'จ.', 'อังคาร': 'อ.', 'พุธ': 'พ.', 'พฤหัสบดี': 'พฤ.', 'ศุกร์': 'ศ.', 'เสาร์': 'ส.' };
 
     let cleanDay = '';
 
-    const days = ['อà¸²ทิตยà¹Œ', 'à¸ˆันทรà¹Œ', 'อังคà¸²ร', 'à¸žุธ', 'à¸žฤหัà¸ªà¸šดà¸µ', 'ศุà¸�รà¹Œ', 'à¹€à¸ªà¸²รà¹Œ', 'อà¸².', 'à¸ˆ.', 'อ.', 'à¸ž.', 'à¸žฤ.', 'ศ.', 'à¸ª.'];
+    const days = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
 
     for (let day of days) {
 
@@ -3475,7 +3475,7 @@ function getCachedSheetEnrollments(sheetName) {
 
 }
 
-// getCourseEnrollmentCounts: นัà¸šà¸ˆà¸³นวน นร. à¸ˆà¸²à¸�ตà¸²รà¸²งหà¹‰องà¹€รà¸µยนตà¸²มà¸Šืà¹ˆอคอรà¹Œà¸ª+วัน
+// getCourseEnrollmentCounts: นับจำนวน นร. จากตารางห้องเรียนตามชื่อคอร์ส+วัน
 
 function getCourseEnrollmentCounts(courseNames, classInfoList) {
 
@@ -3497,7 +3497,7 @@ function getCourseEnrollmentCounts(courseNames, classInfoList) {
 
       const name = sheet.getName();
 
-      if (name.match(/^(ป\.|ม\.|อนุà¸šà¸²ล)/) || name.match(/^(ยà¹ˆอย 2-3|ยà¹ˆอย 4-5|ยà¹ˆอย 6-10)/)) {
+      if (name.match(/^(ป\.|ม\.|อนุบาล)/) || name.match(/^(ย่อย 2-3|ย่อย 4-5|ย่อย 6-10)/)) {
 
         gradeSheetNames.push(name);
 
@@ -3579,7 +3579,7 @@ function getCourseEnrollmentCounts(courseNames, classInfoList) {
 
           const dl = s.dayOfWeek.toLowerCase().replace('วัน', '');
 
-          const shortDayMap = { 'อà¸²ทิตยà¹Œ': 'อà¸².', 'à¸ˆันทรà¹Œ': 'à¸ˆ.', 'อังคà¸²ร': 'อ.', 'à¸žุธ': 'à¸ž.', 'à¸žฤหัà¸ªà¸šดà¸µ': 'à¸žฤ.', 'ศุà¸�รà¹Œ': 'ศ.', 'à¹€à¸ªà¸²รà¹Œ': 'à¸ª.' };
+          const shortDayMap = { 'อาทิตย์': 'อา.', 'จันทร์': 'จ.', 'อังคาร': 'อ.', 'พุธ': 'พ.', 'พฤหัสบดี': 'พฤ.', 'ศุกร์': 'ศ.', 'เสาร์': 'ส.' };
 
           const shortDay = shortDayMap[dl] || dl;
 
@@ -3667,7 +3667,7 @@ function clearDailyGridClassroomTimetable(logUser) {
 
     clearCacheObject('class_logs_date_v3_all');
 
-    logActivity(logUser || 'System', 'ลà¸šตà¸²รà¸²งà¹€รà¸µยนทัà¹‰งหมด', 'ลà¹‰à¸²งขà¹‰อมà¸¹ลตà¸²รà¸²งà¹€รà¸µยนรà¸²ยหà¹‰องà¹€รà¸µยนรà¸²ยวันà¹€à¸žืà¹ˆอà¹€ริà¹ˆมงà¸²น');
+    logActivity(logUser || 'System', 'ลบตารางเรียนทั้งหมด', 'ล้างข้อมูลตารางเรียนรายห้องเรียนรายวันเพื่อเริ่มงาน');
 
     return { success: true };
 
@@ -3861,7 +3861,7 @@ function submitEvaluation(data, logUser) {
 
     clearCacheObject('evaluations_list_all');
 
-    logActivity(logUser || 'System', 'à¸ªà¹ˆงà¹ƒà¸šประà¹€มินนัà¸�à¹€รà¸µยน', `[${evalId}] ประà¹€มินนัà¸�à¹€รà¸µยน: ${data.studentName} (${data.nickname}) วิà¸Šà¸²: ${data.subject}`);
+    logActivity(logUser || 'System', 'ส่งใบประเมินนักเรียน', `[${evalId}] ประเมินนักเรียน: ${data.studentName} (${data.nickname}) วิชา: ${data.subject}`);
 
     return { success: true, evalId: evalId };
 
@@ -3883,7 +3883,7 @@ function updateEvaluation(evalData, logUser) {
 
     if (!sheet) {
 
-      return { success: false, error: 'à¹„มà¹ˆà¸žà¸šà¸�à¸²นขà¹‰อมà¸¹ล EvaluationsDB' };
+      return { success: false, error: 'ไม่พบฐานข้อมูล EvaluationsDB' };
 
     }
 
@@ -3909,7 +3909,7 @@ function updateEvaluation(evalData, logUser) {
 
     if (rowIndex === -1) {
 
-      return { success: false, error: 'à¹„มà¹ˆà¸žà¸š ID à¸�à¸²รประà¹€มินà¹ƒนระà¸šà¸š' };
+      return { success: false, error: 'ไม่พบ ID การประเมินในระบบ' };
 
     }
 
@@ -3973,7 +3973,7 @@ function updateEvaluation(evalData, logUser) {
 
     
 
-    logActivity(logUser, 'à¹�à¸�à¹‰à¹„ขà¹ƒà¸šประà¹€มิน', `อัปà¹€ดตà¸�à¸²รประà¹€มินนัà¸�à¹€รà¸µยน: ${rows[rowIndex-1][2]}`);
+    logActivity(logUser, 'แก้ไขใบประเมิน', `อัปเดตการประเมินนักเรียน: ${rows[rowIndex-1][2]}`);
 
     return { success: true };
 
@@ -4007,7 +4007,7 @@ function getAdminEvalStats() {
 
       
 
-      const days = ['อà¸²ทิตยà¹Œ','à¸ˆันทรà¹Œ','อังคà¸²ร','à¸žุธ','à¸žฤหัà¸ªà¸šดà¸µ','ศุà¸�รà¹Œ','à¹€à¸ªà¸²รà¹Œ'];
+      const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
 
       for (let i = 1; i < data.length; i++) {
 
@@ -4303,21 +4303,21 @@ function getEvaluationsList(logUser) {
 
 /**
 
- * getMonthlyGridData: ดึงขà¹‰อมà¸¹ลตà¸²รà¸²งà¹€รà¸µยนรà¸²ยà¹€ดือน à¹�ยà¸�ตà¸²มวันà¹ƒนà¸ªัปดà¸²หà¹Œ
+ * getMonthlyGridData: ดึงข้อมูลตารางเรียนรายเดือน แยกตามวันในสัปดาห์
 
- * @param {number} year - ปà¸µ ค.ศ. (à¹€à¸Šà¹ˆน 2026)
+ * @param {number} year - ปี ค.ศ. (เช่น 2026)
 
- * @param {number} month - à¹€ดือน 1-12
+ * @param {number} month - เดือน 1-12
 
- * @param {number} dayOfWeek - วันà¹ƒนà¸ªัปดà¸²หà¹Œ 0=อà¸²ทิตยà¹Œ, 1=à¸ˆันทรà¹Œ ... 6=à¹€à¸ªà¸²รà¹Œ
+ * @param {number} dayOfWeek - วันในสัปดาห์ 0=อาทิตย์, 1=จันทร์ ... 6=เสาร์
 
- * @param {string} logUser - à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰งà¸²น
+ * @param {string} logUser - ผู้ใช้งาน
 
  */
 
 function getMonthlyGridData(year, month, dayOfWeek, logUser) {
 
-  // ครà¸¹à¸ªà¸²มà¸²รถดà¸¹ตà¸²รà¸²งà¹€รà¸µยนรà¸²ยหà¹‰องà¹€รà¸µยนรà¸²ยà¹€ดือนà¹„ดà¹‰
+  // ครูสามารถดูตารางเรียนรายห้องเรียนรายเดือนได้
 
   try {
 
@@ -4483,7 +4483,7 @@ function getMonthlyGridData(year, month, dayOfWeek, logUser) {
 
     // Collect all unique course names to find enrollment counts
 
-    const thaiDayNamesArr = ['วันอà¸²ทิตยà¹Œ','วันà¸ˆันทรà¹Œ','วันอังคà¸²ร','วันà¸žุธ','วันà¸žฤหัà¸ªà¸šดà¸µ','วันศุà¸�รà¹Œ','วันà¹€à¸ªà¸²รà¹Œ'];
+    const thaiDayNamesArr = ['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์'];
 
     const thaiDayName = thaiDayNamesArr[dayOfWeek] || '';
 
@@ -4801,25 +4801,25 @@ function getGeneralSettings() {
 
     const defaultSchools = [
 
-      "ระยองวิทยà¸²คม", "อัà¸ªà¸ªัมà¸Šัà¸�ระยอง", "à¹€ซนตà¹Œà¹‚ยà¹€ซà¸Ÿระยอง", "วัดปà¹ˆà¸²ประดà¸¹à¹ˆ", "มัธยมตà¸²à¸�à¸ªินระยอง", "ระยองวิทยà¸²คมปà¸²à¸�นà¹‰à¸³", "à¸šà¹‰à¸²นคà¹ˆà¸²ย", "à¹�à¸�ลง \"วิทยà¸ªถà¸²วร\"", "à¸�à¸³à¹€นิดวิทยà¹Œ", "ระยองวิทยà¸²คม นิคมอุตà¸ªà¸²หà¸�รรม",
+      "ระยองวิทยาคม", "อัสสัมชักระยอง", "เซนต์โยเซฟระยอง", "วัดป่าประดู่", "มัธยมตากสินระยอง", "ระยองวิทยาคมปากน้ำ", "บ้านค่าย", "แกลง \"วิทยสถาวร\"", "กำเนิดวิทย์", "ระยองวิทยาคม นิคมอุตสาหกรรม",
 
-      "à¹€à¸šà¸�à¸ˆมรà¸²à¸Šà¸¹ทิศ à¸ˆันทà¸šุรà¸µ", "ศรà¸µยà¸²นุà¸ªรณà¹Œ", "à¸ªà¸²ธิตมหà¸²วิทยà¸²ลัยรà¸²à¸Šà¸ ัà¸�รà¸³à¹„à¸žà¸žรรณà¸µ", "ลà¸²ซà¸²ลà¸ˆันทà¸šุรà¸µ", "ประทà¸µปศึà¸�ษà¸²", "คิà¸Šà¸Œà¸�à¸¹à¸�วิทยà¸²", "ทà¹ˆà¸²à¹ƒหมà¹ˆ \"à¸žà¸¹ลà¸ªวัà¸ªดิà¹Œรà¸²ษà¸Žรà¹Œนุà¸�à¸¹ล\"",
+      "เบกจมราชูทิศ จันทบุรี", "ศรียานุสรณ์", "สาธิตมหาวิทยาลัยราชภักรำไพพรรณี", "ลาซาลจันทบุรี", "ประทีปศึกษา", "คิชฌกูกวิทยา", "ท่าใหม่ \"พูลสวัสดิ์ราษฎร์นุกูล\"",
 
-      "à¸ªตรà¸µประà¹€à¸ªริà¸�ศิลปà¹Œ", "ตรà¸²ดà¸ªรรà¹€à¸ªริà¸�วิทยà¸²คม", "à¸žิทยà¸²นุà¸ªรณà¹Œตรà¸²ด", "คลองà¹ƒหà¸�à¹ˆวิทยà¸²คม", "ตรà¸²ษตระà¸�à¸²รคุณ",
+      "สตรีประเสริกศิลป์", "ตราดสรรเสริกวิทยาคม", "พิทยานุสรณ์ตราด", "คลองใหก่วิทยาคม", "ตราษตระการคุณ",
 
-      "à¸Šลรà¸²ษà¸Žรอà¸³รุง", "à¸Šลà¸�ันยà¸²นุà¸�à¸¹ล", "à¸ªà¸²ธิตà¸žิà¸šà¸¹ลà¸šà¸³à¹€à¸žà¹‡à¸� มหà¸²วิทยà¸²ลัยà¸šà¸¹รà¸žà¸²", "ดà¸²รà¸²à¸ªมุทร ศรà¸µรà¸²à¸Šà¸²", "อัà¸ªà¸ªัมà¸Šัà¸�ศรà¸µรà¸²à¸Šà¸²", "à¹€ซนตà¹Œปอลคอนà¹�วนตà¹Œ", "à¸žนัà¸ªà¸žิทยà¸²คà¸²ร", "à¸šà¸²งละมุง", "ศรà¸µรà¸²à¸Šà¸²", "à¸ˆุฬà¸²à¸ รณรà¸²à¸Šวิทยà¸²ลัย à¸Šลà¸šุรà¸µ", "à¸ªà¸²ธิตอุดมศึà¸�ษà¸²", "มà¸²รà¸µวิทยà¹Œ",
+      "ชลราษฎรอำรุง", "ชลกันยานุกูล", "สาธิตพิบูลบำเพ็ญ มหาวิทยาลัยบูรพา", "ดาราสมุทร ศรีราชา", "อัสสัมชักศรีราชา", "เซนต์ปอลคอนแวนต์", "พนัสพิทยาคาร", "บางละมุง", "ศรีราชา", "จุฬาภรณราชวิทยาลัย ชลบุรี", "สาธิตอุดมศึกษา", "มารีวิทย์",
 
-      "à¹€ตรà¸µยมอุดมศึà¸�ษà¸²", "à¸ªวนà¸�ุหลà¸²à¸šวิทยà¸²ลัย", "à¹€ทà¸žศิรินทรà¹Œ", "à¸ªà¸²มà¹€à¸ªนวิทยà¸²ลัย", "à¸ªตรà¸µวิทยà¸²", "à¸šดินทรà¹€ดà¸Šà¸² (à¸ªิงหà¹Œ à¸ªิงหà¹€à¸ªนà¸µ)", "หอวัง", "à¸ªà¸²ธิตมหà¸²วิทยà¸²ลัยศรà¸µนครินทรวิà¹‚รฒ ปทุมวัน", "à¸ªà¸²ธิตมหà¸²วิทยà¸²ลัยศรà¸µนครินทรวิà¹‚รฒ ประà¸ªà¸²นมิตร", "อัà¸ªà¸ªัมà¸Šัà¸�", "à¸�รุงà¹€ทà¸žคริà¸ªà¹€ตà¸µยนวิทยà¸²ลัย", "à¹€ซนตà¹Œคà¸²à¹€à¸šรà¸µยล", "มà¸²à¹�ตรà¹Œà¹€ดอà¸µวิทยà¸²ลัย", "วัฒนà¸²วิทยà¸²ลัย", "ศึà¸�ษà¸²นà¸²รà¸µ", "วัดà¸ªุทธิวรà¸²รà¸²ม", "à¸ªà¸²ยนà¹‰à¸³à¸œึà¹‰ง", "à¹€ตรà¸µยมอุดมศึà¸�ษà¸²à¸žัฒนà¸²à¸�à¸²ร", "à¹€ตรà¸µยมอุดมศึà¸�ษà¸²นà¹‰อมà¹€à¸�ลà¹‰à¸²", "à¸ªตรà¸µวิทยà¸² à¹’", "à¸ªà¸²ธิตมหà¸²วิทยà¸²ลัยรà¸²à¸Šà¸ ัà¸�à¸ªวนà¸ªุนันทà¸²", "à¸ªà¸²ธิตà¸ˆุฬà¸²ลงà¸�รณà¹Œมหà¸²วิทยà¸²ลัย",
+      "เตรียมอุดมศึกษา", "สวนกุหลาบวิทยาลัย", "เทพศิรินทร์", "สามเสนวิทยาลัย", "สตรีวิทยา", "บดินทรเดชา (สิงห์ สิงหเสนี)", "หอวัง", "สาธิตมหาวิทยาลัยศรีนครินทรวิโรฒ ปทุมวัน", "สาธิตมหาวิทยาลัยศรีนครินทรวิโรฒ ประสานมิตร", "อัสสัมชัก", "กรุงเทพคริสเตียนวิทยาลัย", "เซนต์คาเบรียล", "มาแตร์เดอีวิทยาลัย", "วัฒนาวิทยาลัย", "ศึกษานารี", "วัดสุทธิวราราม", "สายน้ำผึ้ง", "เตรียมอุดมศึกษาพัฒนาการ", "เตรียมอุดมศึกษาน้อมเกล้า", "สตรีวิทยา ๒", "สาธิตมหาวิทยาลัยราชภักสวนสุนันทา", "สาธิตจุฬาลงกรณ์มหาวิทยาลัย",
 
-      "à¸ªวนà¸�ุหลà¸²à¸šวิทยà¸²ลัย นนทà¸šุรà¸µ", "à¸ªตรà¸µนนทà¸šุรà¸µ", "หอวังนนทà¸šุรà¸µ", "à¹€à¸šà¸�à¸ˆมรà¸²à¸Šà¸²นุà¸ªรณà¹Œ", "รà¸²à¸Šวินิตนนทà¸šุรà¸µ", "à¹€ตรà¸µยมอุดมศึà¸�ษà¸²à¸žัฒนà¸²à¸�à¸²ร นนทà¸šุรà¸µ",
+      "สวนกุหลาบวิทยาลัย นนทบุรี", "สตรีนนทบุรี", "หอวังนนทบุรี", "เบกจมราชานุสรณ์", "ราชวินิตนนทบุรี", "เตรียมอุดมศึกษาพัฒนาการ นนทบุรี",
 
-      "à¸ªตรà¸µà¸ªมุทรปรà¸²à¸�à¸²ร", "à¸ªมุทรปรà¸²à¸�à¸²ร", "รà¸²à¸Šวินิตà¸šà¸²งà¹�à¸�à¹‰ว", "มัธยมวัดดà¹ˆà¸²นà¸ªà¸³à¹‚รง", "à¸šà¸²งà¸žลà¸µรà¸²ษà¸Žรà¹Œà¸šà¸³รุง",
+      "สตรีสมุทรปราการ", "สมุทรปราการ", "ราชวินิตบางแก้ว", "มัธยมวัดด่านสำโรง", "บางพลีราษฎร์บำรุง",
 
-      "อัมà¸žวันวิทยà¸²ลัย", "ถà¸²วรà¸²นุà¸�à¸¹ล", "ศรัทธà¸²à¸ªมุทร",
+      "อัมพวันวิทยาลัย", "ถาวรานุกูล", "ศรัทธาสมุทร",
 
-      "à¸ªมุทรà¸ªà¸²ครà¸šà¸¹รณะ", "à¸ªมุทรà¸ªà¸²ครวิทยà¸²ลัย", "à¸�ระทุà¹ˆมà¹�à¸šน \"วิà¹€ศษà¸ªมุทคุณ\"",
+      "สมุทรสาครบูรณะ", "สมุทรสาครวิทยาลัย", "กระทุ่มแบน \"วิเศษสมุทคุณ\"",
 
-      "คณะรà¸²ษà¸Žรà¹Œà¸šà¸³รุงปทุมธà¸²นà¸µ", "ปทุมวิà¹„ล", "à¸ªวนà¸�ุหลà¸²à¸šวิทยà¸²ลัย รังà¸ªิต", "à¸ªà¸²ธิตมหà¸²วิทยà¸²ลัยรà¸²à¸Šà¸ ัà¸�à¸žระนครศรà¸µอยุธยà¸²"
+      "คณะราษฎร์บำรุงปทุมธานี", "ปทุมวิไล", "สวนกุหลาบวิทยาลัย รังสิต", "สาธิตมหาวิทยาลัยราชภักพระนครศรีอยุธยา"
 
     ];
 
@@ -4867,37 +4867,37 @@ function getGeneralSettings() {
 
     const requestedChannels = [
 
-      "à¸�รุงà¹„ทย à¸žà¸µà¹ˆปิà¹Šà¸�",
+      "กรุงไทย พี่ปิ๊ก",
 
-      "à¸�รุงà¹€ทà¸ž à¸žà¸µà¹ˆปิà¹Šà¸�",
+      "กรุงเทพ พี่ปิ๊ก",
 
-      "SCB à¸žà¸µà¹ˆปิà¹Šà¸�",
+      "SCB พี่ปิ๊ก",
 
-      "à¸�รุงศรà¸µ à¸žà¸µà¹ˆปิà¹Šà¸�",
+      "กรุงศรี พี่ปิ๊ก",
 
       "TTB",
 
-      "à¸�à¸ªิà¸�ร à¸žà¸µà¹ˆปิà¹Šà¸�",
+      "กสิกร พี่ปิ๊ก",
 
-      "SCB คุณยà¸²ย",
+      "SCB คุณยาย",
 
-      "à¸�รุงศรà¸µ คุณตà¸²",
+      "กรุงศรี คุณตา",
 
-      "à¸�รุงศรà¸µ à¸šัà¸�à¸Šà¸µà¸šริษัท",
+      "กรุงศรี บักชีบริษัท",
 
-      "à¸�à¸ªิà¸�ร à¸šัà¸�à¸Šà¸µà¸šริษัท(à¸�ด)",
+      "กสิกร บักชีบริษัท(กด)",
 
-      "à¸�à¸ªิà¸�ร à¸šัà¸�à¸Šà¸µà¸šริษัท(à¸ªà¹�à¸�น)",
+      "กสิกร บักชีบริษัท(สแกน)",
 
-      "TTB à¸šัà¸�à¸Šà¸µà¸šริษัท(à¸�ด)",
+      "TTB บักชีบริษัท(กด)",
 
-      "TTB à¸šัà¸�à¸Šà¸µà¸šริษัท(à¸ªà¹�à¸�น)",
+      "TTB บักชีบริษัท(สแกน)",
 
-      "à¹€งินà¸ªด",
+      "เงินสด",
 
-      "à¸žà¸µà¹ˆปิà¹Šà¸� à¹‚อน",
+      "พี่ปิ๊ก โอน",
 
-      "à¸žà¸µà¹ˆตà¹‰น à¹‚อน"
+      "พี่ต้น โอน"
 
     ];
 
@@ -4973,13 +4973,13 @@ function getDashboardData(logUser) {
 
     const branchFin = {
 
-      'à¸ªà¸²ขà¸²1': { full: 0, paid: 0, debt: 0 },
+      'สาขา1': { full: 0, paid: 0, debt: 0 },
 
-      'à¸ªà¸²ขà¸²2': { full: 0, paid: 0, debt: 0 },
+      'สาขา2': { full: 0, paid: 0, debt: 0 },
 
-      'à¸ªà¸²ขà¸²3': { full: 0, paid: 0, debt: 0 },
+      'สาขา3': { full: 0, paid: 0, debt: 0 },
 
-      'อืà¹ˆนà¹†': { full: 0, paid: 0, debt: 0 }
+      'อื่นๆ': { full: 0, paid: 0, debt: 0 }
 
     };
 
@@ -4995,13 +4995,13 @@ function getDashboardData(logUser) {
 
       monthlySummary.push({
 
-        'à¸ªà¸²ขà¸²1': 0,
+        'สาขา1': 0,
 
-        'à¸ªà¸²ขà¸²2': 0,
+        'สาขา2': 0,
 
-        'à¸ªà¸²ขà¸²3': 0,
+        'สาขา3': 0,
 
-        'อืà¹ˆนà¹†': 0,
+        'อื่นๆ': 0,
 
         'total': 0
 
@@ -5029,7 +5029,7 @@ function getDashboardData(logUser) {
 
       const branchPay = row[6] ? row[6].toString().trim() : '';
 
-      const round = row[15] ? row[15].toString().trim() : 'ทัà¹ˆวà¹„ป';
+      const round = row[15] ? row[15].toString().trim() : 'ทั่วไป';
 
       
 
@@ -5041,37 +5041,37 @@ function getDashboardData(logUser) {
 
       
 
-      let branchKey = 'อืà¹ˆนà¹†';
+      let branchKey = 'อื่นๆ';
 
-      if (branchRaw.toLowerCase().includes('ออนà¹„ลนà¹Œ')) {
+      if (branchRaw.toLowerCase().includes('ออนไลน์')) {
 
-        if (branchPay.includes('à¸ªà¸²ขà¸²1')) branchKey = 'à¸ªà¸²ขà¸²1';
+        if (branchPay.includes('สาขา1')) branchKey = 'สาขา1';
 
-        else if (branchPay.includes('à¸ªà¸²ขà¸²2')) branchKey = 'à¸ªà¸²ขà¸²2';
+        else if (branchPay.includes('สาขา2')) branchKey = 'สาขา2';
 
-        else if (branchPay.includes('à¸ªà¸²ขà¸²3')) branchKey = 'à¸ªà¸²ขà¸²3';
+        else if (branchPay.includes('สาขา3')) branchKey = 'สาขา3';
 
         else {
 
-          if (branchRaw.includes('à¸ªà¸²ขà¸²1')) branchKey = 'à¸ªà¸²ขà¸²1';
+          if (branchRaw.includes('สาขา1')) branchKey = 'สาขา1';
 
-          else if (branchRaw.includes('à¸ªà¸²ขà¸²2')) branchKey = 'à¸ªà¸²ขà¸²2';
+          else if (branchRaw.includes('สาขา2')) branchKey = 'สาขา2';
 
-          else if (branchRaw.includes('à¸ªà¸²ขà¸²3')) branchKey = 'à¸ªà¸²ขà¸²3';
+          else if (branchRaw.includes('สาขา3')) branchKey = 'สาขา3';
 
-          else branchKey = 'à¸ªà¸²ขà¸²1';
+          else branchKey = 'สาขา1';
 
         }
 
       } else {
 
-        if (branchRaw.includes('à¸ªà¸²ขà¸²1')) branchKey = 'à¸ªà¸²ขà¸²1';
+        if (branchRaw.includes('สาขา1')) branchKey = 'สาขา1';
 
-        else if (branchRaw.includes('à¸ªà¸²ขà¸²2')) branchKey = 'à¸ªà¸²ขà¸²2';
+        else if (branchRaw.includes('สาขา2')) branchKey = 'สาขา2';
 
-        else if (branchRaw.includes('à¸ªà¸²ขà¸²3')) branchKey = 'à¸ªà¸²ขà¸²3';
+        else if (branchRaw.includes('สาขา3')) branchKey = 'สาขา3';
 
-        else branchKey = 'à¸ªà¸²ขà¸²1';
+        else branchKey = 'สาขา1';
 
       }
 
@@ -5159,13 +5159,13 @@ function getDashboardData(logUser) {
 
 // ----------------------------------------------------
 
-// PDF Dynamic Round Summary calculations (à¸ªรุป 2569)
+// PDF Dynamic Round Summary calculations (สรุป 2569)
 
 // ----------------------------------------------------
 
 // ----------------------------------------------------
 
-// PDF Dynamic Round Summary calculations (à¸ªรุป 2569) - OPTIMIZED WITH GRID CACHE
+// PDF Dynamic Round Summary calculations (สรุป 2569) - OPTIMIZED WITH GRID CACHE
 
 // ----------------------------------------------------
 
@@ -5277,37 +5277,37 @@ function getRoundSummary(round, branch) {
 
     const grades = [
 
-      { name: 'อนุà¸šà¸²ล', privateSheet: 'à¹€ดà¸µà¹ˆยว อนุà¸šà¸²ล', groupPrefix: 'อนุà¸šà¸²ล' },
+      { name: 'อนุบาล', privateSheet: 'เดี่ยว อนุบาล', groupPrefix: 'อนุบาล' },
 
-      { name: 'ป.1', privateSheet: 'à¹€ดà¸µà¹ˆยว ป.1', groupPrefix: 'ป.1' },
+      { name: 'ป.1', privateSheet: 'เดี่ยว ป.1', groupPrefix: 'ป.1' },
 
-      { name: 'ป.2', privateSheet: 'à¹€ดà¸µà¹ˆยว ป.2', groupPrefix: 'ป.2' },
+      { name: 'ป.2', privateSheet: 'เดี่ยว ป.2', groupPrefix: 'ป.2' },
 
-      { name: 'ป.3', privateSheet: 'à¹€ดà¸µà¹ˆยว ป.3', groupPrefix: 'ป.3' },
+      { name: 'ป.3', privateSheet: 'เดี่ยว ป.3', groupPrefix: 'ป.3' },
 
-      { name: 'ป.4', privateSheet: 'à¹€ดà¸µà¹ˆยว ป.4', groupPrefix: 'ป.4' },
+      { name: 'ป.4', privateSheet: 'เดี่ยว ป.4', groupPrefix: 'ป.4' },
 
-      { name: 'ป.5', privateSheet: 'à¹€ดà¸µà¹ˆยว ป.5', groupPrefix: 'ป.5' },
+      { name: 'ป.5', privateSheet: 'เดี่ยว ป.5', groupPrefix: 'ป.5' },
 
-      { name: 'ป.6', privateSheet: 'à¹€ดà¸µà¹ˆยว ป.6', groupPrefix: 'ป.6' },
+      { name: 'ป.6', privateSheet: 'เดี่ยว ป.6', groupPrefix: 'ป.6' },
 
-      { name: 'ม.1', privateSheet: 'à¹€ดà¸µà¹ˆยว ม.1', groupPrefix: 'ม.1' },
+      { name: 'ม.1', privateSheet: 'เดี่ยว ม.1', groupPrefix: 'ม.1' },
 
-      { name: 'ม.2', privateSheet: 'à¹€ดà¸µà¹ˆยว ม.2', groupPrefix: 'ม.2' },
+      { name: 'ม.2', privateSheet: 'เดี่ยว ม.2', groupPrefix: 'ม.2' },
 
-      { name: 'ม.3', privateSheet: 'à¹€ดà¸µà¹ˆยว ม.3', groupPrefix: 'ม.3' },
+      { name: 'ม.3', privateSheet: 'เดี่ยว ม.3', groupPrefix: 'ม.3' },
 
-      { name: 'ม.4', privateSheet: 'à¹€ดà¸µà¹ˆยว ม.4', groupPrefix: 'ม.4' },
+      { name: 'ม.4', privateSheet: 'เดี่ยว ม.4', groupPrefix: 'ม.4' },
 
-      { name: 'ม.5', privateSheet: 'à¹€ดà¸µà¹ˆยว ม.5', groupPrefix: 'ม.5' },
+      { name: 'ม.5', privateSheet: 'เดี่ยว ม.5', groupPrefix: 'ม.5' },
 
-      { name: 'ม.6', privateSheet: 'à¹€ดà¸µà¹ˆยว ม.6', groupPrefix: 'ม.6' },
+      { name: 'ม.6', privateSheet: 'เดี่ยว ม.6', groupPrefix: 'ม.6' },
 
-      { name: 'ยà¹ˆอย 2-3', privateSheet: 'ยà¹ˆอย 2-3', isSubgroup: true },
+      { name: 'ย่อย 2-3', privateSheet: 'ย่อย 2-3', isSubgroup: true },
 
-      { name: 'ยà¹ˆอย 4-5', privateSheet: 'ยà¹ˆอย 4-5', isSubgroup: true },
+      { name: 'ย่อย 4-5', privateSheet: 'ย่อย 4-5', isSubgroup: true },
 
-      { name: 'ยà¹ˆอย 6-10', privateSheet: 'ยà¹ˆอย 6-10', isSubgroup: true }
+      { name: 'ย่อย 6-10', privateSheet: 'ย่อย 6-10', isSubgroup: true }
 
     ];
 
@@ -5315,11 +5315,11 @@ function getRoundSummary(round, branch) {
 
     const branches = [
 
-      { name: 'à¸ªà¸²ขà¸²1', suffix: '/1', privatePaid: 'E3', privateDebt: 'E4', privateCount: 'A2', groupCell: 'B4', groupFull: 'B1', groupPaid: 'B3', groupDebt: 'B2', groupOverFive: 'C2' },
+      { name: 'สาขา1', suffix: '/1', privatePaid: 'E3', privateDebt: 'E4', privateCount: 'A2', groupCell: 'B4', groupFull: 'B1', groupPaid: 'B3', groupDebt: 'B2', groupOverFive: 'C2' },
 
-      { name: 'à¸ªà¸²ขà¸²2', suffix: '/2', privatePaid: 'F3', privateDebt: 'F4', privateCount: 'B2', groupCell: 'B4', groupFull: 'B1', groupPaid: 'B3', groupDebt: 'B2', groupOverFive: 'C2' },
+      { name: 'สาขา2', suffix: '/2', privatePaid: 'F3', privateDebt: 'F4', privateCount: 'B2', groupCell: 'B4', groupFull: 'B1', groupPaid: 'B3', groupDebt: 'B2', groupOverFive: 'C2' },
 
-      { name: 'à¸ªà¸²ขà¸²3', suffix: '/3', privatePaid: 'G3', privateDebt: 'G4', privateCount: 'C2', groupCell: 'B4', groupFull: 'B1', groupPaid: 'B3', groupDebt: 'B2', groupOverFive: 'C2' }
+      { name: 'สาขา3', suffix: '/3', privatePaid: 'G3', privateDebt: 'G4', privateCount: 'C2', groupCell: 'B4', groupFull: 'B1', groupPaid: 'B3', groupDebt: 'B2', groupOverFive: 'C2' }
 
     ];
 
@@ -5377,7 +5377,7 @@ function getRoundSummary(round, branch) {
 
           // Count directly from data rows (row 12+)
 
-          // col B (idx 1) = à¸Šืà¹ˆอ, col I (idx 8) = à¸ªà¸²ขà¸²ทà¸µà¹ˆà¹€รà¸µยน, col O (idx 14) = à¸Šà¸³ระà¹�ลà¹‰ว
+          // col B (idx 1) = ชื่อ, col I (idx 8) = สาขาที่เรียน, col O (idx 14) = ชำระแล้ว
 
           if (privLastRow >= 12) {
 
@@ -5413,7 +5413,7 @@ function getRoundSummary(round, branch) {
 
           
 
-          if (gradeObj.isSubgroup && (gradeObj.name === 'ยà¹ˆอย 4-5' || gradeObj.name === 'ยà¹ˆอย 6-10')) {
+          if (gradeObj.isSubgroup && (gradeObj.name === 'ย่อย 4-5' || gradeObj.name === 'ย่อย 6-10')) {
 
             if (privGrid) {
 
@@ -5679,15 +5679,15 @@ function getAllCoursesFromGradeSheets() {
 
     
 
-    // 2. Fetch courses from private and subgroup sheets (à¹€ดà¸µà¹ˆยว อนุà¸šà¸²ล, à¹€ดà¸µà¹ˆยว ป.x, ยà¹ˆอย x-x)
+    // 2. Fetch courses from private and subgroup sheets (เดี่ยว อนุบาล, เดี่ยว ป.x, ย่อย x-x)
 
     const privateSheets = [
 
-      "à¹€ดà¸µà¹ˆยว อนุà¸šà¸²ล", "à¹€ดà¸µà¹ˆยว ป.1", "à¹€ดà¸µà¹ˆยว ป.2", "à¹€ดà¸µà¹ˆยว ป.3", "à¹€ดà¸µà¹ˆยว ป.4", "à¹€ดà¸µà¹ˆยว ป.5", "à¹€ดà¸µà¹ˆยว ป.6",
+      "เดี่ยว อนุบาล", "เดี่ยว ป.1", "เดี่ยว ป.2", "เดี่ยว ป.3", "เดี่ยว ป.4", "เดี่ยว ป.5", "เดี่ยว ป.6",
 
-      "à¹€ดà¸µà¹ˆยว ม.1", "à¹€ดà¸µà¹ˆยว ม.2", "à¹€ดà¸µà¹ˆยว ม.3", "à¹€ดà¸µà¹ˆยว ม.4", "à¹€ดà¸µà¹ˆยว ม.5", "à¹€ดà¸µà¹ˆยว ม.6",
+      "เดี่ยว ม.1", "เดี่ยว ม.2", "เดี่ยว ม.3", "เดี่ยว ม.4", "เดี่ยว ม.5", "เดี่ยว ม.6",
 
-      "ยà¹ˆอย 2-3", "ยà¹ˆอย 4-5", "ยà¹ˆอย 6-10"
+      "ย่อย 2-3", "ย่อย 4-5", "ย่อย 6-10"
 
     ];
 
@@ -6021,7 +6021,7 @@ function getStudentsListRaw() {
 
       classHoursLeft: row[22] ? row[22].toString().trim() : '',
 
-      classType: row[23] ? row[23].toString().trim() : 'à¹€ดà¸µà¹ˆยว',
+      classType: row[23] ? row[23].toString().trim() : 'เดี่ยว',
 
       isChecked: row[24] ? parseInt(row[24]) === 1 : false
 
@@ -6035,7 +6035,7 @@ function getStudentsListRaw() {
 
 function getAllStudentsFromSubgroupSheets() {
 
-  const sheets = ['ยà¹ˆอย 2-3', 'ยà¹ˆอย 4-5', 'ยà¹ˆอย 6-10'];
+  const sheets = ['ย่อย 2-3', 'ย่อย 4-5', 'ย่อย 6-10'];
 
   const all = [];
 
@@ -6147,7 +6147,7 @@ function getTeacherCoursesAndStudents(logUser) {
 
           
 
-          var hasDay = /(à¸ˆันทรà¹Œ|อังคà¸²ร|à¸žุธ|à¸žฤหัà¸ªà¸šดà¸µ|ศุà¸�รà¹Œ|à¹€à¸ªà¸²รà¹Œ|อà¸²ทิตยà¹Œ)/.test(courseKey);
+          var hasDay = /(จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์)/.test(courseKey);
 
           var hasTime = /\d+[:.]\d+/.test(courseKey);
 
@@ -6211,15 +6211,15 @@ function getTeacherCoursesAndStudents(logUser) {
 
     const gradeSheets = [
 
-      'อนุà¸šà¸²ล/1','ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1','ม.1/1','ม.2/1','ม.3/1','ม.4/1','ม.5/1','ม.6/1',
+      'อนุบาล/1','ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1','ม.1/1','ม.2/1','ม.3/1','ม.4/1','ม.5/1','ม.6/1',
 
-      'อนุà¸šà¸²ล/2','ป.1/2','ป.2/2','ป.3/2','ป.4/2','ป.5/2','ป.6/2','ม.1/2','ม.2/2','ม.3/2','ม.4/2','ม.5/2','ม.6/2',
+      'อนุบาล/2','ป.1/2','ป.2/2','ป.3/2','ป.4/2','ป.5/2','ป.6/2','ม.1/2','ม.2/2','ม.3/2','ม.4/2','ม.5/2','ม.6/2',
 
-      'อนุà¸šà¸²ล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3',
+      'อนุบาล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3',
 
-      'à¹€ดà¸µà¹ˆยว อนุà¸šà¸²ล','à¹€ดà¸µà¹ˆยว ป.1','à¹€ดà¸µà¹ˆยว ป.2','à¹€ดà¸µà¹ˆยว ป.3','à¹€ดà¸µà¹ˆยว ป.4','à¹€ดà¸µà¹ˆยว ป.5','à¹€ดà¸µà¹ˆยว ป.6','à¹€ดà¸µà¹ˆยว ม.1','à¹€ดà¸µà¹ˆยว ม.2','à¹€ดà¸µà¹ˆยว ม.3','à¹€ดà¸µà¹ˆยว ม.4','à¹€ดà¸µà¹ˆยว ม.5','à¹€ดà¸µà¹ˆยว ม.6',
+      'เดี่ยว อนุบาล','เดี่ยว ป.1','เดี่ยว ป.2','เดี่ยว ป.3','เดี่ยว ป.4','เดี่ยว ป.5','เดี่ยว ป.6','เดี่ยว ม.1','เดี่ยว ม.2','เดี่ยว ม.3','เดี่ยว ม.4','เดี่ยว ม.5','เดี่ยว ม.6',
 
-      'ยà¹ˆอย 2-3','ยà¹ˆอย 4-5','ยà¹ˆอย 6-10'
+      'ย่อย 2-3','ย่อย 4-5','ย่อย 6-10'
 
     ];
 
@@ -6245,11 +6245,11 @@ function getTeacherCoursesAndStudents(logUser) {
 
       let branch = '';
 
-      if (sheetName.includes('/1')) branch = 'à¸ªà¸²ขà¸² 1';
+      if (sheetName.includes('/1')) branch = 'สาขา 1';
 
-      else if (sheetName.includes('/2')) branch = 'à¸ªà¸²ขà¸² 2';
+      else if (sheetName.includes('/2')) branch = 'สาขา 2';
 
-      else if (sheetName.includes('/3')) branch = 'à¸ªà¸²ขà¸² 3';
+      else if (sheetName.includes('/3')) branch = 'สาขา 3';
 
       
 
@@ -6397,25 +6397,25 @@ function getStudentDetailedCourses(studentName, nickname, grade, branchLearn, cl
 
     // If it's a private/small group student
 
-    if (classType && (classType.includes('à¹€ดà¸µà¹ˆยว') || classType.includes('ยà¹ˆอย'))) {
+    if (classType && (classType.includes('เดี่ยว') || classType.includes('ย่อย'))) {
 
-      let normalizedClassType = 'à¹€ดà¸µà¹ˆยว';
+      let normalizedClassType = 'เดี่ยว';
 
       let sheetName = '';
 
-      if (classType.includes('à¹€ดà¸µà¹ˆยว')) {
+      if (classType.includes('เดี่ยว')) {
 
-        normalizedClassType = 'à¹€ดà¸µà¹ˆยว';
+        normalizedClassType = 'เดี่ยว';
 
-        sheetName = `à¹€ดà¸µà¹ˆยว ${grade}`;
+        sheetName = `เดี่ยว ${grade}`;
 
       } else {
 
-        if (classType.includes('2-3')) normalizedClassType = 'ยà¹ˆอย 2-3';
+        if (classType.includes('2-3')) normalizedClassType = 'ย่อย 2-3';
 
-        else if (classType.includes('4-5')) normalizedClassType = 'ยà¹ˆอย 4-5';
+        else if (classType.includes('4-5')) normalizedClassType = 'ย่อย 4-5';
 
-        else if (classType.includes('6-10')) normalizedClassType = 'ยà¹ˆอย 6-10';
+        else if (classType.includes('6-10')) normalizedClassType = 'ย่อย 6-10';
 
         sheetName = normalizedClassType;
 
@@ -6473,13 +6473,13 @@ function getStudentDetailedCourses(studentName, nickname, grade, branchLearn, cl
 
     
 
-    // Otherwise, they are a group student ("à¸�ลุà¹ˆมหลัà¸�")
+    // Otherwise, they are a group student ("กลุ่มหลัก")
 
     let suffix = '1';
 
-    if (branchLearn && (branchLearn.includes('à¸ªà¸²ขà¸²2') || branchLearn.includes('2'))) suffix = '2';
+    if (branchLearn && (branchLearn.includes('สาขา2') || branchLearn.includes('2'))) suffix = '2';
 
-    else if (branchLearn && (branchLearn.includes('à¸ªà¸²ขà¸²3') || branchLearn.includes('3'))) suffix = '3';
+    else if (branchLearn && (branchLearn.includes('สาขา3') || branchLearn.includes('3'))) suffix = '3';
 
     
 
@@ -6533,7 +6533,7 @@ function getStudentDetailedCourses(studentName, nickname, grade, branchLearn, cl
 
               dayTime: headerRow3[i] ? headerRow3[i].toString().trim() : '',
 
-              classType: 'à¸�ลุà¹ˆมหลัà¸�'
+              classType: 'กลุ่มหลัก'
 
             });
 
@@ -6569,9 +6569,9 @@ function getGradeCourses(grade, branch, logUser) {
 
     let suffix = '1';
 
-    if (branch.includes('à¸ªà¸²ขà¸²2')) suffix = '2';
+    if (branch.includes('สาขา2')) suffix = '2';
 
-    else if (branch.includes('à¸ªà¸²ขà¸²3')) suffix = '3';
+    else if (branch.includes('สาขา3')) suffix = '3';
 
     
 
@@ -6641,39 +6641,39 @@ function syncToGradeSheet(student) {
 
   
 
-  const uiClassType = student.classType || 'à¹€ดà¸µà¹ˆยว';
+  const uiClassType = student.classType || 'เดี่ยว';
 
-  const grade = student.grade || 'อนุà¸šà¸²ล';
+  const grade = student.grade || 'อนุบาล';
 
   
 
-  let normalizedClassType = 'à¹€ดà¸µà¹ˆยว';
+  let normalizedClassType = 'เดี่ยว';
 
-  if (uiClassType.includes('à¹€ดà¸µà¹ˆยว')) {
+  if (uiClassType.includes('เดี่ยว')) {
 
-    normalizedClassType = 'à¹€ดà¸µà¹ˆยว';
+    normalizedClassType = 'เดี่ยว';
 
-    sheetName = `à¹€ดà¸µà¹ˆยว ${grade}`;
+    sheetName = `เดี่ยว ${grade}`;
 
-  } else if (uiClassType.includes('ยà¹ˆอย')) {
+  } else if (uiClassType.includes('ย่อย')) {
 
-    if (uiClassType.includes('2-3')) normalizedClassType = 'ยà¹ˆอย 2-3';
+    if (uiClassType.includes('2-3')) normalizedClassType = 'ย่อย 2-3';
 
-    else if (uiClassType.includes('4-5')) normalizedClassType = 'ยà¹ˆอย 4-5';
+    else if (uiClassType.includes('4-5')) normalizedClassType = 'ย่อย 4-5';
 
-    else if (uiClassType.includes('6-10')) normalizedClassType = 'ยà¹ˆอย 6-10';
+    else if (uiClassType.includes('6-10')) normalizedClassType = 'ย่อย 6-10';
 
     sheetName = normalizedClassType;
 
   } else {
 
-    normalizedClassType = 'à¸�ลุà¹ˆมหลัà¸�';
+    normalizedClassType = 'กลุ่มหลัก';
 
     let suffix = '1';
 
-    if (student.branchLearn.includes('à¸ªà¸²ขà¸²2')) suffix = '2';
+    if (student.branchLearn.includes('สาขา2')) suffix = '2';
 
-    else if (student.branchLearn.includes('à¸ªà¸²ขà¸²3')) suffix = '3';
+    else if (student.branchLearn.includes('สาขา3')) suffix = '3';
 
     sheetName = `${grade}/${suffix}`;
 
@@ -6691,7 +6691,7 @@ function syncToGradeSheet(student) {
 
   let range = [];
 
-  const startRow = sheetName.includes('à¹€ดà¸µà¹ˆยว') || sheetName.includes('ยà¹ˆอย') ? 12 : 6;
+  const startRow = sheetName.includes('เดี่ยว') || sheetName.includes('ย่อย') ? 12 : 6;
 
   
 
@@ -6715,7 +6715,7 @@ function syncToGradeSheet(student) {
 
   for (let i = 0; i < range.length; i++) {
 
-    if (range[i][0].toString().trim() === matchName && (sheetName.includes('à¹€ดà¸µà¹ˆยว') ? range[i][9].toString().trim() === matchRound : true)) {
+    if (range[i][0].toString().trim() === matchName && (sheetName.includes('เดี่ยว') ? range[i][9].toString().trim() === matchRound : true)) {
 
       targetRowIndex = i + startRow;
 
@@ -6727,7 +6727,7 @@ function syncToGradeSheet(student) {
 
   
 
-  const rowDataClassType = normalizedClassType === 'à¹€ดà¸µà¹ˆยว' ? `à¹€ดà¸µà¹ˆยว ${student.grade}` : normalizedClassType;
+  const rowDataClassType = normalizedClassType === 'เดี่ยว' ? `เดี่ยว ${student.grade}` : normalizedClassType;
 
   const rowData = [
 
@@ -6777,7 +6777,7 @@ function syncToGradeSheet(student) {
 
   
 
-  if (sheetName.includes('à¹€ดà¸µà¹ˆยว') || sheetName.includes('ยà¹ˆอย')) {
+  if (sheetName.includes('เดี่ยว') || sheetName.includes('ย่อย')) {
 
     if (targetRowIndex === -1) {
 
@@ -7093,7 +7093,7 @@ function syncStudentToStatusDB(std) {
 
     std.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy'),
 
-    std.paymentChannel || 'à¸�à¸ªิà¸�ร à¸šัà¸�à¸Šà¸µà¸šริษัท(à¸ªà¹�à¸�น)',
+    std.paymentChannel || 'กสิกร บักชีบริษัท(สแกน)',
 
     std.staff || '',
 
@@ -7147,7 +7147,7 @@ function calculateIndividualCourseFee(classType, grade, roundText, subSize) {
 
   let price = 2000;
 
-  if (classType && classType.includes('à¹€ดà¸µà¹ˆยว')) {
+  if (classType && classType.includes('เดี่ยว')) {
 
     const cleanRound = (roundText || '').toLowerCase().trim();
 
@@ -7163,7 +7163,7 @@ function calculateIndividualCourseFee(classType, grade, roundText, subSize) {
 
     }
 
-  } else if (classType && (classType.includes('ยà¹ˆอย') || classType.includes('à¸�ลุà¹ˆมยà¹ˆอย'))) {
+  } else if (classType && (classType.includes('ย่อย') || classType.includes('กลุ่มย่อย'))) {
 
     const size = subSize || '';
 
@@ -7289,7 +7289,7 @@ function addStudentRegistration(student, logUser) {
 
       
 
-      logActivity(logUser, 'ลงทะà¹€à¸šà¸µยนà¸�ลุà¹ˆมยà¹ˆอย', `นัà¸�à¹€รà¸µยน: ${student.subgroupStudents.map(m => m.name).join(', ')} คอรà¹Œà¸ª: ${student.subgroupCourses.join(', ')}`);
+      logActivity(logUser, 'ลงทะเบียนกลุ่มย่อย', `นักเรียน: ${student.subgroupStudents.map(m => m.name).join(', ')} คอร์ส: ${student.subgroupCourses.join(', ')}`);
 
       invalidateStudentCache();
 
@@ -7311,11 +7311,11 @@ function addStudentRegistration(student, logUser) {
 
       // Build note text
 
-      const noteText = `à¸Šà¸³ระรวม ${totalPaid.toLocaleString()} à¸šà¸²ท`;
+      const noteText = `ชำระรวม ${totalPaid.toLocaleString()} บาท`;
 
       let extraNote = student.extraNote || '';
 
-      if (!extraNote.includes('à¸Šà¸³ระรวม')) {
+      if (!extraNote.includes('ชำระรวม')) {
 
         extraNote = noteText + (extraNote ? ' | ' + extraNote : '');
 
@@ -7401,7 +7401,7 @@ function addStudentRegistration(student, logUser) {
 
           student.classHoursLeft || '',
 
-          student.classType || 'à¹€ดà¸µà¹ˆยว'
+          student.classType || 'เดี่ยว'
 
         ];
 
@@ -7427,7 +7427,7 @@ function addStudentRegistration(student, logUser) {
 
       
 
-      logActivity(logUser, 'ลงทะà¹€à¸šà¸µยนà¹€ดà¹‡à¸�à¹ƒหมà¹ˆ (หลà¸²ยคอรà¹Œà¸ª)', `นัà¸�à¹€รà¸µยน: ${student.name} คอรà¹Œà¸ªทัà¹‰งหมด: ${student.subgroupCourses.join(', ')}`);
+      logActivity(logUser, 'ลงทะเบียนเด็กใหม่ (หลายคอร์ส)', `นักเรียน: ${student.name} คอร์สทั้งหมด: ${student.subgroupCourses.join(', ')}`);
 
       invalidateStudentCache();
 
@@ -7501,7 +7501,7 @@ function addStudentRegistration(student, logUser) {
 
         student.classHoursLeft || '',
 
-        student.classType || 'à¹€ดà¸µà¹ˆยว'
+        student.classType || 'เดี่ยว'
 
       ];
 
@@ -7511,7 +7511,7 @@ function addStudentRegistration(student, logUser) {
 
       syncToGradeSheet(student);
 
-      logActivity(logUser, 'ลงทะà¹€à¸šà¸µยนà¹€ดà¹‡à¸�à¹ƒหมà¹ˆ', `นัà¸�à¹€รà¸µยน: ${student.name} คอรà¹Œà¸ª: ${round} ยอดà¹€ตà¹‡ม: ${full}`);
+      logActivity(logUser, 'ลงทะเบียนเด็กใหม่', `นักเรียน: ${student.name} คอร์ส: ${round} ยอดเต็ม: ${full}`);
 
       invalidateStudentCache();
 
@@ -7701,7 +7701,7 @@ function updateStudentRegistration(student, logUser) {
 
         student.classHoursLeft || '',
 
-        student.classType || 'à¹€ดà¸µà¹ˆยว'
+        student.classType || 'เดี่ยว'
 
       ]
 
@@ -7713,7 +7713,7 @@ function updateStudentRegistration(student, logUser) {
 
     syncToGradeSheet(student);
 
-    logActivity(logUser, 'à¹�à¸�à¹‰à¹„ขรà¸²ยละà¹€อà¸µยดà¹€ดà¹‡à¸�นัà¸�à¹€รà¸µยน', `นัà¸�à¹€รà¸µยน: ${student.name} (ID: ${student.id})`);
+    logActivity(logUser, 'แก้ไขรายละเอียดเด็กนักเรียน', `นักเรียน: ${student.name} (ID: ${student.id})`);
 
     invalidateStudentCache();
 
@@ -7799,9 +7799,9 @@ function deleteStudentRegistration(id, logUser) {
 
     const stdName = rowVals[1] ? rowVals[1].toString().trim() : '';
 
-    const classType = rowVals[23] ? rowVals[23].toString().trim() : 'à¹€ดà¸µà¹ˆยว';
+    const classType = rowVals[23] ? rowVals[23].toString().trim() : 'เดี่ยว';
 
-    const grade = rowVals[16] ? rowVals[16].toString().trim() : 'อนุà¸šà¸²ล';
+    const grade = rowVals[16] ? rowVals[16].toString().trim() : 'อนุบาล';
 
     const branchLearn = rowVals[5] ? rowVals[5].toString().trim() : '';
 
@@ -7817,25 +7817,25 @@ function deleteStudentRegistration(id, logUser) {
 
       let targetSheetName = '';
 
-      if (classType.includes('à¹€ดà¸µà¹ˆยว')) {
+      if (classType.includes('เดี่ยว')) {
 
-        targetSheetName = `à¹€ดà¸µà¹ˆยว ${grade}`;
+        targetSheetName = `เดี่ยว ${grade}`;
 
-      } else if (classType.includes('ยà¹ˆอย')) {
+      } else if (classType.includes('ย่อย')) {
 
-        if (classType.includes('2-3')) targetSheetName = 'ยà¹ˆอย 2-3';
+        if (classType.includes('2-3')) targetSheetName = 'ย่อย 2-3';
 
-        else if (classType.includes('4-5')) targetSheetName = 'ยà¹ˆอย 4-5';
+        else if (classType.includes('4-5')) targetSheetName = 'ย่อย 4-5';
 
-        else if (classType.includes('6-10')) targetSheetName = 'ยà¹ˆอย 6-10';
+        else if (classType.includes('6-10')) targetSheetName = 'ย่อย 6-10';
 
       } else {
 
         let suffix = '1';
 
-        if (branchLearn.includes('à¸ªà¸²ขà¸²2')) suffix = '2';
+        if (branchLearn.includes('สาขา2')) suffix = '2';
 
-        else if (branchLearn.includes('à¸ªà¸²ขà¸²3')) suffix = '3';
+        else if (branchLearn.includes('สาขา3')) suffix = '3';
 
         targetSheetName = `${grade}/${suffix}`;
 
@@ -7849,7 +7849,7 @@ function deleteStudentRegistration(id, logUser) {
 
         const gLastRow = gradeSheet.getLastRow();
 
-        const startRow = targetSheetName.includes('à¹€ดà¸µà¹ˆยว') || targetSheetName.includes('ยà¹ˆอย') ? 12 : 6;
+        const startRow = targetSheetName.includes('เดี่ยว') || targetSheetName.includes('ย่อย') ? 12 : 6;
 
         if (gLastRow >= startRow) {
 
@@ -7861,7 +7861,7 @@ function deleteStudentRegistration(id, logUser) {
 
             const matchesName = gRange[k][0].toString().trim() === stdName;
 
-            const matchesRound = targetSheetName.includes('à¹€ดà¸µà¹ˆยว') ? gRange[k][9].toString().trim() === round : true;
+            const matchesRound = targetSheetName.includes('เดี่ยว') ? gRange[k][9].toString().trim() === round : true;
 
             if (matchesName && matchesRound) {
 
@@ -7887,7 +7887,7 @@ function deleteStudentRegistration(id, logUser) {
 
     sheet.deleteRow(rowIndex);
 
-    logActivity(logUser, 'ลà¸šขà¹‰อมà¸¹ลลงทะà¹€à¸šà¸µยนà¹€รà¸µยน', `นัà¸�à¹€รà¸µยน: ${stdName} (ID: ${id})`);
+    logActivity(logUser, 'ลบข้อมูลลงทะเบียนเรียน', `นักเรียน: ${stdName} (ID: ${id})`);
 
     invalidateStudentCache();
 
@@ -7903,7 +7903,7 @@ function deleteStudentRegistration(id, logUser) {
 
 // ----------------------------------------------------
 
-// Grade-Level Registration Sheet Grid Editor (à¹€à¸Šà¹ˆน ม.1/2)
+// Grade-Level Registration Sheet Grid Editor (เช่น ม.1/2)
 
 // ----------------------------------------------------
 
@@ -8311,7 +8311,7 @@ function saveGradeSheetData(grade, branch, coursesUpdate, studentsUpdate, logUse
 
           lineId: s.lineId,
 
-          classType: 'à¸�ลุà¹ˆมหลัà¸�',
+          classType: 'กลุ่มหลัก',
 
           round: s.sheetName || sheetName
 
@@ -8323,7 +8323,7 @@ function saveGradeSheetData(grade, branch, coursesUpdate, studentsUpdate, logUse
 
     
 
-    logActivity(logUser, 'à¹�à¸�à¹‰à¹„ขหà¹‰องà¹€รà¸µยนà¹�ยà¸�à¸ªà¸²ขà¸² (รวม)', `à¹�à¸�à¹‰à¹„ขà¸Šà¸µตระดัà¸šà¸Šัà¹‰น ${grade} รวมทุà¸�à¸ªà¸²ขà¸² à¸ˆà¸³นวนทà¸µà¹ˆà¸ªà¹ˆงอัปà¹€ดต ${studentsUpdate.length} คน`);
+    logActivity(logUser, 'แก้ไขห้องเรียนแยกสาขา (รวม)', `แก้ไขชีตระดับชั้น ${grade} รวมทุกสาขา จำนวนที่ส่งอัปเดต ${studentsUpdate.length} คน`);
 
     return { success: true };
 
@@ -8345,9 +8345,9 @@ function addNewCourseColumn(grade, branch, courseName, price, dayTime, sessions,
 
     let suffix = '1';
 
-    if (branch.includes('à¸ªà¸²ขà¸²2')) suffix = '2';
+    if (branch.includes('สาขา2')) suffix = '2';
 
-    else if (branch.includes('à¸ªà¸²ขà¸²3')) suffix = '3';
+    else if (branch.includes('สาขา3')) suffix = '3';
 
     
 
@@ -8355,7 +8355,7 @@ function addNewCourseColumn(grade, branch, courseName, price, dayTime, sessions,
 
     const sheet = db.getSheetByName(sheetName);
 
-    if (!sheet) throw new Error(`à¹„มà¹ˆà¸žà¸šà¸Šà¸µตหà¹‰องà¹€รà¸µยน ${sheetName}`);
+    if (!sheet) throw new Error(`ไม่พบชีตห้องเรียน ${sheetName}`);
 
     
 
@@ -8375,7 +8375,7 @@ function addNewCourseColumn(grade, branch, courseName, price, dayTime, sessions,
 
     
 
-    logActivity(logUser, 'à¹€à¸žิà¹ˆมคอรà¹Œà¸ªà¹€รà¸µยนà¹�ยà¸�หà¹‰อง', `à¸Šà¸µต ${sheetName} à¹€à¸žิà¹ˆมคอรà¹Œà¸ª ${courseName} รà¸²คà¸² ${price} à¸ˆà¸³นวนครัà¹‰ง ${sessions} วัน/à¹€วลà¸² ${dayTime || ''}`);
+    logActivity(logUser, 'เพิ่มคอร์สเรียนแยกห้อง', `ชีต ${sheetName} เพิ่มคอร์ส ${courseName} ราคา ${price} จำนวนครั้ง ${sessions} วัน/เวลา ${dayTime || ''}`);
 
     return { success: true };
 
@@ -8397,9 +8397,9 @@ function addNewCoursesBatch(grade, branch, courseList, logUser) {
 
     let suffix = '1';
 
-    if (branch.includes('à¸ªà¸²ขà¸²2')) suffix = '2';
+    if (branch.includes('สาขา2')) suffix = '2';
 
-    else if (branch.includes('à¸ªà¸²ขà¸²3')) suffix = '3';
+    else if (branch.includes('สาขา3')) suffix = '3';
 
     
 
@@ -8407,7 +8407,7 @@ function addNewCoursesBatch(grade, branch, courseList, logUser) {
 
     const sheet = db.getSheetByName(sheetName);
 
-    if (!sheet) throw new Error(`à¹„มà¹ˆà¸žà¸šà¸Šà¸µตหà¹‰องà¹€รà¸µยน ${sheetName}`);
+    if (!sheet) throw new Error(`ไม่พบชีตห้องเรียน ${sheetName}`);
 
     
 
@@ -8431,7 +8431,7 @@ function addNewCoursesBatch(grade, branch, courseList, logUser) {
 
       
 
-      logActivity(logUser, 'à¹€à¸žิà¹ˆมคอรà¹Œà¸ªà¹€รà¸µยนà¹�ยà¸�หà¹‰อง', `à¸Šà¸µต ${sheetName} à¹€à¸žิà¹ˆมคอรà¹Œà¸ª ${c.courseName} รà¸²คà¸² ${c.price} à¸ˆà¸³นวนครัà¹‰ง ${c.sessions} วัน/à¹€วลà¸² ${c.dayTime || ''}`);
+      logActivity(logUser, 'เพิ่มคอร์สเรียนแยกห้อง', `ชีต ${sheetName} เพิ่มคอร์ส ${c.courseName} ราคา ${c.price} จำนวนครั้ง ${c.sessions} วัน/เวลา ${c.dayTime || ''}`);
 
     });
 
@@ -8457,7 +8457,7 @@ function deleteCourseColumn(grade, branch, sheetName, colIndex, courseName, logU
 
     const sheet = db.getSheetByName(sheetName);
 
-    if (!sheet) throw new Error(`à¹„มà¹ˆà¸žà¸šà¸Šà¸µตหà¹‰องà¹€รà¸µยน ${sheetName}`);
+    if (!sheet) throw new Error(`ไม่พบชีตห้องเรียน ${sheetName}`);
 
     
 
@@ -8467,7 +8467,7 @@ function deleteCourseColumn(grade, branch, sheetName, colIndex, courseName, logU
 
     
 
-    logActivity(logUser, 'ลà¸šคอลัมนà¹Œวิà¸Šà¸²à¹€รà¸µยน', `à¸Šà¸µต ${sheetName} ลà¸šวิà¸Šà¸² ${courseName} (คอลัมนà¹Œทà¸µà¹ˆ ${colIndex})`);
+    logActivity(logUser, 'ลบคอลัมน์วิชาเรียน', `ชีต ${sheetName} ลบวิชา ${courseName} (คอลัมน์ที่ ${colIndex})`);
 
     return { success: true };
 
@@ -8481,7 +8481,7 @@ function deleteCourseColumn(grade, branch, sheetName, colIndex, courseName, logU
 
 // ----------------------------------------------------
 
-// Private & Small Group Student Editor (à¹€ดà¸µà¹ˆยว / ยà¹ˆอย)
+// Private & Small Group Student Editor (เดี่ยว / ย่อย)
 
 // ----------------------------------------------------
 
@@ -8499,11 +8499,11 @@ function getPrivateSheetData(sheetName) {
 
       sheetsToProcess = [
 
-        "à¹€ดà¸µà¹ˆยว อนุà¸šà¸²ล", "à¹€ดà¸µà¹ˆยว ป.1", "à¹€ดà¸µà¹ˆยว ป.2", "à¹€ดà¸µà¹ˆยว ป.3", "à¹€ดà¸µà¹ˆยว ป.4", "à¹€ดà¸µà¹ˆยว ป.5", "à¹€ดà¸µà¹ˆยว ป.6",
+        "เดี่ยว อนุบาล", "เดี่ยว ป.1", "เดี่ยว ป.2", "เดี่ยว ป.3", "เดี่ยว ป.4", "เดี่ยว ป.5", "เดี่ยว ป.6",
 
-        "à¹€ดà¸µà¹ˆยว ม.1", "à¹€ดà¸µà¹ˆยว ม.2", "à¹€ดà¸µà¹ˆยว ม.3", "à¹€ดà¸µà¹ˆยว ม.4", "à¹€ดà¸µà¹ˆยว ม.5", "à¹€ดà¸µà¹ˆยว ม.6",
+        "เดี่ยว ม.1", "เดี่ยว ม.2", "เดี่ยว ม.3", "เดี่ยว ม.4", "เดี่ยว ม.5", "เดี่ยว ม.6",
 
-        "ยà¹ˆอย 2-3", "ยà¹ˆอย 4-5", "ยà¹ˆอย 6-10"
+        "ย่อย 2-3", "ย่อย 4-5", "ย่อย 6-10"
 
       ];
 
@@ -8725,7 +8725,7 @@ function recalculatePrivateSheetHours(sName) {
 
         const rate = getPrivateStudentRate(sName, gr.courseName) || 250;
 
-        const isPrivate = sName.indexOf('à¹€ดà¸µà¹ˆยว') !== -1;
+        const isPrivate = sName.indexOf('เดี่ยว') !== -1;
 
         const defaultHours = isPrivate ? 8 : 16;
 
@@ -8803,7 +8803,7 @@ function recalculatePrivateSheetHours(sName) {
 
         let note = row[11] ? row[11].toString().trim() : '';
 
-        if (isLastRound && assignedMinutes >= limitMins && note.indexOf('à¹€รà¸µยนครà¸šà¹�ลà¹‰ว') === -1) {
+        if (isLastRound && assignedMinutes >= limitMins && note.indexOf('เรียนครบแล้ว') === -1) {
 
           const nextCourseName = getNextCourseName(gr.courseName);
 
@@ -8885,7 +8885,7 @@ function recalculatePrivateSheetHours(sName) {
 
               '',
 
-              '0 à¸Šม. 0 นà¸²ทà¸µ',
+              '0 ชม. 0 นาที',
 
               formatMinutesToHoursLeft(courseMins)
 
@@ -8895,7 +8895,7 @@ function recalculatePrivateSheetHours(sName) {
 
             sheet.appendRow(nextRow);
 
-            note = 'à¹€รà¸µยนครà¸šà¹�ลà¹‰ว (ตà¹ˆอคอรà¹Œà¸ªà¹ƒหมà¹ˆ: ' + nextCourseName + ')';
+            note = 'เรียนครบแล้ว (ต่อคอร์สใหม่: ' + nextCourseName + ')';
 
             row[11] = note;
 
@@ -8947,7 +8947,7 @@ function recalculatePrivateSheetHours(sName) {
 
           } else {
 
-            note = 'à¹€รà¸µยนครà¸šà¹�ลà¹‰ว (ตà¹ˆอคอรà¹Œà¸ªà¹ƒหมà¹ˆ: ' + nextCourseName + ')';
+            note = 'เรียนครบแล้ว (ต่อคอร์สใหม่: ' + nextCourseName + ')';
 
             row[11] = note;
 
@@ -9035,7 +9035,7 @@ function getPrivateStudentRate(sheetName, courseName) {
 
   let rate = 250;
 
-  if (sheetName.indexOf('à¹€ดà¸µà¹ˆยว') !== -1) {
+  if (sheetName.indexOf('เดี่ยว') !== -1) {
 
     const isEx = courseName.toLowerCase().includes('ex');
 
@@ -9059,7 +9059,7 @@ function getPrivateStudentRate(sheetName, courseName) {
 
     }
 
-  } else { // à¸�ลุà¹ˆมยà¹ˆอย
+  } else { // กลุ่มย่อย
 
     if (sheetName.indexOf('2-3') !== -1) rate = 187.5;
 
@@ -9083,7 +9083,7 @@ function savePrivateStudentPayment(sheetName, name, courseName, paymentData, log
 
     const sheet = db.getSheetByName(sheetName);
 
-    if (!sheet) throw new Error(`à¹„มà¹ˆà¸žà¸šà¸Šà¸µตขà¹‰อมà¸¹ล ${sheetName}`);
+    if (!sheet) throw new Error(`ไม่พบชีตข้อมูล ${sheetName}`);
 
     
 
@@ -9113,7 +9113,7 @@ function savePrivateStudentPayment(sheetName, name, courseName, paymentData, log
 
     if (rowIndex === -1) {
 
-      throw new Error(`à¹„มà¹ˆà¸žà¸šขà¹‰อมà¸¹ลนัà¸�à¹€รà¸µยน ${name} à¹ƒนวิà¸Šà¸² ${courseName} à¹ƒนà¸Šà¸µต ${sheetName}`);
+      throw new Error(`ไม่พบข้อมูลนักเรียน ${name} ในวิชา ${courseName} ในชีต ${sheetName}`);
 
     }
 
@@ -9191,7 +9191,7 @@ function savePrivateStudentPayment(sheetName, name, courseName, paymentData, log
 
       carriedForwardFee: carriedForward,
 
-      grade: sheetName.includes('à¹€ดà¸µà¹ˆยว') ? sheetName.replace('à¹€ดà¸µà¹ˆยว', '').trim() : 'อนุà¸šà¸²ล',
+      grade: sheetName.includes('เดี่ยว') ? sheetName.replace('เดี่ยว', '').trim() : 'อนุบาล',
 
       classSection: stdDetails[4],
 
@@ -9203,7 +9203,7 @@ function savePrivateStudentPayment(sheetName, name, courseName, paymentData, log
 
       classHoursLeft: paymentData.hoursLeft || '',
 
-      classType: sheetName.includes('à¹€ดà¸µà¹ˆยว') ? 'à¹€ดà¸µà¹ˆยว' : sheetName,
+      classType: sheetName.includes('เดี่ยว') ? 'เดี่ยว' : sheetName,
 
       round: courseName
 
@@ -9211,7 +9211,7 @@ function savePrivateStudentPayment(sheetName, name, courseName, paymentData, log
 
     
 
-    logActivity(logUser, 'อัปà¹€ดตยอดà¹€งินà¹€ดà¹‡à¸�à¹€ดà¸µà¹ˆยว/ยà¹ˆอย', `นัà¸�à¹€รà¸µยน: ${name} คà¹ˆà¸²à¹€รà¸µยนตà¹ˆอรอà¸š: ${full} à¸Šà¸³ระ: ${paid} à¹ƒนà¸Šà¸µต ${sheetName}`);
+    logActivity(logUser, 'อัปเดตยอดเงินเด็กเดี่ยว/ย่อย', `นักเรียน: ${name} ค่าเรียนต่อรอบ: ${full} ชำระ: ${paid} ในชีต ${sheetName}`);
 
     return { success: true };
 
@@ -9239,13 +9239,13 @@ function updatePrivateStudentInfo(sheetName, originalName, originalCourseName, r
 
     const sheet = db.getSheetByName(sheetName);
 
-    if (!sheet) throw new Error(`à¹„มà¹ˆà¸žà¸šà¸Šà¸µตขà¹‰อมà¸¹ล ${sheetName}`);
+    if (!sheet) throw new Error(`ไม่พบชีตข้อมูล ${sheetName}`);
 
     // Validate rowIndex is within data range
 
     const lastRow = sheet.getLastRow();
 
-    if (rowIndex < 12 || rowIndex > lastRow) throw new Error(`rowIndex ${rowIndex} à¹„มà¹ˆถà¸¹à¸�ตà¹‰อง`);
+    if (rowIndex < 12 || rowIndex > lastRow) throw new Error(`rowIndex ${rowIndex} ไม่ถูกต้อง`);
 
     // Update personal info columns (columns 1-10, 1-indexed)
 
@@ -9325,7 +9325,7 @@ function updatePrivateStudentInfo(sheetName, originalName, originalCourseName, r
 
     });
 
-    logActivity(logUser, 'à¹�à¸�à¹‰à¹„ขขà¹‰อมà¸¹ลà¹€ดà¹‡à¸�à¹€ดà¸µà¹ˆยว/ยà¹ˆอย', `อัปà¹€ดตขà¹‰อมà¸¹ล ${originalName} → ${studentInfo.name} à¹ƒนà¸Šà¸µต ${sheetName}`);
+    logActivity(logUser, 'แก้ไขข้อมูลเด็กเดี่ยว/ย่อย', `อัปเดตข้อมูล ${originalName} → ${studentInfo.name} ในชีต ${sheetName}`);
 
     return { success: true };
 
@@ -9381,7 +9381,7 @@ function getTeachersDB(logUser) {
 
       
 
-      // หà¸²à¸�à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰งà¸²นà¹€ปà¹‡นà¸šทà¸šà¸²ทครà¸¹ à¹ƒหà¹‰à¹€หà¹‡นขà¹‰อมà¸¹ลà¹€ฉà¸žà¸²ะของตนà¹€องà¹€ทà¹ˆà¸²นัà¹‰น (ปà¹‰องà¸�ันà¸�à¸²รรัà¹ˆวà¹„หลขà¹‰อมà¸¹ลธนà¸²คà¸²ร/คà¹ˆà¸²ตอà¸šà¹�ทนของครà¸¹ทà¹ˆà¸²นอืà¹ˆน)
+      // หากผู้ใช้งานเป็นบทบาทครู ให้เห็นข้อมูลเฉพาะของตนเองเท่านั้น (ป้องกันการรั่วไหลข้อมูลธนาคาร/ค่าตอบแทนของครูท่านอื่น)
 
       if (isTeacher) {
 
@@ -9389,7 +9389,7 @@ function getTeachersDB(logUser) {
 
         const cleanNick = teacherNick.toLowerCase();
 
-        // คà¹‰นหà¸²ทัà¹‰งà¸ˆà¸²à¸�à¸Šืà¹ˆอà¸šัà¸�à¸Šà¸µà¹�ละ Nickname
+        // ค้นหาทั้งจากชื่อบักชทีและ Nickname
 
         if (cleanUser !== cleanNick && !cleanUser.includes(cleanNick) && !cleanNick.includes(cleanUser)) {
 
@@ -9521,7 +9521,7 @@ function saveTeacherProfile(teacher, logUser) {
 
     
 
-    logActivity(logUser, 'à¸šันทึà¸�ประวัติครà¸¹', `ครà¸¹: ${teacher.nickname}`);
+    logActivity(logUser, 'บันทึกประวัติครู', `ครู: ${teacher.nickname}`);
 
     return { success: true };
 
@@ -9554,11 +9554,11 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
   try {
 
-    logActivity(logUser || teacher || 'System', 'คà¸³นวณà¹€งินà¹€ดือนรà¸²ยปà¸µà¹€ริà¹ˆม', 'คุณครà¸¹: ' + teacher + ', ปà¸µ: ' + year);
+    logActivity(logUser || teacher || 'System', 'คำนวณเงินเดือนรายปีเริ่ม', 'คุณครู: ' + teacher + ', ปี: ' + year);
 
     const classLogs = getClassLogs('');
 
-    if (!Array.isArray(classLogs)) throw new Error(classLogs.error || 'à¹„มà¹ˆà¸ªà¸²มà¸²รถดึงขà¹‰อมà¸¹ล Class Logs à¹„ดà¹‰');
+    if (!Array.isArray(classLogs)) throw new Error(classLogs.error || 'ไม่สามารถดึงข้อมูล Class Logs ได้');
 
     
 
@@ -9566,7 +9566,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
     if (!Array.isArray(teachersList) || teachersList.length === 0) {
 
-      throw new Error('à¹„มà¹ˆà¸žà¸šขà¹‰อมà¸¹ลรà¸²ยà¸Šืà¹ˆอครà¸¹à¹ƒนà¸�à¸²นขà¹‰อมà¸¹ล TeachersDB');
+      throw new Error('ไม่พบข้อมูลรายชื่อครูในฐานข้อมูล TeachersDB');
 
     }
 
@@ -9574,9 +9574,9 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
       const tId = (t.teacherId || '').toLowerCase().trim();
 
-      const tNick = t.nickname.toLowerCase().trim().replace(/^ครà¸¹/, '').trim();
+      const tNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
 
-      const targetNick = teacher.toLowerCase().trim().replace(/^ครà¸¹/, '').trim();
+      const targetNick = teacher.toLowerCase().trim().replace(/^ครู/, '').trim();
 
       return (tId !== '' && tId === teacher.toLowerCase().trim()) || 
 
@@ -9586,7 +9586,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
     if (!teacherProfile) {
 
-      throw new Error('à¹„มà¹ˆà¸žà¸šประวัติคุณครà¸¹à¸Šืà¹ˆอ/รหัà¸ª: "' + teacher + '" à¹ƒนà¸�à¸²นขà¹‰อมà¸¹ล TeachersDB');
+      throw new Error('ไม่พบประวัติคุณครูชื่อ/รหัส: "' + teacher + '" ในฐานข้อมูล TeachersDB');
 
     }
 
@@ -9668,11 +9668,11 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
         const cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
 
-        const cleanB = cellB.replace(/^ครà¸¹/, '').trim();
+        const cleanB = cellB.replace(/^ครู/, '').trim();
 
-        const cleanC = cellC.replace(/^ครà¸¹/, '').trim();
+        const cleanC = cellC.replace(/^ครู/, '').trim();
 
-        const cleanNick = cleanResolvedNick.replace(/^ครà¸¹/, '').trim();
+        const cleanNick = cleanResolvedNick.replace(/^ครู/, '').trim();
 
         
 
@@ -9744,7 +9744,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
         
 
-        // Count only à¸ªด + ออนà¹„ลนà¹Œ + à¸Šดà¹€à¸Šย for totalHours calculation
+        // Count only สด + ออนไลน์ + ชดเชย for totalHours calculation
 
         let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
 
@@ -9919,7 +9919,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
  * Calculate monthly pay for ALL teachers at once for a single month.
 
- * Used by the "à¸ªรุปรà¸²ยà¹„ดà¹‰ครà¸¹ทัà¹‰งหมด" dashboard to show real-time salary data.
+ * Used by the "สรุปรายได้ครูทั้งหมด" dashboard to show real-time salary data.
 
  */
 
@@ -9937,7 +9937,7 @@ function getAllTeachersMonthlyPay(year, month) {
 
     const classLogs = getClassLogs('');
 
-    if (!Array.isArray(classLogs)) throw new Error(classLogs.error || 'à¹„มà¹ˆà¸ªà¸²มà¸²รถดึงขà¹‰อมà¸¹ล Class Logs à¹„ดà¹‰');
+    if (!Array.isArray(classLogs)) throw new Error(classLogs.error || 'ไม่สามารถดึงข้อมูล Class Logs ได้');
 
     
 
@@ -9945,7 +9945,7 @@ function getAllTeachersMonthlyPay(year, month) {
 
     if (!Array.isArray(teachersList) || teachersList.length === 0) {
 
-      throw new Error('à¹„มà¹ˆà¸žà¸šขà¹‰อมà¸¹ลรà¸²ยà¸Šืà¹ˆอครà¸¹à¹ƒนà¸�à¸²นขà¹‰อมà¸¹ล TeachersDB');
+      throw new Error('ไม่พบข้อมูลรายชื่อครูในฐานข้อมูล TeachersDB');
 
     }
 
@@ -10181,7 +10181,7 @@ function getAllTeachersMonthlyPay(year, month) {
 
       const cleanResolvedNick = resolvedNickname.toLowerCase().trim();
 
-      const cleanNick = cleanResolvedNick.replace(/^ครà¸¹/, '').trim();
+      const cleanNick = cleanResolvedNick.replace(/^ครู/, '').trim();
 
       
 
@@ -10199,9 +10199,9 @@ function getAllTeachersMonthlyPay(year, month) {
 
         const cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
 
-        const cleanB = cellB.replace(/^ครà¸¹/, '').trim();
+        const cleanB = cellB.replace(/^ครู/, '').trim();
 
-        const cleanC = cellC.replace(/^ครà¸¹/, '').trim();
+        const cleanC = cellC.replace(/^ครู/, '').trim();
 
         
 
@@ -10269,7 +10269,7 @@ function getAllTeachersMonthlyPay(year, month) {
 
         
 
-        // Count only à¸ªด + ออนà¹„ลนà¹Œ + à¸Šดà¹€à¸Šย
+        // Count only สด + ออนไลน์ + ชดเชย
 
         let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
 
@@ -10371,9 +10371,9 @@ function toggleClassAbsentInSheet(rowIndex, type, isChecked) {
 
       if (isChecked) {
 
-        if (!note.includes('นà¹‰องลà¸²')) {
+        if (!note.includes('น้องลา')) {
 
-          note = (note ? note + ' ' : '') + 'นà¹‰องลà¸²';
+          note = (note ? note + ' ' : '') + 'น้องลา';
 
         }
 
@@ -10381,15 +10381,15 @@ function toggleClassAbsentInSheet(rowIndex, type, isChecked) {
 
         // Toggling nong leave to true clears live/online/makeup kids count in sheet
 
-        sheet.getRange(rowIndex, 7).setValue(0); // à¸ªด
+        sheet.getRange(rowIndex, 7).setValue(0); // สด
 
         sheet.getRange(rowIndex, 8).setValue(0); // ออน
 
-        sheet.getRange(rowIndex, 11).setValue(0); // à¸Šด
+        sheet.getRange(rowIndex, 11).setValue(0); // ชด
 
       } else {
 
-        note = note.replace(/นà¹‰องลà¸²/g, '').trim();
+        note = note.replace(/น้องลา/g, '').trim();
 
         isLeave = 0;
 
@@ -10587,7 +10587,7 @@ function parseHoursValue(val) {
 
 // =============================================
 
-// Dynamic Course Name Resolution (หลัà¸� → header)
+// Dynamic Course Name Resolution (หลัก → header)
 
 // =============================================
 
@@ -10643,11 +10643,11 @@ function buildGradeHeaderCache_() {
 
   var sheetNames = [
 
-    'อนุà¸šà¸²ล/1','ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1','ม.1/1','ม.2/1','ม.3/1','ม.4/1','ม.5/1','ม.6/1',
+    'อนุบาล/1','ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1','ม.1/1','ม.2/1','ม.3/1','ม.4/1','ม.5/1','ม.6/1',
 
-    'อนุà¸šà¸²ล/2','ป.1/2','ป.2/2','ป.3/2','ป.4/2','ป.5/2','ป.6/2','ม.1/2','ม.2/2','ม.3/2','ม.4/2','ม.5/2','ม.6/2',
+    'อนุบาล/2','ป.1/2','ป.2/2','ป.3/2','ป.4/2','ป.5/2','ป.6/2','ม.1/2','ม.2/2','ม.3/2','ม.4/2','ม.5/2','ม.6/2',
 
-    'อนุà¸šà¸²ล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3'
+    'อนุบาล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3'
 
   ];
 
@@ -10709,9 +10709,9 @@ function resolveDynamicCourseName(originalSubject, dateStr, roomBranch) {
 
   
 
-  // Only process courses starting with or containing "หลัà¸�"
+  // Only process courses starting with or containing "หลัก"
 
-  if (subj.indexOf('หลัà¸�') < 0) return subj;
+  if (subj.indexOf('หลัก') < 0) return subj;
 
   
 
@@ -10759,7 +10759,7 @@ function resolveDynamicCourseName(originalSubject, dateStr, roomBranch) {
 
   // Extract day of week name
 
-  var dayNames = ['อà¸²ทิตยà¹Œ', 'à¸ˆันทรà¹Œ', 'อังคà¸²ร', 'à¸žุธ', 'à¸žฤหัà¸ªà¸šดà¸µ', 'ศุà¸�รà¹Œ', 'à¹€à¸ªà¸²รà¹Œ'];
+  var dayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
 
   var dayOfWeek = dayNames[dateObj.getDay()];
 
@@ -10771,7 +10771,7 @@ function resolveDynamicCourseName(originalSubject, dateStr, roomBranch) {
 
   if (roomBranch) {
 
-    var branchMatch = roomBranch.toString().match(/à¸ªà¸²ขà¸²\s*(\d)/);
+    var branchMatch = roomBranch.toString().match(/สาขา\s*(\d)/);
 
     if (branchMatch) branch = branchMatch[1];
 
@@ -10779,29 +10779,29 @@ function resolveDynamicCourseName(originalSubject, dateStr, roomBranch) {
 
   
 
-  // Extract grade from subject (e.g., "หลัà¸� à¸ à¸²ษà¸²à¹„ทย ป.3" → "ป.3")
+  // Extract grade from subject (e.g., "หลัก ภาษาไทย ป.3" → "ป.3")
 
-  var gradeMatch = subj.match(/(อนุà¸šà¸²ล|ป\.\d|ม\.\d)/);
+  var gradeMatch = subj.match(/(อนุบาล|ป\.\d|ม\.\d)/);
 
   
 
-  // Extract keyword: everything after "หลัà¸� " minus the grade part
+  // Extract keyword: everything after "หลัก " minus the grade part
 
   var subjectKeyword = '';
 
   if (gradeMatch) {
 
-    // Has grade: keyword = between "หลัà¸�" and grade
+    // Has grade: keyword = between "หลัก" and grade
 
-    // "หลัà¸� à¸ à¸²ษà¸²à¹„ทย ป.3" → "à¸ à¸²ษà¸²à¹„ทย"
+    // "หลัก ภาษาไทย ป.3" → "ภาษาไทย"
 
-    subjectKeyword = subj.substring(subj.indexOf('หลัà¸�') + 4, gradeMatch.index).trim();
+    subjectKeyword = subj.substring(subj.indexOf('หลัก') + 4, gradeMatch.index).trim();
 
   } else {
 
-    // No grade (e.g., "หลัà¸� อังà¸�ฤษ à¹�ขà¹ˆง3"): keyword = everything after "หลัà¸� "
+    // No grade (e.g., "หลัก อังกฤษ แข่ง3"): keyword = everything after "หลัก "
 
-    subjectKeyword = subj.substring(subj.indexOf('หลัà¸�') + 4).trim();
+    subjectKeyword = subj.substring(subj.indexOf('หลัก') + 4).trim();
 
   }
 
@@ -10827,9 +10827,9 @@ function resolveDynamicCourseName(originalSubject, dateStr, roomBranch) {
 
   } else {
 
-    // No grade (à¹�ขà¹ˆง etc.): search ALL grade sheets for this branch
+    // No grade (แข่ง etc.): search ALL grade sheets for this branch
 
-    var allGrades = ['อนุà¸šà¸²ล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+    var allGrades = ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
 
     for (var g = 0; g < allGrades.length; g++) {
 
@@ -10855,9 +10855,9 @@ function resolveDynamicCourseName(originalSubject, dateStr, roomBranch) {
 
   
 
-  // Fallback: try shorter keyword (e.g., "à¸ à¸²ษà¸²à¹„ทย" → "à¹„ทย")
+  // Fallback: try shorter keyword (e.g., "ภาษาไทย" → "ไทย")
 
-  var shortKeyword = subjectKeyword.replace(/^à¸ à¸²ษà¸²/, '').trim();
+  var shortKeyword = subjectKeyword.replace(/^ภาษา/, '').trim();
 
   if (shortKeyword !== subjectKeyword && shortKeyword.length > 0) {
 
@@ -10911,7 +10911,7 @@ function searchHeadersInSheets_(headerCache, sheetNames, keyword, dayOfWeek) {
 
 function getClassLogs(filterDate, logUser) {
 
-  // ครà¸¹à¸ªà¸²มà¸²รถดà¸¹ขà¹‰อมà¸¹ลตà¸²รà¸²งà¹€รà¸µยนà¹„ดà¹‰
+  // ครูสามารถดูข้อมูลตารางเรียนได้
 
   
 
@@ -11044,7 +11044,7 @@ function getClassLogByRow(rowIndex) {
 
     if (rowIndex < 2 || rowIndex > lastRow) {
 
-      throw new Error('à¹„มà¹ˆà¸žà¸šขà¹‰อมà¸¹ลคลà¸²à¸ªà¹€รà¸µยนà¹ƒนà¹�ถวทà¸µà¹ˆ ' + rowIndex);
+      throw new Error('ไม่พบข้อมูลคลาสเรียนในแถวที่ ' + rowIndex);
 
     }
 
@@ -11170,9 +11170,9 @@ function getClassLogsForTeacher(teacherName, nickname) {
 
     
 
-    const searchNickClean = cleanNick.replace(/^ครà¸¹/, '').trim();
+    const searchNickClean = cleanNick.replace(/^ครู/, '').trim();
 
-    const searchNameClean = cleanName.replace(/^ครà¸¹/, '').trim();
+    const searchNameClean = cleanName.replace(/^ครู/, '').trim();
 
     
 
@@ -11190,13 +11190,13 @@ function getClassLogsForTeacher(teacherName, nickname) {
 
       
 
-      const cleanReg = teacherRegular.replace(/^ครà¸¹/, '').trim();
+      const cleanReg = teacherRegular.replace(/^ครู/, '').trim();
 
-      const cleanSub = teacherSub.replace(/^ครà¸¹/, '').trim();
+      const cleanSub = teacherSub.replace(/^ครู/, '').trim();
 
       
 
-      // คอลัมนà¹Œ B (ครà¸¹หลัà¸�) หรือคอลัมนà¹Œ C (ครà¸¹à¸ªอนà¹�ทน) ตรงà¸�ัà¸šà¸Šืà¹ˆอหรือà¸Šืà¹ˆอà¹€ลà¹ˆนของà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰ (ลà¸šคà¸³วà¹ˆà¸² ครà¸¹ à¹€à¸žืà¹ˆอà¹€ทà¸µยà¸šà¹�à¸šà¸šยืดหยุà¹ˆน)
+      // คอลัมน์ B (ครูหลัก) หรือคอลัมน์ C (ครูสอนแทน) ตรงกับชื่อหรือชื่อเล่นของผู้ใช้ (ลบคำว่า ครู เพื่อเทียบแบบยืดหยุ่น)
 
       const isMatch = (searchNickClean !== '' && (cleanReg === searchNickClean || cleanSub === searchNickClean)) ||
 
@@ -11364,7 +11364,7 @@ function formatSubjectWithDayTime(subject, dateStr, timeStart, timeEnd) {
 
   // Check if subject already contains day and time info to avoid double appending
 
-  var hasDay = /(à¸ˆันทรà¹Œ|อังคà¸²ร|à¸žุธ|à¸žฤหัà¸ªà¸šดà¸µ|ศุà¸�รà¹Œ|à¹€à¸ªà¸²รà¹Œ|อà¸²ทิตยà¹Œ)/.test(subjectName);
+  var hasDay = /(จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์)/.test(subjectName);
 
   var hasTime = /\d+[:.]\d+/.test(subjectName);
 
@@ -11392,7 +11392,7 @@ function formatSubjectWithDayTime(subject, dateStr, timeStart, timeEnd) {
 
       var date = new Date(year, month, day);
 
-      var days = ['อà¸²ทิตยà¹Œ', 'à¸ˆันทรà¹Œ', 'อังคà¸²ร', 'à¸žุธ', 'à¸žฤหัà¸ªà¸šดà¸µ', 'ศุà¸�รà¹Œ', 'à¹€à¸ªà¸²รà¹Œ'];
+      var days = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
 
       dayName = days[date.getDay()];
 
@@ -11500,11 +11500,11 @@ function addClassLog(log, logUser) {
 
       if (!name) return '';
 
-      const cleanTarget = name.toString().trim().toLowerCase().replace(/^ครà¸¹/, '').trim();
+      const cleanTarget = name.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
 
       const match = teachersList.find(t => {
 
-        const tNick = t.nickname.toLowerCase().trim().replace(/^ครà¸¹/, '').trim();
+        const tNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
 
         const tId = (t.teacherId || '').toLowerCase().trim();
 
@@ -11592,7 +11592,7 @@ function addClassLog(log, logUser) {
 
     
 
-    logActivity(logUser, 'à¸šันทึà¸�คà¸²à¸šà¸ªอน', `วิà¸Šà¸²: ${log.subject} ครà¸¹: ${log.teacherRegular} หà¹‰อง: ${log.roomBranch}`);
+    logActivity(logUser, 'บันทึกคาบสอน', `วิชา: ${log.subject} ครู: ${log.teacherRegular} ห้อง: ${log.roomBranch}`);
 
     
 
@@ -11686,11 +11686,11 @@ function updateClassLog(rowIndex, log, logUser) {
 
       if (!name) return '';
 
-      const cleanTarget = name.toString().trim().toLowerCase().replace(/^ครà¸¹/, '').trim();
+      const cleanTarget = name.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
 
       const match = teachersList.find(t => {
 
-        const tNick = t.nickname.toLowerCase().trim().replace(/^ครà¸¹/, '').trim();
+        const tNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
 
         const tId = (t.teacherId || '').toLowerCase().trim();
 
@@ -11790,7 +11790,7 @@ function updateClassLog(rowIndex, log, logUser) {
 
     
 
-    logActivity(logUser, 'à¹�à¸�à¹‰à¹„ขà¸šันทึà¸�คà¸²à¸šà¸ªอน', `วิà¸Šà¸²: ${log.subject} (à¹�ถวทà¸µà¹ˆ: ${rowIndex})`);
+    logActivity(logUser, 'แก้ไขบันทึกคาบสอน', `วิชา: ${log.subject} (แถวที่: ${rowIndex})`);
 
     
 
@@ -11894,7 +11894,7 @@ function updateClassAbsenceAndAttendance(rowIndex, type, checked, logUser) {
 
     
 
-    logActivity(logUser, 'à¹€à¸Šà¹‡คà¸Šืà¹ˆอลà¸²/à¹€ขà¹‰à¸²à¹€รà¸µยน', `วิà¸Šà¸²: ${subject} (${type}: ${checked})`);
+    logActivity(logUser, 'เช็คชื่อลา/เข้าเรียน', `วิชา: ${subject} (${type}: ${checked})`);
 
     
 
@@ -12004,7 +12004,7 @@ function deleteClassLog(rowIndex, logUser) {
 
     
 
-    logActivity(logUser, 'ลà¸šà¸šันทึà¸�คà¸²à¸šà¸ªอน', `วิà¸Šà¸²: ${subject} (à¹�ถวทà¸µà¹ˆ: ${rowIndex})`);
+    logActivity(logUser, 'ลบบันทึกคาบสอน', `วิชา: ${subject} (แถวที่: ${rowIndex})`);
 
     
 
@@ -12032,7 +12032,7 @@ function deleteClassLog(rowIndex, logUser) {
 
 // ----------------------------------------------------
 
-// Manager Log (Data à¸œà¸ˆà¸�.)
+// Manager Log (Data ผจก.)
 
 // ----------------------------------------------------
 
@@ -12042,7 +12042,7 @@ function getManagerOTLogs(logUser) {
 
   try {
 
-    const rawData = getSheetRows('Data à¸œà¸ˆà¸�.');
+    const rawData = getSheetRows('Data ผจก.');
 
     const logs = [];
 
@@ -12190,13 +12190,13 @@ function addManagerLog(log, logUser) {
 
   try {
 
-    let sheet = getDb().getSheetByName('Data à¸œà¸ˆà¸�.');
+    let sheet = getDb().getSheetByName('Data ผจก.');
 
     if (!sheet) {
 
-      sheet = getOrCreateSheet('Data à¸œà¸ˆà¸�.');
+      sheet = getOrCreateSheet('Data ผจก.');
 
-      if (!sheet) throw new Error('à¹„มà¹ˆà¸ªà¸²มà¸²รถà¸ªรà¹‰à¸²งà¸Šà¸µต Data à¸œà¸ˆà¸�. à¹„ดà¹‰');
+      if (!sheet) throw new Error('ไม่สามารถสร้างชีต Data ผจก. ได้');
 
     }
 
@@ -12302,7 +12302,7 @@ function addManagerLog(log, logUser) {
 
         
 
-        logActivity(logUser, 'à¸šันทึà¸�ออà¸�งà¸²นà¸œà¸¹à¹‰à¸ˆัดà¸�à¸²ร', 'à¸œà¸¹à¹‰à¸ˆัดà¸�à¸²ร: ' + log.managerName + ' ออà¸�งà¸²น: ' + (log.workOut || '-'));
+        logActivity(logUser, 'บันทึกออกงานผู้จัดการ', 'ผู้จัดการ: ' + log.managerName + ' ออกงาน: ' + (log.workOut || '-'));
 
         return { success: true };
 
@@ -12346,7 +12346,7 @@ function addManagerLog(log, logUser) {
 
         sheet.appendRow(rowData);
 
-        logActivity(logUser, 'à¸šันทึà¸�ออà¸�งà¸²นà¸œà¸¹à¹‰à¸ˆัดà¸�à¸²ร (à¹�ถวà¹ƒหมà¹ˆ)', 'à¸œà¸¹à¹‰à¸ˆัดà¸�à¸²ร: ' + log.managerName);
+        logActivity(logUser, 'บันทึกออกงานผู้จัดการ (แถวใหม่)', 'ผู้จัดการ: ' + log.managerName);
 
         return { success: true };
 
@@ -12394,7 +12394,7 @@ function addManagerLog(log, logUser) {
 
       sheet.appendRow(rowData);
 
-      logActivity(logUser, 'à¸šันทึà¸�à¹€ขà¹‰à¸²งà¸²นà¸œà¸¹à¹‰à¸ˆัดà¸�à¸²ร', 'à¸œà¸¹à¹‰à¸ˆัดà¸�à¸²ร: ' + log.managerName + ' à¸ªถà¸²นะ: ' + (log.isPresent ? 'มà¸²ทà¸³งà¸²น' : 'หยุดงà¸²น'));
+      logActivity(logUser, 'บันทึกเข้างานผู้จัดการ', 'ผู้จัดการ: ' + log.managerName + ' สถานะ: ' + (log.isPresent ? 'มาทำงาน' : 'หยุดงาน'));
 
       return { success: true };
 
@@ -12420,7 +12420,7 @@ function saveManagerPhoto_(base64Data, managerName, dateStr, photoType) {
 
     var parentFolder = DriveApp.getFileById(getDb().getId()).getParents().next();
 
-    var folderName = 'รà¸¹ปลงà¹€วลà¸²_à¸œà¸ˆà¸�';
+    var folderName = 'รูปลงเวลา_ผจก.';
 
     var folders = parentFolder.getFoldersByName(folderName);
 
@@ -12486,7 +12486,7 @@ function debugReadSheetHeaders() {
 
     const name = sheets[i].getName();
 
-    if (name.includes('/') && !name.includes('à¹€ดà¸µà¹ˆยว') && !name.includes('ยà¹ˆอย')) {
+    if (name.includes('/') && !name.includes('เดี่ยว') && !name.includes('ย่อย')) {
 
       targetSheet = sheets[i];
 
@@ -12550,7 +12550,7 @@ function initAllGradeSheets() {
 
   const db = getDb();
 
-  const grades = ['อนุà¸šà¸²ล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+  const grades = ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
 
   const suffixes = ['1', '2', '3'];
 
@@ -12578,25 +12578,25 @@ function initAllGradeSheets() {
 
         const headers = [
 
-          'ระดัà¸šà¸Šัà¹‰น',
+          'ระดับชั้น',
 
-          'à¸Šืà¹ˆอ-นà¸²มà¸ªà¸�ุล',
+          'ชื่อ-นามสกุล',
 
-          'à¸Šืà¹ˆอà¹€ลà¹ˆน',
+          'ชื่อเล่น',
 
-          'à¹‚รงà¹€รà¸µยน',
+          'โรงเรียน',
 
-          'หà¹‰องà¹€รà¸µยนยà¹ˆอย',
+          'ห้องเรียนย่อย',
 
-          'à¹€à¸šอรà¹Œติดตà¹ˆอ',
+          'เบอร์ติดต่อ',
 
-          'à¸Šืà¹ˆอà¹‚ปรà¹„à¸Ÿลà¹Œà¹„ลนà¹Œ',
+          'ชื่อโปรไฟล์ไลน์',
 
           'ID LINE',
 
-          'à¸ªà¸²ขà¸²à¹€รà¸µยน',
+          'สาขาเรียน',
 
-          'à¸ªà¸²ขà¸²ทà¸µà¹ˆà¹€à¸�à¹‡à¸šà¹€งิน'
+          'สาขาที่เก็บเงิน'
 
         ];
 
@@ -12610,19 +12610,19 @@ function initAllGradeSheets() {
 
         row5[10] = 'ยอดรวม'; // Col 11
 
-        row5[11] = 'à¸ªà¹ˆวนลด'; // Col 12
+        row5[11] = 'ส่วนลด'; // Col 12
 
-        row5[12] = 'คงà¹€หลือ'; // Col 13
+        row5[12] = 'คงเหลือ'; // Col 13
 
-        row5[13] = 'ยอดà¸ˆà¹ˆà¸²ย'; // Col 14
+        row5[13] = 'ยอดจ่าย'; // Col 14
 
-        row5[14] = 'รà¸¹ดà¸šัตร'; // Col 15
+        row5[14] = 'รูดบัตร'; // Col 15
 
-        row5[15] = 'วันทà¸µà¹ˆà¸Šà¸³ระà¹€งิน'; // Col 16
+        row5[15] = 'วันที่ชำระเงิน'; // Col 16
 
-        row5[16] = 'à¸Šà¹ˆองทà¸²งà¸Šà¸³ระà¹€งิน'; // Col 17
+        row5[16] = 'ช่องทางชำระเงิน'; // Col 17
 
-        row5[17] = 'à¸œà¸¹à¹‰รัà¸šà¹€งิน'; // Col 18
+        row5[17] = 'ผู้รับเงิน'; // Col 18
 
         
 
@@ -12636,11 +12636,11 @@ function initAllGradeSheets() {
 
   
 
-  // 2. Initialize private sheets (e.g. à¹€ดà¸µà¹ˆยว ป.1)
+  // 2. Initialize private sheets (e.g. เดี่ยว ป.1)
 
   grades.forEach(grade => {
 
-    const name = `à¹€ดà¸µà¹ˆยว ${grade}`;
+    const name = `เดี่ยว ${grade}`;
 
     let sheet = db.getSheetByName(name);
 
@@ -12656,47 +12656,47 @@ function initAllGradeSheets() {
 
       const headers = [
 
-        'ประà¹€à¸ ทคอรà¹Œà¸ª',
+        'ประเภทคอร์ส',
 
-        'à¸Šืà¹ˆอ-นà¸²มà¸ªà¸�ุล',
+        'ชื่อ-นามสกุล',
 
-        'à¸Šืà¹ˆอà¹€ลà¹ˆน',
+        'ชื่อเล่น',
 
-        'à¹‚รงà¹€รà¸µยน',
+        'โรงเรียน',
 
-        'หà¹‰อง',
+        'ห้อง',
 
-        'à¹€à¸šอรà¹Œติดตà¹ˆอ',
+        'เบอร์ติดต่อ',
 
-        'à¸Šืà¹ˆอà¹„ลนà¹Œ/à¸�ลุà¹ˆมติดตà¹ˆอ',
+        'ชื่อไลน์/กลุ่มติดต่อ',
 
         'ID LINE',
 
-        'à¹€รà¸µยน(à¸ªà¸²ขà¸²)',
+        'เรียน(สาขา)',
 
-        'à¹€à¸�à¹‡à¸šà¹€งิน(à¸ªà¸²ขà¸²)',
+        'เก็บเงิน(สาขา)',
 
-        'คอรà¹Œà¸ªà¹€รà¸µยน',
+        'คอร์สเรียน',
 
-        'หมà¸²ยà¹€หตุ',
+        'หมายเหตุ',
 
-        'คà¹ˆà¸²à¹€รà¸µยนยà¸�มà¸²',
+        'ค่าเรียนยกมา',
 
-        'คà¹ˆà¸²à¹€รà¸µยน',
+        'ค่าเรียน',
 
-        'à¸ˆà¹ˆà¸²ยมà¸²',
+        'จ่ายมา',
 
-        'คงà¹€หลือ',
+        'คงเหลือ',
 
-        'วันทà¸µà¹ˆà¸Šà¸³ระà¹€งิน',
+        'วันที่ชำระเงิน',
 
-        'à¸Šà¹ˆองทà¸²งà¸Šà¸³ระà¹€งิน',
+        'ช่องทางชำระเงิน',
 
-        'à¸œà¸¹à¹‰รัà¸šà¹€งิน',
+        'ผู้รับเงิน',
 
-        'à¸Šัà¹ˆวà¹‚มงà¹€รà¸µยน',
+        'ชั่วโมงเรียน',
 
-        'à¸Šัà¹ˆวà¹‚มงคงà¹€หลือ'
+        'ชั่วโมงคงเหลือ'
 
       ];
 
@@ -12708,9 +12708,9 @@ function initAllGradeSheets() {
 
   
 
-  // 3. Initialize subgroup sheets (e.g. ยà¹ˆอย 2-3)
+  // 3. Initialize subgroup sheets (e.g. ย่อย 2-3)
 
-  const subgroups = ['ยà¹ˆอย 2-3', 'ยà¹ˆอย 4-5', 'ยà¹ˆอย 6-10'];
+  const subgroups = ['ย่อย 2-3', 'ย่อย 4-5', 'ย่อย 6-10'];
 
   subgroups.forEach(name => {
 
@@ -12728,47 +12728,47 @@ function initAllGradeSheets() {
 
       const headers = [
 
-        'ประà¹€à¸ ทคอรà¹Œà¸ª',
+        'ประเภทคอร์ส',
 
-        'à¸Šืà¹ˆอ-นà¸²มà¸ªà¸�ุล',
+        'ชื่อ-นามสกุล',
 
-        'à¸Šืà¹ˆอà¹€ลà¹ˆน',
+        'ชื่อเล่น',
 
-        'à¹‚รงà¹€รà¸µยน',
+        'โรงเรียน',
 
-        'หà¹‰อง',
+        'ห้อง',
 
-        'à¹€à¸šอรà¹Œติดตà¹ˆอ',
+        'เบอร์ติดต่อ',
 
-        'à¸Šืà¹ˆอà¹„ลนà¹Œ/à¸�ลุà¹ˆมติดตà¹ˆอ',
+        'ชื่อไลน์/กลุ่มติดต่อ',
 
         'ID LINE',
 
-        'à¹€รà¸µยน(à¸ªà¸²ขà¸²)',
+        'เรียน(สาขา)',
 
-        'à¹€à¸�à¹‡à¸šà¹€งิน(à¸ªà¸²ขà¸²)',
+        'เก็บเงิน(สาขา)',
 
-        'คอรà¹Œà¸ªà¹€รà¸µยน',
+        'คอร์สเรียน',
 
-        'หมà¸²ยà¹€หตุ',
+        'หมายเหตุ',
 
-        'คà¹ˆà¸²à¹€รà¸µยนยà¸�มà¸²',
+        'ค่าเรียนยกมา',
 
-        'คà¹ˆà¸²à¹€รà¸µยน',
+        'ค่าเรียน',
 
-        'à¸ˆà¹ˆà¸²ยมà¸²',
+        'จ่ายมา',
 
-        'คงà¹€หลือ',
+        'คงเหลือ',
 
-        'วันทà¸µà¹ˆà¸Šà¸³ระà¹€งิน',
+        'วันที่ชำระเงิน',
 
-        'à¸Šà¹ˆองทà¸²งà¸Šà¸³ระà¹€งิน',
+        'ช่องทางชำระเงิน',
 
-        'à¸œà¸¹à¹‰รัà¸šà¹€งิน',
+        'ผู้รับเงิน',
 
-        'à¸Šัà¹ˆวà¹‚มงà¹€รà¸µยน',
+        'ชั่วโมงเรียน',
 
-        'à¸Šัà¹ˆวà¹‚มงคงà¹€หลือ'
+        'ชั่วโมงคงเหลือ'
 
       ];
 
@@ -12792,7 +12792,7 @@ function parseHoursLeftToMinutes(str) {
 
   const isNeg = str.indexOf('-') !== -1;
 
-  const matches = str.match(/(\d+)\s*à¸Šม\.\s*(\d+)\s*นà¸²ทà¸µ/);
+  const matches = str.match(/(\d+)\s*ชม\.\s*(\d+)\s*นาที/);
 
   if (!matches) {
 
@@ -12824,7 +12824,7 @@ function formatMinutesToHoursLeft(totalMins) {
 
   const mins = Math.round(absMins % 60);
 
-  return (isNeg ? '-' : '') + hrs + ' à¸Šม. ' + mins + ' นà¸²ทà¸µ';
+  return (isNeg ? '-' : '') + hrs + ' ชม. ' + mins + ' นาที';
 
 }
 
@@ -12874,7 +12874,7 @@ function parseHoursStrToMinutes(val) {
 
   }
 
-  if (s.includes('à¸Šม.') || s.includes('นà¸²ทà¸µ')) {
+  if (s.includes('ชม.') || s.includes('นาที')) {
 
     return parseHoursLeftToMinutes(s);
 
@@ -12946,7 +12946,7 @@ function recalculateSubjectHours(subject) {
 
 function getGradeFromSheetName(sheetName) {
 
-  const grades = ['อนุà¸šà¸²ล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+  const grades = ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
 
   for (let g of grades) {
 
@@ -12954,7 +12954,7 @@ function getGradeFromSheetName(sheetName) {
 
   }
 
-  return 'อนุà¸šà¸²ล';
+  return 'อนุบาล';
 
 }
 
@@ -12964,9 +12964,9 @@ function debugSearchNada() {
 
   
 
-  // รันระà¸šà¸šประมวลà¸œลà¸�à¹ˆอนดึงขà¹‰อมà¸¹ลมà¸²ดà¸µà¸šัà¹Šà¸�
+  // รันระบบประมวลผลก่อนดึงข้อมูลมาดีบั๊ก
 
-  getPrivateSheetData('à¹€ดà¸µà¹ˆยว อนุà¸šà¸²ล');
+  getPrivateSheetData('เดี่ยว อนุบาล');
 
   
 
@@ -12980,7 +12980,7 @@ function debugSearchNada() {
 
     const subject = data[i][0] ? data[i][0].toString() : '';
 
-    if (subject.includes('ณดà¸²') || subject.includes('ลินลดà¸²')) {
+    if (subject.includes('ณดา') || subject.includes('ลินลดา')) {
 
       results.push(`Row ${i + 1}: ${subject} (Live: ${data[i][6]}, Online: ${data[i][7]}, Makeup: ${data[i][10]}, Hours: ${data[i][12]}, Date: ${data[i][13]})`);
 
@@ -12990,7 +12990,7 @@ function debugSearchNada() {
 
   
 
-  const kgSheet = db.getSheetByName('à¹€ดà¸µà¹ˆยว อนุà¸šà¸²ล');
+  const kgSheet = db.getSheetByName('เดี่ยว อนุบาล');
 
   const kgData = kgSheet ? kgSheet.getRange(12, 1, kgSheet.getLastRow() - 11, 21).getValues() : [];
 
@@ -13030,7 +13030,7 @@ function getNextCourseName(currentName) {
 
 function findTargetSheetNameAndStudent(subject) {
 
-  const grades = ['อนุà¸šà¸²ล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+  const grades = ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
 
   let matchedGrade = '';
 
@@ -13046,17 +13046,17 @@ function findTargetSheetNameAndStudent(subject) {
 
   let sheetName = '';
 
-  if (subject.indexOf('à¹€ดà¸µà¹ˆยว') !== -1) {
+  if (subject.indexOf('เดี่ยว') !== -1) {
 
-    if (matchedGrade) sheetName = 'à¹€ดà¸µà¹ˆยว ' + matchedGrade;
+    if (matchedGrade) sheetName = 'เดี่ยว ' + matchedGrade;
 
-  } else if (subject.indexOf('ยà¹ˆอย') !== -1) {
+  } else if (subject.indexOf('ย่อย') !== -1) {
 
-    if (subject.indexOf('2-3') !== -1) sheetName = 'ยà¹ˆอย 2-3';
+    if (subject.indexOf('2-3') !== -1) sheetName = 'ย่อย 2-3';
 
-    else if (subject.indexOf('4-5') !== -1) sheetName = 'ยà¹ˆอย 4-5';
+    else if (subject.indexOf('4-5') !== -1) sheetName = 'ย่อย 4-5';
 
-    else if (subject.indexOf('6-10') !== -1) sheetName = 'ยà¹ˆอย 6-10';
+    else if (subject.indexOf('6-10') !== -1) sheetName = 'ย่อย 6-10';
 
   }
 
@@ -13150,7 +13150,7 @@ log.roomBranch || '',
 
     
 
-    logActivity(logUser, 'à¸šันทึà¸�คà¸²à¸šà¸ªอนหลà¸²ยรà¸²ยà¸�à¸²ร', 'à¸ˆà¸³นวน: ' + logs.length + ' วิà¸Šà¸²: ' + logs[0].subject);
+    logActivity(logUser, 'บันทึกคาบสอนหลายรายการ', 'จำนวน: ' + logs.length + ' วิชา: ' + logs[0].subject);
 
     
 
@@ -13305,7 +13305,7 @@ function saveBatchClassLogs(adds, updates, deletes, logUser) {
 
         if (log.teacherSub) teachersToInvalidate.add(log.teacherSub);
 
-        actionLog.push('à¹�à¸�à¹‰à¹„ข: ' + log.subject);
+        actionLog.push('แก้ไข: ' + log.subject);
 
       });
 
@@ -13361,7 +13361,7 @@ function saveBatchClassLogs(adds, updates, deletes, logUser) {
 
       });
 
-      actionLog.push('à¹€à¸žิà¹ˆมà¹ƒหมà¹ˆ: ' + adds.length + ' รà¸²ยà¸�à¸²ร');
+      actionLog.push('เพิ่มใหม่: ' + adds.length + ' รายการ');
 
     }
 
@@ -13369,7 +13369,7 @@ function saveBatchClassLogs(adds, updates, deletes, logUser) {
 
     if (actionLog.length > 0) {
 
-      logActivity(logUser, 'Batch Update คลà¸²à¸ªà¹€รà¸µยน', actionLog.join(', '));
+      logActivity(logUser, 'Batch Update คลาสเรียน', actionLog.join(', '));
 
       datesToInvalidate.forEach(d => clearClassLogsCache(d));
 
@@ -13597,7 +13597,7 @@ function getStudentHistoryData(name, nickname, logUser) {
 
         
 
-        // คà¹‰นหà¸²ดà¹‰วยà¸Šืà¹ˆอ-นà¸²มà¸ªà¸�ุลà¹€ตà¹‡มà¹€ปà¹‡นหลัà¸� (exact match)
+        // ค้นหาด้วยชื่อ-นามสกุลเต็มเป็นหลัก (exact match)
 
         if (stdName === name) {
 
@@ -13647,7 +13647,7 @@ function getStudentHistoryData(name, nickname, logUser) {
 
     
 
-    // ดึงรà¸²ยà¸�à¸²รà¸Šืà¹ˆอคอรà¹Œà¸ªทัà¹‰งหมดของนัà¸�à¹€รà¸µยนคนนà¸µà¹‰ (ซึà¹ˆงà¸�รองดà¹‰วยà¸Šืà¹ˆอ-นà¸²มà¸ªà¸�ุลตรงà¸�ันà¹�ลà¹‰ว)
+    // ดึงรายการชื่อคอร์สทั้งหมดของนักเรียนคนนี้ (ซึ่งกรองด้วยชื่อ-นามสกุลตรงกันแล้ว)
 
     const enrolledCourseNames = allStudents.map(s => s.courseName.toLowerCase().trim()).filter(c => c.length > 0);
 
@@ -13667,7 +13667,7 @@ function getStudentHistoryData(name, nickname, logUser) {
 
         
 
-        // à¹€à¸Šà¹‡ควà¹ˆà¸²วิà¸Šà¸²à¹ƒน Data Learn ตรงà¸�ัà¸šคอรà¹Œà¸ªทà¸µà¹ˆลงทะà¹€à¸šà¸µยนà¸ˆริง
+        // เช็คว่าวิชาใน Data Learn ตรงกับคอร์สที่ลงทะเบียนจริง
 
         let isCourseMatch = enrolledCourseNames.some(cName => {
 
@@ -13791,7 +13791,7 @@ function updateStudentPaymentDetails(id, paymentData, logUser) {
 
     
 
-    if (rowIndex === -1) throw new Error('à¹„มà¹ˆà¸žà¸šรà¸²ยà¸Šืà¹ˆอนัà¸�à¹€รà¸µยนà¹ƒนตà¸²รà¸²งหลัà¸�');
+    if (rowIndex === -1) throw new Error('ไม่พบรายชื่อนักเรียนในตารางหลัก');
 
     
 
@@ -13799,7 +13799,7 @@ function updateStudentPaymentDetails(id, paymentData, logUser) {
 
     const paymentDate = paymentData.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy');
 
-    const paymentChannel = paymentData.paymentChannel || 'à¸�à¸ªิà¸�ร à¸šัà¸�à¸Šà¸µà¸šริษัท(à¸ªà¹�à¸�น)';
+    const paymentChannel = paymentData.paymentChannel || 'กสิกร บักชีบริษัท(สแกน)';
 
     const staff = paymentData.staff || '';
 
@@ -13829,7 +13829,7 @@ function updateStudentPaymentDetails(id, paymentData, logUser) {
 
     statusSheet.getRange(rowIndex, 15).setValue(staff); 
 
-    // à¸šันทึà¸�à¹€งินà¸Šà¸³ระà¹€à¸žิà¹ˆมà¹€ติมลงรอà¸šà¸Šà¸³ระ 1-4 ทà¸µà¹ˆวà¹ˆà¸²งอยà¸¹à¹ˆà¹‚ดยอัตà¹‚นมัติ
+    // บันทึกเงินชำระเพิ่มเติมลงรอบชำระ 1-4 ที่ว่างอยู่โดยอัตโนมัติ
 
     const paymentTime = paymentData.paymentTime || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'HH.mm น.');
 
@@ -13893,17 +13893,17 @@ function updateStudentPaymentDetails(id, paymentData, logUser) {
 
     let hoursLeftStr = '';
 
-    if (classType.indexOf('à¹€ดà¸µà¹ˆยว') !== -1 || classType.indexOf('ยà¹ˆอย') !== -1) {
+    if (classType.indexOf('เดี่ยว') !== -1 || classType.indexOf('ย่อย') !== -1) {
 
       let rate = 250;
 
       if (round.toLowerCase().indexOf('ex') !== -1) rate = 312.5;
 
-      else if (classType.indexOf('ยà¹ˆอย 2-3') !== -1) rate = 3000 / 16;
+      else if (classType.indexOf('ย่อย 2-3') !== -1) rate = 3000 / 16;
 
-      else if (classType.indexOf('ยà¹ˆอย 4-5') !== -1) rate = 2500 / 16;
+      else if (classType.indexOf('ย่อย 4-5') !== -1) rate = 2500 / 16;
 
-      else if (classType.indexOf('ยà¹ˆอย 6-10') !== -1) rate = 2000 / 16;
+      else if (classType.indexOf('ย่อย 6-10') !== -1) rate = 2000 / 16;
 
       
 
@@ -13927,7 +13927,7 @@ function updateStudentPaymentDetails(id, paymentData, logUser) {
 
       
 
-      const formattedHrs = Math.floor(Math.abs(totalHrs)) + ' à¸Šม. ' + Math.round(Math.abs(totalHrs) % 1 * 60) + ' นà¸²ทà¸µ';
+      const formattedHrs = Math.floor(Math.abs(totalHrs)) + ' ชม. ' + Math.round(Math.abs(totalHrs) % 1 * 60) + ' นาที';
 
       hoursLeftStr = (netOutstanding < 0 ? '-' : '') + formattedHrs;
 
@@ -13987,7 +13987,7 @@ function updateStudentPaymentDetails(id, paymentData, logUser) {
 
     syncToGradeSheet(stdObj);
 
-    logActivity(logUser, 'à¸šันทึà¸�à¸Šà¸³ระà¹€งินคà¹‰à¸²งà¸ˆà¹ˆà¸²ย', `นัà¸�à¹€รà¸µยน: ${name} ยอดà¸Šà¸³ระà¹€à¸žิà¹ˆม: ${paidAmount} ยอดà¸ˆà¹ˆà¸²ยรวม: ${newPaid}`);
+    logActivity(logUser, 'บันทึกชำระเงินค้างจ่าย', `นักเรียน: ${name} ยอดชำระเพิ่ม: ${paidAmount} ยอดจ่ายรวม: ${newPaid}`);
 
     return { success: true };
 
@@ -13999,7 +13999,7 @@ function updateStudentPaymentDetails(id, paymentData, logUser) {
 
 }
 
-// à¸šันทึà¸�à¸ªถà¸²นะà¸�à¸²รà¹€งินà¹�ละà¸�à¸²รà¸Šà¸³ระà¹€งินรà¸²ยรัà¸šà¸žรà¹‰อมระà¸šà¸šà¹€à¸Šืà¹ˆอมขà¹‰อมà¸¹ลà¹ƒนà¸Šà¸µต
+// บันทึกสถานะการเงินและการชำระเงินรายรับพร้อมระบบเชื่อมข้อมูลในชีต
 
 function updateRevenues(updates, logUser) {
 
@@ -14047,7 +14047,7 @@ function updateRevenues(updates, logUser) {
 
       if (rowIndex !== -1) {
 
-        // อัปà¹€ดตขà¹‰อมà¸¹ลà¹ƒนà¸Šà¹ˆองทà¸²งà¸Šà¸³ระà¹€งิน (คอลัมนà¹Œ N/14) à¹�ละ ตรวà¸ˆà¸ªอà¸šà¹�ลà¹‰ว (คอลัมนà¹Œ Y/25)
+        // อัปเดตข้อมูลในช่องทางชำระเงิน (คอลัมน์ N/14) และ ตรวจสอบแล้ว (คอลัมน์ Y/25)
 
         sheet.getRange(rowIndex, 14).setValue(up.paymentChannel);
 
@@ -14055,7 +14055,7 @@ function updateRevenues(updates, logUser) {
 
         
 
-        // à¸ªà¹ˆงขà¹‰อมà¸¹ลทà¸µà¹ˆอัปà¹€ดตà¹„ปà¸šันทึà¸�ยังà¸Šà¸µตà¹�ยà¸�ตà¸²มระดัà¸šà¸Šัà¹‰น
+        // ส่งข้อมูลที่อัปเดตไปบันทึกยังชีตแยกตามระดับชั้น
 
         const rowVals = allData[rowIndex - 1];
 
@@ -14093,7 +14093,7 @@ function updateRevenues(updates, logUser) {
 
           paymentDate: cleanSheetDate(rowVals[12]),
 
-          paymentChannel: up.paymentChannel, // à¹ƒà¸Šà¹‰คà¹ˆà¸²ทà¸µà¹ˆà¹€ลือà¸�à¹ƒหมà¹ˆ
+          paymentChannel: up.paymentChannel, // ใช้ค่าที่เลือกใหม่
 
           staff: rowVals[14] ? rowVals[14].toString().trim() : '',
 
@@ -14101,7 +14101,7 @@ function updateRevenues(updates, logUser) {
 
           classHoursLeft: rowVals[22] ? rowVals[22].toString().trim() : '',
 
-          classType: rowVals[23] ? rowVals[23].toString().trim() : 'à¹€ดà¸µà¹ˆยว'
+          classType: rowVals[23] ? rowVals[23].toString().trim() : 'เดี่ยว'
 
         };
 
@@ -14113,7 +14113,7 @@ function updateRevenues(updates, logUser) {
 
     
 
-    logActivity(logUser, 'à¸šันทึà¸�à¸ªถà¸²นะà¸�à¸²รà¸Šà¸³ระà¹€งินรà¸²ยรัà¸š', `อัปà¹€ดตà¸ˆà¸³นวน ${updates.length} รà¸²ยà¸�à¸²ร`);
+    logActivity(logUser, 'บันทึกสถานะการชำระเงินรายรับ', `อัปเดตจำนวน ${updates.length} รายการ`);
 
     invalidateStudentCache();
 
@@ -14219,7 +14219,7 @@ function getMultipleStudentsCourses(students, logUser) {
 
   
 
-  // Group students by sheet name (for à¸�ลุà¹ˆมหลัà¸�)
+  // Group students by sheet name (for กลุ่มหลัก)
 
   const mainGroupSheets = {};
 
@@ -14229,7 +14229,7 @@ function getMultipleStudentsCourses(students, logUser) {
 
     const classType = s.classType || '';
 
-    if (classType.includes('à¹€ดà¸µà¹ˆยว') || classType.includes('ยà¹ˆอย')) {
+    if (classType.includes('เดี่ยว') || classType.includes('ย่อย')) {
 
       return;
 
@@ -14241,9 +14241,9 @@ function getMultipleStudentsCourses(students, logUser) {
 
     const branchLearn = s.branchLearn || '';
 
-    if (branchLearn.includes('à¸ªà¸²ขà¸²2') || branchLearn.includes('2')) suffix = '2';
+    if (branchLearn.includes('สาขา2') || branchLearn.includes('2')) suffix = '2';
 
-    else if (branchLearn.includes('à¸ªà¸²ขà¸²3') || branchLearn.includes('3')) suffix = '3';
+    else if (branchLearn.includes('สาขา3') || branchLearn.includes('3')) suffix = '3';
 
     
 
@@ -14543,11 +14543,11 @@ function migrateGradeClassroomSheets() {
 
     const row5Headers = [
 
-      'ระดัà¸šà¸Šัà¹‰น', 'à¸Šืà¹ˆอ-นà¸²มà¸ªà¸�ุล', 'à¸Šืà¹ˆอà¹€ลà¹ˆน', 'à¹‚รงà¹€รà¸µยน', 'หà¹‰องà¹€รà¸µยนยà¹ˆอย',
+      'ระดับชั้น', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'โรงเรียน', 'ห้องเรียนย่อย',
 
-      'à¹€à¸šอรà¹Œติดตà¹ˆอ', 'à¸Šืà¹ˆอà¹‚ปรà¹„à¸Ÿลà¹Œà¹„ลนà¹Œ', 'ID LINE', 'à¸ªà¸²ขà¸²à¹€รà¸µยน', 'à¸ªà¸²ขà¸²ทà¸µà¹ˆà¹€à¸�à¹‡à¸šà¹€งิน',
+      'เบอร์ติดต่อ', 'ชื่อโปรไฟล์ไลน์', 'ID LINE', 'สาขาเรียน', 'สาขาที่เก็บเงิน',
 
-      'ยอดรวม', 'à¸ªà¹ˆวนลด', 'คงà¹€หลือ', 'ยอดà¸ˆà¹ˆà¸²ย', 'รà¸¹ดà¸šัตร', 'วันทà¸µà¹ˆà¸Šà¸³ระà¹€งิน', 'à¸Šà¹ˆองทà¸²งà¸Šà¸³ระà¹€งิน', 'à¸œà¸¹à¹‰รัà¸šà¹€งิน'
+      'ยอดรวม', 'ส่วนลด', 'คงเหลือ', 'ยอดจ่าย', 'รูดบัตร', 'วันที่ชำระเงิน', 'ช่องทางชำระเงิน', 'ผู้รับเงิน'
 
     ];
 
@@ -14603,7 +14603,7 @@ function migrateManagerLogSheet() {
 
   const db = getDb();
 
-  const sheet = db.getSheetByName('Data à¸œà¸ˆà¸�.');
+  const sheet = db.getSheetByName('Data ผจก.');
 
   if (!sheet) return;
 
@@ -14629,7 +14629,7 @@ function migrateManagerLogSheet() {
 
   
 
-  Logger.log('Migrating Data à¸œà¸ˆà¸�. sheet to compact format');
+  Logger.log('Migrating Data ผจก. sheet to compact format');
 
   
 
@@ -14645,9 +14645,9 @@ function migrateManagerLogSheet() {
 
       migratedRows.push([
 
-        'à¸Šืà¹ˆอà¸œà¸¹à¹‰à¸ˆัดà¸�à¸²ร', 'à¹€วลà¸²à¹€ขà¹‰à¸²OT', 'à¹€วลà¸²ออà¸�OT', 'à¹€วลà¸²à¹€ขà¹‰à¸²งà¸²น', 'à¹€วลà¸²ออà¸�งà¸²น',
+        'ชื่อผู้จัดการ', 'เวลาเข้าOT', 'เวลาออกOT', 'เวลาเข้างาน', 'เวลาออกงาน',
 
-        'หมà¸²ยà¹€หตุ รà¸²ยละà¹€อà¸µยด OT', 'มà¸²', 'หยุด', 'à¸Šม.OT', 'à¸Šม.งà¸²น', 'วันทà¸µà¹ˆ'
+        'หมายเหตุ รายละเอียด OT', 'มา', 'หยุด', 'ชม.OT', 'ชม.งาน', 'วันที่'
 
       ]);
 
@@ -14751,7 +14751,7 @@ function getLowBalancePrivateStudents() {
 
         
 
-        if (!name || note.indexOf('à¹€รà¸µยนครà¸šà¹�ลà¹‰ว') !== -1) return;
+        if (!name || note.indexOf('เรียนครบแล้ว') !== -1) return;
 
         
 
@@ -15029,7 +15029,7 @@ function getSummary2569Data() {
 
   const db = getDb();
 
-  const grades = ['อนุà¸šà¸²ล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+  const grades = ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
 
   const summary = [];
 
@@ -15081,9 +15081,9 @@ function getSummary2569Data() {
 
     
 
-    // Private metrics (à¸ž grade)
+    // Private metrics (พ grade)
 
-    const privateSheetName = 'à¸ž ' + grade;
+    const privateSheetName = 'พ ' + grade;
 
     const pSheet = db.getSheetByName(privateSheetName);
 
@@ -15143,7 +15143,7 @@ function runDebugHeaders() {
 
   const db = SpreadsheetApp.openById('1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI');
 
-  const s1 = db.getSheetByName('à¹€ดà¸µà¹ˆยว ป.1');
+  const s1 = db.getSheetByName('เดี่ยว ป.1');
 
   const s2 = db.getSheetByName('ป.1/1');
 
@@ -15221,7 +15221,7 @@ function invalidateStudentCache() {
 
       const name = sheet.getName();
 
-      if (name.match(/^(ป\.|ม\.|อนุà¸šà¸²ล)/) || name.match(/^(ยà¹ˆอย)/)) {
+      if (name.match(/^(ป\.|ม\.|อนุบาล)/) || name.match(/^(ย่อย)/)) {
 
         clearCacheObject('enroll_map_' + name.replace(/\s+/g, '_'));
 
@@ -15359,9 +15359,9 @@ function invalidateTeacherSalaryCache(namesArray) {
 
     const cleanTeacher = name.toString().trim().toLowerCase();
 
-    const withoutKru = cleanTeacher.replace(/^ครà¸¹/, '').trim();
+    const withoutKru = cleanTeacher.replace(/^ครู/, '').trim();
 
-    const variations = [cleanTeacher, withoutKru, 'ครà¸¹' + withoutKru];
+    const variations = [cleanTeacher, withoutKru, 'ครู' + withoutKru];
 
     variations.forEach(t => {
 
@@ -15514,7 +15514,7 @@ function migrateExistingDataLearnSubjects() {
 
     
 
-    const thaiDays = ['อà¸²ทิตยà¹Œ', 'à¸ˆันทรà¹Œ', 'อังคà¸²ร', 'à¸žุธ', 'à¸žฤหัà¸ªà¸šดà¸µ', 'ศุà¸�รà¹Œ', 'à¹€à¸ªà¸²รà¹Œ'];
+    const thaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
 
     let count = 0;
 
@@ -15626,15 +15626,15 @@ function migrateAllGradeSheetsHeaders() {
 
   const sheets = [
 
-    'อนุà¸šà¸²ล/1','ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1','ม.1/1','ม.2/1','ม.3/1','ม.4/1','ม.5/1','ม.6/1',
+    'อนุบาล/1','ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1','ม.1/1','ม.2/1','ม.3/1','ม.4/1','ม.5/1','ม.6/1',
 
-    'อนุà¸šà¸²ล/2','ป.1/2','ป.2/2','ป.3/2','ป.4/2','ป.5/2','ป.6/2','ม.1/2','ม.2/2','ม.3/2','ม.4/2','ม.5/2','ม.6/2',
+    'อนุบาล/2','ป.1/2','ป.2/2','ป.3/2','ป.4/2','ป.5/2','ป.6/2','ม.1/2','ม.2/2','ม.3/2','ม.4/2','ม.5/2','ม.6/2',
 
-    'อนุà¸šà¸²ล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3',
+    'อนุบาล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3',
 
-    'à¹€ดà¸µà¹ˆยว อนุà¸šà¸²ล','à¹€ดà¸µà¹ˆยว ป.1','à¹€ดà¸µà¹ˆยว ป.2','à¹€ดà¸µà¹ˆยว ป.3','à¹€ดà¸µà¹ˆยว ป.4','à¹€ดà¸µà¹ˆยว ป.5','à¹€ดà¸µà¹ˆยว ป.6','à¹€ดà¸µà¹ˆยว ม.1','à¹€ดà¸µà¹ˆยว ม.2','à¹€ดà¸µà¹ˆยว ม.3','à¹€ดà¸µà¹ˆยว ม.4','à¹€ดà¸µà¹ˆยว ม.5','à¹€ดà¸µà¹ˆยว ม.6',
+    'เดี่ยว อนุบาล','เดี่ยว ป.1','เดี่ยว ป.2','เดี่ยว ป.3','เดี่ยว ป.4','เดี่ยว ป.5','เดี่ยว ป.6','เดี่ยว ม.1','เดี่ยว ม.2','เดี่ยว ม.3','เดี่ยว ม.4','เดี่ยว ม.5','เดี่ยว ม.6',
 
-    'ยà¹ˆอย 2-3','ยà¹ˆอย 4-5','ยà¹ˆอย 6-10'
+    'ย่อย 2-3','ย่อย 4-5','ย่อย 6-10'
 
   ];
 
@@ -15750,7 +15750,7 @@ function getStudentData(id) {
 
     if (!row) {
 
-      return { success: false, error: 'à¹„มà¹ˆà¸žà¸šขà¹‰อมà¸¹ลนัà¸�à¹€รà¸µยนà¸Šืà¹ˆอนà¸µà¹‰à¹ƒนà¸�à¸²นขà¹‰อมà¸¹ล' };
+      return { success: false, error: 'ไม่พบข้อมูลนักเรียนชื่อนี้ในฐานข้อมูล' };
 
     }
 
@@ -15804,7 +15804,7 @@ function getStudentData(id) {
 
       HoursLeft: row[22] ? row[22].toString().trim() : '',
 
-      ClassType: row[23] ? row[23].toString().trim() : 'à¹€ดà¸µà¹ˆยว'
+      ClassType: row[23] ? row[23].toString().trim() : 'เดี่ยว'
 
     };
 
@@ -15960,11 +15960,11 @@ function getLatestSingleOrSubgroupDetails(courseName) {
 
     const sheetsToSearch = [
 
-      "à¹€ดà¸µà¹ˆยว อนุà¸šà¸²ล", "à¹€ดà¸µà¹ˆยว ป.1", "à¹€ดà¸µà¹ˆยว ป.2", "à¹€ดà¸µà¹ˆยว ป.3", "à¹€ดà¸µà¹ˆยว ป.4", "à¹€ดà¸µà¹ˆยว ป.5", "à¹€ดà¸µà¹ˆยว ป.6",
+      "เดี่ยว อนุบาล", "เดี่ยว ป.1", "เดี่ยว ป.2", "เดี่ยว ป.3", "เดี่ยว ป.4", "เดี่ยว ป.5", "เดี่ยว ป.6",
 
-      "à¹€ดà¸µà¹ˆยว ม.1", "à¹€ดà¸µà¹ˆยว ม.2", "à¹€ดà¸µà¹ˆยว ม.3", "à¹€ดà¸µà¹ˆยว ม.4", "à¹€ดà¸µà¹ˆยว ม.5", "à¹€ดà¸µà¹ˆยว ม.6",
+      "เดี่ยว ม.1", "เดี่ยว ม.2", "เดี่ยว ม.3", "เดี่ยว ม.4", "เดี่ยว ม.5", "เดี่ยว ม.6",
 
-      "ยà¹ˆอย 2-3", "ยà¹ˆอย 4-5", "ยà¹ˆอย 6-10"
+      "ย่อย 2-3", "ย่อย 4-5", "ย่อย 6-10"
 
     ];
 
@@ -16100,7 +16100,7 @@ function migrateMainClassTo19Columns() {
 
     const col16Val = sheet.getRange(5, 16).getValue().toString().trim();
 
-    if (col16Val === 'วันทà¸µà¹ˆà¸Šà¸³ระà¹€งิน') {
+    if (col16Val === 'วันที่ชำระเงิน') {
 
       return; // Already migrated!
 
@@ -16120,11 +16120,11 @@ function migrateMainClassTo19Columns() {
 
     // Add the headers for the 3 new columns
 
-    sheet.getRange(5, 16).setValue('วันทà¸µà¹ˆà¸Šà¸³ระà¹€งิน');
+    sheet.getRange(5, 16).setValue('วันที่ชำระเงิน');
 
-    sheet.getRange(5, 17).setValue('à¸Šà¹ˆองทà¸²งà¸Šà¸³ระà¹€งิน');
+    sheet.getRange(5, 17).setValue('ช่องทางชำระเงิน');
 
-    sheet.getRange(5, 18).setValue('à¸œà¸¹à¹‰รัà¸šà¹€งิน');
+    sheet.getRange(5, 18).setValue('ผู้รับเงิน');
 
   });
 
@@ -16148,9 +16148,9 @@ function migrateDataLearnFromOldDB() {
 
   if (!oldSheet) {
 
-    Logger.log('à¹„มà¹ˆà¸žà¸šà¸Šà¸µต Data Learn à¹ƒนà¸�à¸²นขà¹‰อมà¸¹ลà¹€à¸�à¹ˆà¸²');
+    Logger.log('ไม่พบชีต Data Learn ในฐานข้อมูลเก่า');
 
-    return { success: false, error: 'à¹„มà¹ˆà¸žà¸šà¸Šà¸µต Data Learn à¹ƒนà¸�à¸²นขà¹‰อมà¸¹ลà¹€à¸�à¹ˆà¸²' };
+    return { success: false, error: 'ไม่พบชีต Data Learn ในฐานข้อมูลเก่า' };
 
   }
 
@@ -16176,15 +16176,15 @@ function migrateDataLearnFromOldDB() {
 
     ensureDataLearnMigrated(newDb);
 
-    Logger.log('à¹‚อนยà¹‰à¸²ยขà¹‰อมà¸¹ล Data Learn à¸ªà¸³à¹€รà¹‡à¸ˆ à¸ˆà¸³นวน ' + data.length + ' à¹�ถว');
+    Logger.log('โอนย้ายข้อมูล Data Learn สำเร็จ จำนวน ' + data.length + ' แถว');
 
-    return { success: true, message: 'à¹‚อนยà¹‰à¸²ยขà¹‰อมà¸¹ล Data Learn à¸ªà¸³à¹€รà¹‡à¸ˆ à¸ˆà¸³นวน ' + (data.length - 1) + ' à¹�ถว' };
+    return { success: true, message: 'โอนย้ายข้อมูล Data Learn สำเร็จ จำนวน ' + (data.length - 1) + ' แถว' };
 
   } else {
 
-    Logger.log('à¸Šà¸µต Data Learn à¹€à¸�à¹ˆà¸²à¹„มà¹ˆมà¸µขà¹‰อมà¸¹ล');
+    Logger.log('ชีต Data Learn เก่าไม่มีข้อมูล');
 
-    return { success: false, error: 'à¸Šà¸µต Data Learn à¹€à¸�à¹ˆà¸²à¹„มà¹ˆมà¸µขà¹‰อมà¸¹ล' };
+    return { success: false, error: 'ชีต Data Learn เก่าไม่มีข้อมูล' };
 
   }
 
@@ -16248,7 +16248,7 @@ function testResolveDynamicCourseName() {
 
     
 
-    // Find rows with "หลัà¸�" AND date >= 18/5/2026
+    // Find rows with "หลัก" AND date >= 18/5/2026
 
     var count = 0;
 
@@ -16256,7 +16256,7 @@ function testResolveDynamicCourseName() {
 
       var colA = data[i][0] ? data[i][0].toString().trim() : '';
 
-      if (colA.indexOf('หลัà¸�') < 0) continue;
+      if (colA.indexOf('หลัก') < 0) continue;
 
       
 
@@ -16294,9 +16294,9 @@ function testResolveDynamicCourseName() {
 
       // Show what grade+branch we'd look for
 
-      var gradeMatch = colA.match(/(อนุà¸šà¸²ล|ป\.\d|ม\.\d)/);
+      var gradeMatch = colA.match(/(อนุบาล|ป\.\d|ม\.\d)/);
 
-      var branchMatch = roomBranch.match(/à¸ªà¸²ขà¸²\s*(\d)/);
+      var branchMatch = roomBranch.match(/สาขา\s*(\d)/);
 
       var grade = gradeMatch ? gradeMatch[1] : 'NO_GRADE';
 
@@ -16314,7 +16314,7 @@ function testResolveDynamicCourseName() {
 
         var baseSubject = colA.substring(0, gradeMatch.index).trim();
 
-        var keyword = baseSubject.replace(/^หลัà¸�\s*/, '').trim();
+        var keyword = baseSubject.replace(/^หลัก\s*/, '').trim();
 
         results.push('Keyword: "' + keyword + '"');
 
@@ -16324,7 +16324,7 @@ function testResolveDynamicCourseName() {
 
       // Day of week
 
-      var dayNames = ['อà¸²ทิตยà¹Œ', 'à¸ˆันทรà¹Œ', 'อังคà¸²ร', 'à¸žุธ', 'à¸žฤหัà¸ªà¸šดà¸µ', 'ศุà¸�รà¹Œ', 'à¹€à¸ªà¸²รà¹Œ'];
+      var dayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
 
       var dayOfWeek = dayNames[new Date(y, m-1, d).getDay()];
 
@@ -16338,7 +16338,7 @@ function testResolveDynamicCourseName() {
 
       results.push('RESOLVED: ' + resolved);
 
-      results.push('CHANGED: ' + (resolved !== colA ? 'YES âœ…' : 'NO â�Œ'));
+      results.push('CHANGED: ' + (resolved !== colA ? 'YES ✅' : 'NO ❌'));
 
       results.push('');
 
@@ -16348,7 +16348,7 @@ function testResolveDynamicCourseName() {
 
     if (count === 0) {
 
-      results.push('⚠️� No "หลัà¸�" rows found with date >= 18/5/2026 in last 200 rows');
+      results.push('⚠️ No "หลัก" rows found with date >= 18/5/2026 in last 200 rows');
 
       results.push('Showing last 3 rows dates:');
 
@@ -16486,7 +16486,7 @@ function backfillDataLearnCourseNames() {
 
       
 
-      if (subject.indexOf('หลัà¸�') >= 0 && dateStr) {
+      if (subject.indexOf('หลัก') >= 0 && dateStr) {
 
         var resolved = resolveDynamicCourseName(subject, dateStr, roomBranch);
 
@@ -16638,9 +16638,9 @@ function submitPublicRegistration(studentData, fileData) {
 
       branchPay: studentData.branchLearn,
 
-      paymentTimeNote: slipUrl !== '-' ? 'ÊÅÔ»á¹º: ' + slipUrl : 'ÂÑ§äÁèä´éá¹ºÊÅÔ»',
+      paymentTimeNote: slipUrl !== '-' ? 'สลิปแนบ: ' + slipUrl : 'ยังไม่ได้แนบสลิป',
 
-      extraNote: 'ÇÔªÒ·ÕèÊÁÑ¤Ã: ' + studentData.course,
+      extraNote: 'วิชาที่สมัคร: ' + studentData.course,
 
       paid: paidAmount,
 
@@ -16650,7 +16650,7 @@ function submitPublicRegistration(studentData, fileData) {
 
       paymentDate: Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy'),
 
-      paymentChannel: slipUrl !== '-' ? 'âÍ¹à§Ô¹ (ÊÅÔ»á¹ºÍÍ¹äÅ¹ì)' : 'ÃÍªÓÃÐà§Ô¹',
+      paymentChannel: slipUrl !== '-' ? 'โอนเงิน (สลิปแนบออนไลน์)' : 'รอชำระเงิน',
 
       staff: 'Online Registration',
 
@@ -16670,7 +16670,7 @@ function submitPublicRegistration(studentData, fileData) {
 
       classHoursLeft: '',
 
-      classType: 'à´ÕèÂÇ',
+      classType: 'เดี่ยว',
 
       isChecked: false
 
@@ -16690,7 +16690,7 @@ function submitPublicRegistration(studentData, fileData) {
 
     
 
-    logActivity('System', '¹Ñ¡àÃÕÂ¹Å§·ÐàºÕÂ¹ÍÍ¹äÅ¹ì (StatusDB)', 'ª×èÍ¹Ñ¡àÃÕÂ¹: ' + studentData.name + ', ÂÍ´âÍ¹: ß' + paidAmount);
+    logActivity('System', '¹นักเรียนลงทะเบียนออนไลน์ (StatusDB)', 'ªชื่อนักเรียน: ' + studentData.name + ', ยอดโอน: ฿' + paidAmount);
 
     Logger.log('=== submitPublicRegistration SUCCESS ===');
 
