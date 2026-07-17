@@ -3778,17 +3778,21 @@ function convertDateFromSheet(dateVal) {
 
 function setLoading(show, text = 'กำลังโหลดข้อมูล...') {
 
+  const overlay = document.getElementById('loader_overlay');
+
+  const loaderText = document.getElementById('loader_text');
+
   if (show) {
 
     window._nextTaskTitle = text;
 
-  }
+    if (loaderText) loaderText.innerText = text;
 
-  const overlay = document.getElementById('loader_overlay');
+    if (overlay) overlay.classList.add('active');
 
-  if (overlay) {
+  } else {
 
-    overlay.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
 
   }
 
