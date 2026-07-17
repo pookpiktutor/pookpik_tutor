@@ -3538,7 +3538,9 @@ function checkTeacherLeaves() {
 
           const bgColor = isToday ? '#fef3c7' : '#fffbeb';
 
-          return `<span onclick="jumpToLeaveClass('${l.date}', ${l.rowIndex})" class="leave-card-clickable" style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 4px; font-size: 0.68rem; text-align: center; line-height: 1.4; cursor: pointer; transition: all 0.2s;">
+          const safeRoom = (l.room || '').replace(/'/g, "\\'");
+
+          return `<span onclick="jumpToLeaveClass('${l.date}', ${l.rowIndex}, '${safeRoom}')" class="leave-card-clickable" style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 4px; font-size: 0.68rem; text-align: center; line-height: 1.4; cursor: pointer; transition: all 0.2s;">
 
             ${dateBadge}👨‍🏫 <strong>ครู ${l.teacher} ลา</strong> — ${formatSubjectName(l.subject)} (${cleanTimeStr(l.timeStart)}-${cleanTimeStr(l.timeEnd)})${l.teacherSub ? ` ครูแทน: ${l.teacherSub}` : ' ⚠️ไม่มีครูแทน'}
 
@@ -8016,7 +8018,7 @@ function switchDailyGridView(mode) {
 
     monthlyControls.style.display = 'none';
 
-    dowTabs.style.display = 'none';
+    dowTabs.style.display = 'block';
 
     dailyContainer.style.display = 'block';
 
@@ -8102,7 +8104,41 @@ function selectDayOfWeek(dow) {
 
   updateDowTabsActive();
 
-  loadMonthlyGrid();
+  if (monthlyViewState.mode === 'daily') {
+
+    // In daily view: change the date to the corresponding day of the same week
+
+    const dateInput = document.getElementById('daily_grid_filter_date');
+
+    if (dateInput && dateInput.value) {
+
+      const currentDate = new Date(dateInput.value);
+
+      const currentDow = currentDate.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+
+      const diff = dow - currentDow;
+
+      const targetDate = new Date(currentDate);
+
+      targetDate.setDate(currentDate.getDate() + diff);
+
+      const y = targetDate.getFullYear();
+
+      const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+
+      const d = String(targetDate.getDate()).padStart(2, '0');
+
+      dateInput.value = `${y}-${m}-${d}`;
+
+      loadDailyGrid();
+
+    }
+
+  } else {
+
+    loadMonthlyGrid();
+
+  }
 
 }
 
@@ -8805,6 +8841,22 @@ function loadDailyGrid(isSilent = false) {
   if (document.getElementById('daily_grid_date_display')) {
 
     document.getElementById('daily_grid_date_display').innerText = formatDateToThaiShort(dateInput);
+
+  }
+
+  // Update day-of-week tabs to match the selected date
+
+  if (dateInput) {
+
+    const selectedDate = new Date(dateInput);
+
+    if (!isNaN(selectedDate.getTime())) {
+
+      monthlyViewState.selectedDow = selectedDate.getDay();
+
+      updateDowTabsActive();
+
+    }
 
   }
 
@@ -21234,11 +21286,61 @@ function initializeApp() {
 
 }
 
-function jumpToLeaveClass(dateStr, rowIndex) {
+function jumpToLeaveClass(dateStr, rowIndex, roomBranch) {
 
   // Switch to daily_grid panel first
 
   switchPanel('daily_grid');
+
+  
+
+  // Ensure we are in daily view mode
+
+  if (monthlyViewState.mode !== 'daily') {
+
+    switchDailyGridView('daily');
+
+  }
+
+  
+
+  // Switch to the correct branch tab if room info is available
+
+  if (roomBranch) {
+
+    const roomStr = roomBranch.toString().replace(/\s+/g, '');
+
+    let targetBranch = 'สาขา1';
+
+    if (roomStr.includes('สาขา3')) targetBranch = 'สาขา3';
+
+    else if (roomStr.includes('สาขา2')) targetBranch = 'สาขา2';
+
+    else if (roomStr.includes('ออนไลน์')) targetBranch = 'สาขา2'; // online defaults to branch 2
+
+    
+
+    if (state.activeBranchFilter !== targetBranch) {
+
+      state.activeBranchFilter = targetBranch;
+
+      document.querySelectorAll('.branch-tab[data-branch]').forEach(t => {
+
+        if (t.getAttribute('data-branch') === targetBranch) {
+
+          t.classList.add('active');
+
+        } else {
+
+          t.classList.remove('active');
+
+        }
+
+      });
+
+    }
+
+  }
 
   
 
@@ -21252,17 +21354,19 @@ function jumpToLeaveClass(dateStr, rowIndex) {
 
   if (dateInput) {
 
+    state.pendingScrollRowIndex = rowIndex;
+
     if (dateInput.value !== formattedDate) {
 
       dateInput.value = formattedDate;
-
-      state.pendingScrollRowIndex = rowIndex;
 
       loadDailyGrid();
 
     } else {
 
-      highlightScheduledItem(rowIndex);
+      // Same date — just re-render with correct branch and scroll
+
+      renderDailyGrid();
 
     }
 
