@@ -3780,21 +3780,83 @@ function convertDateFromSheet(dateVal) {
 
 function setLoading(show, text = 'กำลังโหลดข้อมูล...') {
 
-  const overlay = document.getElementById('loader_overlay');
-
-  const loaderText = document.getElementById('loader_text');
-
   if (show) {
 
     window._nextTaskTitle = text;
 
-    if (loaderText) loaderText.innerText = text;
+  }
 
-    if (overlay) overlay.classList.add('active');
+  
+
+  const overlay = document.getElementById('loader_overlay');
+
+  if (overlay) {
+
+    overlay.classList.remove('active'); // Ensure full-screen loader is always hidden
+
+  }
+
+
+
+  const container = document.getElementById('toast_container');
+
+  if (!container) return;
+
+
+
+  let loadingToast = document.getElementById('persistent_loading_toast');
+
+
+
+  if (show) {
+
+    if (!loadingToast) {
+
+      loadingToast = document.createElement('div');
+
+      loadingToast.id = 'persistent_loading_toast';
+
+      loadingToast.className = 'toast toast-info';
+
+      loadingToast.innerHTML = `
+
+        <div class="toast-icon">
+
+          <svg style="animation: spin 1.5s linear infinite; width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+            <circle cx="12" cy="12" r="10"></circle>
+
+            <path d="M12 6v6l4 2"></path>
+
+          </svg>
+
+        </div>
+
+        <div class="toast-message" id="persistent_loading_text" style="font-weight: 600;">${text}</div>
+
+      `;
+
+      container.prepend(loadingToast);
+
+      setTimeout(() => loadingToast.classList.add('active'), 10);
+
+    } else {
+
+      const textEl = document.getElementById('persistent_loading_text');
+
+      if (textEl) textEl.innerText = text;
+
+    }
 
   } else {
 
-    if (overlay) overlay.classList.remove('active');
+    if (loadingToast) {
+
+      loadingToast.classList.remove('active');
+
+      setTimeout(() => loadingToast.remove(), 300);
+
+    }
 
   }
 
