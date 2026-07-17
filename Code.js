@@ -11025,6 +11025,11 @@ function getClassLogs(filterDate, logUser) {
 
 }
 
+function debugGetClassLogs() {
+  const logs = getClassLogs('');
+  return logs ? logs.slice(0, 5) : null;
+}
+
 function getClassLogByRow(rowIndex) {
 
   try {

@@ -268,6 +268,68 @@ window.google.script.run = new Proxy({}, {
 
 
 
+      const isMutation = /^(save|add|update|delete|submit|clear|toggle|confirm|migrate|fix|init|ensure|change)/i.test(prop);
+
+
+
+      if (!isMutation) {
+
+        // Execute immediately (Bypass Queue for read operations)
+
+        if (window._originalGSR) {
+
+          const runner = successHandler ? window._originalGSR.withSuccessHandler(successHandler) : window._originalGSR;
+
+          const finalRunner = failureHandler ? runner.withFailureHandler(failureHandler) : runner;
+
+          finalRunner[prop](...args);
+
+        } else {
+
+          const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxZdtCU5oSYMho7Fsne3nXXE4IFWVNj_wFagCrGi86ycFxPJiPsRbAu4KGm_-wN2YJRlQ/exec';
+
+          fetch(GAS_API_URL, {
+
+            redirect: 'follow',
+
+            method: 'POST',
+
+            body: JSON.stringify({ functionName: prop, arguments: args }),
+
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+
+          })
+
+          .then(response => response.json())
+
+          .then(result => {
+
+            if (result && result.error) {
+
+              if (failureHandler) failureHandler(new Error(result.error));
+
+            } else {
+
+              if (successHandler) successHandler(result);
+
+            }
+
+          })
+
+          .catch(err => {
+
+            if (failureHandler) failureHandler(err);
+
+          });
+
+        }
+
+        return; // Don't push to queue
+
+      }
+
+
+
       window._bgTaskQueue.push({
 
         id: Date.now() + Math.random(),
