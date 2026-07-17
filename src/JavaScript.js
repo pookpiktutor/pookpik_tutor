@@ -900,11 +900,9 @@ function initTeacherFilterDates() {
 
     yearPicker.innerHTML = '';
 
-    // Fixed range: start from 2569 B.E. (2026 C.E.) for 10 years
-    const startYear = 2026; // 2569 B.E.
-    const endYear = startYear + 9; // 10 years forward
+    // Show current year +/- 2 years
 
-    for (let y = startYear; y <= endYear; y++) {
+    for (let y = year - 2; y <= year + 2; y++) {
 
       const opt = document.createElement('option');
 
@@ -1642,7 +1640,7 @@ function loadTeacherYearlySalary() {
 
         const monthRes = res.months[m];
 
-        if (monthRes) {
+        if (monthRes && monthRes.success) {
 
           yearlyPay += monthRes.totalPay || 0;
 
@@ -3842,11 +3840,7 @@ function populateDropdowns() {
 
     const optionsHtml = [];
 
-    // Fixed range: start from 2569 B.E. (2026 C.E.) for 10 years
-    const startYearStaff = 2026;
-    const endYearStaff = startYearStaff + 9;
-
-    for (let y = startYearStaff; y <= endYearStaff; y++) {
+    for (let y = currentYear - 2; y <= currentYear + 2; y++) {
 
       const selected = y === currentYear ? ' selected' : '';
 
@@ -8808,11 +8802,9 @@ function renderDailyAttendanceSummary() {
 
   const filteredLogs = (state.classLogs || []).filter(log => {
 
-    // roomBranch may contain extra text like "ห้อง 33 สาขา 2\niPad025"
-    // so use includes() instead of exact match
     const logBranchClean = (log.roomBranch || '').replace(/\s+/g, '');
 
-    return logBranchClean.includes(branchFilter) || branchFilter.includes(logBranchClean);
+    return logBranchClean === branchFilter;
 
   });
 
@@ -13300,7 +13292,7 @@ function handleStaffPayrollFilterChange() {
 
         const monthRes = res.months[m];
 
-        if (monthRes) {
+        if (monthRes && monthRes.success) {
 
           yearlyPay += monthRes.totalPay || 0;
 

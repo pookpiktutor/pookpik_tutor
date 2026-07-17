@@ -9528,7 +9528,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
   const cached = getCacheObject(cacheKey);
 
-  if (cached) return cached;
+  // if (cached) return cached;
 
   
 
@@ -9618,21 +9618,6 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
     };
 
-    // Pre-bucket classLogs by month in a SINGLE PASS for performance
-    const monthBuckets = {}; // m -> []
-    for (let m = 1; m <= 12; m++) monthBuckets[m] = [];
-
-    classLogs.forEach(c => {
-      const cDate = parseDateString(c.date);
-      for (let m = 1; m <= 12; m++) {
-        const range = getRangeForMonth(m);
-        if (cDate >= range.start && cDate <= range.end) {
-          monthBuckets[m].push(c);
-          break; // Each class log belongs to exactly one month
-        }
-      }
-    });
-
     const monthlyResults = {};
 
     for (let m = 1; m <= 12; m++) {
@@ -9649,7 +9634,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
       
 
-      monthBuckets[m].forEach(c => {
+      classLogs.forEach(c => {
 
         const cDate = parseDateString(c.date);
 
@@ -9924,7 +9909,7 @@ function getAllTeachersMonthlyPay(year, month) {
 
   const cached = getCacheObject(cacheKey);
 
-  if (cached) return cached;
+  // if (cached) return cached;
 
   
 
@@ -10906,13 +10891,6 @@ function searchHeadersInSheets_(headerCache, sheetNames, keyword, dayOfWeek) {
 
 function getClassLogs(filterDate, logUser) {
 
-  // Try cache first (only when not filtering by date, to get all rows)
-  if (!filterDate) {
-    const cacheKey = 'class_logs_all_v4';
-    const cached = getCacheObject(cacheKey);
-    if (cached) return cached;
-  }
-
   // à¸„à¸£à¸¹à¸ªà¸²à¸¡à¸²à¸£à¸–à¸”à¸¹à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸•à¸²à¸£à¸²à¸‡à¹€à¸£à¸µà¸¢à¸™à¹„à¸”à¹‰
 
   
@@ -11013,9 +10991,7 @@ function getClassLogs(filterDate, logUser) {
 
     
 
-    // Cache class logs for 3 minutes to speed up repeated calls
-    const cacheKey = 'class_logs_all_v4';
-    try { setCacheObject(cacheKey, logs, 180); } catch(e) {}
+     // Cache for 2 minutes
 
     return logs;
 
