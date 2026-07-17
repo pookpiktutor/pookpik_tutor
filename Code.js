@@ -10990,7 +10990,7 @@ function getClassLogs(filterDate, logUser) {
 
         teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
 
-        numKids: row[15] ? (parseInt(row[15]) || 0) : 0,
+        numKids: (parseInt(row[6]) || 0) + (parseInt(row[7]) || 0) + (parseInt(row[10]) || 0),
 
         rowIndex: idx + 1
 
@@ -11094,7 +11094,7 @@ function getClassLogByRow(rowIndex) {
 
         teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
 
-        numKids: row[15] ? (parseInt(row[15]) || 0) : 0,
+        numKids: (parseInt(row[6]) || 0) + (parseInt(row[7]) || 0) + (parseInt(row[10]) || 0),
 
         rowIndex: rowIndex
 
@@ -11232,7 +11232,7 @@ function getClassLogsForTeacher(teacherName, nickname) {
 
         teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
 
-        numKids: row[15] ? (parseInt(row[15]) || 0) : 0,
+        numKids: (parseInt(row[6]) || 0) + (parseInt(row[7]) || 0) + (parseInt(row[10]) || 0),
 
         rowIndex: idx + 1
 
@@ -13267,6 +13267,9 @@ function saveBatchClassLogs(adds, updates, deletes, logUser) {
         sheet.getRange(rowIndex, 1, 1, 14).setValues(newVals);
 
         sheet.getRange(rowIndex, 15).setValue(''); // clear confirm
+        
+        // Update numKids column
+        sheet.getRange(rowIndex, 16).setValue((parseInt(log.isPresentLive, 10)||0) + (parseInt(log.isPresentOnline, 10)||0) + (parseInt(log.isMakeup, 10)||0));
 
         try { processClassHoursDeduction(log, false); } catch(e){}
 
