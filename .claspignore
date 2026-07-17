@@ -2,8 +2,8 @@
 **
 # except these
 !Code.js
-!Index.html
+!index.html
 !JavaScript.html
-!Register.html
+!register.html
 !Styles.html
 !appsscript.json
