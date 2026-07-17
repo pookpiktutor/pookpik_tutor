@@ -6738,9 +6738,13 @@ function renderGradeSheetTable() {
 
   const displayedCourses = courses.filter(c => {
 
+    if (c.branch !== selectedBranch) return false;
+
+    
+
     if (filterRound === 'ALL') {
 
-      return c.branch === selectedBranch;
+      return true;
 
     } else {
 
@@ -6760,15 +6764,7 @@ function renderGradeSheetTable() {
 
   const displayedStudents = students.filter(s => {
 
-    if (filterRound === 'ALL') {
-
-      return s.branch === selectedBranch;
-
-    } else {
-
-      return true; // show all students across all branches when round filter is active
-
-    }
+    return s.branch === selectedBranch;
 
   });
 

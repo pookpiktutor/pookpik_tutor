@@ -7941,7 +7941,7 @@ function getGradeSheetData(grade, branch, logUser) {
 
       
 
-      const branchName = `à¸ªà¸²ขà¸²${suffix}`;
+      const branchName = `สาขา${suffix}`;
 
       
 
