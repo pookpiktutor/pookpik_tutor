@@ -10936,21 +10936,20 @@ function getClassLogs(filterDate, logUser) {
 
     
 
+    let targetDateStr = null;
+    if (filterDate) {
+      const dt = parseDateString(filterDate);
+      if (dt) targetDateStr = Utilities.formatDate(dt, 'Asia/Bangkok', 'dd/MM/yyyy');
+    }
+
     const logs = [];
 
-    
-
     rawData.forEach((row, idx) => {
-
       if (idx === 0) return;
-
       if (!row[0] || row[0] === '0') return;
 
-      
-
       const dateRaw = cleanSheetDate(row[12]);
-
-      if (filterDate && !areDatesSame(dateRaw, filterDate)) return;
+      if (targetDateStr && dateRaw !== targetDateStr) return;
 
       const roomBranchVal = row[13] ? row[13].toString().trim() : '';
 
