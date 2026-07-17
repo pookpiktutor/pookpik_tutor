@@ -9195,11 +9195,8 @@ function renderDailyGrid() {
   const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
 
   const filteredRooms = (state.rooms || []).filter(room => {
-
     const roomBranchClean = (room.branch || '').replace(/\s+/g, '');
-
-    return roomBranchClean === branchFilter;
-
+    return roomBranchClean.includes(branchFilter);
   });
 
 
