@@ -4460,7 +4460,7 @@ function getMonthlyGridData(year, month, dayOfWeek, logUser) {
 
         roomBranch: roomBranchVal,
 
-        teacherConfirmed: row[13] ? (parseInt(row[13]) || 0) : 0,
+        teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
 
         rowIndex: idx + 1
 
@@ -13266,7 +13266,7 @@ function saveBatchClassLogs(adds, updates, deletes, logUser) {
 
         sheet.getRange(rowIndex, 1, 1, 14).setValues(newVals);
 
-        sheet.getRange(rowIndex, 16).setValue(''); // clear confirm
+        sheet.getRange(rowIndex, 15).setValue(''); // clear confirm
 
         try { processClassHoursDeduction(log, false); } catch(e){}
 
