@@ -45,15 +45,16 @@ function updateTaskWidget() {
 
 
   if (visibleTasks.length === 0) {
-
-    widget.style.display = 'none';
-
+    widget.style.display = 'flex';
+    widget.innerHTML = `
+      <div class="tq-header">
+        <div><i class="fas fa-check-circle" style="color: var(--color-success);"></i> สถานะระบบ</div>
+        <div class="tq-count" style="background: rgba(16, 185, 129, 0.2); color: var(--color-success);">พร้อมใช้งาน</div>
+      </div>
+    `;
     return;
-
   }
-
   
-
   widget.style.display = 'flex';
 
   const activeCount = visibleTasks.filter(t => t.status !== 'success' && t.status !== 'error').length;
