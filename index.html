@@ -145,13 +145,14 @@
       <!-- MAIN CONTENT AREA -->
       <main class="main-content">
         <!-- Low Balance Warning Banner -->
-        <div id="low_balance_warning_banner" style="display: none; background: linear-gradient(135deg, #fef2f2, #fee2e2); border-bottom: 2px solid #ef4444; padding: 8px 16px 0px 16px; font-size: 0.9rem; color: #991b1b; font-weight: 500; align-items: center; gap: 6px; flex-wrap: wrap; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); z-index: 100;">
+        <div style="position: relative;">
+          <div id="low_balance_warning_banner" style="display: none; background: linear-gradient(135deg, #fef2f2, #fee2e2); border-bottom: 2px solid #ef4444; padding: 8px 16px 0px 16px; font-size: 0.9rem; color: #991b1b; font-weight: 500; align-items: center; gap: 6px; flex-wrap: wrap; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); z-index: 100; padding-right: 200px;">
           <div style="flex-grow: 1; padding-bottom: 8px;" id="low_balance_warning_text"></div>
           <button onclick="this.parentElement.style.display='none'" style="background: transparent; border: none; cursor: pointer; font-size: 1rem; color: #991b1b; padding: 4px; display: flex; align-items: center; justify-content: center; margin-left: auto; margin-bottom: 8px;">✕</button>
         </div>
         
         <!-- Teacher Leave Warning Banner -->
-        <div id="teacher_leave_warning_banner" style="display: none; background: linear-gradient(135deg, #fffbeb, #fef3c7); border-bottom: 2px solid #f59e0b; padding: 8px 16px 0px 16px; font-size: 0.9rem; color: #92400e; font-weight: 500; align-items: center; gap: 6px; flex-wrap: wrap; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); z-index: 100;">
+        <div id="teacher_leave_warning_banner" style="display: none; background: linear-gradient(135deg, #fffbeb, #fef3c7); border-bottom: 2px solid #f59e0b; padding: 8px 16px 0px 16px; font-size: 0.9rem; color: #92400e; font-weight: 500; align-items: center; gap: 6px; flex-wrap: wrap; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); z-index: 100; padding-right: 200px;">
           <div style="flex-grow: 1; padding-bottom: 8px;" id="teacher_leave_warning_text"></div>
           <button onclick="this.parentElement.style.display='none'" style="background: transparent; border: none; cursor: pointer; font-size: 1rem; color: #92400e; padding: 4px; display: flex; align-items: center; justify-content: center; margin-left: auto; margin-bottom: 8px;">✕</button>
         </div>
@@ -3536,6 +3537,6 @@ function editStudentFromGradeSheet(studentName) {
 }
 </script>
     <datalist id="teachers_datalist"></datalist>
-    <script src="src/JavaScript.js?v=1784311645195" charset="utf-8"></script>
+    <script src="src/JavaScript.js?v=1784313450935" charset="utf-8"></script>
 </body>
 </html>

@@ -3798,63 +3798,31 @@ function setLoading(show, text = 'กำลังโหลดข้อมูล.
 
 
 
-  const container = document.getElementById('toast_container');
+  const inlineLoader = document.getElementById('inline_loading_indicator');
 
-  if (!container) return;
-
-
-
-  let loadingToast = document.getElementById('persistent_loading_toast');
+  const inlineText = document.getElementById('inline_loading_text');
 
 
 
   if (show) {
 
-    if (!loadingToast) {
+    if (inlineLoader) {
 
-      loadingToast = document.createElement('div');
+      inlineLoader.style.display = 'flex';
 
-      loadingToast.id = 'persistent_loading_toast';
+    }
 
-      loadingToast.className = 'toast toast-info';
+    if (inlineText) {
 
-      loadingToast.innerHTML = `
-
-        <div class="toast-icon">
-
-          <svg style="animation: spin 1.5s linear infinite; width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-
-            <circle cx="12" cy="12" r="10"></circle>
-
-            <path d="M12 6v6l4 2"></path>
-
-          </svg>
-
-        </div>
-
-        <div class="toast-message" id="persistent_loading_text" style="font-weight: 600;">${text}</div>
-
-      `;
-
-      container.prepend(loadingToast);
-
-      setTimeout(() => loadingToast.classList.add('active'), 10);
-
-    } else {
-
-      const textEl = document.getElementById('persistent_loading_text');
-
-      if (textEl) textEl.innerText = text;
+      inlineText.innerText = text;
 
     }
 
   } else {
 
-    if (loadingToast) {
+    if (inlineLoader) {
 
-      loadingToast.classList.remove('active');
-
-      setTimeout(() => loadingToast.remove(), 300);
+      inlineLoader.style.display = 'none';
 
     }
 
