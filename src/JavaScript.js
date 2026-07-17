@@ -902,7 +902,7 @@ function initTeacherFilterDates() {
 
     // Show current year +/- 2 years
 
-    for (let y = year - 2; y <= year + 2; y++) {
+    for (let y = 2026; y <= 2032; y++) {
 
       const opt = document.createElement('option');
 
@@ -3152,7 +3152,7 @@ function matchRoomAndBranch(roomBranch, roomName, branchName) {
 
   const escapedRN = cleanRN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
-  const roomRegex = new RegExp('^' + escapedRN + '(?!\\d|/)', 'i');
+  const roomRegex = new RegExp('(?:^|\\\\s)' + escapedRN + '(?!\\\\d|/)', 'i');
 
   if (!roomRegex.test(cleanRB)) {
 
@@ -3840,7 +3840,7 @@ function populateDropdowns() {
 
     const optionsHtml = [];
 
-    for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+    for (let y = 2026; y <= 2032; y++) {
 
       const selected = y === currentYear ? ' selected' : '';
 
@@ -8804,7 +8804,7 @@ function renderDailyAttendanceSummary() {
 
     const logBranchClean = (log.roomBranch || '').replace(/\s+/g, '');
 
-    return logBranchClean === branchFilter;
+    return logBranchClean.includes(branchFilter);
 
   });
 
