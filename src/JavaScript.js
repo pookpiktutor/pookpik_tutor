@@ -8322,7 +8322,7 @@ function renderMonthlyGrid(data) {
 
   let html = `
 
-    <div style="background: linear-gradient(135deg, rgba(0,132,255,0.06) 0%, rgba(16,185,129,0.06) 100%); border-radius: 12px; padding: 12px 16px; border: 1px dashed rgba(0,132,255,0.25); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+    <div style="background: linear-gradient(135deg, rgba(0,132,255,0.06) 0%, rgba(16,185,129,0.06) 100%); border-radius: 12px; padding: 12px 16px; border: 1px dashed rgba(0,132,255,0.25); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; min-width: 0; overflow: hidden;">
 
       <h3 style="margin: 0; font-size: 1rem; color: var(--color-primary-hover); font-weight: 700;">
 
