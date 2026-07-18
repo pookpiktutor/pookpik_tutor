@@ -799,7 +799,47 @@ function handleLogin(e) {
 
         if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'none';
 
-        showToast('เข้าสู่ระบบสำเร็จ!', 'success');
+        document.getElementById('mobile_menu_btn')?.addEventListener('click', function() {
+
+    const sidebar = document.getElementById('sidebar');
+
+    if (sidebar.style.transform === 'translateX(0px)') {
+
+      sidebar.style.transform = 'translateX(-100%)';
+
+    } else {
+
+      sidebar.style.transform = 'translateX(0px)';
+
+    }
+
+  });
+
+  
+
+  // Call updateTaskWidget on load to show "ready" state if desired
+
+  updateTaskWidget();
+
+  
+
+  // Custom form bindings
+
+  function setupCharCounting() {
+
+    const inputs = document.querySelectorAll('input[maxlength], textarea[maxlength]');
+
+    inputs.forEach(input => {
+
+      function updateCount() {
+
+      }
+
+    });
+
+  }
+
+  showToast('เข้าสู่ระบบสำเร็จ!', 'success');
 
         checkSession();
 
@@ -2386,6 +2426,8 @@ function bootApp() {
       window._nextTaskSilent = true;
 
       checkTeacherLeaves();
+
+      updateTaskWidget();
 
     })
 
@@ -4835,6 +4877,14 @@ function loadDashboard(isSilent = false) {
 
         renderDashboardData(data);
 
+        // Fetch today's student counts for the dashboard
+
+        if (typeof loadDailyGrid === 'function') {
+
+          loadDailyGrid(true);
+
+        }
+
       } else if (!isSilent) {
 
         showToast('ไม่สามารถโหลดข้อมูลหน้าหลักได้: ' + (data ? data.error : 'unknown'), 'error');
@@ -7056,19 +7106,13 @@ function handleCourseHeaderDayTimeChange(colIndex, sheetName, input) {
 
 
 function handleCourseHeaderPriceChange(colIndex, sheetName, input) {
-
-  const val = parseFloat(input.value) || 0;
-
+  const rawVal = input.value.toString().replace(/,/g, '');
+  const val = parseFloat(rawVal) || 0;
   const course = state.displayedCourses.find(c => c.colIndex === colIndex && c.sheetName === sheetName);
-
   if (course) {
-
     course.price = val;
-
     recalculateGridTotals();
-
   }
-
 }
 
 
@@ -7132,51 +7176,28 @@ function recalculateGridTotals() {
   
 
   students.forEach((s, idx) => {
-
     let subtotal = 0;
-
     courses.forEach(c => {
-
       if (s.sheetName === c.sheetName) {
-
         const val = s.courseValues[c.colIndex];
-
         if (val !== '' && val !== undefined && !isNaN(val)) {
-
           const num = parseFloat(val);
-
-          const price = parseFloat(c.price) || 0;
-
+          const price = parseFloat(c.price.toString().replace(/,/g, '')) || 0;
           const totalSessions = parseInt(c.totalSessions) || 10;
-
           
-
           if (num === 30) {
-
             subtotal += price * 0.7;
-
           } else if (num === 20) {
-
             subtotal += price * 0.9;
-
           } else if (num === 50) {
-
             subtotal += price * 0.5;
-
           } else if (num >= 1 && num <= 2) {
-
             subtotal += num * 350;
-
           } else if (num >= 3) {
-
             subtotal += num * (price / totalSessions);
-
           }
-
         }
-
       }
-
     });
 
     
@@ -8571,6 +8592,26 @@ function renderMonthlyGrid(data) {
 
   // === ROOM-BASED WEEKLY VIEW ===
 
+  // Gather all unique start times for alignment
+
+  const uniqueStartTimes = new Set();
+
+  filteredRooms.forEach(room => {
+
+    state.classLogs.filter(log => matchRoomAndBranch(log.roomBranch, room.roomName, room.branch)).forEach(c => {
+
+      if (c.timeStart) uniqueStartTimes.add(c.timeStart);
+
+    });
+
+  });
+
+  const sortedStartTimes = Array.from(uniqueStartTimes).sort();
+
+  const numCols = Math.max(6, sortedStartTimes.length); // At least 6 columns as requested
+
+
+
   filteredRooms.forEach(room => {
 
     // Collect classes for this room across all weeks
@@ -8951,7 +8992,27 @@ function renderDailyAttendanceSummary() {
 
   const container = document.getElementById('daily_attendance_summary_container');
 
-  if (!container) return;
+  let dashboardContainer = document.getElementById('dashboard_daily_attendance_summary_container');
+
+  if (!dashboardContainer) {
+
+    const dashGrid = document.querySelector('#dashboard_panel .grid-cols-3');
+
+    if (dashGrid) {
+
+      dashboardContainer = document.createElement('div');
+
+      dashboardContainer.id = 'dashboard_daily_attendance_summary_container';
+
+      dashboardContainer.style.cssText = 'grid-column: 1 / -1; margin-bottom: 20px; background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); overflow-x: auto; padding: 15px;';
+
+      dashGrid.insertBefore(dashboardContainer, dashGrid.firstChild);
+
+    }
+
+  }
+
+  if (!container && !dashboardContainer) return;
 
   
 
@@ -8969,7 +9030,11 @@ function renderDailyAttendanceSummary() {
 
   if (filteredLogs.length === 0) {
 
-    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">ไม่มีข้อมูลคลาสเรียนในสาขานี้สำหรับวันนี้</div>`;
+    const emptyHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">ไม่มีข้อมูลคลาสเรียนในสาขานี้สำหรับวันนี้</div>`;
+
+    if (container) container.innerHTML = emptyHTML;
+
+    if (dashboardContainer) dashboardContainer.innerHTML = emptyHTML;
 
     return;
 
@@ -9489,9 +9554,11 @@ function renderDailyGrid() {
 
         
 
+        const colIndex = sortedStartTimes.indexOf(c.timeStart) + 1;
+
         classesHTML += `
 
-          <div id="scheduled_item_${c.rowIndex}" class="scheduled-item ${statusClass}" style="position: relative; padding: 6px 8px; border-radius: 8px; margin-bottom: 0px; border: 1.2px solid var(--border-color); ${cardBgStyle} ${cardBorderStyle}">
+          <div id="scheduled_item_${c.rowIndex}" class="scheduled-item ${statusClass}" style="grid-column: ${colIndex}; position: relative; padding: 6px 8px; border-radius: 8px; margin-bottom: 0px; border: 1.2px solid var(--border-color); ${cardBgStyle} ${cardBorderStyle}">
 
             <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 2px;">
 
@@ -9617,7 +9684,7 @@ function renderDailyGrid() {
 
       </div>
 
-      <div class="room-classes">
+      <div class="room-classes" style="display: grid !important; grid-template-columns: repeat(${numCols}, 1fr) !important; gap: 10px !important;">
 
         ${classesHTML}
 
@@ -9727,6 +9794,113 @@ function showAddRoomModal() {
 
 
 
+
+
+window.createClassTab = function(i) {
+
+  if (document.getElementById('class_tab_' + i)) return;
+
+
+
+  const btnContainer = document.querySelector('#class_tabs_container').previousElementSibling;
+
+  const newBtn = document.createElement('button');
+
+  newBtn.type = 'button';
+
+  newBtn.className = 'btn class-tab-btn';
+
+  newBtn.id = 'class_tab_btn_' + i;
+
+  newBtn.setAttribute('onclick', `switchClassTab(${i})`);
+
+  newBtn.style.cssText = 'padding: 6px 16px; font-size: 0.82rem; border-radius: 8px 8px 0 0;';
+
+  newBtn.innerHTML = `📚 คลาส ${i + 1}`;
+
+  
+
+  const copyBtn = document.getElementById('copy_from_class1_btn');
+
+  if (copyBtn) {
+
+    btnContainer.insertBefore(newBtn, copyBtn);
+
+  } else {
+
+    btnContainer.appendChild(newBtn);
+
+  }
+
+
+
+  const tab0 = document.getElementById('class_tab_0');
+
+  const newTab = tab0.cloneNode(true);
+
+  newTab.id = 'class_tab_' + i;
+
+  newTab.style.display = 'none';
+
+
+
+  newTab.querySelectorAll('[id]').forEach(el => {
+
+    if (el.id.endsWith('_0')) el.id = el.id.replace('_0', '_' + i);
+
+  });
+
+
+
+  newTab.querySelectorAll('[list]').forEach(el => {
+
+    if (el.getAttribute('list').endsWith('_0')) {
+
+      el.setAttribute('list', el.getAttribute('list').replace('_0', '_' + i));
+
+    }
+
+  });
+
+
+
+  newTab.querySelectorAll('[onchange]').forEach(el => {
+
+    const val = el.getAttribute('onchange');
+
+    if (val.includes('(0)')) el.setAttribute('onchange', val.replace('(0)', `(${i})`));
+
+  });
+
+  
+
+  newTab.querySelectorAll('[oninput]').forEach(el => {
+
+    const val = el.getAttribute('oninput');
+
+    if (val.includes('(0)')) el.setAttribute('oninput', val.replace('(0)', `(${i})`));
+
+  });
+
+
+
+  newTab.querySelectorAll('input, select').forEach(input => {
+
+    if (input.type === 'checkbox' || input.type === 'radio') input.checked = false;
+
+    else if (input.type === 'number') input.value = 0;
+
+    else input.value = '';
+
+  });
+
+
+
+  document.getElementById('class_tabs_container').appendChild(newTab);
+
+};
+
+
 function showEditClassLogModal(rowIndex) {
 
   const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
@@ -9773,7 +9947,11 @@ function showEditClassLogModal(rowIndex) {
 
     classes.forEach((data, i) => {
 
-      if (i > 3) return; // Support up to 4 classes
+      if (i > 3) {
+
+        if (typeof window.createClassTab === 'function') window.createClassTab(i);
+
+      }
 
       modalState.editingIndexes[i] = data.rowIndex;
 
@@ -10595,7 +10773,9 @@ function showAddClassLogModal() {
 
   }
 
-  for (let i = 0; i < 4; i++) {
+  const numTabs = document.querySelectorAll('.class-tab-content').length || 4;
+
+  for (let i = 0; i < numTabs; i++) {
 
     const dateEl = document.getElementById('class_date_' + i);
 
@@ -11031,7 +11211,9 @@ function clearClassForm() {
 
   modalState.editingIndex = -1;
 
-  modalState.editingIndexes = [-1, -1, -1, -1];
+  const numTabs = document.querySelectorAll('.class-tab-content').length || 4;
+
+  modalState.editingIndexes = Array(numTabs).fill(-1);
 
   document.getElementById('class_modal_title').innerText = 'บันทึกชั่วโมงสอนคลาสใหม่';
 
@@ -11043,9 +11225,9 @@ function clearClassForm() {
 
 
 
-  // Reset all 4 tab inputs
+  // Reset all tab inputs
 
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < numTabs; i++) {
 
     const get = id => document.getElementById(id + '_' + i);
 
@@ -11097,7 +11279,9 @@ function clearClassForm() {
 
 function switchClassTab(idx) {
 
-  for (let i = 0; i < 4; i++) {
+  const numTabs = document.querySelectorAll('.class-tab-content').length || 4;
+
+  for (let i = 0; i < numTabs; i++) {
 
     const tab = document.getElementById('class_tab_' + i);
 
@@ -11173,7 +11357,9 @@ function copyClassLogFromFirst() {
 
   const fields = ['class_teacher_reg', 'class_time_start', 'class_time_end', 'class_hours', 'class_date', 'class_note'];
 
-  for (let i = 1; i < 4; i++) {
+  const numTabs = document.querySelectorAll('.class-tab-content').length || 4;
+
+  for (let i = 1; i < numTabs; i++) {
 
     fields.forEach(f => {
 
@@ -11607,7 +11793,9 @@ function saveClassLog(e) {
 
 
 
-    for (let i = 0; i < 4; i++) {
+    const numTabs = document.querySelectorAll('.class-tab-content').length || 4;
+
+    for (let i = 0; i < numTabs; i++) {
 
       const g = id => document.getElementById(id + '_' + i);
 
