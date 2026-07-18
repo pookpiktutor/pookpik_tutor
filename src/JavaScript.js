@@ -9910,7 +9910,35 @@ window.createClassTab = function(i) {
 
 
 
+  newTab.querySelectorAll('select.form-select').forEach(select => {
+
+    const parent = select.parentNode;
+
+    if (parent && parent.classList.contains('searchable-select-container')) {
+
+      parent.parentNode.insertBefore(select, parent);
+
+      parent.remove();
+
+      select.style.display = '';
+
+    }
+
+  });
+
+
+
   document.getElementById('class_tabs_container').appendChild(newTab);
+
+
+
+  if (typeof makeSelectSearchable === 'function') {
+
+    makeSelectSearchable('class_teacher_reg_' + i);
+
+    makeSelectSearchable('class_teacher_sub_' + i);
+
+  }
 
 };
 
