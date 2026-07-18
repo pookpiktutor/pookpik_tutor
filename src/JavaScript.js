@@ -8592,26 +8592,6 @@ function renderMonthlyGrid(data) {
 
   // === ROOM-BASED WEEKLY VIEW ===
 
-  // Gather all unique start times for alignment
-
-  const uniqueStartTimes = new Set();
-
-  filteredRooms.forEach(room => {
-
-    state.classLogs.filter(log => matchRoomAndBranch(log.roomBranch, room.roomName, room.branch)).forEach(c => {
-
-      if (c.timeStart) uniqueStartTimes.add(c.timeStart);
-
-    });
-
-  });
-
-  const sortedStartTimes = Array.from(uniqueStartTimes).sort();
-
-  const numCols = Math.max(6, sortedStartTimes.length); // At least 6 columns as requested
-
-
-
   filteredRooms.forEach(room => {
 
     // Collect classes for this room across all weeks
@@ -9419,6 +9399,24 @@ function renderDailyGrid() {
     const roomBranchClean = (room.branch || '').replace(/\s+/g, '');
     return roomBranchClean.includes(branchFilter);
   });
+
+
+
+  const uniqueStartTimes = new Set();
+
+  filteredRooms.forEach(room => {
+
+    state.classLogs.filter(log => matchRoomAndBranch(log.roomBranch, room.roomName, room.branch)).forEach(c => {
+
+      if (c.timeStart) uniqueStartTimes.add(c.timeStart);
+
+    });
+
+  });
+
+  const sortedStartTimes = Array.from(uniqueStartTimes).sort();
+
+  const numCols = Math.max(6, sortedStartTimes.length);
 
 
 
