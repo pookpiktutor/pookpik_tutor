@@ -9556,7 +9556,7 @@ function renderDailyGrid() {
 
         classesHTML += `
 
-          <div id="scheduled_item_${c.rowIndex}" class="scheduled-item ${statusClass}" style="grid-column: ${colIndex}; position: relative; padding: 6px 8px; border-radius: 8px; margin-bottom: 0px; border: 1.2px solid var(--border-color); ${cardBgStyle} ${cardBorderStyle}">
+          <div id="scheduled_item_${c.rowIndex}" class="scheduled-item ${statusClass}" style="grid-column: ${colIndex}; position: relative; padding: 6px 8px; border-radius: 8px; margin-bottom: 0px; border: 1.2px solid var(--border-color); ${cardBgStyle} ${cardBorderStyle}; height: 100%; min-height: 190px; display: flex; flex-direction: column; justify-content: space-between;">
 
             <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 2px;">
 
