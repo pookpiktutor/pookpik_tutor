@@ -9682,7 +9682,7 @@ function renderDailyGrid() {
 
       </div>
 
-      <div class="room-classes" style="display: grid !important; grid-template-columns: repeat(${numCols}, 1fr) !important; gap: 10px !important;">
+      <div class="room-classes" style="display: grid !important; grid-template-columns: repeat(${numCols}, minmax(0, 1fr)) !important; gap: 10px !important;">
 
         ${classesHTML}
 
