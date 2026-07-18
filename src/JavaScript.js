@@ -20667,7 +20667,19 @@ window.handleClassTypeChange = function() {
 
   
 
-  renderStudentBlocks(numBlocks);
+    const isEditing = !!document.getElementById('student_id').value;
+
+  if (!isEditing) {
+
+    renderStudentBlocks(numBlocks);
+
+  } else {
+
+    // Even if we are editing, we might need to show/hide the subgroup size dropdown
+
+    // but we don't need to re-render the block, because it clears inputs.
+
+  }
 
   handleGradeBranchChange();
 
@@ -21217,7 +21229,7 @@ window.openStudentModal = function(id = null) {
 
     renderStudentBlocks(1);
 
-    document.getElementById('student_class_type').disabled = true; // Lock class type when editing
+    document.getElementById('student_class_type').disabled = false; // Allow editing class type
 
     document.getElementById('student_id').value = id;
 
