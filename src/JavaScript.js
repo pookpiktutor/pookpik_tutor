@@ -3583,7 +3583,7 @@ function checkTeacherLeaves() {
 
           const safeRoom = (l.room || '').replace(/'/g, "\\'");
 
-          return `<span onclick="jumpToLeaveClass('${l.date}', ${l.rowIndex}, '${safeRoom}')" class="leave-card-clickable" style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 4px; font-size: 0.68rem; text-align: center; line-height: 1.4; cursor: pointer; transition: all 0.2s;">
+          return `<span onclick="showEditClassLogModal(${l.rowIndex})" class="leave-card-clickable" style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 4px; font-size: 0.68rem; text-align: center; line-height: 1.4; cursor: pointer; transition: all 0.2s;">
 
             ${dateBadge}👨‍🏫 <strong>ครู ${l.teacher} ลา</strong> — ${formatSubjectName(l.subject)} (${cleanTimeStr(l.timeStart)}-${cleanTimeStr(l.timeEnd)})${l.teacherSub ? ` ครูแทน: ${l.teacherSub}` : ' ⚠️ไม่มีครูแทน'}
 
