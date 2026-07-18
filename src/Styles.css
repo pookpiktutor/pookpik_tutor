@@ -160,7 +160,8 @@ body {
 
   width: 100vw;
 
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 
 }
 
@@ -662,7 +663,7 @@ body {
   flex-grow: 1;
   min-height: 0;
   padding: 32px;
-  overflow: visible;
+  overflow: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -3176,11 +3177,10 @@ body {
 
   gap: 16px !important;
 
-  width: 100% !important;
+  width: max-content !important;
+  min-width: 100% !important;
 
-  overflow-x: auto !important;
-  padding-bottom: 12px !important;
-}
+  }
 
 #rooms_grid_container .room-card {
 
