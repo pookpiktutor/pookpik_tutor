@@ -3238,11 +3238,11 @@ body {
 
 #rooms_grid_container .room-card .scheduled-item {
 
-  min-width: 160px !important;
+  min-width: 0 !important;
 
-  max-width: 320px !important;
+  max-width: none !important;
 
-  width: max-content !important;
+  width: 100% !important;
 
   height: auto !important;
 
