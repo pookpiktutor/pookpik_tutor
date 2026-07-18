@@ -9668,7 +9668,7 @@ function renderDailyGrid() {
 
     card.innerHTML = `
 
-      <div class="room-info-side" style="width: 165px; min-width: 165px; border-right: 1px dashed var(--border-color); padding-right: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+      <div class="room-info-side" style="width: 165px; min-width: 165px; border-right: 1px dashed var(--border-color); padding-right: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; position: sticky; left: -16px; background: var(--bg-card); z-index: 10; padding-left: 16px; margin-left: -16px; box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05);">
 
         <div class="room-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%;">
 
