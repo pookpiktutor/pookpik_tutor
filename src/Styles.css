@@ -662,6 +662,8 @@ body {
 .content-body {
   flex-grow: 1;
   min-height: 0;
+  min-width: 0;
+  width: 100%;
   padding: 32px;
   overflow: auto;
   display: flex;
