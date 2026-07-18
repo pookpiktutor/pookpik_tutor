@@ -9554,6 +9554,20 @@ function renderDailyGrid() {
 
         const colIndex = sortedStartTimes.indexOf(c.timeStart) + 1;
 
+        let displayRoomText = c.roomBranch || '-';
+
+        let displayDeviceText = '';
+
+        const deviceMatch = displayRoomText.match(/(?:ipad|zoom).*/i);
+
+        if (deviceMatch) {
+
+            displayDeviceText = deviceMatch[0];
+
+            displayRoomText = displayRoomText.replace(deviceMatch[0], '').trim();
+
+        }
+
         classesHTML += `
 
           <div id="scheduled_item_${c.rowIndex}" class="scheduled-item ${statusClass}" style="grid-column: ${colIndex}; position: relative; padding: 6px 8px; border-radius: 8px; margin-bottom: 0px; border: 1.2px solid var(--border-color); ${cardBgStyle} ${cardBorderStyle}; height: 100%; min-height: 190px; display: flex; flex-direction: column; justify-content: space-between;">
@@ -9574,7 +9588,9 @@ function renderDailyGrid() {
 
             <div style="font-size: 0.72rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; border-top: 1px dashed var(--border-color); padding-top: 4px; margin-top: 4px;">
 
-              <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🏢 ห้อง: ${c.roomBranch || '-'}</div>
+              <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🏢 ห้อง: ${displayRoomText}</div>
+
+              ${displayDeviceText ? `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-primary-hover);"><span style="font-size:0.85em">💻</span> ${displayDeviceText}</div>` : ''}
 
               <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👨‍🏫 ครู: ${c.teacherRegular}${c.teacherSub ? ` (แทน: ${c.teacherSub})` : ''}</div>
 
