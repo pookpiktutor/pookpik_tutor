@@ -3178,6 +3178,8 @@ body {
 
   width: 100% !important;
 
+  overflow-x: auto !important;
+  padding-bottom: 12px !important;
 }
 
 #rooms_grid_container .room-card {
@@ -3194,7 +3196,8 @@ body {
 
   min-height: auto !important;
 
-  width: 100% !important;
+  width: max-content !important;
+  min-width: 100% !important;
 
   padding: 16px !important;
 
@@ -3213,8 +3216,6 @@ body {
   align-items: stretch !important;
 
   flex-grow: 1 !important;
-
-  overflow-x: auto !important;
 
   padding-bottom: 6px !important;
 
