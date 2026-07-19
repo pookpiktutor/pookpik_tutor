@@ -8800,7 +8800,7 @@ function renderMonthlyGrid(data) {
 
               <div style="font-size:0.7rem; color:var(--text-muted); display:flex; justify-content:space-between; flex-direction: column; gap: 1px;">
 
-                <span>ครู: ${c.teacherRegular}${c.teacherSub ? ' (แทน:' + c.teacherSub + ')' : ''}</span>
+                <span>ครูประจำ: ${c.teacherRegular}${c.teacherSub ? ' (แทน:' + c.teacherSub + ')' : ''}</span>
 
                 ${isTeacherConfirmed ? `<span style="color:#15803d; font-weight:bold;">✅ ครูยืนยันแล้ว</span>` : ''}
 
@@ -9592,7 +9592,7 @@ function renderDailyGrid() {
 
               ${displayDeviceText ? `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-primary-hover);"><span style="font-size:0.85em">💻</span> ${displayDeviceText}</div>` : ''}
 
-              <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👨‍🏫 ครู: ${c.teacherRegular}${c.teacherSub ? ` (แทน: ${c.teacherSub})` : ''}</div>
+              <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👨‍🏫 ครูประจำ: ${c.teacherRegular}${c.teacherSub ? ` (แทน: ${c.teacherSub})` : ''}</div>
 
               ${isTeacherConfirmed ? `<div style="font-weight: bold; color: #2e7d32; display: flex; align-items: center; gap: 2px; margin-top: 1px;">✅ ยืนยันสอนแล้ว</div>` : ''}
 
