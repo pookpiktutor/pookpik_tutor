@@ -11856,6 +11856,18 @@ function saveClassLog(e) {
       const subject = g('class_subject')?.value.trim() || '';
 
       if (!subject) continue; // skip empty tabs
+      
+      const listId = g('class_subject').getAttribute('list');
+      if (listId) {
+        const datalist = document.getElementById(listId);
+        if (datalist) {
+          const options = Array.from(datalist.options).map(opt => opt.value);
+          if (subject.includes('เดี่ยว') && !options.includes(subject)) {
+             showToast(`คลาส ${i+1}: ชื่อคอร์สเด็กเดี่ยว ห้ามพิมพ์ข้อความต่อท้าย (กรุณาเลือกจากรายการเท่านั้น)`, 'error');
+             return; // Stop saving
+          }
+        }
+      }
 
 
 
@@ -21727,8 +21739,11 @@ function validateDatalistInput(input) {
   
   // If the typed value is not exactly one of the options
   if (!options.includes(input.value)) {
-    showToast('กรุณาเลือกวิชา/คลาสเรียนจากรายการที่มีอยู่เท่านั้น', 'warning');
-    input.value = ''; // Clear the invalid input
-    input.focus();
+    // Apply strict validation only for private classes (contains 'เดี่ยว')
+    if (input.value.includes('เดี่ยว')) {
+      showToast('ชื่อคอร์สเด็กเดี่ยว กรุณาเลือกจากรายการที่มีอยู่เท่านั้น ห้ามพิมพ์ข้อความต่อท้าย', 'warning');
+      input.value = ''; // Clear the invalid input
+      input.focus();
+    }
   }
 }
