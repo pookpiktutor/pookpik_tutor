@@ -9241,30 +9241,20 @@ function renderDailyAttendanceSummary() {
 
       if (hasData) {
 
-        const tooltip = `นร.ลงทะเบียน:${s.enrolled} สด:${s.live} ออนไลน์:${s.online} ลา:${s.leave} ขาด:${s.absent} ชดเชย:${s.makeup} รวมมาเรียน:${totalAttended}`;
+        const displayEnrolled = cat === 'main' ? s.studentNames.length : totalAttended;
+        const tooltip = `นร.ลงทะเบียน:${displayEnrolled} สด:${s.live} ออนไลน์:${s.online} ลา:${s.leave} ขาด:${s.absent} ชดเชย:${s.makeup} รวมมาเรียน:${totalAttended}`;
 
         html += `
-
           <td style="padding: 4px 3px; border-right: 1px solid var(--border-color); vertical-align: middle;" title="${tooltip}">
-
             <div style="display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; align-items: center;">
-
-              ${cat === 'main' ? `<span style="background:#e0f7fa; color:#00838f; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.6rem;">นร.${s.enrolled}</span>` : ''}
-
+              ${displayEnrolled > 0 ? `<span style="background:#e0f7fa; color:#00838f; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.6rem;">นร.${displayEnrolled}</span>` : ''}
               ${s.live > 0 ? `<span style="background:#e8f5e9; color:#2e7d32; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">สด ${s.live}</span>` : ''}
-
               ${s.online > 0 ? `<span style="background:#e3f2fd; color:#1565c0; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ออน ${s.online}</span>` : ''}
-
               ${s.leave > 0 ? `<span style="background:#fff3e0; color:#ef6c00; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ลา ${s.leave}</span>` : ''}
-
               ${s.absent > 0 ? `<span style="background:#ffebee; color:#c62828; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ขาด ${s.absent}</span>` : ''}
-
               ${s.makeup > 0 ? `<span style="background:#f3e5f5; color:#6a1b9a; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ชด ${s.makeup}</span>` : ''}
-
               ${totalAttended > 0 ? `<span style="font-weight:800; color:#0f172a; font-size:0.62rem; border-left:1px solid #e2e8f0; padding-left:3px; margin-left:1px;">⭐${totalAttended}</span>` : ''}
-
             </div>
-
           </td>
 
         `;
@@ -9286,61 +9276,34 @@ function renderDailyAttendanceSummary() {
   
 
   const grandTotal = totalMainLiveOnline + totalPrivateLiveOnline;
-
-  
+  const totalUnique = allMainUniqueNames.length + totalPrivateLiveOnline;
 
   html += `
-
         </tbody>
-
       </table>
-
     </div>
-
     
-
     <div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 10px;">
-
       <div style="flex: 1; min-width: 200px; background: rgba(0, 132, 255, 0.05); border-radius: 8px; padding: 10px; border: 1px solid rgba(0, 132, 255, 0.1);">
-
         <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;">ยอดรวมนักเรียนที่มาเรียนสดและออนไลน์</div>
-
         <div style="display: flex; flex-direction: column; gap: 4px;">
-
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
-
             <span style="color: #00838f;">1. ยอดรวมกลุ่มหลัก</span>
-
             <span style="color: #00838f;">${totalMainLiveOnline} คน</span>
-
           </div>
-
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
-
             <span style="color: #ef6c00;">2. ยอดรวมเดี่ยว-กลุ่มย่อย</span>
-
             <span style="color: #ef6c00;">${totalPrivateLiveOnline} คน</span>
-
           </div>
-
           <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
-
             <span style="color: #2e7d32;">3. รวมทั้งหมด</span>
-
             <span style="color: #2e7d32;">${grandTotal} คน</span>
-
           </div>
-
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700;">
-
-            <span style="color: #6a1b9a;">4. รวมแบบไม่ซ้ำชื่อ (รวมกลุ่มย่อยด้วย)</span>
-
-            <span style="color: #6a1b9a;">${allMainUniqueNames.length} คน</span>
-
+            <span style="color: #6a1b9a;">4. รวมแบบไม่ซ้ำชื่อ</span>
+            <span style="color: #6a1b9a;">${totalUnique} คน</span>
           </div>
-
         </div>
-
       </div>
 
     </div>
