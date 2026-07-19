@@ -9604,7 +9604,7 @@ function renderDailyGrid() {
 
               ${displayDeviceText ? `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-primary-hover);"><span style="font-size:0.85em">💻</span> ${displayDeviceText}</div>` : ''}
 
-              <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👨‍🏫 ครูประจำ: ${c.teacherRegular}<br>ครูแทน: ${c.teacherSub ? c.teacherSub : '-'}</div>
+              <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👨‍🏫 ครูประจำ: ${c.teacherRegular}<br>🔄 ครูแทน: ${c.teacherSub ? c.teacherSub : '-'}</div>
 
               ${isTeacherConfirmed ? `<div style="font-weight: bold; color: #2e7d32; display: flex; align-items: center; gap: 2px; margin-top: 1px;">✅ ยืนยันสอนแล้ว</div>` : ''}
 
@@ -11027,7 +11027,7 @@ function renderModalClassesList() {
 
         <div>🏢 ห้อง/สาขา: ${log.roomBranch || '-'}</div>
 
-        <div>👨‍🏫 ครูประจำ: ${log.teacherRegular}<br>ครูแทน: ${log.teacherSub ? log.teacherSub : '-'}</div>
+        <div>👨‍🏫 ครูประจำ: ${log.teacherRegular}<br>🔄 ครูแทน: ${log.teacherSub ? log.teacherSub : '-'}</div>
 
         ${log.note ? `<div style="font-style: italic; color: #64748b; margin-top: 2px;">📝 หมายเหตุ: ${log.note}</div>` : ''}
 
