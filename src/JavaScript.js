@@ -20495,6 +20495,12 @@ function generateStudentBlock(idx) {
 
             </label>
 
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_unpaid_${idx}" value="unpaid" onchange="calculateBlockOutstanding(${idx})"> ยังไม่ชำระ
+
+            </label>
+
           </div>
 
         </div>
