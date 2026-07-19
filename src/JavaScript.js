@@ -21712,3 +21712,23 @@ if (document.readyState === 'loading') {
   initializeApp();
 
 }
+
+// Validate if input matches an option in its datalist
+function validateDatalistInput(input) {
+  if (!input || !input.value) return;
+  
+  const listId = input.getAttribute('list');
+  if (!listId) return;
+  
+  const datalist = document.getElementById(listId);
+  if (!datalist) return;
+  
+  const options = Array.from(datalist.options).map(opt => opt.value);
+  
+  // If the typed value is not exactly one of the options
+  if (!options.includes(input.value)) {
+    showToast('กรุณาเลือกวิชา/คลาสเรียนจากรายการที่มีอยู่เท่านั้น', 'warning');
+    input.value = ''; // Clear the invalid input
+    input.focus();
+  }
+}
