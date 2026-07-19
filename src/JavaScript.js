@@ -21119,95 +21119,55 @@ window.saveStudent = function(e) {
     
 
     const obj = {
-
       id: studentId,
-
-      Date: new Date().toISOString().split('T')[0], // Defaults to today, backend handles server timestamp if needed
-
-      Grade: grade,
-
-      StudentName: name,
-
-      Nickname: document.getElementById(`student_nickname_${idx}`).value.trim(),
-
-      School: document.getElementById(`student_school_${idx}`).value.trim(),
-
-      ClassSection: document.getElementById(`student_class_section_${idx}`).value.trim(),
-
-      Contact: document.getElementById(`student_contact_${idx}`).value.trim(),
-
-      LineName: document.getElementById(`student_line_name_${idx}`).value.trim(),
-
-      LineID: document.getElementById(`student_line_id_${idx}`).value.trim(),
-
-      BranchLearn: branchLearn,
-
-      BranchPay: branchPay,
-
-      ClassType: classType,
-
-      SubgroupSize: subgroupSize,
-
-      Course: courseStr,
-
+      date: new Date().toISOString().split('T')[0],
+      grade: grade,
+      name: name,
+      nickname: document.getElementById(`student_nickname_${idx}`).value.trim(),
+      school: document.getElementById(`student_school_${idx}`).value.trim(),
+      classSection: document.getElementById(`student_class_section_${idx}`).value.trim(),
+      contact: document.getElementById(`student_contact_${idx}`).value.trim(),
+      lineName: document.getElementById(`student_line_name_${idx}`).value.trim(),
+      lineId: document.getElementById(`student_line_id_${idx}`).value.trim(),
+      branchLearn: branchLearn,
+      branchPay: branchPay,
+      classType: classType,
+      subgroupCoursesSize: subgroupSize,
       
-
-      PayMode: document.getElementById(`pay_mode_card_${idx}`).checked ? 'card' : (document.getElementById(`pay_mode_transfer_${idx}`).checked ? 'transfer' : 'cash'),
-
-      FullAmount: document.getElementById(`student_full_${idx}`).value,
-
-      PaidAmount: document.getElementById(`student_paid_${idx}`).value,
-
-      Outstanding: document.getElementById(`student_outstanding_${idx}`).value,
-
-      CarriedForward: document.getElementById(`has_carried_forward_${idx}`).checked ? document.getElementById(`student_carried_forward_${idx}`).value : 0,
-
+      round: courseStr,
+      subgroupCourses: courseStr.split(',').map(s => s.trim()).filter(s => s),
       
-
-      TimeNote: document.getElementById(`student_time_note_${idx}`).value.trim(),
-
-      ExtraNote: document.getElementById(`student_extra_note_${idx}`).value.trim(),
-
-      Hours: document.getElementById(`student_hours_${idx}`).value.trim(),
-
-      HoursLeft: document.getElementById(`student_hours_left_${idx}`).value.trim(),
-
+      paymentChannel: document.getElementById(`pay_mode_unpaid_${idx}`) && document.getElementById(`pay_mode_unpaid_${idx}`).checked ? 'unpaid' : (document.getElementById(`pay_mode_card_${idx}`).checked ? 'card' : (document.getElementById(`pay_mode_transfer_${idx}`).checked ? 'transfer' : 'cash')),
+      full: parseFloat(document.getElementById(`student_full_${idx}`).value) || 0,
+      paid: parseFloat(document.getElementById(`student_paid_${idx}`).value) || 0,
+      outstanding: parseFloat(document.getElementById(`student_outstanding_${idx}`).value) || 0,
+      carriedForwardFee: document.getElementById(`has_carried_forward_${idx}`).checked ? (parseFloat(document.getElementById(`student_carried_forward_${idx}`).value) || 0) : 0,
       
-
-      PayRound1Date: document.getElementById(`pay_r1_date_${idx}`).value,
-
-      PayRound1Amount: document.getElementById(`pay_r1_amount_${idx}`).value,
-
-      PayRound1Channel: document.getElementById(`pay_r1_channel_${idx}`).value,
-
-      PayRound1Staff: document.getElementById(`pay_r1_staff_${idx}`).value,
-
-      PayRound1Time: document.getElementById(`pay_r1_time_${idx}`).value,
-
+      paymentTimeNote: document.getElementById(`student_time_note_${idx}`).value.trim(),
+      extraNote: document.getElementById(`student_extra_note_${idx}`).value.trim(),
+      classHours: document.getElementById(`student_hours_${idx}`).value.trim(),
+      classHoursLeft: document.getElementById(`student_hours_left_${idx}`).value.trim(),
       
-
-      PayRound2Date: document.getElementById(`pay_r2_date_${idx}`).value,
-
-      PayRound2Amount: document.getElementById(`pay_r2_amount_${idx}`).value,
-
-      PayRound2Channel: document.getElementById(`pay_r2_channel_${idx}`).value,
-
-      PayRound2Staff: document.getElementById(`pay_r2_staff_${idx}`).value,
-
-      PayRound2Time: document.getElementById(`pay_r2_time_${idx}`).value,
-
+      payRound1_date: document.getElementById(`pay_r1_date_${idx}`).value,
+      payRound1_amount: document.getElementById(`pay_r1_amount_${idx}`).value,
+      payRound1_channel: document.getElementById(`pay_r1_channel_${idx}`).value,
+      payRound1_staff: document.getElementById(`pay_r1_staff_${idx}`).value,
+      payRound1_time: document.getElementById(`pay_r1_time_${idx}`).value,
       
-
-      PayRound3Date: document.getElementById(`pay_r3_date_${idx}`).value,
-
-      PayRound3Amount: document.getElementById(`pay_r3_amount_${idx}`).value,
-
-      PayRound3Channel: document.getElementById(`pay_r3_channel_${idx}`).value,
-
-      PayRound3Staff: document.getElementById(`pay_r3_staff_${idx}`).value,
-
-      PayRound3Time: document.getElementById(`pay_r3_time_${idx}`).value
-
+      payRound2_date: document.getElementById(`pay_r2_date_${idx}`).value,
+      payRound2_amount: document.getElementById(`pay_r2_amount_${idx}`).value,
+      payRound2_channel: document.getElementById(`pay_r2_channel_${idx}`).value,
+      payRound2_staff: document.getElementById(`pay_r2_staff_${idx}`).value,
+      payRound2_time: document.getElementById(`pay_r2_time_${idx}`).value,
+      
+      payRound3_date: document.getElementById(`pay_r3_date_${idx}`).value,
+      payRound3_amount: document.getElementById(`pay_r3_amount_${idx}`).value,
+      payRound3_channel: document.getElementById(`pay_r3_channel_${idx}`).value,
+      payRound3_staff: document.getElementById(`pay_r3_staff_${idx}`).value,
+      payRound3_time: document.getElementById(`pay_r3_time_${idx}`).value,
+      
+      paymentDate: new Date().toISOString().split('T')[0],
+      staff: getLogUser()
     };
 
     studentDataArray.push(obj);
