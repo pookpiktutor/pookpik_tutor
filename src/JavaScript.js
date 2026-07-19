@@ -1380,11 +1380,11 @@ function loadTeacherDailySchedule() {
           const totalKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
           
           const attendances = [];
-          if (c.isPresentLive > 0) attendances.push(`สด: ${c.isPresentLive}`);
-          if (c.isPresentOnline > 0) attendances.push(`ออน: ${c.isPresentOnline}`);
-          if (c.isLeave > 0) attendances.push(`ลา: ${c.isLeave}`);
-          if (c.isAbsent > 0) attendances.push(`ขาด: ${c.isAbsent}`);
-          if (c.isMakeup > 0) attendances.push(`ชด: ${c.isMakeup}`);
+          attendances.push(`สด: ${c.isPresentLive || 0}`);
+          attendances.push(`ออน: ${c.isPresentOnline || 0}`);
+          attendances.push(`ลา: ${c.isLeave || 0}`);
+          attendances.push(`ขาด: ${c.isAbsent || 0}`);
+          attendances.push(`ชด: ${c.isMakeup || 0}`);
           const attendanceSummaryHtml = attendances.length > 0 
             ? `<div style="font-size: 0.72rem; margin-top: 4px; color: var(--color-primary-hover); font-weight: 500;">👥 ${attendances.join(' ')}</div>` 
             : '';
@@ -8728,15 +8728,15 @@ function renderMonthlyGrid(data) {
 
           const attendances = [];
 
-          if (c.isPresentLive > 0) attendances.push(`สด: ${c.isPresentLive}`);
+          attendances.push(`สด: ${c.isPresentLive || 0}`);
 
-          if (c.isPresentOnline > 0) attendances.push(`ออน: ${c.isPresentOnline}`);
+          attendances.push(`ออน: ${c.isPresentOnline || 0}`);
 
-          if (c.isLeave > 0) attendances.push(`ลา: ${c.isLeave}`);
+          attendances.push(`ลา: ${c.isLeave || 0}`);
 
-          if (c.isMakeup > 0) attendances.push(`ชด: ${c.isMakeup}`);
+          attendances.push(`ชด: ${c.isMakeup || 0}`);
 
-          if (c.isAbsent > 0) attendances.push(`ขาด: ${c.isAbsent}`);
+          attendances.push(`ขาด: ${c.isAbsent || 0}`);
 
           // isOrange display removed
 
@@ -9500,15 +9500,15 @@ function renderDailyGrid() {
 
         const attendances = [];
 
-        if (c.isPresentLive > 0) attendances.push(`สด: ${c.isPresentLive}`);
+        attendances.push(`สด: ${c.isPresentLive || 0}`);
 
-        if (c.isPresentOnline > 0) attendances.push(`ออน: ${c.isPresentOnline}`);
+        attendances.push(`ออน: ${c.isPresentOnline || 0}`);
 
-        if (c.isLeave > 0) attendances.push(`ลา: ${c.isLeave}`);
+        attendances.push(`ลา: ${c.isLeave || 0}`);
 
-        if (c.isMakeup > 0) attendances.push(`ชด: ${c.isMakeup}`);
+        attendances.push(`ชด: ${c.isMakeup || 0}`);
 
-        if (c.isAbsent > 0) attendances.push(`ขาด: ${c.isAbsent}`);
+        attendances.push(`ขาด: ${c.isAbsent || 0}`);
 
         // isOrange display removed
 
@@ -12577,15 +12577,15 @@ function renderTeacherScheduleGrid(teacher) {
 
     const attendances = [];
 
-    if (log.isPresentLive > 0) attendances.push(`<span class="badge badge-success" style="font-size:0.6rem; padding: 2px 4px;">สด: ${log.isPresentLive}</span>`);
+    attendances.push(`<span class="badge badge-success" style="font-size:0.6rem; padding: 2px 4px;">สด: ${log.isPresentLive || 0}</span>`);
 
-    if (log.isPresentOnline > 0) attendances.push(`<span class="badge badge-info" style="font-size:0.6rem; padding: 2px 4px;">ออน: ${log.isPresentOnline}</span>`);
+    attendances.push(`<span class="badge badge-info" style="font-size:0.6rem; padding: 2px 4px;">ออน: ${log.isPresentOnline || 0}</span>`);
 
-    if (log.isLeave > 0) attendances.push(`<span class="badge badge-warning" style="font-size:0.6rem; padding: 2px 4px;">ลา: ${log.isLeave}</span>`);
+    attendances.push(`<span class="badge badge-warning" style="font-size:0.6rem; padding: 2px 4px;">ลา: ${log.isLeave || 0}</span>`);
 
-    if (log.isAbsent > 0) attendances.push(`<span class="badge badge-danger" style="font-size:0.6rem; padding: 2px 4px;">ขาด: ${log.isAbsent}</span>`);
+    attendances.push(`<span class="badge badge-danger" style="font-size:0.6rem; padding: 2px 4px;">ขาด: ${log.isAbsent || 0}</span>`);
 
-    if (log.isMakeup > 0) attendances.push(`<span class="badge" style="font-size:0.6rem; background-color:#c095e7; color:white; padding: 2px 4px;">ชด: ${log.isMakeup}</span>`);
+    attendances.push(`<span class="badge" style="font-size:0.6rem; background-color:#c095e7; color:white; padding: 2px 4px;">ชด: ${log.isMakeup || 0}</span>`);
 
     
 
