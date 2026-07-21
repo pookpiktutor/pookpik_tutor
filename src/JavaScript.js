@@ -9322,6 +9322,9 @@ function renderDailyGrid() {
 
   if (!container) return;
   container.innerHTML = '';
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.gap = '16px';
 
   // Render daily statistics summary at the top
 

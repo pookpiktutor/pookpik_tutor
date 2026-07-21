@@ -267,14 +267,22 @@
           <datalist id="std_school_list"></datalist>
         </div>
         <div class="form-group">
-          <!-- empty placeholder to balance grid columns -->
+          <label class="form-label">รูปแบบการเรียน <span>*</span></label>
+          <select id="class_type" class="form-select" required onchange="fetchAvailableCourses()">
+            <option value="">-- เลือกรูปแบบการเรียน --</option>
+            <option value="กลุ่มหลัก">กลุ่มหลัก</option>
+            <option value="เดี่ยว">เดี่ยว</option>
+            <option value="ย่อย 2-3">กลุ่มย่อย 2 - 3 คน</option>
+            <option value="ย่อย 4-5">กลุ่มย่อย 4 - 5 คน</option>
+            <option value="ย่อย 6-10">กลุ่มย่อย 6 - 10 คน</option>
+          </select>
         </div>
       </div>
 
       <div class="row-grid">
         <div class="form-group">
           <label class="form-label">ระดับชั้นเรียน <span>*</span></label>
-          <select id="std_grade" class="form-select" required>
+          <select id="std_grade" class="form-select" required onchange="fetchAvailableCourses()">
             <option value="">-- เลือกระดับชั้น --</option>
             <option value="อนุบาล">อนุบาล</option>
             <option value="ป.1">ป.1</option>
@@ -293,7 +301,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">เลือกสาขาที่สมัครเรียน <span>*</span></label>
-          <select id="branch_learn" class="form-select" required>
+          <select id="branch_learn" class="form-select" required onchange="fetchAvailableCourses()">
             <option value="">-- เลือกสาขา --</option>
             <option value="สาขา1">สาขา 1 แยกPMY</option>
             <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
@@ -304,22 +312,21 @@
 
       <div class="row-grid">
         <div class="form-group" style="display: flex; align-items: flex-end;">
-          <button type="button" class="btn btn-secondary" onclick="checkStudentFees()" style="background-color: #64748b; margin-bottom: 0; font-size: 0.9rem; padding: 10px 12px; height: 42px; width: 100%;">
-            🔍 ค้นหาคอร์สที่ค้างชำระ
+          <button type="button" class="btn btn-secondary" onclick="fetchAvailableCourses()" style="background-color: #64748b; margin-bottom: 0; font-size: 0.9rem; padding: 10px 12px; height: 42px; width: 100%;">
+            🔍 ค้นหารายวิชาที่เปิดสอน
           </button>
         </div>
         <div class="form-group">
-          <label class="form-label">จำนวนเงินที่โอน (บาท)</label>
-          <input type="number" id="transfer_amount" class="form-input" placeholder="ยอดเงินตามสลิป" oninput="recalcSelectedFees()">
+          <!-- empty placeholder to balance grid columns -->
         </div>
       </div>
 
       <!-- Outstanding Fees Display Grid -->
       <div id="fees_display_container" style="display: none; margin-bottom: 20px; background: rgba(255, 255, 255, 0.9); border: 1px solid #cbd5e1; border-radius: var(--radius-md); padding: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
         <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; color: var(--color-primary-hover); display: flex; align-items: center; gap: 6px;">
-          <span>📝</span> รายละเอียดคอร์สค้างชำระของท่าน
+          <span>📝</span> รายวิชาที่เปิดสอน
         </div>
-        <div style="font-size: 0.78rem; color: #64748b; margin-bottom: 10px;">✅ ติ๊กเลือกคอร์สที่ต้องการชำระเงิน</div>
+        <div style="font-size: 0.78rem; color: #64748b; margin-bottom: 10px;">✅ ติ๊กเลือกวิชาที่ต้องการสมัครเรียน</div>
         <div class="table-responsive" style="overflow-x: auto; width: 100%;">
           <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
             <thead>
@@ -346,6 +353,11 @@
           </table>
         </div>
         <input type="hidden" id="selected_outstanding_courses" value="">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">จำนวนเงินที่โอน (บาท)</label>
+        <input type="number" id="transfer_amount" class="form-input" placeholder="ยอดเงินตามสลิป" oninput="recalcSelectedFees()">
       </div>
 
       <div class="form-group">
@@ -413,7 +425,21 @@ window.google.script.run = new Proxy({}, {
           const list = document.getElementById('std_school_list');
           if (list) {
             list.innerHTML = '';
-            res.schools.forEach(school => {
+            const defaultSchools = [
+              'โรงเรียนระยองวิทยาคม',
+              'โรงเรียนอัสสัมชัญระยอง',
+              'โรงเรียนเซนต์โยเซฟระยอง',
+              'โรงเรียนอนุบาลระยอง',
+              'โรงเรียนวัดป่าประดู่',
+              'โรงเรียนตากสินระยอง',
+              'โรงเรียนมารีวิทย์ระยอง',
+              'โรงเรียนระยองวิทยาคมปากน้ำ',
+              'โรงเรียนมาบตาพุดพันพิทยาคาร',
+              'โรงเรียนสาธิตเทศบาลนครระยอง'
+            ];
+            const allSchools = new Set([...defaultSchools, ...(res.schools || [])]);
+            
+            allSchools.forEach(school => {
               const opt = document.createElement('option');
               opt.value = school;
               list.appendChild(opt);
@@ -512,19 +538,19 @@ window.google.script.run = new Proxy({}, {
     reader.readAsDataURL(file);
   }
 
-  function checkStudentFees() {
-    const name = document.getElementById('std_name').value.trim();
-    const nickname = document.getElementById('std_nickname').value.trim();
+  function fetchAvailableCourses() {
+    const grade = document.getElementById('std_grade').value.trim();
+    const classType = document.getElementById('class_type').value.trim();
 
-    if (!name && !nickname) {
-      alert('กรุณากรอกชื่อ-นามสกุล หรือ ชื่อเล่น เพื่อใช้ในการค้นหาคอร์สค้างชำระ');
+    if (!grade || !classType) {
+      alert('กรุณาเลือกระดับชั้นและรูปแบบการเรียนเพื่อค้นหารายวิชา');
       return;
     }
 
     const searchBtn = document.querySelector('.btn-secondary');
     const originalText = searchBtn.textContent;
     searchBtn.disabled = true;
-    searchBtn.textContent = 'กำลังค้นหา...';
+    searchBtn.textContent = 'กำลังค้นหารายวิชา...';
 
     google.script.run
       .withSuccessHandler(res => {
@@ -541,9 +567,7 @@ window.google.script.run = new Proxy({}, {
 
         var outstandingCourses = [];
         if (res && res.success && Array.isArray(res.courses)) {
-          outstandingCourses = res.courses.filter(function(c) {
-            return c.outstanding > 0;
-          });
+          outstandingCourses = res.courses;
         }
 
         if (outstandingCourses.length > 0) {
@@ -573,14 +597,14 @@ window.google.script.run = new Proxy({}, {
             var priceTd = document.createElement('td');
             priceTd.style.padding = '8px 4px';
             priceTd.style.textAlign = 'right';
-            priceTd.textContent = '฿' + c.full.toLocaleString(undefined, {minimumFractionDigits: 2});
+            priceTd.textContent = c.full ? '฿' + c.full.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
             
             var outstandingTd = document.createElement('td');
             outstandingTd.style.padding = '8px 4px';
             outstandingTd.style.textAlign = 'right';
             outstandingTd.style.fontWeight = '600';
             outstandingTd.style.color = '#ef4444';
-            outstandingTd.textContent = '฿' + c.outstanding.toLocaleString(undefined, {minimumFractionDigits: 2});
+            outstandingTd.textContent = c.outstanding ? '฿' + c.outstanding.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
 
             tr.appendChild(checkTd);
             tr.appendChild(nameTd);
@@ -679,6 +703,7 @@ window.google.script.run = new Proxy({}, {
         nickname: nickname,
         school: school,
         grade: document.getElementById('std_grade').value,
+        classType: document.getElementById('class_type').value,
         course: outstandingCourses || 'สมัครเรียนใหม่ / คอร์สทั่วไป',
         contact: contact,
         lineId: document.getElementById('line_id').value.trim(),

@@ -4119,11 +4119,9 @@ html, body { overflow-x: hidden !important; max-width: 100vw !important; }
   right: 12px;
   width: 240px;
   max-width: calc(100vw - 24px);
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: transparent;
+  /* Removed blur and shadow to make it completely transparent */
   border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   z-index: 10000;
   display: flex;
   flex-direction: column;

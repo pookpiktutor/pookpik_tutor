@@ -70,35 +70,32 @@
               <li class="nav-item active" data-panel="dashboard">
                 <span>📊</span> หน้าหลัก
               </li>
-              <li class="nav-item" data-panel="students">
-                <span>➕</span> นักเรียน
+              <li class="nav-item" data-panel="daily_grid">
+                <span>🏫</span> ตารางใช้ห้อง
               </li>
               <li class="nav-item" data-panel="grade_sheets">
                 <span>📝</span> กลุ่มหลัก
-              </li>
-              <li class="nav-item" data-panel="daily_grid">
-                <span>🏫</span> ตารางใช้ห้อง
               </li>
               <li class="nav-item" data-panel="private_students">
                 <span>👤</span> เด็กเดี่ยว/ย่อย
               </li>
               <li class="nav-item" data-panel="debtors">
-                <span>🪙</span> นักเรียนค้างจ่าย
+                <span>🪙</span> นักเรียนค้างชำระ
               </li>
               <li class="nav-item" data-panel="print_receipts">
                 <span>📄</span> ออกใบเสร็จ
               </li>
               <li class="nav-item" data-panel="class_logs">
-                <span>💵</span> รายรับรายจ่าย
+                <span>💵</span> รายรับ
               </li>
               <li class="nav-item" data-panel="teacher_schedule">
                 <span>📅</span> ตารางสอนครู
               </li>
-              <li class="nav-item" data-panel="admin_evaluation_form" id="nav_admin_evaluation_form">
-                <span>📝</span> ใบประเมินผลการเรียน
-              </li>
               <li class="nav-item" data-panel="teacher_payroll" id="nav_teacher_payroll">
-                <span>💵</span> ค่าสอนครูรายเดือน
+                <span>💵</span> ค่าตอบแทนรายเดือน
+              </li>
+              <li class="nav-item" data-panel="admin_evaluation_form" id="nav_admin_evaluation_form">
+                <span>📝</span> ใบประเมิน
               </li>
               <li class="nav-item" data-panel="staff_salary_summary" id="nav_staff_salary_summary">
                 <span>📊</span> สรุปรายได้ครูทั้งหมด
@@ -343,68 +340,7 @@
             </div>
           </div>
           
-          <!-- 2. STUDENTS PANEL (Add student & Search StatusDB) -->
-          <div class="view-panel" id="students_panel">
-            <!-- Top bar with Branch tabs and Class level tabs -->
-            <div class="branch-tabs" style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px;">
-              <button class="branch-tab active" onclick="setStudentBranchFilter('สาขา1', this)">สาขา 1 แยกPMY</button>
-              <button class="branch-tab" onclick="setStudentBranchFilter('สาขา2', this)">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</button>
-              <button class="branch-tab" onclick="setStudentBranchFilter('สาขา3', this)">สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ</button>
-            </div>
-            
-            <div class="branch-tabs" style="margin-bottom: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 6px; border-radius: var(--radius-md); gap: 6px; display: flex; flex-wrap: wrap;">
-              <button class="branch-tab active" onclick="setStudentGradeFilter('', this)" style="padding: 4px 10px; font-size: 0.72rem;">ทุกชั้นเรียน</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('อนุบาล', this)" style="padding: 4px 10px; font-size: 0.72rem;">อนุบาล</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('ป.1', this)" style="padding: 4px 10px; font-size: 0.72rem;">ป.1</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('ป.2', this)" style="padding: 4px 10px; font-size: 0.72rem;">ป.2</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('ป.3', this)" style="padding: 4px 10px; font-size: 0.72rem;">ป.3</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('ป.4', this)" style="padding: 4px 10px; font-size: 0.72rem;">ป.4</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('ป.5', this)" style="padding: 4px 10px; font-size: 0.72rem;">ป.5</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('ป.6', this)" style="padding: 4px 10px; font-size: 0.72rem;">ป.6</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('ม.1', this)" style="padding: 4px 10px; font-size: 0.72rem;">ม.1</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('ม.2', this)" style="padding: 4px 10px; font-size: 0.72rem;">ม.2</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('ม.3', this)" style="padding: 4px 10px; font-size: 0.72rem;">ม.3</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('ม.4', this)" style="padding: 4px 10px; font-size: 0.72rem;">ม.4</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('ม.5', this)" style="padding: 4px 10px; font-size: 0.72rem;">ม.5</button>
-              <button class="branch-tab" onclick="setStudentGradeFilter('ม.6', this)" style="padding: 4px 10px; font-size: 0.72rem;">ม.6</button>
-            </div>
 
-            <div class="toolbar" style="flex-wrap: wrap;">
-              <div class="search-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" id="student_search" placeholder="ค้นหาชื่อ, Nickname, เบอร์โทร..." oninput="renderStudentsTable()">
-              </div>
-              
-              <div class="filter-actions" style="gap: 8px;">
-                <input type="hidden" id="student_branch_filter" value="สาขา1">
-                <input type="hidden" id="student_grade_filter" value="">
-                
-                <button class="btn btn-primary" onclick="showAddStudentModal()">
-                  <span>➕</span> ลงทะเบียนเรียนแบบละเอียด
-                </button>
-              </div>
-            </div>
-            
-            <div class="glass-panel table-responsive">
-              <table class="custom-table student-compact-table">
-                <thead>
-                  <tr>
-                    <th>นักเรียน (ระดับชั้น/ไลน์)</th>
-                    <th>ชื่อเล่น</th>
-                    <th>โรงเรียน</th>
-                    <th>เบอร์ / สาขา</th>
-                    <th>ค่าเรียน / คลาส</th>
-                    <th>สถานะเงิน</th>
-                    <th>วันที่ชำระ</th>
-                    <th>เครื่องมือ</th>
-                  </tr>
-                </thead>
-                <tbody id="students_tbody">
-                  <!-- Generated dynamically -->
-                </tbody>
-              </table>
-            </div>
-          </div>
 
           <!-- 3. GRADE SHEETS MANAGER PANEL (ตารางลงเรียนแยกห้อง เช่น ม.1/2) -->
           <div class="view-panel" id="grade_sheets_panel">
@@ -442,6 +378,7 @@
                 </select>
                 
                 <button class="btn btn-secondary" onclick="showAddCourseColumnModal()">➕ เพิ่มคอร์สเรียน (รายวิชา)</button>
+                <button class="btn btn-primary" onclick="showAddStudentModal()"><span>➕</span> ลงทะเบียนเรียนแบบละเอียด</button>
               </div>
             </div>
 
@@ -508,7 +445,7 @@
               <button class="branch-tab" data-branch="สาขา3">สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ</button>
             </div>
             
-            <!-- Daily View Container (Hidden) -->
+            <!-- Daily View Container -->
             <div id="daily_view_container" style="display: block;">
               <div id="daily_attendance_summary_container" style="margin-bottom: 20px; background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); overflow-x: auto; padding: 15px;">
                 <!-- สรุปสถิติ 10 ช่วงเวลา โหลดแบบไดนามิก -->
@@ -519,8 +456,8 @@
               </div>
             </div>
             
-            <!-- Monthly View Container (Visible by default) -->
-            <div id="monthly_view_container" style="display: block;">
+            <!-- Monthly View Container -->
+            <div id="monthly_view_container" style="display: none;">
               <div id="monthly_grid_content">
                 <!-- Loaded dynamically by renderMonthlyGrid() -->
               </div>
@@ -564,6 +501,7 @@
                   </optgroup>
                 </select>
                 <button class="btn btn-primary" onclick="loadPrivateStudents()">🔄 โหลดข้อมูล</button>
+                <button class="btn btn-primary" onclick="showAddStudentModal()"><span>➕</span> ลงทะเบียนเรียนแบบละเอียด</button>
               </div>
             </div>
 

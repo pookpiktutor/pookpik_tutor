@@ -7914,6 +7914,28 @@ function getGradeSheetData(grade, branch, logUser) {
   try {
 
     const db = getDb();
+    
+    // Build a map of student payments from StatusDB
+    const statusSheet = db.getSheetByName('StatusDB');
+    const paymentMap = {};
+    if (statusSheet) {
+      const statusLastRow = statusSheet.getLastRow();
+      if (statusLastRow > 0) {
+        const statusData = statusSheet.getRange(1, 1, statusLastRow, 25).getValues();
+        statusData.forEach(row => {
+          const sName = row[1] ? row[1].toString().trim() : '';
+          const sRound = row[15] ? row[15].toString().trim() : '';
+          const sPaymentChannel = row[13] ? row[13].toString().trim() : 'กสิกร บัญชีบริษัท(สแกน)';
+          const sStaff = row[14] ? row[14].toString().trim() : '';
+          if (sName) {
+            paymentMap[sName + '|' + sRound] = {
+              paymentChannel: sPaymentChannel,
+              staff: sStaff
+            };
+          }
+        });
+      }
+    }
 
     const suffixes = ['1', '2', '3'];
 
@@ -8053,8 +8075,9 @@ function getGradeSheetData(grade, branch, logUser) {
 
             isCard: parseInt(row[14]) === 1 ? 1 : 0, 
 
+            paymentChannel: (paymentMap[name + '|' + sheetName] || {}).paymentChannel || 'กสิกร บัญชีบริษัท(สแกน)',
+            staff: (paymentMap[name + '|' + sheetName] || {}).staff || '',
             
-
             courseValues: courseValues,
 
             sheetName: sheetName,
@@ -8315,6 +8338,9 @@ function saveGradeSheetData(grade, branch, coursesUpdate, studentsUpdate, logUse
 
           round: s.sheetName || sheetName
 
+        ,
+          paymentChannel: s.paymentChannel,
+          staff: s.staff
         });
 
       });
@@ -16670,7 +16696,7 @@ function submitPublicRegistration(studentData, fileData) {
 
       classHoursLeft: '',
 
-      classType: 'เดี่ยว',
+      classType: studentData.classType || 'กลุ่มหลัก',
 
       isChecked: false
 
@@ -16705,8 +16731,45 @@ function submitPublicRegistration(studentData, fileData) {
     Logger.log('Stack: ' + err.stack);
 
     return { success: false, error: err.toString() };
-
   }
-
 }
+
+function getAvailableCourses(grade, classType) {
+  try {
+    const db = getDb();
+    let sheetName = classType + " " + grade;
+    let sheet = db.getSheetByName(sheetName);
+    
+    // fallbacks
+    if (!sheet) sheet = db.getSheetByName(grade + " " + classType);
+    if (!sheet) sheet = db.getSheetByName(grade + "/" + classType);
+    if (!sheet) sheet = db.getSheetByName(classType + "/" + grade);
+    
+    if (!sheet) {
+      return { success: true, courses: [] };
+    }
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 5) {
+      return { success: true, courses: [] };
+    }
+    
+    const dataRange = sheet.getRange(5, 3, lastRow - 4, 1);
+    const values = dataRange.getValues();
+    
+    const courses = [];
+    for (let i = 0; i < values.length; i++) {
+       const courseName = values[i][0];
+       if (courseName === "" || courseName == null) {
+          break; // Stop at first empty cell as requested
+       }
+       courses.push({ courseName: courseName, full: 0, outstanding: 0 }); 
+    }
+    return { success: true, courses: courses };
+  } catch (err) {
+    Logger.log('Error in getAvailableCourses: ' + err.toString());
+    return { success: false, error: err.toString() };
+  }
+}
+
 
