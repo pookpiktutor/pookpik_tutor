@@ -8669,7 +8669,7 @@ function renderMonthlyGrid(data) {
 
           const isStudentLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.studentLeave) || (c.isLeave > 0);
 
-          const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && c.note.includes('ครูลา'));
+        const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && String(c.note).includes('ครูลา'));
 
           
 
@@ -9310,8 +9310,8 @@ function renderDailyAttendanceSummary() {
 
   `;
 
-  container.innerHTML = html;
-
+  if (container) container.innerHTML = html;
+  if (dashboardContainer) dashboardContainer.innerHTML = html;
 }
 
 
@@ -9338,14 +9338,27 @@ function renderDailyGrid() {
     const roomBranchClean = (room.branch || '').replace(/\s+/g, '');
     return roomBranchClean.includes(branchFilter);
   });
+  console.log("renderDailyGrid - activeBranchFilter:", state.activeBranchFilter);
+  console.log("renderDailyGrid - branchFilter:", branchFilter);
+  console.log("renderDailyGrid - state.rooms length:", state.rooms ? state.rooms.length : 0);
+  console.log("renderDailyGrid - filteredRooms length:", filteredRooms.length);
 
+  if (filteredRooms.length === 0) {
+    const emptyMsg = document.createElement('div');
+    emptyMsg.className = 'empty-state-message';
+    emptyMsg.textContent = 'ไม่พบข้อมูลห้องสำหรับสาขา: ' + branchFilter;
+    emptyMsg.style.padding = '20px';
+    emptyMsg.style.textAlign = 'center';
+    emptyMsg.style.color = 'var(--text-muted)';
+    container.appendChild(emptyMsg);
+  }
 
 
   const uniqueStartTimes = new Set();
 
   filteredRooms.forEach(room => {
 
-    state.classLogs.filter(log => matchRoomAndBranch(log.roomBranch, room.roomName, room.branch)).forEach(c => {
+    (state.classLogs || []).filter(log => matchRoomAndBranch(log.roomBranch, room.roomName, room.branch)).forEach(c => {
 
       if (c.timeStart) uniqueStartTimes.add(c.timeStart);
 
@@ -9362,15 +9375,13 @@ function renderDailyGrid() {
   filteredRooms.forEach(room => {
 
     const card = document.createElement('div');
-
     card.className = 'room-card';
+    card.style.flexDirection = 'row';
+    card.style.alignItems = 'stretch';
+    card.style.overflowX = 'auto';
 
-    
-
-    const roomClasses = state.classLogs.filter(log => {
-
+    const roomClasses = (state.classLogs || []).filter(log => {
       return matchRoomAndBranch(log.roomBranch, room.roomName, room.branch);
-
     });
 
     
@@ -9399,7 +9410,7 @@ function renderDailyGrid() {
 
     if (roomClasses.length > 0) {
 
-      roomClasses.sort((a,b) => a.timeStart.localeCompare(b.timeStart));
+      roomClasses.sort((a,b) => (a.timeStart || '').localeCompare(b.timeStart || ''));
 
       roomClasses.forEach(c => {
 
@@ -9461,7 +9472,7 @@ function renderDailyGrid() {
 
         const isStudentLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.studentLeave) || (c.isLeave > 0);
 
-        const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && c.note.includes('ครูลา'));
+        const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && String(c.note).includes('ครูลา'));
 
         
 
@@ -10844,7 +10855,7 @@ function renderModalClassesList() {
 
     const isStudentLeaveChecked = log.isLeave > 0;
 
-    const isTeacherLeaveChecked = log.note && log.note.includes('ครูลา');
+    const isTeacherLeaveChecked = log.note && String(log.note).includes('ครูลา');
 
     
 

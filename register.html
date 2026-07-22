@@ -240,37 +240,19 @@
     <form id="reg_form">
       <div class="row-grid">
         <div class="form-group">
-          <label class="form-label">ชื่อ - นามสกุล นักเรียน <span>*</span></label>
-          <input type="text" id="std_name" class="form-input" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว">
-        </div>
-        <div class="form-group">
-          <label class="form-label">ชื่อเล่นนักเรียน <span>*</span></label>
-          <input type="text" id="std_nickname" class="form-input" required placeholder="ชื่อเล่น">
-        </div>
-      </div>
-
-      <div class="row-grid">
-        <div class="form-group">
-          <label class="form-label">เบอร์โทรศัพท์ผู้ปกครอง <span>*</span></label>
-          <input type="tel" id="parent_contact" class="form-input" required placeholder="0xx-xxx-xxxx" oninput="formatPhoneAsYouType(this)" maxlength="12">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Line ID (ถ้ามี)</label>
-          <input type="text" id="line_id" class="form-input" placeholder="Line ID">
-        </div>
-      </div>
-
-      <div class="row-grid">
-        <div class="form-group">
-          <label class="form-label">โรงเรียนที่เรียนปัจจุบัน <span>*</span></label>
-          <input type="text" id="std_school" class="form-input" required placeholder="ระบุชื่อโรงเรียนปัจจุบัน" list="std_school_list">
-          <datalist id="std_school_list"></datalist>
+          <label class="form-label">เลือกสาขาที่สมัครเรียน <span>*</span></label>
+          <select id="branch_learn" class="form-select" required onchange="fetchAvailableCourses()">
+            <option value="">-- เลือกสาขา --</option>
+            <option value="สาขา1">สาขา 1 แยกPMY</option>
+            <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
+            <option value="สาขา3">สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ</option>
+          </select>
         </div>
         <div class="form-group">
           <label class="form-label">รูปแบบการเรียน <span>*</span></label>
           <select id="class_type" class="form-select" required onchange="fetchAvailableCourses()">
             <option value="">-- เลือกรูปแบบการเรียน --</option>
-            <option value="กลุ่มหลัก">กลุ่มหลัก</option>
+            <option value="กลุ่มหลัก">กลุ่มหลักตามตารางคอร์ส</option>
             <option value="เดี่ยว">เดี่ยว</option>
             <option value="ย่อย 2-3">กลุ่มย่อย 2 - 3 คน</option>
             <option value="ย่อย 4-5">กลุ่มย่อย 4 - 5 คน</option>
@@ -300,13 +282,66 @@
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">เลือกสาขาที่สมัครเรียน <span>*</span></label>
-          <select id="branch_learn" class="form-select" required onchange="fetchAvailableCourses()">
-            <option value="">-- เลือกสาขา --</option>
-            <option value="สาขา1">สาขา 1 แยกPMY</option>
-            <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
-            <option value="สาขา3">สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ</option>
-          </select>
+          <label class="form-label">ห้อง <span>*</span></label>
+          <input type="text" id="class_section" class="form-input" required placeholder="ระบุห้องเรียน">
+        </div>
+      </div>
+
+      <div class="row-grid">
+        <div class="form-group">
+          <label class="form-label">ชื่อ - นามสกุล นักเรียน <span>*</span></label>
+          <input type="text" id="std_name" class="form-input" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อเล่นนักเรียน <span>*</span></label>
+          <input type="text" id="std_nickname" class="form-input" required placeholder="ชื่อเล่น">
+        </div>
+      </div>
+
+      <div class="row-grid">
+        <div class="form-group">
+          <label class="form-label">โรงเรียนที่เรียนปัจจุบัน <span>*</span></label>
+          <input type="text" id="std_school" class="form-input" required placeholder="ระบุชื่อโรงเรียนปัจจุบัน" list="std_school_list">
+          <datalist id="std_school_list">
+            <option value="ชลราษฎรอำรุง"></option>
+            <option value="ชลกันยานุกูล"></option>
+            <option value="พนัสพิทยาคาร"></option>
+            <option value="ศรีราชา"></option>
+            <option value="ดาราสมุทร"></option>
+            <option value="อัสสัมชัญศรีราชา"></option>
+            <option value="สาธิตมหาวิทยาลัยบูรพา"></option>
+            <option value="จุฬาภรณราชวิทยาลัย ชลบุรี"></option>
+            <option value="สารสาสน์วิเทศชลบุรี"></option>
+            <option value="ระยองวิทยาคม"></option>
+            <option value="อนุบาลระยอง"></option>
+            <option value="อัสสัมชัญระยอง"></option>
+            <option value="เซนต์โยเซฟระยอง"></option>
+            <option value="มาบตาพุดพันทยาคาร"></option>
+            <option value="วัดป่าประดู่"></option>
+            <option value="ตากสินระยอง"></option>
+            <option value="กวงฮั้ว"></option>
+            <option value="สมคิดวิทยา"></option>
+            <option value="เบญจมราชรังสฤษฎิ์"></option>
+            <option value="แสนสุข"></option>
+            <option value="บางละมุง"></option>
+            <option value="โพธิสัมพันธ์พิทยาคาร"></option>
+            <option value="สัตหีบวิทยาคม"></option>
+            <option value="มารีวิทย์"></option>
+          </datalist>
+        </div>
+        <div class="form-group">
+          <label class="form-label">เบอร์โทรศัพท์ผู้ปกครอง <span>*</span></label>
+          <input type="tel" id="parent_contact" class="form-input" required placeholder="0xx-xxx-xxxx" oninput="formatPhoneAsYouType(this)" maxlength="12">
+        </div>
+      </div>
+
+      <div class="row-grid">
+        <div class="form-group">
+          <label class="form-label">Line ID (ถ้ามี)</label>
+          <input type="text" id="line_id" class="form-input" placeholder="Line ID">
+        </div>
+        <div class="form-group">
+          <!-- empty placeholder to balance grid columns -->
         </div>
       </div>
 
@@ -353,6 +388,7 @@
           </table>
         </div>
         <input type="hidden" id="selected_outstanding_courses" value="">
+        <input type="hidden" id="full_amount" value="0">
       </div>
 
       <div class="form-group">
@@ -426,6 +462,7 @@ window.google.script.run = new Proxy({}, {
           if (list) {
             list.innerHTML = '';
             const defaultSchools = [
+              // ระยอง
               'โรงเรียนระยองวิทยาคม',
               'โรงเรียนอัสสัมชัญระยอง',
               'โรงเรียนเซนต์โยเซฟระยอง',
@@ -435,7 +472,18 @@ window.google.script.run = new Proxy({}, {
               'โรงเรียนมารีวิทย์ระยอง',
               'โรงเรียนระยองวิทยาคมปากน้ำ',
               'โรงเรียนมาบตาพุดพันพิทยาคาร',
-              'โรงเรียนสาธิตเทศบาลนครระยอง'
+              'โรงเรียนสาธิตเทศบาลนครระยอง',
+              // ชลบุรี
+              'โรงเรียนชลราษฎรอำรุง',
+              'โรงเรียนชลกันยานุกูล',
+              'โรงเรียนอัสสัมชัญศรีราชา',
+              'โรงเรียนดาราสมุทร',
+              'โรงเรียนเซนต์พอลคอนแวนต์',
+              'โรงเรียนสาธิตมหาวิทยาลัยบูรพา',
+              'โรงเรียนวิทยาศาสตร์จุฬาภรณราชวิทยาลัย ชลบุรี',
+              'โรงเรียนศรีราชา',
+              'โรงเรียนมารีวิทย์บ่อวิน',
+              'โรงเรียนมารีวิทย์สัตหีบ'
             ];
             const allSchools = new Set([...defaultSchools, ...(res.schools || [])]);
             
@@ -495,6 +543,7 @@ window.google.script.run = new Proxy({}, {
 
     document.getElementById('fees_grand_total').textContent = '฿' + total.toLocaleString(undefined, {minimumFractionDigits: 2});
     document.getElementById('selected_outstanding_courses').value = selectedNames.join(', ');
+    document.getElementById('full_amount').value = total;
     
     var transferInput = document.getElementById('transfer_amount');
     if (isInitial) {
@@ -703,11 +752,13 @@ window.google.script.run = new Proxy({}, {
         nickname: nickname,
         school: school,
         grade: document.getElementById('std_grade').value,
+        classSection: document.getElementById('class_section').value,
         classType: document.getElementById('class_type').value,
         course: outstandingCourses || 'สมัครเรียนใหม่ / คอร์สทั่วไป',
         contact: contact,
         lineId: document.getElementById('line_id').value.trim(),
         amount: parseFloat(document.getElementById('transfer_amount').value) || 0,
+        fullAmount: parseFloat(document.getElementById('full_amount').value) || 0,
         branchLearn: document.getElementById('branch_learn').value
       };
 

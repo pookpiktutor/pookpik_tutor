@@ -7059,8 +7059,11 @@ function syncStudentToStatusDB(std) {
 
   if (rowIndex === -1) {
 
-    id = `${std.name.replace(/\s+/g, '')}_${timestamp}_${std.round}`;
+    id = std.id || `${std.name.replace(/\s+/g, '')}_${timestamp}_${std.round}`;
+    std.id = id;
 
+  } else {
+    std.id = id;
   }
 
   
@@ -16645,6 +16648,12 @@ function submitPublicRegistration(studentData, fileData) {
     if (isNaN(paidAmount)) paidAmount = 0;
 
     Logger.log('Step 2: paidAmount = ' + paidAmount);
+    
+    let fullAmount = studentData.fullAmount !== undefined ? parseFloat(studentData.fullAmount) : paidAmount;
+    if (isNaN(fullAmount)) fullAmount = paidAmount;
+    
+    let outstandingAmount = fullAmount - paidAmount;
+    if (outstandingAmount < 0) outstandingAmount = 0;
 
     
 
@@ -16670,9 +16679,9 @@ function submitPublicRegistration(studentData, fileData) {
 
       paid: paidAmount,
 
-      full: paidAmount,
+      full: fullAmount,
 
-      outstanding: 0,
+      outstanding: outstandingAmount,
 
       paymentDate: Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy'),
 
@@ -16684,7 +16693,7 @@ function submitPublicRegistration(studentData, fileData) {
 
       grade: studentData.grade,
 
-      classSection: '-',
+      classSection: studentData.classSection || '-',
 
       lineName: studentData.nickname,
 
@@ -16711,6 +16720,13 @@ function submitPublicRegistration(studentData, fileData) {
     Logger.log('Step 3: syncStudentToStatusDB completed');
 
     
+    Logger.log('Step 4: Calling syncToGradeSheet...');
+    try {
+      syncToGradeSheet(std);
+      Logger.log('Step 4: syncToGradeSheet completed');
+    } catch(e) {
+      Logger.log('Error in syncToGradeSheet: ' + e.toString());
+    }
 
     invalidateStudentCache();
 

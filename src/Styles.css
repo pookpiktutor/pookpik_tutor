@@ -3207,12 +3207,6 @@ body {
 
 #rooms_grid_container .room-card .room-classes {
 
-  display: flex !important;
-
-  flex-direction: row !important;
-
-  flex-wrap: nowrap !important;
-
   gap: 10px !important;
 
   align-items: stretch !important;
