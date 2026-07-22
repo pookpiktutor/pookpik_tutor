@@ -376,6 +376,9 @@
                 <select id="grade_sheet_round_filter" class="form-select" style="min-width: 250px;" onchange="filterGradeSheetGrid()">
                   <option value="ALL">-- แสดงทั้งหมด --</option>
                 </select>
+
+                <label class="form-label" style="margin-top: 10px;">ค้นหานักเรียน:</label>
+                <input type="text" id="grade_sheet_search" class="form-input" style="min-width: 200px;" placeholder="ชื่อ, นามสกุล, ชื่อเล่น..." onkeyup="filterGradeSheetStudents()">
                 
                 <button class="btn btn-secondary" onclick="showAddCourseColumnModal()">➕ เพิ่มคอร์สเรียน (รายวิชา)</button>
                 <button class="btn btn-primary" onclick="showAddStudentModal()"><span>➕</span> ลงทะเบียนเรียนแบบละเอียด</button>
@@ -501,6 +504,10 @@
                   </optgroup>
                 </select>
                 <button class="btn btn-primary" onclick="loadPrivateStudents()">🔄 โหลดข้อมูล</button>
+
+                <label class="form-label" style="margin-top: 10px;">ค้นหานักเรียน:</label>
+                <input type="text" id="private_student_search" class="form-input" style="min-width: 200px;" placeholder="ชื่อ, นามสกุล, ชื่อเล่น..." onkeyup="filterPrivateStudents()">
+
                 <button class="btn btn-primary" onclick="showAddStudentModal()"><span>➕</span> ลงทะเบียนเรียนแบบละเอียด</button>
               </div>
             </div>
