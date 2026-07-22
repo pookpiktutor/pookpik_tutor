@@ -379,7 +379,7 @@
               <tr style="border-top: 2px solid #cbd5e1;">
                 <td colspan="2" style="padding: 8px 4px; text-align: right;">ส่วนลด (บาท):</td>
                 <td colspan="2" style="padding: 8px 4px; text-align: right;">
-                  <input type="number" id="discount_amount" class="form-input" style="width: 80px; padding: 4px; display: inline-block; text-align: right;" value="0" oninput="recalcSelectedFees()">
+                  <input type="number" id="discount_amount" class="form-input" style="width: 80px; padding: 4px; display: inline-block; text-align: right; background-color: #f1f5f9; cursor: not-allowed;" value="0" readonly>
                 </td>
               </tr>
               <tr style="border-top: 1px dashed #cbd5e1; font-weight: 700; color: var(--color-primary-hover);">
@@ -569,18 +569,44 @@ window.google.script.run = new Proxy({}, {
     var cbs = document.querySelectorAll('.course-checkbox');
     var total = 0;
     var selectedNames = [];
+    var fullPrices = [];
 
     cbs.forEach(function(cb) {
       if (cb.checked) {
         var idx = parseInt(cb.getAttribute('data-index'));
         if (!isNaN(idx) && courses[idx]) {
-          total += courses[idx].outstanding;
+          var price = courses[idx].outstanding;
+          total += price;
+          fullPrices.push(price);
           selectedNames.push(courses[idx].courseName);
         }
       }
     });
 
+    var classType = document.getElementById('class_type') ? document.getElementById('class_type').value : '';
     var discountInput = document.getElementById('discount_amount');
+    
+    // Auto calculate discount if Main Group
+    if (classType && classType.indexOf('กลุ่มหลัก') !== -1) {
+      fullPrices.sort((a, b) => b - a);
+      var calcTotal = 0;
+      fullPrices.forEach((price, idx) => {
+        if (idx === 0 || idx === 1) {
+          calcTotal += price;
+        } else if (idx === 2) {
+          calcTotal += price * 0.7; // 30% discount
+        } else {
+          calcTotal += price * 0.5; // 50% discount
+        }
+      });
+      var autoDiscount = total - calcTotal;
+      if (discountInput) {
+        discountInput.value = autoDiscount;
+      }
+    } else {
+      if (discountInput) discountInput.value = 0;
+    }
+
     var discount = discountInput ? (parseFloat(discountInput.value) || 0) : 0;
     var netTotal = Math.max(0, total - discount);
 
