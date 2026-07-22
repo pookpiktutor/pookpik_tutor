@@ -7941,22 +7941,19 @@ function getGradeSheetData(grade, branch, logUser) {
     }
 
     const suffixes = ['1', '2', '3'];
-
     const allCourses = [];
-
     const allStudents = [];
-
     
+    let gradesToFetch = [grade];
+    if (grade === 'all') {
+      gradesToFetch = ['อนุบาล', 'ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
+    }
 
-    suffixes.forEach(suffix => {
-
-      const sheetName = `${grade}/${suffix}`;
-
-      const sheet = db.getSheetByName(sheetName);
-
-      if (!sheet) return;
-
-      
+    gradesToFetch.forEach(g => {
+      suffixes.forEach(suffix => {
+        const sheetName = `${g}/${suffix}`;
+        const sheet = db.getSheetByName(sheetName);
+        if (!sheet) return;
 
       const lastRow = sheet.getLastRow();
 
@@ -8093,6 +8090,7 @@ function getGradeSheetData(grade, branch, logUser) {
 
       }
 
+    });
     });
 
     

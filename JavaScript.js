@@ -3255,9 +3255,11 @@ function renderGradeSheetTable() {
   const selectedBranch = document.getElementById('grade_sheet_branch_select').value;
   
   const displayedCourses = courses.filter(c => {
+    const branchMatch = (selectedBranch === 'all' || c.branch === selectedBranch);
     if (filterRound === 'ALL') {
-      return c.branch === selectedBranch;
+      return branchMatch;
     } else {
+      if (!branchMatch && selectedBranch !== 'all') return false;
       if (filterRound === 'ไม่ระบุรอบเรียน') {
         return getCourseRound(c.courseName) === 'None';
       }
@@ -3266,10 +3268,11 @@ function renderGradeSheetTable() {
   });
 
   const displayedStudents = students.filter(s => {
+    const branchMatch = (selectedBranch === 'all' || s.branch === selectedBranch);
     if (filterRound === 'ALL') {
-      return s.branch === selectedBranch;
+      return branchMatch;
     } else {
-      return true; // show all students across all branches when round filter is active
+      return branchMatch;
     }
   });
   
