@@ -240,12 +240,22 @@
     <form id="reg_form">
       <div class="row-grid">
         <div class="form-group">
-          <label class="form-label">เลือกสาขาที่สมัครเรียน <span>*</span></label>
-          <select id="branch_learn" class="form-select" required onchange="fetchAvailableCourses()">
-            <option value="">-- เลือกสาขา --</option>
-            <option value="สาขา1">สาขา 1 แยกPMY</option>
-            <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
-            <option value="สาขา3">สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ</option>
+          <label class="form-label">ระดับชั้นเรียน <span>*</span></label>
+          <select id="std_grade" class="form-select" required onchange="fetchAvailableCourses()">
+            <option value="">-- เลือกระดับชั้น --</option>
+            <option value="อนุบาล">อนุบาล</option>
+            <option value="ป.1">ป.1</option>
+            <option value="ป.2">ป.2</option>
+            <option value="ป.3">ป.3</option>
+            <option value="ป.4">ป.4</option>
+            <option value="ป.5">ป.5</option>
+            <option value="ป.6">ป.6</option>
+            <option value="ม.1">ม.1</option>
+            <option value="ม.2">ม.2</option>
+            <option value="ม.3">ม.3</option>
+            <option value="ม.4">ม.4</option>
+            <option value="ม.5">ม.5</option>
+            <option value="ม.6">ม.6</option>
           </select>
         </div>
         <div class="form-group">
@@ -263,22 +273,12 @@
 
       <div class="row-grid">
         <div class="form-group">
-          <label class="form-label">ระดับชั้นเรียน <span>*</span></label>
-          <select id="std_grade" class="form-select" required onchange="fetchAvailableCourses()">
-            <option value="">-- เลือกระดับชั้น --</option>
-            <option value="อนุบาล">อนุบาล</option>
-            <option value="ป.1">ป.1</option>
-            <option value="ป.2">ป.2</option>
-            <option value="ป.3">ป.3</option>
-            <option value="ป.4">ป.4</option>
-            <option value="ป.5">ป.5</option>
-            <option value="ป.6">ป.6</option>
-            <option value="ม.1">ม.1</option>
-            <option value="ม.2">ม.2</option>
-            <option value="ม.3">ม.3</option>
-            <option value="ม.4">ม.4</option>
-            <option value="ม.5">ม.5</option>
-            <option value="ม.6">ม.6</option>
+          <label class="form-label">เลือกสาขาที่สมัครเรียน <span>*</span></label>
+          <select id="branch_learn" class="form-select" required onchange="fetchAvailableCourses()">
+            <option value="">-- เลือกสาขา --</option>
+            <option value="สาขา1">สาขา 1 แยกPMY</option>
+            <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
+            <option value="สาขา3">สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ</option>
           </select>
         </div>
         <div class="form-group">
