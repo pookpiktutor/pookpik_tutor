@@ -590,9 +590,10 @@ window.google.script.run = new Proxy({}, {
   function fetchAvailableCourses() {
     const grade = document.getElementById('std_grade').value.trim();
     const classType = document.getElementById('class_type').value.trim();
+    const branchLearn = document.getElementById('branch_learn').value.trim();
 
-    if (!grade || !classType) {
-      alert('กรุณาเลือกระดับชั้นและรูปแบบการเรียนเพื่อค้นหารายวิชา');
+    if (!grade || !classType || !branchLearn) {
+      alert('กรุณาเลือกสาขา ระดับชั้น และรูปแบบการเรียนเพื่อค้นหารายวิชา');
       return;
     }
 
@@ -674,7 +675,7 @@ window.google.script.run = new Proxy({}, {
           td.style.padding = '20px';
           td.style.textAlign = 'center';
           td.style.color = '#64748b';
-          td.textContent = '🎉 ไม่พบคอร์สที่ค้างชำระของนักเรียนคนนี้';
+          td.textContent = 'ไม่พบคอร์สเรียนที่เปิดสอนสำหรับเงื่อนไขนี้';
           tr.appendChild(td);
           tbody.appendChild(tr);
 
@@ -689,7 +690,7 @@ window.google.script.run = new Proxy({}, {
         searchBtn.textContent = originalText;
         alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message);
       })
-      .getStudentHistoryData(name, nickname);
+      .getAvailableCourses(grade, classType, branchLearn);
   }
 
   // --- Toast Notification System ---

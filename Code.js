@@ -16750,37 +16750,63 @@ function submitPublicRegistration(studentData, fileData) {
   }
 }
 
-function getAvailableCourses(grade, classType) {
+function getAvailableCourses(grade, classType, branchLearn) {
   try {
     const db = getDb();
-    let sheetName = classType + " " + grade;
+    let sheetName = "";
+    let isMainClass = (classType === "กลุ่มหลัก" || classType === "กลุ่มหลักตามตารางคอร์ส");
+    
+    if (isMainClass) {
+       let branchNum = "1";
+       if (branchLearn && branchLearn.includes("สาขา")) {
+           branchNum = branchLearn.replace("สาขา", "").trim();
+       }
+       sheetName = grade + "/" + branchNum;
+    } else {
+       sheetName = classType + " " + grade;
+    }
+
     let sheet = db.getSheetByName(sheetName);
     
     // fallbacks
-    if (!sheet) sheet = db.getSheetByName(grade + " " + classType);
-    if (!sheet) sheet = db.getSheetByName(grade + "/" + classType);
-    if (!sheet) sheet = db.getSheetByName(classType + "/" + grade);
+    if (!sheet && !isMainClass) {
+        sheet = db.getSheetByName(grade + " " + classType);
+        if (!sheet) sheet = db.getSheetByName(grade + "/" + classType);
+        if (!sheet) sheet = db.getSheetByName(classType + "/" + grade);
+    }
     
     if (!sheet) {
       return { success: true, courses: [] };
     }
     
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 5) {
-      return { success: true, courses: [] };
-    }
-    
-    const dataRange = sheet.getRange(5, 3, lastRow - 4, 1);
-    const values = dataRange.getValues();
-    
     const courses = [];
-    for (let i = 0; i < values.length; i++) {
-       const courseName = values[i][0];
-       if (courseName === "" || courseName == null) {
-          break; // Stop at first empty cell as requested
+
+    if (isMainClass) {
+       const lastCol = sheet.getLastColumn();
+       if (lastCol >= 19) {
+          const headerRow1 = sheet.getRange(1, 19, 1, lastCol - 18).getValues()[0];
+          const headerRow2 = sheet.getRange(2, 19, 1, lastCol - 18).getValues()[0];
+          for (let i = 0; i < headerRow1.length; i++) {
+             const courseName = headerRow1[i] ? headerRow1[i].toString().trim() : '';
+             if (courseName && courseName !== '') {
+                const price = parseFloat(headerRow2[i]) || 0;
+                courses.push({ courseName: courseName, full: price, outstanding: price }); 
+             }
+          }
        }
-       courses.push({ courseName: courseName, full: 0, outstanding: 0 }); 
+    } else {
+       const lastRow = sheet.getLastRow();
+       if (lastRow >= 5) {
+          const dataRange = sheet.getRange(5, 3, lastRow - 4, 1);
+          const values = dataRange.getValues();
+          for (let i = 0; i < values.length; i++) {
+             const courseName = values[i][0];
+             if (courseName === "" || courseName == null) break;
+             courses.push({ courseName: courseName, full: 0, outstanding: 0 }); 
+          }
+       }
     }
+    
     return { success: true, courses: courses };
   } catch (err) {
     Logger.log('Error in getAvailableCourses: ' + err.toString());
