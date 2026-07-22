@@ -347,7 +347,7 @@
 
       <div class="row-grid">
         <div class="form-group" style="display: flex; align-items: flex-end;">
-          <button type="button" class="btn btn-secondary" onclick="fetchAvailableCourses()" style="background-color: #64748b; margin-bottom: 0; font-size: 0.9rem; padding: 10px 12px; height: 42px; width: 100%;">
+          <button type="button" class="btn btn-secondary" onclick="fetchAvailableCourses(true)" style="background-color: #64748b; margin-bottom: 0; font-size: 0.9rem; padding: 10px 12px; height: 42px; width: 100%;">
             🔍 ค้นหารายวิชาที่เปิดสอน
           </button>
         </div>
@@ -587,13 +587,15 @@ window.google.script.run = new Proxy({}, {
     reader.readAsDataURL(file);
   }
 
-  function fetchAvailableCourses() {
+  function fetchAvailableCourses(isFromButton = false) {
     const grade = document.getElementById('std_grade').value.trim();
     const classType = document.getElementById('class_type').value.trim();
     const branchLearn = document.getElementById('branch_learn').value.trim();
 
     if (!grade || !classType || !branchLearn) {
-      alert('กรุณาเลือกสาขา ระดับชั้น และรูปแบบการเรียนเพื่อค้นหารายวิชา');
+      if (isFromButton) {
+        alert('กรุณาเลือกสาขา ระดับชั้น และรูปแบบการเรียนเพื่อค้นหารายวิชา');
+      }
       return;
     }
 
