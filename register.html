@@ -366,17 +366,23 @@
           <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
             <thead>
               <tr style="border-bottom: 2px solid #cbd5e1; color: #475569;">
-                <th style="padding: 6px 4px; width: 36px;"><input type="checkbox" id="select_all_courses" checked onchange="toggleAllCourses(this.checked)" style="width:18px;height:18px;cursor:pointer;accent-color:#0084ff;"></th>
+                <th style="padding: 6px 4px; width: 36px;"><input type="checkbox" id="select_all_courses" onchange="toggleAllCourses(this.checked)" style="width:18px;height:18px;cursor:pointer;accent-color:#0084ff;"></th>
                 <th style="padding: 6px 4px;">วิชา/คอร์ส</th>
                 <th style="padding: 6px 4px; text-align: right;">ราคา</th>
-                <th style="padding: 6px 4px; text-align: right;">ยอดค้าง</th>
+                <th style="padding: 6px 4px; text-align: right;">ยอดค่าเรียน</th>
               </tr>
             </thead>
             <tbody id="fees_list_tbody">
               <!-- Dynamically populated -->
             </tbody>
             <tfoot>
-              <tr style="border-top: 2px solid #cbd5e1; font-weight: 700; color: var(--color-primary-hover);">
+              <tr style="border-top: 2px solid #cbd5e1;">
+                <td colspan="2" style="padding: 8px 4px; text-align: right;">ส่วนลด (บาท):</td>
+                <td colspan="2" style="padding: 8px 4px; text-align: right;">
+                  <input type="number" id="discount_amount" class="form-input" style="width: 80px; padding: 4px; display: inline-block; text-align: right;" value="0" oninput="recalcSelectedFees()">
+                </td>
+              </tr>
+              <tr style="border-top: 1px dashed #cbd5e1; font-weight: 700; color: var(--color-primary-hover);">
                 <td colspan="2" style="padding: 8px 4px; text-align: right;">ยอดรวมที่เลือกชำระ:</td>
                 <td colspan="2" id="fees_grand_total" style="padding: 8px 4px; text-align: right; font-size: 1rem; color: var(--color-danger);">฿0.00</td>
               </tr>
@@ -391,12 +397,25 @@
         <input type="hidden" id="full_amount" value="0">
       </div>
 
-      <div class="form-group">
-        <label class="form-label">จำนวนเงินที่โอน (บาท)</label>
-        <input type="number" id="transfer_amount" class="form-input" placeholder="ยอดเงินตามสลิป" oninput="recalcSelectedFees()">
+      <!-- QR Payment Section -->
+      <div id="payment_qr_section" style="margin-bottom: 20px; background: rgba(255, 255, 255, 0.9); border: 1px solid #cbd5e1; border-radius: var(--radius-md); padding: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); text-align: center;">
+        <h4 style="margin-bottom: 10px; color: var(--color-primary); font-size: 1rem;">ช่องทางการติดต่อชำระเงิน</h4>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">สแกน QR Code ด้านล่างเพื่อแอดเพื่อน หรือแจ้งการชำระเงิน</p>
+        <img src="https://raw.githubusercontent.com/pookpiktutor/pookpik_tutor/main/img/qr.jpg" onerror="this.src='https://placehold.co/250x250?text=QR+Code'" alt="LINE QR Code" style="max-width: 250px; border-radius: 8px; border: 1px solid #cbd5e1; margin: 0 auto; display: block;">
       </div>
 
       <div class="form-group">
+        <label class="form-label">จำนวนเงินที่โอน (บาท)</label>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <input type="number" id="transfer_amount" class="form-input" placeholder="ยอดเงินตามสลิป" oninput="recalcSelectedFees()">
+          <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; cursor: pointer; white-space: nowrap;">
+            <input type="checkbox" id="unpaid_checkbox" onchange="toggleUnpaid(this.checked)" style="width:18px;height:18px;accent-color:#0084ff;">
+            ยังไม่ได้ชำระ
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group" id="slip_upload_group">
         <label class="form-label">แนบหลักฐานการโอนเงิน (สลิป)</label>
         <div class="upload-area" onclick="document.getElementById('file_input').click()">
           <div class="upload-icon">📸</div>
@@ -525,6 +544,26 @@ window.google.script.run = new Proxy({}, {
     recalcSelectedFees();
   }
 
+  function toggleUnpaid(isChecked) {
+    var transferInput = document.getElementById('transfer_amount');
+    var slipGroup = document.getElementById('slip_upload_group');
+    var fileInput = document.getElementById('file_input');
+    
+    if (isChecked) {
+      transferInput.disabled = true;
+      transferInput.value = 0;
+      fileInput.required = false;
+      slipGroup.style.display = 'none';
+      recalcSelectedFees();
+    } else {
+      transferInput.disabled = false;
+      transferInput.value = '';
+      fileInput.required = true;
+      slipGroup.style.display = 'block';
+      recalcSelectedFees();
+    }
+  }
+
   function recalcSelectedFees(isInitial) {
     var courses = window._outstandingCourses || [];
     var cbs = document.querySelectorAll('.course-checkbox');
@@ -541,9 +580,13 @@ window.google.script.run = new Proxy({}, {
       }
     });
 
-    document.getElementById('fees_grand_total').textContent = '฿' + total.toLocaleString(undefined, {minimumFractionDigits: 2});
+    var discountInput = document.getElementById('discount_amount');
+    var discount = discountInput ? (parseFloat(discountInput.value) || 0) : 0;
+    var netTotal = Math.max(0, total - discount);
+
+    document.getElementById('fees_grand_total').textContent = '฿' + netTotal.toLocaleString(undefined, {minimumFractionDigits: 2});
     document.getElementById('selected_outstanding_courses').value = selectedNames.join(', ');
-    document.getElementById('full_amount').value = total;
+    document.getElementById('full_amount').value = netTotal;
     
     var transferInput = document.getElementById('transfer_amount');
     if (isInitial) {
@@ -635,7 +678,7 @@ window.google.script.run = new Proxy({}, {
             checkTd.style.padding = '8px 4px';
             var cb = document.createElement('input');
             cb.type = 'checkbox';
-            cb.checked = true;
+            cb.checked = false;
             cb.className = 'course-checkbox';
             cb.setAttribute('data-index', idx);
             cb.style.cssText = 'width:18px;height:18px;cursor:pointer;accent-color:#0084ff;';
@@ -665,11 +708,11 @@ window.google.script.run = new Proxy({}, {
             tbody.appendChild(tr);
           });
 
-          // Set select-all checkbox to checked
-          document.getElementById('select_all_courses').checked = true;
+          // Set select-all checkbox to unchecked
+          document.getElementById('select_all_courses').checked = false;
           
           // Calculate totals
-          recalcSelectedFees(true);
+          recalcSelectedFees(false);
         } else {
           var tr = document.createElement('tr');
           var td = document.createElement('td');
