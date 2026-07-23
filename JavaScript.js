@@ -3074,7 +3074,7 @@ function deleteStudent(id) {
 }
 
 // ----------------------------------------------------
-// 3. Grade Sheet Editor Grid Logic (จัดการคอร์สเรียนแยกห้อง)
+// 3. Grade Sheet Editor Grid Logic (คอร์สกลุ่มหลัก)
 // ----------------------------------------------------
 function getCourseRound(courseName) {
   if (!courseName) return 'None';

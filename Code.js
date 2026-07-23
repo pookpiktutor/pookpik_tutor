@@ -16704,7 +16704,7 @@ function migrateGradeSheetsFinancials() {
       const studentMatch = mapForSheet.find(s => s.name === rowName);
       if (studentMatch) {
         dataValues[r][0] = studentMatch.full;
-        dataValues[r][1] = 0;
+        // dataValues[r][1] is preserved (discount from grade sheet)
         dataValues[r][2] = studentMatch.outstanding;
         dataValues[r][3] = studentMatch.paid;
         changed = true;
@@ -16721,81 +16721,4 @@ function migrateGradeSheetsFinancials() {
 }
 
 
-function migrateGradeSheetsFinancials() {
-  const db = getDb();
-  const statusSheet = db.getSheetByName('StatusDB');
-  if (!statusSheet) return 'No StatusDB found';
-  
-  const statusLastRow = statusSheet.getLastRow();
-  if (statusLastRow < 2) return 'StatusDB empty';
-  
-  const statusData = statusSheet.getRange(2, 1, statusLastRow - 1, 25).getValues();
-  const studentsMap = {};
-  
-  statusData.forEach(row => {
-    const name = row[1] ? row[1].toString().trim() : '';
-    const dbBranch = row[5] ? row[5].toString().trim() : '';
-    const dbGrade = row[16] ? row[16].toString().trim() : '';
-    const classType = row[23] ? row[23].toString().trim() : '';
-    
-    if (name && classType.includes('กลุ่มหลัก') && dbBranch && dbGrade) {
-      let branchSuffix = '';
-      if (dbBranch === 'สาขา1') branchSuffix = '1';
-      else if (dbBranch === 'สาขา2') branchSuffix = '2';
-      else if (dbBranch === 'สาขา3') branchSuffix = '3';
-      
-      if (branchSuffix) {
-        const sheetName = dbGrade + '/' + branchSuffix;
-        
-        const paid = parseFloat((row[9] || 0).toString().replace(/,/g, '')) || 0;
-        const full = parseFloat((row[10] || 0).toString().replace(/,/g, '')) || 0;
-        const outstanding = full - paid;
-        
-        if (!studentsMap[sheetName]) studentsMap[sheetName] = [];
-        studentsMap[sheetName].push({
-          name: name,
-          full: full,
-          paid: paid,
-          outstanding: outstanding
-        });
-      }
-    }
-  });
-  
-  let totalUpdated = 0;
-  for (const sheetName in studentsMap) {
-    const sheet = db.getSheetByName(sheetName);
-    if (!sheet) continue;
-    
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 6) continue;
-    
-    const namesRange = sheet.getRange(6, 2, lastRow - 5, 1).getValues();
-    const mapForSheet = studentsMap[sheetName];
-    
-    const dataRange = sheet.getRange(6, 11, lastRow - 5, 4);
-    const dataValues = dataRange.getValues();
-    
-    let changed = false;
-    for (let r = 0; r < namesRange.length; r++) {
-      const rowName = namesRange[r][0] ? namesRange[r][0].toString().trim() : '';
-      if (!rowName) continue;
-      
-      const studentMatch = mapForSheet.find(s => s.name === rowName);
-      if (studentMatch) {
-        dataValues[r][0] = studentMatch.full;
-        dataValues[r][1] = 0;
-        dataValues[r][2] = studentMatch.outstanding;
-        dataValues[r][3] = studentMatch.paid;
-        changed = true;
-        totalUpdated++;
-      }
-    }
-    
-    if (changed) {
-      dataRange.setValues(dataValues);
-    }
-  }
-  
-  return 'Updated ' + totalUpdated + ' records.';
-}
+// [REMOVED] Duplicate migrateGradeSheetsFinancials function removed

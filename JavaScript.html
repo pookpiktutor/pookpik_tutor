@@ -58,12 +58,7 @@ function updateTaskWidget() {
   } else {
       widget.style.display = 'flex';
   }
-  widget.innerHTML = `
-    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #fff; padding: 8px 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 500; border: 1px solid #e2e8f0; max-width: 300px;">
-      ${icon}
-      <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${currentActionText}</span>
-    </div>
-  `;
+  widget.innerHTML = `${icon}<span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">${currentActionText}</span> ${badgeHTML}`;
 }
 
 
@@ -6390,7 +6385,7 @@ function deleteStudent(id) {
 
 // ----------------------------------------------------
 
-// 3. Grade Sheet Editor Grid Logic (จัดการคอร์สเรียนแยกห้อง)
+// 3. Grade Sheet Editor Grid Logic (คอร์สกลุ่มหลัก)
 
 // ----------------------------------------------------
 

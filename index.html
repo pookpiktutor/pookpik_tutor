@@ -74,7 +74,7 @@
                 <span>🏫</span> ตารางใช้ห้อง
               </li>
               <li class="nav-item" data-panel="grade_sheets">
-                <span>📝</span> จัดการคอร์สเรียนแยกห้อง
+                <span>📝</span> คอร์สกลุ่มหลัก
               </li>
               <li class="nav-item" data-panel="private_students">
                 <span>👤</span> เด็กเดี่ยว/ย่อย
@@ -395,7 +395,7 @@
             </div>
 
             <div class="glass-panel" style="padding: 16px;">
-              <div style="font-weight: 600; font-size: 1rem; margin-bottom: 12px;" id="grade_sheet_title_display">จัดการคอร์สเรียนแยกห้อง</div>
+              <div style="font-weight: 600; font-size: 1rem; margin-bottom: 12px;" id="grade_sheet_title_display">คอร์สกลุ่มหลัก</div>
               <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
                 <table class="custom-table edit-grid-table" id="grade_sheet_grid_table">
                   <!-- Generated dynamically in JavaScript -->
@@ -3430,13 +3430,7 @@
     
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div class="toast-container" id="toast_container"></div>
-    <div class="task-queue-widget" id="task_queue_widget" style="display: none;">
-      <div class="tq-header">
-        <span class="tq-title">กำลังทำงานพื้นหลัง</span>
-        <span class="tq-count" id="tq_count">0</span>
-      </div>
-      <div class="tq-list" id="tq_list"></div>
-    </div>
+    <div class="task-queue-widget" id="task_queue_widget" style="display: none;"></div>
     
     <?!= include('JavaScript'); ?>
   
