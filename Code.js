@@ -7910,12 +7910,11 @@ function deleteStudentRegistration(id, logUser) {
 
 // ----------------------------------------------------
 
-function getGradeSheetData(grade, branch, logUser) {
+function getGradeSheetData(grade, branch, logUser, searchTerm) {
 
   if (logUser) checkTeacherBlock(logUser);
 
   try {
-
     const db = getDb();
     
     // Build a map of student payments from StatusDB
@@ -7948,6 +7947,8 @@ function getGradeSheetData(grade, branch, logUser) {
     if (grade === 'all') {
       gradesToFetch = ['อนุบาล', 'ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
     }
+    
+    const term = (searchTerm || '').toLowerCase().trim();
 
     gradesToFetch.forEach(g => {
       suffixes.forEach(suffix => {
@@ -7956,74 +7957,49 @@ function getGradeSheetData(grade, branch, logUser) {
         if (!sheet) return;
 
       const lastRow = sheet.getLastRow();
-
       const lastCol = sheet.getLastColumn();
-
       if (lastRow < 5) return;
 
-      
-
       const branchName = `สาขา${suffix}`;
-
-      
-
       const sheetCourses = [];
 
       if (lastCol >= 19) {
-
         const headerRow1 = sheet.getRange(1, 19, 1, lastCol - 18).getValues()[0];
-
         const headerRow2 = sheet.getRange(2, 19, 1, lastCol - 18).getValues()[0];
-
         const headerRow3 = sheet.getRange(3, 19, 1, lastCol - 18).getValues()[0];
-
         const headerRow4 = sheet.getRange(4, 19, 1, lastCol - 18).getValues()[0];
 
-        
-
         for (let i = 0; i < headerRow1.length; i++) {
-
           if (headerRow1[i]) {
-
             sheetCourses.push({
-
               colIndex: 19 + i,
-
               courseName: headerRow1[i].toString().trim(),
-
               price: parseFloat(headerRow2[i]) || 0,
-
               dayTime: headerRow3[i] ? headerRow3[i].toString().trim() : '',
-
               totalSessions: parseInt(headerRow4[i]) || 10,
-
               sheetName: sheetName,
-
               branch: branchName
-
             });
-
           }
-
         }
-
       }
-
-      
 
       allCourses.push(...sheetCourses);
 
-      
-
       if (lastRow >= 6) {
-
         const studentData = sheet.getRange(6, 1, lastRow - 5, lastCol).getValues();
-
         studentData.forEach((row, idx) => {
-
           const name = row[1] ? row[1].toString().trim() : '';
-
           if (!name) return;
+          
+          if (term) {
+            const colA = (row[0] || '').toString().toLowerCase();
+            const colB = name.toLowerCase();
+            const colG = (row[6] || '').toString().toLowerCase();
+            if (!colA.includes(term) && !colB.includes(term) && !colG.includes(term)) {
+              return;
+            }
+          }
 
           
 

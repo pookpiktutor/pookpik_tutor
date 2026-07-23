@@ -380,7 +380,10 @@
                 </select>
 
                 <label class="form-label" style="margin-top: 10px;">ค้นหานักเรียน:</label>
-                <input type="text" id="grade_sheet_search" class="form-input" style="min-width: 200px;" placeholder="ชื่อ, นามสกุล, ชื่อเล่น..." onkeyup="filterGradeSheetStudents()">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="text" id="grade_sheet_search" class="form-input" style="min-width: 200px;" placeholder="ชื่อ, นามสกุล, ชื่อเล่น..." onkeyup="if(event.key === 'Enter') searchGlobalBackend(); else filterGradeSheetStudents();">
+                  <button class="btn btn-primary" onclick="searchGlobalBackend()">🔍 ค้นหา (ทุกชั้น/สาขา)</button>
+                </div>
                 
                 <button class="btn btn-secondary" onclick="showAddCourseColumnModal()">➕ เพิ่มคอร์สเรียน (รายวิชา)</button>
                 <button class="btn btn-primary" onclick="showAddStudentModal()"><span>➕</span> ลงทะเบียนเรียนแบบละเอียด</button>

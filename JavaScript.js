@@ -3163,11 +3163,12 @@ function filterGradeSheetStudents() {
   }
 }
 
-function loadGradeSheetGrid(isSilent = false) {
+function loadGradeSheetGrid(isSilent = false, overrideSearch = null) {
   const grade = document.getElementById('grade_sheet_grade_select').value;
   const branch = document.getElementById('grade_sheet_branch_select').value;
+  const searchTerm = overrideSearch !== null ? overrideSearch : '';
   
-  if (!isSilent) setLoading(true, 'กำลังโหลดสเปรดชีตจัดห้องเรียน ' + grade + ' ของ ' + branch + '...');
+  if (!isSilent) setLoading(true, 'กำลังโหลดข้อมูล... ' + (searchTerm ? `(ค้นหา: ${searchTerm})` : ''));
   google.script.run
     .withSuccessHandler(res => {
       if (!isSilent) setLoading(false);
@@ -3185,7 +3186,22 @@ function loadGradeSheetGrid(isSilent = false) {
         showToast('การเชื่อมต่อนอกสถานที่ล้มเหลว: ' + err.message, 'error');
       }
     })
-    .getGradeSheetData(grade, branch, getLogUser());
+    .getGradeSheetData(grade, branch, getLogUser(), searchTerm);
+}
+
+function searchGlobalBackend() {
+  const searchInput = document.getElementById('grade_sheet_search');
+  const term = searchInput ? searchInput.value.trim() : '';
+  if (!term) {
+    showToast('กรุณาระบุคำค้นหา', 'warning');
+    return;
+  }
+  
+  // Set dropdowns to "all" automatically
+  document.getElementById('grade_sheet_grade_select').value = 'all';
+  document.getElementById('grade_sheet_branch_select').value = 'all';
+  
+  loadGradeSheetGrid(false, term);
 }
 
 function editStudentFromGradeSheet(studentName) {
