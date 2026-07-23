@@ -6596,7 +6596,39 @@ function loadGradeSheetGrid(isSilent = false) {
     .getGradeSheetData(grade, branch, getLogUser());
 
 }
-
+function searchGlobalBackend() {
+  const input = document.getElementById('grade_sheet_search');
+  if (!input) return;
+  const term = input.value.trim();
+  if (!term) {
+    showToast('กรุณาพิมพ์ชื่อหรือชื่อเล่นที่ต้องการค้นหา', 'warning');
+    return;
+  }
+  
+  // Set grade and branch to "all" automatically for global search
+  const gradeSelect = document.getElementById('grade_sheet_grade_select');
+  const branchSelect = document.getElementById('grade_sheet_branch_select');
+  if (gradeSelect) gradeSelect.value = 'all';
+  if (branchSelect) branchSelect.value = 'all';
+  
+  setLoading(true, 'กำลังค้นหานักเรียนทั่วทั้งระบบ...');
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        state.gradeSheetData = res;
+        updateRoundFilterDropdown();
+        renderGradeSheetTable();
+      } else {
+        showToast('ค้นหาล้มเหลว: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('การเชื่อมต่อนอกสถานที่ล้มเหลว: ' + err.message, 'error');
+    })
+    .getGradeSheetData('all', 'all', getLogUser(), term);
+}
 
 
 function editStudentFromGradeSheet(studentName) {
@@ -6732,35 +6764,20 @@ function renderGradeSheetTable() {
   
 
   const displayedCourses = courses.filter(c => {
-
-    if (c.branch !== selectedBranch) return false;
-
+    if (selectedBranch !== 'all' && c.branch !== selectedBranch) return false;
     
-
     if (filterRound === 'ALL') {
-
       return true;
-
     } else {
-
       if (filterRound === 'ไม่ระบุรอบเรียน') {
-
         return getCourseRound(c.courseName) === 'None';
-
       }
-
       return c.courseName.toUpperCase().includes(filterRound.toUpperCase());
-
     }
-
   });
 
-
-
   const displayedStudents = students.filter(s => {
-
-    return s.branch === selectedBranch;
-
+    return selectedBranch === 'all' || s.branch === selectedBranch;
   });
 
   
