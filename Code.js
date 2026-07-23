@@ -5258,291 +5258,159 @@ function getCellValueFromGrid(values, cellNotation) {
 }
 
 function getRoundSummary(round, branch) {
-
   try {
-
     const db = getDb();
-
     const stats = {};
-
     const categories = [];
-
     
-
     // Clear in-memory cache for this run
-
     for (let k in sheetValuesCache_) delete sheetValuesCache_[k];
-
     
-
     const grades = [
-
       { name: 'อนุบาล', privateSheet: 'เดี่ยว อนุบาล', groupPrefix: 'อนุบาล' },
-
       { name: 'ป.1', privateSheet: 'เดี่ยว ป.1', groupPrefix: 'ป.1' },
-
       { name: 'ป.2', privateSheet: 'เดี่ยว ป.2', groupPrefix: 'ป.2' },
-
       { name: 'ป.3', privateSheet: 'เดี่ยว ป.3', groupPrefix: 'ป.3' },
-
       { name: 'ป.4', privateSheet: 'เดี่ยว ป.4', groupPrefix: 'ป.4' },
-
       { name: 'ป.5', privateSheet: 'เดี่ยว ป.5', groupPrefix: 'ป.5' },
-
       { name: 'ป.6', privateSheet: 'เดี่ยว ป.6', groupPrefix: 'ป.6' },
-
       { name: 'ม.1', privateSheet: 'เดี่ยว ม.1', groupPrefix: 'ม.1' },
-
       { name: 'ม.2', privateSheet: 'เดี่ยว ม.2', groupPrefix: 'ม.2' },
-
       { name: 'ม.3', privateSheet: 'เดี่ยว ม.3', groupPrefix: 'ม.3' },
-
       { name: 'ม.4', privateSheet: 'เดี่ยว ม.4', groupPrefix: 'ม.4' },
-
       { name: 'ม.5', privateSheet: 'เดี่ยว ม.5', groupPrefix: 'ม.5' },
-
       { name: 'ม.6', privateSheet: 'เดี่ยว ม.6', groupPrefix: 'ม.6' },
-
       { name: 'ย่อย 2-3', privateSheet: 'ย่อย 2-3', isSubgroup: true },
-
       { name: 'ย่อย 4-5', privateSheet: 'ย่อย 4-5', isSubgroup: true },
-
       { name: 'ย่อย 6-10', privateSheet: 'ย่อย 6-10', isSubgroup: true }
-
     ];
-
     
-
     const branches = [
-
-      { name: 'สาขา1', suffix: '/1', privatePaid: 'E3', privateDebt: 'E4', privateCount: 'A2', groupCell: 'B4', groupFull: 'B1', groupPaid: 'B3', groupDebt: 'B2', groupOverFive: 'C2' },
-
-      { name: 'สาขา2', suffix: '/2', privatePaid: 'F3', privateDebt: 'F4', privateCount: 'B2', groupCell: 'B4', groupFull: 'B1', groupPaid: 'B3', groupDebt: 'B2', groupOverFive: 'C2' },
-
-      { name: 'สาขา3', suffix: '/3', privatePaid: 'G3', privateDebt: 'G4', privateCount: 'C2', groupCell: 'B4', groupFull: 'B1', groupPaid: 'B3', groupDebt: 'B2', groupOverFive: 'C2' }
-
+      { name: 'สาขา1', suffix: '/1' },
+      { name: 'สาขา2', suffix: '/2' },
+      { name: 'สาขา3', suffix: '/3' }
     ];
-
-    
 
     grades.forEach(gradeObj => {
-
       branches.forEach(branchObj => {
-
         const key = gradeObj.name + '|' + branchObj.name;
-
-        
-
-        let singlePaidAmount = 0;
-
-        let singleDebtAmount = 0;
-
-        let singleAndSubgroupCount = 0;
-
-        
-
-        let regularGroupCount = 0;
-
-        let groupFullAmount = 0;
-
-        let groupPaidAmount = 0;
-
-        let groupDebtAmount = 0;
-
-        let overFiveCount = 0;
-
-        
-
-        // 1. Read from Private / Subgroup sheet — count from actual data rows
-
-        const privSheet = db.getSheetByName(gradeObj.privateSheet);
-
-        if (privSheet) {
-
-          const privLastRow = privSheet.getLastRow();
-
-          // Try summary cells for financial amounts (E3/F3/G3 etc.)
-
-          const privGrid = getSheetGridValues(db, gradeObj.privateSheet);
-
-          if (privGrid) {
-
-            singlePaidAmount = getCellValueFromGrid(privGrid, branchObj.privatePaid);
-
-            singleDebtAmount = getCellValueFromGrid(privGrid, branchObj.privateDebt);
-
-          }
-
-          
-
-          // Count directly from data rows (row 12+)
-
-          // col B (idx 1) = ชื่อ, col I (idx 8) = สาขาที่เรียน, col O (idx 14) = ชำระแล้ว
-
-          if (privLastRow >= 12) {
-
-            const numRows = privLastRow - 11;
-
-            const privData = privSheet.getRange(12, 1, numRows, 15).getValues();
-
-            let countPriv = new Set();
-
-            privData.forEach(row => {
-
-              const name = row[1] ? row[1].toString().trim() : '';
-
-              const branchLearn = row[8] ? row[8].toString().trim() : '';
-
-              const paidStr = row[14] ? row[14].toString().trim().replace(/,/g, '') : '0';
-
-              const paid = parseFloat(paidStr) || 0;
-
-              if (!name) return;
-
-              if (branchLearn === branchObj.name && paid > 0) {
-
-                countPriv.add(name);
-
-              }
-
-            });
-
-            singleAndSubgroupCount = countPriv.size;
-
-          }
-
-          
-
-          if (gradeObj.isSubgroup && (gradeObj.name === 'ย่อย 4-5' || gradeObj.name === 'ย่อย 6-10')) {
-
-            if (privGrid) {
-
-              const a2Val = getCellValueFromGrid(privGrid, 'A2');
-
-              const b2Val = getCellValueFromGrid(privGrid, 'B2');
-
-              const c2Val = getCellValueFromGrid(privGrid, 'C2');
-
-              overFiveCount = a2Val + b2Val + c2Val;
-
-            }
-
-          }
-
-        }
-
-        
-
-        // 2. Read from Group sheet (ป.x/1, ป.x/2, ป.x/3) — count from actual data rows
-
-        if (!gradeObj.isSubgroup) {
-
-          const groupSheetName = gradeObj.groupPrefix + branchObj.suffix;
-
-          const grpSheet = db.getSheetByName(groupSheetName);
-
-          if (grpSheet) {
-
-            // Financial amounts from summary cells
-
-            const grpGrid = getSheetGridValues(db, groupSheetName);
-
-            if (grpGrid) {
-
-              groupFullAmount = getCellValueFromGrid(grpGrid, branchObj.groupFull);
-
-              groupPaidAmount = getCellValueFromGrid(grpGrid, branchObj.groupPaid);
-
-              groupDebtAmount = getCellValueFromGrid(grpGrid, branchObj.groupDebt);
-
-              overFiveCount = getCellValueFromGrid(grpGrid, branchObj.groupOverFive);
-
-            }
-
-            
-
-            const grpLastRow = grpSheet.getLastRow();
-
-            if (grpLastRow >= 6) {
-
-              const startDataRow = 6;
-
-              const numRows = grpLastRow - startDataRow + 1;
-
-              const nameData = grpSheet.getRange(startDataRow, 1, numRows, 15).getValues(); 
-
-              let countGrp = new Set();
-
-              nameData.forEach(row => {
-
-                const name = row[1] ? row[1].toString().trim() : '';
-
-                const paidStr = row[13] ? row[13].toString().trim().replace(/,/g, '') : '0';
-
-                const paid = parseFloat(paidStr) || 0;
-
-                if (name && paid > 0) {
-
-                  countGrp.add(name);
-
-                }
-
-              });
-
-              regularGroupCount = countGrp.size;
-
-            }
-
-          }
-
-        }
-
-        
-
         stats[key] = {
-
           grade: gradeObj.name,
-
           branch: branchObj.name,
-
-          singlePaidAmount: singlePaidAmount,
-
-          singleDebtAmount: singleDebtAmount,
-
-          singleAndSubgroupCount: singleAndSubgroupCount,
-
-          regularGroupCount: regularGroupCount,
-
-          groupFullAmount: groupFullAmount,
-
-          groupPaidAmount: groupPaidAmount,
-
-          groupDebtAmount: groupDebtAmount,
-
-          overFiveCount: overFiveCount,
-
+          singlePaidAmount: 0,
+          singleDebtAmount: 0,
+          singleAndSubgroupCount: 0,
+          regularGroupCount: 0,
+          groupFullAmount: 0,
+          groupPaidAmount: 0,
+          groupDebtAmount: 0,
+          overFiveCount: 0,
           notes: []
-
         };
-
-        
-
         categories.push({ grade: gradeObj.name, branch: branchObj.name });
-
       });
-
     });
 
-    
+    // 1. Process StatusDB for Financials and Headcounts
+    const statusSheet = db.getSheetByName('StatusDB');
+    if (statusSheet) {
+      const lastRow = statusSheet.getLastRow();
+      if (lastRow > 1) {
+        const statusValues = statusSheet.getRange(2, 1, lastRow - 1, 25).getValues();
+        statusValues.forEach(row => {
+          const dbRound = row[15] ? row[15].toString().trim() : '';
+          
+          // Only process if round matches (or if round is not specified)
+          if (!round || dbRound === round) {
+            const name = row[1] ? row[1].toString().trim() : '';
+            if (!name) return; // Skip empty rows
+            
+            const dbBranch = row[5] ? row[5].toString().trim() : '';
+            const dbGrade = row[16] ? row[16].toString().trim() : '';
+            const dbClassType = row[23] ? row[23].toString().trim() : '';
+            
+            const paid = parseFloat((row[9] || 0).toString().replace(/,/g, '')) || 0;
+            const full = parseFloat((row[10] || 0).toString().replace(/,/g, '')) || 0;
+            const debt = parseFloat((row[11] || 0).toString().replace(/,/g, '')) || 0;
+            
+            // Map the classType to the correct grade category for the dashboard
+            let targetGrade = dbGrade;
+            if (dbClassType.includes('ย่อย 2-3')) targetGrade = 'ย่อย 2-3';
+            else if (dbClassType.includes('ย่อย 4-5')) targetGrade = 'ย่อย 4-5';
+            else if (dbClassType.includes('ย่อย 6-10')) targetGrade = 'ย่อย 6-10';
+            
+            const key = targetGrade + '|' + dbBranch;
+            if (stats[key]) {
+              if (dbClassType.includes('กลุ่มหลัก')) {
+                stats[key].regularGroupCount++;
+                stats[key].groupFullAmount += full;
+                stats[key].groupPaidAmount += paid;
+                stats[key].groupDebtAmount += debt;
+              } else {
+                stats[key].singleAndSubgroupCount++;
+                stats[key].singlePaidAmount += paid;
+                stats[key].singleDebtAmount += debt;
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // 2. Process Grade Sheets for overFiveCount (เด็กเรียนเกิน 5 คน)
+    grades.forEach(gradeObj => {
+      branches.forEach(branchObj => {
+        const key = gradeObj.name + '|' + branchObj.name;
+        
+        if (!gradeObj.isSubgroup) {
+          // Main Group Sheets (e.g. ป.1/1)
+          const sheetName = gradeObj.groupPrefix + branchObj.suffix;
+          const grpSheet = db.getSheetByName(sheetName);
+          if (grpSheet) {
+            const lastCol = grpSheet.getLastColumn();
+            const lastRow = grpSheet.getLastRow();
+            if (lastCol >= 19 && lastRow >= 6) {
+              const coursesRow = grpSheet.getRange(1, 19, 1, lastCol - 18).getValues()[0];
+              const dataGrid = grpSheet.getRange(6, 19, lastRow - 5, lastCol - 18).getValues();
+              
+              for (let c = 0; c < coursesRow.length; c++) {
+                const courseName = coursesRow[c] ? coursesRow[c].toString().trim() : '';
+                // Only count courses that match the selected round
+                if (!round || courseName.includes(round)) {
+                  let studentCount = 0;
+                  for (let r = 0; r < dataGrid.length; r++) {
+                    const val = dataGrid[r][c];
+                    if (val !== '' && val !== null && val !== undefined) {
+                      studentCount++;
+                    }
+                  }
+                  if (studentCount > 5) {
+                    stats[key].overFiveCount++;
+                  }
+                }
+              }
+            }
+          }
+        } else if (gradeObj.name === 'ย่อย 4-5' || gradeObj.name === 'ย่อย 6-10') {
+          // For Subgroups, there are no course columns, so we read from summary cells A2, B2, C2
+          const privSheet = db.getSheetByName(gradeObj.privateSheet);
+          if (privSheet) {
+            const privGrid = getSheetGridValues(db, gradeObj.privateSheet);
+            if (privGrid) {
+              const a2Val = getCellValueFromGrid(privGrid, 'A2');
+              const b2Val = getCellValueFromGrid(privGrid, 'B2');
+              const c2Val = getCellValueFromGrid(privGrid, 'C2');
+              stats[key].overFiveCount = a2Val + b2Val + c2Val;
+            }
+          }
+        }
+      });
+    });
 
     return { success: true, summary: stats, categories: categories };
-
   } catch (e) {
-
     return { success: false, error: e.message };
-
   }
-
 }
 
 /**
