@@ -1023,6 +1023,10 @@ body {
 
   overflow-x: auto;
 
+  overflow-y: auto;
+
+  max-height: calc(100vh - 200px);
+
   -webkit-overflow-scrolling: touch;
 
   scrollbar-width: thin;
@@ -1033,6 +1037,7 @@ body {
 
 .table-responsive::-webkit-scrollbar {
   height: 8px;
+  width: 8px;
 }
 
 .table-responsive::-webkit-scrollbar-track {

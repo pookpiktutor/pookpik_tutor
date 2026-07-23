@@ -162,6 +162,7 @@
             <div class="page-subtitle" id="page_subtitle" style="display: none;"></div>
           </div>
           <div class="topbar-actions" style="display: flex; gap: 10px; align-items: center;">
+            <button class="btn btn-secondary btn-sync-financials" onclick="syncAllFinancials()" id="btn_sync_all_financials_top" style="font-size: 0.8rem; padding: 6px 12px; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;">🔄 ซิงค์ยอดเงินทั้งหมด</button>
             <button class="btn btn-primary" onclick="syncDataLearnSubjects()" style="font-size: 0.8rem; padding: 6px 12px; background-color: #6366f1; border: none; border-radius: var(--radius-sm); color: white; cursor: pointer; transition: all 0.2s;">🔄 ซิงค์ชื่อวิชา</button>
             <div style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;" id="date_display"></div>
           </div>
@@ -473,18 +474,18 @@
 
           <!-- 5. PRIVATE STUDENTS PANEL (เดี่ยว / ย่อย) -->
           <div class="view-panel" id="private_students_panel">
-            <div class="toolbar">
-              <div class="filter-actions" style="flex-grow: 1; justify-content: flex-start; gap: 16px;">
-                <label class="form-label" style="margin-top: 10px;">สาขา:</label>
-                <select id="private_branch_select" class="form-select" onchange="loadPrivateStudents()" style="min-width: 250px;">
-                  <option value="all" selected>ทั้งหมดทุกสาขา</option>
-                  <option value="สาขา1">สาขา 1 แยกPMY</option>
-                  <option value="สาขา2">สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
-                  <option value="สาขา3">สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ</option>
+            <div class="toolbar" style="padding: 8px 12px; display: flex; flex-direction: column; gap: 8px;">
+              <div class="filter-actions" style="flex-grow: 1; justify-content: flex-start; gap: 6px; flex-wrap: wrap; align-items: center; width: 100%;">
+                <label class="form-label" style="margin: 0; font-size: 0.78rem; white-space: nowrap;">สาขา:</label>
+                <select id="private_branch_select" class="form-select" onchange="loadPrivateStudents()" style="min-width: 80px; max-width: 160px; font-size: 0.78rem; padding: 4px 6px;">
+                  <option value="all" selected>ทั้งหมด</option>
+                  <option value="สาขา1">สาขา 1</option>
+                  <option value="สาขา2">สาขา 2</option>
+                  <option value="สาขา3">สาขา 3</option>
                 </select>
 
-                <label class="form-label" style="margin-top: 10px;">ระดับชั้น/กลุ่ม:</label>
-                <select id="private_sheet_select" class="form-select" onchange="loadPrivateStudents()" style="min-width: 320px;">
+                <label class="form-label" style="margin: 0; font-size: 0.78rem; white-space: nowrap;">ระดับชั้น/กลุ่ม:</label>
+                <select id="private_sheet_select" class="form-select" onchange="loadPrivateStudents()" style="min-width: 100px; max-width: 200px; font-size: 0.78rem; padding: 4px 6px;">
                   <option value="all" selected>แสดงทั้งหมด</option>
                   <optgroup label="เด็กเรียนเดี่ยว">
                     <option value="เดี่ยว อนุบาล">เดี่ยว อนุบาล</option>
@@ -507,12 +508,13 @@
                     <option value="ย่อย 6-10">กลุ่มย่อย 6 - 10 คน</option>
                   </optgroup>
                 </select>
-                <button class="btn btn-primary" onclick="loadPrivateStudents()">🔄 โหลดข้อมูล</button>
+                <button class="btn btn-primary" onclick="loadPrivateStudents()" style="font-size: 0.78rem; padding: 4px 10px; white-space: nowrap;">🔄 โหลด</button>
+              </div>
+              <div class="filter-actions" style="flex-grow: 1; justify-content: flex-start; gap: 6px; flex-wrap: wrap; align-items: center; width: 100%;">
+                <label class="form-label" style="margin: 0; font-size: 0.78rem; white-space: nowrap;">ค้นหา:</label>
+                <input type="text" id="private_student_search" class="form-input" style="min-width: 120px; max-width: 180px; font-size: 0.78rem; padding: 4px 8px;" placeholder="ชื่อ, ชื่อเล่น..." onkeyup="filterPrivateStudents()">
 
-                <label class="form-label" style="margin-top: 10px;">ค้นหานักเรียน:</label>
-                <input type="text" id="private_student_search" class="form-input" style="min-width: 200px;" placeholder="ชื่อ, นามสกุล, ชื่อเล่น..." onkeyup="filterPrivateStudents()">
-
-                <button class="btn btn-primary" onclick="showAddStudentModal()"><span>➕</span> ลงทะเบียนเรียนแบบละเอียด</button>
+                <button class="btn btn-primary" onclick="showAddStudentModal()" style="font-size: 0.78rem; padding: 4px 10px; white-space: nowrap;">➕ ลงทะเบียน</button>
               </div>
             </div>
 
@@ -540,11 +542,14 @@
             </div>
           </div>
           
-          <!-- 5.5 DEBTORS PANEL (นักเรียนค้างจ่าย) -->
+           <!-- 5.5 DEBTORS PANEL (นักเรียนค้างจ่าย) -->
           <div class="view-panel" id="debtors_panel">
             <div class="toolbar" style="margin-bottom: 15px;">
               <div style="font-weight: 600; font-size: 1.2rem; color: var(--text-main);">🪙 ตรวจสอบและบันทึกค้างชำระเงินค่าเรียน</div>
-              <button class="btn btn-primary" onclick="loadDebtors()">🔄 รีเซ็ตและดึงข้อมูลใหม่</button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary" onclick="syncAllFinancials()" id="btn_sync_all_financials">🔄 ซิงค์ยอดเงินทั้งหมด</button>
+                <button class="btn btn-primary" onclick="loadDebtors()">🔄 รีเซ็ตและดึงข้อมูลใหม่</button>
+              </div>
             </div>
             
             <div class="glass-panel table-responsive">
@@ -554,15 +559,16 @@
                     <th>นักเรียน (สาขา/ไลน์)</th>
                     <th>ระดับชั้น / คอร์สเรียน</th>
                     <th style="text-align: right;">ค่าเรียนทั้งหมด</th>
+                    <th style="text-align: right;">ส่วนลด</th>
                     <th style="text-align: right;">ชำระแล้ว</th>
                     <th style="text-align: right; color: var(--color-danger);">ยอดค้างชำระ</th>
-                    <th>รูปแบบคลาส</th>
-                    <th>วันที่ลงทะเบียน</th>
+                    <th style="white-space: nowrap;">รูปแบบคลาส</th>
+                    <th style="white-space: nowrap;">วันที่ลงทะเบียน</th>
                     <th>บันทึกยอดเงิน</th>
                   </tr>
                 </thead>
                 <tbody id="debtors_tbody">
-                  <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px;">กำลังโหลดรายชื่อนักเรียนค้างชำระเงิน...</td></tr>
+                  <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">กำลังโหลดรายชื่อนักเรียนค้างชำระเงิน...</td></tr>
                 </tbody>
               </table>
             </div>

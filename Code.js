@@ -5812,93 +5812,113 @@ function getStudentsList(logUser) {
 }
 
 function getStudentsListRaw() {
-
-  const statusData = getSheetRows('StatusDB');
-
+  const db = getDb();
+  const sheets = db.getSheets();
   const students = [];
-
   
+  // Valid patterns for grade sheets
+  const groupPattern = /^(อนุบาล|ป\.1|ป\.2|ป\.3|ป\.4|ป\.5|ป\.6|ม\.1|ม\.2|ม\.3|ม\.4|ม\.5|ม\.6)\/(1|2|3)$/;
+  const singlePattern = /^(เดี่ยว|ย่อย) (อนุบาล|ป\.1|ป\.2|ป\.3|ป\.4|ป\.5|ป\.6|ม\.1|ม\.2|ม\.3|ม\.4|ม\.5|ม\.6|2-3|4-5|6-10)$/;
+  
+  // Build a map of student payments from StatusDB for Payment Channel and Staff
+  const statusSheet = db.getSheetByName('StatusDB');
+  const paymentMap = {};
+  if (statusSheet) {
+    const statusLastRow = statusSheet.getLastRow();
+    if (statusLastRow > 0) {
+      const statusData = statusSheet.getRange(1, 1, statusLastRow, 25).getValues();
+      statusData.forEach(row => {
+        const sName = row[1] ? row[1].toString().trim() : '';
+        const sPaymentChannel = row[13] ? row[13].toString().trim() : 'กสิกร บัญชีบริษัท(สแกน)';
+        const sStaff = row[14] ? row[14].toString().trim() : '';
+        if (sName) {
+          paymentMap[sName] = {
+            paymentChannel: sPaymentChannel,
+            staff: sStaff
+          };
+        }
+      });
+    }
+  }
 
-  statusData.forEach((row, idx) => {
+  let studentIdCounter = 1;
 
-    if (idx === 0 && row[0] && row[0].toString().toLowerCase().includes('id')) return;
-
-    const studentName = row[1] ? row[1].toString().trim() : '';
-
-    if (!row[0] && !studentName) return;
-
+  sheets.forEach(sheet => {
+    const sheetName = sheet.getName();
+    let isGradeSheet = groupPattern.test(sheetName) || singlePattern.test(sheetName);
+    if (!isGradeSheet) return;
     
-
-    const id = row[0] ? row[0].toString().trim() : 'TEMP_' + (idx + 1);
-
-    const paid = parseFloat(row[9]) || 0;
-
-    const full = parseFloat(row[10]) || 0;
-
-    const debt = full - paid;
-
+    const lastRow = sheet.getLastRow();
+    const lastCol = sheet.getLastColumn();
+    if (lastRow < 6 || lastCol < 16) return;
     
-
-    students.push({
-
-      id: id,
-
-      name: studentName,
-
-      nickname: row[2] ? row[2].toString().trim() : '',
-
-      school: row[3] ? row[3].toString().trim() : '',
-
-      contact: row[4] ? row[4].toString().trim() : '',
-
-      branchLearn: row[5] ? row[5].toString().trim() : '',
-
-      branchPay: row[6] ? row[6].toString().trim() : '',
-
-      paymentTimeNote: row[7] ? row[7].toString().trim() : '',
-
-      extraNote: row[8] ? row[8].toString().trim() : '',
-
-      paid: paid,
-
-      full: full,
-
-      outstanding: debt,
-
-      paymentDate: cleanSheetDate(row[12]),
-
-      paymentChannel: row[13] ? row[13].toString().trim() : '',
-
-      staff: row[14] ? row[14].toString().trim() : '',
-
-      round: row[15] ? row[15].toString().trim() : '',
-
+    const isSingle = sheetName.includes('เดี่ยว') || sheetName.includes('ย่อย');
+    const startRow = isSingle ? 12 : 6;
+    if (lastRow < startRow) return;
+    
+    const headerRow1 = sheet.getRange(1, 19, 1, lastCol - 18).getValues()[0];
+    const headerRow2 = sheet.getRange(2, 19, 1, lastCol - 18).getValues()[0];
+    
+    const sheetCourses = [];
+    for (let i = 0; i < headerRow1.length; i++) {
+      if (headerRow1[i]) {
+        sheetCourses.push({
+          name: headerRow1[i].toString().trim(),
+          colIndex: 19 + i,
+          price: parseFloat(headerRow2[i]) || 0
+        });
+      }
+    }
+    
+    const dataRange = sheet.getRange(startRow, 1, lastRow - (startRow - 1), lastCol).getValues();
+    
+    dataRange.forEach(row => {
+      const studentName = row[1] ? row[1].toString().trim() : '';
+      if (!studentName) return;
       
-
-      grade: row[16] ? row[16].toString().trim() : '',
-
-      classSection: row[17] ? row[17].toString().trim() : '',
-
-      lineName: row[18] ? row[18].toString().trim() : '',
-
-      lineId: row[19] ? row[19].toString().trim() : '',
-
-      carriedForwardFee: parseFloat(row[20]) || 0,
-
-      classHours: row[21] ? row[21].toString().trim() : '',
-
-      classHoursLeft: row[22] ? row[22].toString().trim() : '',
-
-      classType: row[23] ? row[23].toString().trim() : 'เดี่ยว',
-
-      isChecked: row[24] ? parseInt(row[24]) === 1 : false
-
+      let calcFull = 0;
+      const enrolledCourses = [];
+      sheetCourses.forEach(c => {
+        const val = row[c.colIndex - 1];
+        if (val !== '' && val !== null && val !== undefined) {
+           calcFull += c.price;
+           enrolledCourses.push(c.name);
+        }
+      });
+      
+      const rawDiscount = parseFloat(row[11]) || 0;
+      const rawPaid = parseFloat(row[13]) || 0;
+      const calcOutstanding = calcFull - rawDiscount - rawPaid;
+      
+      const id = 'DB_' + studentIdCounter++;
+      
+      students.push({
+        id: id,
+        name: studentName,
+        nickname: row[2] ? row[2].toString().trim() : '',
+        school: row[3] ? row[3].toString().trim() : '',
+        contact: row[5] ? row[5].toString().trim() : '',
+        branchLearn: row[8] ? row[8].toString().trim() : '',
+        branchPay: row[9] ? row[9].toString().trim() : '',
+        paid: rawPaid,
+        full: calcFull,
+        outstanding: calcOutstanding,
+        paymentDate: row[15] ? cleanSheetDate(row[15]) : '',
+        paymentChannel: (paymentMap[studentName] || {}).paymentChannel || 'กสิกร บัญชีบริษัท(สแกน)',
+        staff: (paymentMap[studentName] || {}).staff || '',
+        round: enrolledCourses.join(', '),
+        grade: row[0] ? row[0].toString().trim() : '',
+        classSection: row[4] instanceof Date ? '' : (row[4] ? row[4].toString().trim().replace(/GMT\+\d{4}.*$/, '').trim() : ''),
+        lineName: row[6] ? row[6].toString().trim() : '',
+        lineId: row[7] ? row[7].toString().trim() : '',
+        classType: isSingle ? sheetName : 'กลุ่มหลัก',
+        discount: rawDiscount,
+        sheetName: sheetName
+      });
     });
-
   });
-
+  
   return students;
-
 }
 
 function getAllStudentsFromSubgroupSheets() {
@@ -16721,4 +16741,5 @@ function migrateGradeSheetsFinancials() {
 }
 
 
-// [REMOVED] Duplicate migrateGradeSheetsFinancials function removed
+// [REMOVED] Duplicate migrateGradeSheetsFinancials function removed
+

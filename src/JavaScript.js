@@ -5428,7 +5428,7 @@ function renderStudentsTable() {
 
     const classType = s.classType || 'เดี่ยว';
 
-    const courseName = s.round || '-';
+    const courseName = s.round ? s.round.split(', ').map(c => c.trim()).join('<br>') : '-';
 
     if (classType === 'เดี่ยว' || classType.includes('ย่อย')) {
 
@@ -15409,7 +15409,7 @@ function renderDebtorsTable() {
 
   if (debtors.length === 0) {
 
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px;">🎉 ไม่มีนักเรียนค้างชำระเงินค่าเรียนในระบบ</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">🎉 ไม่มีนักเรียนค้างชำระเงินค่าเรียนในระบบ</td></tr>`;
 
     return;
 
@@ -15461,13 +15461,15 @@ function renderDebtorsTable() {
 
       <td style="text-align: right; font-weight: 500;">฿${s.full.toLocaleString()}</td>
 
+      <td style="text-align: right; font-weight: 500; color: var(--color-warning);">฿${(s.discount || 0).toLocaleString()}</td>
+
       <td style="text-align: right; font-weight: 500; color: var(--color-success);">฿${s.paid.toLocaleString()}</td>
 
       <td style="text-align: right; font-weight: 700; color: var(--color-danger);">฿${s.outstanding.toLocaleString()}</td>
 
-      <td><span class="badge badge-info">${s.classType || 'เดี่ยว'}</span></td>
+      <td style="white-space: nowrap;"><span class="badge badge-info">${s.classType || 'เดี่ยว'}</span></td>
 
-      <td>${formatDateTimeToThaiLong(s.paymentDate) || '-'}</td>
+      <td style="white-space: nowrap;">${formatDateTimeToThaiLong(s.paymentDate) || '-'}</td>
 
       <td>
 
