@@ -287,6 +287,15 @@
         </div>
       </div>
 
+      <div class="row-grid" id="course_round_container" style="display: none;">
+        <div class="form-group" style="grid-column: span 2;">
+          <label class="form-label">กลุ่มหลักตามตารางคอร์ส <span>*</span></label>
+          <select id="course_round" class="form-select" onchange="renderCourseCheckboxes()">
+            <option value="">-- เลือกรอบเรียน --</option>
+          </select>
+        </div>
+      </div>
+
       <div class="row-grid">
         <div class="form-group">
           <label class="form-label">ชื่อ - นามสกุล นักเรียน <span>*</span></label>
@@ -695,50 +704,31 @@ window.google.script.run = new Proxy({}, {
           // Store courses data globally for recalculation
           window._outstandingCourses = outstandingCourses;
 
-          outstandingCourses.forEach(function(c, idx) {
-            var tr = document.createElement('tr');
-            tr.style.borderBottom = '1px solid #e2e8f0';
-            
-            // Checkbox column
-            var checkTd = document.createElement('td');
-            checkTd.style.padding = '8px 4px';
-            var cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.checked = false;
-            cb.className = 'course-checkbox';
-            cb.setAttribute('data-index', idx);
-            cb.style.cssText = 'width:18px;height:18px;cursor:pointer;accent-color:#0084ff;';
-            cb.onchange = function() { recalcSelectedFees(); };
-            checkTd.appendChild(cb);
-            
-            var nameTd = document.createElement('td');
-            nameTd.style.padding = '8px 4px';
-            nameTd.textContent = c.courseName || '-';
-            
-            var priceTd = document.createElement('td');
-            priceTd.style.padding = '8px 4px';
-            priceTd.style.textAlign = 'right';
-            priceTd.textContent = c.full ? '฿' + c.full.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
-            
-            var outstandingTd = document.createElement('td');
-            outstandingTd.style.padding = '8px 4px';
-            outstandingTd.style.textAlign = 'right';
-            outstandingTd.style.fontWeight = '600';
-            outstandingTd.style.color = '#ef4444';
-            outstandingTd.textContent = c.outstanding ? '฿' + c.outstanding.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
-
-            tr.appendChild(checkTd);
-            tr.appendChild(nameTd);
-            tr.appendChild(priceTd);
-            tr.appendChild(outstandingTd);
-            tbody.appendChild(tr);
-          });
-
-          // Set select-all checkbox to unchecked
-          document.getElementById('select_all_courses').checked = false;
+          // Check if classType is "กลุ่มหลัก" and populate round
+          const courseRoundContainer = document.getElementById('course_round_container');
+          const courseRoundSelect = document.getElementById('course_round');
           
-          // Calculate totals
-          recalcSelectedFees(false);
+          if (classType === 'กลุ่มหลัก' && courseRoundContainer && courseRoundSelect) {
+            const roundsSet = new Set();
+            outstandingCourses.forEach(c => {
+               const r = getCourseRound(c.courseName);
+               if (r !== 'None') roundsSet.add(r);
+            });
+            courseRoundSelect.innerHTML = '<option value="">-- เลือกรอบเรียน --</option>';
+            const roundsArray = Array.from(roundsSet);
+            roundsArray.forEach(r => {
+               const opt = document.createElement('option');
+               opt.value = r;
+               opt.textContent = r;
+               courseRoundSelect.appendChild(opt);
+            });
+            courseRoundContainer.style.display = 'grid'; // because row-grid uses display: grid
+          } else {
+            if (courseRoundContainer) courseRoundContainer.style.display = 'none';
+            if (courseRoundSelect) courseRoundSelect.value = '';
+          }
+
+          renderCourseCheckboxes();
         } else {
           var tr = document.createElement('tr');
           var td = document.createElement('td');
@@ -749,19 +739,109 @@ window.google.script.run = new Proxy({}, {
           td.textContent = 'ไม่พบคอร์สเรียนที่เปิดสอนสำหรับเงื่อนไขนี้';
           tr.appendChild(td);
           tbody.appendChild(tr);
-
-          grandTotalSpan.textContent = '฿0.00';
-          grandTotalSpan.style.color = '#16a34a';
-          selectedCoursesInput.value = '';
-          document.getElementById('transfer_amount').value = '';
         }
       })
       .withFailureHandler(err => {
         searchBtn.disabled = false;
         searchBtn.textContent = originalText;
-        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message);
+        alert('เกิดข้อผิดพลาดในการดึงข้อมูล: ' + err.message);
       })
       .getAvailableCourses(grade, classType, branchLearn);
+  }
+
+  function getCourseRound(courseName) {
+    if (!courseName) return 'None';
+    const clean = courseName.toString().trim();
+    // 1) "MIDTERM 1/2569" or "FINAL 1/2569"
+    let match = clean.match(/(MIDTERM\s+\d+\/\d+|FINAL\s+\d+\/\d+)/i);
+    if (match) return match[1].toUpperCase();
+
+    // 2) "SUMMER 2568"
+    match = clean.match(/(SUMMER\s+\d+)/i);
+    if (match) return match[1].toUpperCase();
+
+    return 'None';
+  }
+
+  function renderCourseCheckboxes() {
+    const tbody = document.getElementById('fees_list_tbody');
+    tbody.innerHTML = '';
+    
+    const courseRoundSelect = document.getElementById('course_round');
+    const selectedRound = courseRoundSelect ? courseRoundSelect.value : '';
+    
+    let displayedCourses = window._outstandingCourses || [];
+    
+    if (selectedRound && selectedRound !== '') {
+       displayedCourses = displayedCourses.filter(c => getCourseRound(c.courseName) === selectedRound);
+    }
+    
+    if (displayedCourses.length === 0) {
+       var tr = document.createElement('tr');
+       var td = document.createElement('td');
+       td.colSpan = 4;
+       td.style.padding = '20px';
+       td.style.textAlign = 'center';
+       td.style.color = '#64748b';
+       td.textContent = 'ไม่พบคอร์สเรียนที่ตรงกับรอบที่เลือก';
+       tr.appendChild(td);
+       tbody.appendChild(tr);
+       
+       document.getElementById('select_all_courses').checked = false;
+       document.getElementById('fees_grand_total').textContent = '฿0.00';
+       document.getElementById('fees_grand_total').style.color = '#16a34a';
+       document.getElementById('selected_outstanding_courses').value = '';
+       document.getElementById('transfer_amount').value = '';
+       return;
+    }
+
+    displayedCourses.forEach(function(c, idx) {
+      // Find original index to map properly for data-index
+      const originalIdx = window._outstandingCourses.indexOf(c);
+      
+      var tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid #e2e8f0';
+      
+      // Checkbox column
+      var checkTd = document.createElement('td');
+      checkTd.style.padding = '8px 4px';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = false;
+      cb.className = 'course-checkbox';
+      cb.setAttribute('data-index', originalIdx);
+      cb.style.cssText = 'width:18px;height:18px;cursor:pointer;accent-color:#0084ff;';
+      cb.onchange = function() { recalcSelectedFees(); };
+      checkTd.appendChild(cb);
+      
+      var nameTd = document.createElement('td');
+      nameTd.style.padding = '8px 4px';
+      nameTd.textContent = c.courseName || '-';
+      
+      var priceTd = document.createElement('td');
+      priceTd.style.padding = '8px 4px';
+      priceTd.style.textAlign = 'right';
+      priceTd.textContent = c.full ? '฿' + c.full.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
+      
+      var outstandingTd = document.createElement('td');
+      outstandingTd.style.padding = '8px 4px';
+      outstandingTd.style.textAlign = 'right';
+      outstandingTd.style.fontWeight = '600';
+      outstandingTd.style.color = '#ef4444';
+      outstandingTd.textContent = c.outstanding ? '฿' + c.outstanding.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
+
+      tr.appendChild(checkTd);
+      tr.appendChild(nameTd);
+      tr.appendChild(priceTd);
+      tr.appendChild(outstandingTd);
+      tbody.appendChild(tr);
+    });
+
+    // Set select-all checkbox to unchecked
+    document.getElementById('select_all_courses').checked = false;
+    
+    // Calculate totals
+    recalcSelectedFees(false);
   }
 
   // --- Toast Notification System ---
