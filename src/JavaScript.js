@@ -6984,7 +6984,7 @@ function renderGradeSheetTable() {
   
 
   document.getElementById('save_grade_sheet_btn').disabled = false;
-
+  recalculateGridTotals();
 }
 
 function handleCourseHeaderNameChange(colIndex, sheetName, input) {
