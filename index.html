@@ -1169,6 +1169,13 @@
                   <option value="ไลน์@">ไลน์@</option>
                 </select>
               </div>
+
+              <div class="form-group form-group-full-3" id="course_round_container" style="display: none;">
+                <label class="form-label">รอบเรียนที่ต้องการสมัคร</label>
+                <select id="course_round" class="form-select" onchange="handleCourseRoundChange()">
+                  <option value="" disabled selected>-- เลือกรอบเรียน --</option>
+                </select>
+              </div>
               
               <!-- Course checkboxes for กลุ่มหลัก (loaded dynamically) -->
               <div class="form-group form-group-full-3" id="course_checkboxes_wrapper" style="display: none;">
