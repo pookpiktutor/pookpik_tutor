@@ -3201,7 +3201,53 @@ function searchGlobalBackend() {
   document.getElementById('grade_sheet_grade_select').value = 'all';
   document.getElementById('grade_sheet_branch_select').value = 'all';
   
-  loadGradeSheetGrid(false, term);
+  // Clear existing state and table
+  state.gradeSheetData = {
+    success: true,
+    sheetName: 'all/merged',
+    courses: [],
+    students: []
+  };
+  renderGradeSheetTable();
+  
+  const grades = ['อนุบาล', 'ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
+  let currentIdx = 0;
+  
+  function fetchNext() {
+    if (currentIdx >= grades.length) {
+      setLoading(false);
+      updateRoundFilterDropdown();
+      renderGradeSheetTable();
+      showToast('การค้นหาเสร็จสิ้น', 'success');
+      return;
+    }
+    
+    const currentGrade = grades[currentIdx];
+    setLoading(true, `กำลังค้นหาข้อมูล: ชั้น ${currentGrade}... (${currentIdx + 1}/${grades.length})`);
+    
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res && res.success) {
+          if (res.courses && res.courses.length > 0) {
+             state.gradeSheetData.courses.push(...res.courses);
+          }
+          if (res.students && res.students.length > 0) {
+             state.gradeSheetData.students.push(...res.students);
+          }
+        }
+        currentIdx++;
+        // Re-render table occasionally or at the end to show findings? We can just do it at the end to be faster.
+        fetchNext();
+      })
+      .withFailureHandler(err => {
+        console.error('Error fetching ' + currentGrade, err);
+        currentIdx++;
+        fetchNext();
+      })
+      .getGradeSheetData(currentGrade, 'all', getLogUser(), term);
+  }
+  
+  fetchNext();
 }
 
 function editStudentFromGradeSheet(studentName) {
