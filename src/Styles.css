@@ -4111,7 +4111,7 @@ html, body { overflow-x: hidden !important; max-width: 100vw !important; }
 /* Task Queue Widget CSS - Single line floating indicator */
 .task-queue-widget {
   position: fixed;
-  bottom: 16px;
+  top: 16px;
   right: 16px;
   max-width: 350px;
   background: #ffffff;
