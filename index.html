@@ -344,10 +344,21 @@
 
           <!-- 3. GRADE SHEETS MANAGER PANEL (ตารางลงเรียนแยกห้อง เช่น ม.1/2) -->
           <div class="view-panel" id="grade_sheets_panel">
-            <div class="toolbar" style="margin-bottom: 12px;">
-              <div class="filter-actions" style="flex-grow: 1; justify-content: flex-start; flex-wrap: wrap; gap: 12px;">
-                <label class="form-label" style="margin-top: 10px;">ระดับชั้น:</label>
-                <select id="grade_sheet_grade_select" class="form-select" style="min-width: 220px;">
+            <div class="toolbar" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 12px;">
+              <!-- Row 1 -->
+              <div class="filter-actions" style="flex-grow: 1; justify-content: flex-start; flex-wrap: wrap; gap: 12px; align-items: center; display: flex;">
+                <label class="form-label" style="margin-top: 0;">ค้นหานักเรียน:</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="text" id="grade_sheet_search" class="form-input" style="min-width: 200px;" placeholder="ชื่อ, นามสกุล, ชื่อเล่น..." onkeyup="if(event.key === 'Enter') searchGlobalBackend(); else filterGradeSheetStudents();">
+                  <button class="btn btn-primary" onclick="searchGlobalBackend()">🔍 ค้นหา (ทุกชั้น/สาขา)</button>
+                </div>
+                <button class="btn btn-primary" onclick="showAddStudentModal()"><span>➕</span> ลงทะเบียนเรียนแบบละเอียด</button>
+              </div>
+              
+              <!-- Row 2 -->
+              <div class="filter-actions" style="flex-grow: 1; justify-content: flex-start; flex-wrap: wrap; gap: 12px; align-items: center; display: flex;">
+                <label class="form-label" style="margin-top: 0;">ระดับชั้น:</label>
+                <select id="grade_sheet_grade_select" class="form-select" style="min-width: 150px;">
                   <option value="all">-- แสดงทุกรายการ --</option>
                   <option value="อนุบาล">อนุบาล</option>
                   <option value="ป.1">ป.1</option>
@@ -364,8 +375,8 @@
                   <option value="ม.6">ม.6</option>
                 </select>
                 
-                <label class="form-label" style="margin-top: 10px;">สาขา:</label>
-                <select id="grade_sheet_branch_select" class="form-select" style="min-width: 220px;">
+                <label class="form-label" style="margin-top: 0;">สาขา:</label>
+                <select id="grade_sheet_branch_select" class="form-select" style="min-width: 180px;">
                   <option value="all">-- แสดงทุกรายการ --</option>
                   <option value="สาขา1">สาขา 1 แยกPMY</option>
                   <option value="สาขา2" selected>สาขา 2 ข้างโรงเรียนระยองวิทยาคม</option>
@@ -374,19 +385,12 @@
                 
                 <button class="btn btn-primary" onclick="loadGradeSheetGrid()">🔍 โหลดตารางเรียน</button>
                 
-                <label class="form-label" style="margin-top: 10px;">กรองรอบเรียน:</label>
-                <select id="grade_sheet_round_filter" class="form-select" style="min-width: 250px;" onchange="filterGradeSheetGrid()">
+                <label class="form-label" style="margin-top: 0;">กรองรอบเรียน:</label>
+                <select id="grade_sheet_round_filter" class="form-select" style="min-width: 180px;" onchange="filterGradeSheetGrid()">
                   <option value="ALL">-- แสดงทั้งหมด --</option>
                 </select>
-
-                <label class="form-label" style="margin-top: 10px;">ค้นหานักเรียน:</label>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                  <input type="text" id="grade_sheet_search" class="form-input" style="min-width: 200px;" placeholder="ชื่อ, นามสกุล, ชื่อเล่น..." onkeyup="if(event.key === 'Enter') searchGlobalBackend(); else filterGradeSheetStudents();">
-                  <button class="btn btn-primary" onclick="searchGlobalBackend()">🔍 ค้นหา (ทุกชั้น/สาขา)</button>
-                </div>
                 
                 <button class="btn btn-secondary" onclick="showAddCourseColumnModal()">➕ เพิ่มคอร์สเรียน (รายวิชา)</button>
-                <button class="btn btn-primary" onclick="showAddStudentModal()"><span>➕</span> ลงทะเบียนเรียนแบบละเอียด</button>
               </div>
             </div>
 
