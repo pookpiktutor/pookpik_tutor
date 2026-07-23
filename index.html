@@ -74,7 +74,7 @@
                 <span>➕</span> นักเรียน
               </li>
               <li class="nav-item" data-panel="grade_sheets">
-                <span>📝</span> กลุ่มหลัก
+                <span>📝</span> จัดการคอร์สเรียนแยกห้อง
               </li>
               <li class="nav-item" data-panel="daily_grid">
                 <span>🏫</span> ตารางใช้ห้อง
@@ -379,6 +379,7 @@
                 <button class="btn btn-primary" onclick="showAddStudentModal()">
                   <span>➕</span> ลงทะเบียนเรียนแบบละเอียด
                 </button>
+                <button class="btn btn-secondary" onclick="syncAllFinancials()" id="btn_sync_all_financials">🔄 ซิงค์ยอดเงินทั้งหมด</button>
               </div>
             </div>
             
@@ -443,7 +444,7 @@
             </div>
 
             <div class="glass-panel" style="padding: 16px;">
-              <div style="font-weight: 600; font-size: 1rem; margin-bottom: 12px;" id="grade_sheet_title_display">กลุ่มหลัก</div>
+              <div style="font-weight: 600; font-size: 1rem; margin-bottom: 12px;" id="grade_sheet_title_display">จัดการคอร์สเรียนแยกห้อง</div>
               <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
                 <table class="custom-table edit-grid-table" id="grade_sheet_grid_table">
                   <!-- Generated dynamically in JavaScript -->
