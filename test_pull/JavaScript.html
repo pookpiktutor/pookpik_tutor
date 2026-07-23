@@ -53,15 +53,11 @@ function updateTaskWidget() {
       }
   }
 
-  if (currentActionText === 'พร้อมใช้งาน') {
-      widget.style.display = 'none';
-  } else {
-      widget.style.display = 'flex';
-  }
+  widget.style.display = 'flex';
   widget.innerHTML = `
-    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #fff; padding: 8px 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 500; border: 1px solid #e2e8f0; max-width: 300px;">
-      ${icon}
-      <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${currentActionText}</span>
+    <div style="padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; color: #1e293b; font-size: 0.75rem; font-weight: 600; min-width: 220px; gap: 10px;">
+      <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;" title="${currentActionText !== 'พร้อมใช้งาน' ? currentActionText : 'สถานะระบบ'}">${icon} ${currentActionText !== 'พร้อมใช้งาน' ? currentActionText : 'สถานะระบบ'}</div>
+      ${badgeHTML}
     </div>
   `;
 }

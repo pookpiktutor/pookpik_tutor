@@ -1,12 +1,9 @@
 @echo on
 set PATH=C:\Program Files\nodejs;%PATH%
 
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbxZdtCU5oSYMho7Fsne3nXXE4IFWVNj_wFagCrGi86ycFxPJiPsRbAu4KGm_-wN2YJRlQ -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycby9fUJjINsJELU9N-fCtUEVI5mWw-FUEIvHRewB6LAdI8HRpwUJEgO5ikWJ9mpHhFsBmw -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbyH2qy2W3d8No3g26HkZEFE6WkOTIBMnYItXBZE7ZHzKyfGzVy25OwFt7l1kU3o4Umvyg -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbxay6dFWgT4Fc4dWtxjoj7k6w63DtfXwupggv3DzvXl6ur_WG69nnfgZIKYkwSbRAHarw -V 812 -d V812
 call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbxlF8o-HwYm-RbN9FhXefDaejVkNfYRIcDoDBS1jWMazokqr48Xt3olsnfj6PJCe-kqcA -V 812 -d V812
 call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbzPBHPQmkcU9xVUyrzg7WCleNgyD-B5bgDZmzV1nimxdeoPbPIXETvu4dvAyiarhrZj5A -V 812 -d V812
+call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbwyendw84zR6OEeAnsDnK6cs-sH8lv_3GWAZTfO13NTqbPfcGQFTNmJMW6uj_a4_af3BQ -V 812 -d V812
 call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbx_-lh_J9QXdFa9MOD8yQf6-qsMxmOohXcpjozRoKpPrCTjVCGbsUbmu-OQNp8P4adWwA -V 812 -d V812
 call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbzAhczl5KpkIr2fbg7SECviPrelww_yBPeW_LC8wUPrrPCCbqjumGb1n6PAfLQjBHRxmw -V 812 -d V812
 call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbzPDrIQyJjekadPw5Xlnasb-Sk52VE6sjYLESw_on46AQbHJbSa8xQ3ETPN3g-gcL3-5Q -V 812 -d V812
@@ -53,14 +50,4 @@ call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbxaqHbD4
 call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbxJ91nQ_D6hHcV8AJParqpsoEfV8pCMMVv54dIspvgsANBsfgM-6LhuQqo1fjGXvuoyow -V 812 -d V812
 call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbwLWq5J660X9wePUPuUKufLVy4oaI4lDF2jBsjYfiHIAMeTR7phmXKRlXkHJQosWYxU9g -V 812 -d V812
 call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbyHUKAWSWaO0in2IubY-NNo8tAtKWMKHe4PebEqBgmFTe2nscF74ogftfgkXRyY0BfSRQ -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbwxlxvEHKzUvcqdnasu8vlrWr42PU0FUhMWW7TKj4Vn-9xWE3SekIRfCox5k6fPj00glA -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbzjipU2Rd-aqWaQrUEYouE6E0gVSc8izWMDr3m-ERuIALSiAHBuhYv4M3WZKTFFC4uqRw -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbzBMmF4teFfBUN95QaiuXX3ah5L6rzxLYsde-HY9kXnlGU1XCIABQBJzlYUCJZLHLKr7g -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbxasu0Tpl_Xg-BuLbwqdjOnHYxCW3YWe_BcOpaX_3AIFE6rQfsyFdVEB12MskjikpE6Lw -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbzwOSuXeFDpa4PIfcHMvVdM8yBSCr1JqcHV3qeBDTmQBiC_oIJ3dMsTloWvES3cN7r_ -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbzQXACkihNd39CZQNl8RBS1a8iox-GpnkB27GaAN9II6hnVhBpRKJ8wyukTu0eS2SZncQ -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbzvZOChG7jA5UkQ9o9viyUUz9Nhtv-7uHFeW2GtustmilVJRDDJVeWGMA3hnFsmHjCnXw -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbwLqGnhNqv11F6-UG5jiUtAhNn6LHDcjtVevq3RUXFeXWlw3wFPl8g4cn5FClaqdq-iqA -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycby1ATeAoOOYu3s9hxzmsiekdPncrj78VZZFf_cLx6VRjO3_othEytBXpI6Pf2iBwRTz1g -V 812 -d V812
-call "C:\Users\Windows 11\AppData\Roaming\npm\clasp.cmd" deploy -i AKfycbwZOaWPKzBUyR_Lk1qBvqTCcuaMxHbO2rriJyXZnLZUUwgSmnsDjzJ2dmw-REq1miuvMQ -V 812 -d V812
 echo ALL DEPLOYMENTS UPDATED TO V812!

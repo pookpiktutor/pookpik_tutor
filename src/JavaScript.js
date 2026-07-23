@@ -52,11 +52,15 @@ function updateTaskWidget() {
       }
   }
 
-  widget.style.display = 'flex';
+  if (currentActionText === 'พร้อมใช้งาน') {
+      widget.style.display = 'none';
+  } else {
+      widget.style.display = 'flex';
+  }
   widget.innerHTML = `
-    <div style="padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; color: #1e293b; font-size: 0.75rem; font-weight: 600; min-width: 220px; gap: 10px;">
-      <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;" title="${currentActionText !== 'พร้อมใช้งาน' ? currentActionText : 'สถานะระบบ'}">${icon} ${currentActionText !== 'พร้อมใช้งาน' ? currentActionText : 'สถานะระบบ'}</div>
-      ${badgeHTML}
+    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #fff; padding: 8px 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 500; border: 1px solid #e2e8f0; max-width: 300px;">
+      ${icon}
+      <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${currentActionText}</span>
     </div>
   `;
 }
@@ -5213,12 +5217,9 @@ function renderRoundSummaryTable(summary, categories) {
 
     headerTr.innerHTML = `
 
-      <td colspan="11" style="text-align: left; padding: 10px 15px; font-size: 0.88rem; border-left: 4px solid #0084ff; background-color: rgba(0, 132, 255, 0.04);">
-
+      <td colspan="10" style="text-align: left; padding: 10px 15px; font-size: 0.88rem; border-left: 4px solid #0084ff; background-color: rgba(0, 132, 255, 0.04);">
         📍 ${branchDisplayName}
-
       </td>
-
     `;
 
     tbody.appendChild(headerTr);
@@ -5258,33 +5259,18 @@ function renderRoundSummaryTable(summary, categories) {
       
 
       const tr = document.createElement('tr');
-
       tr.innerHTML = `
-
         <td style="font-weight: 600; padding-left: 25px;">${catObj.grade}</td>
-
         <td style="font-weight: 500; color: #64748b;">${catObj.branch}</td>
-
         <td style="text-align: right; font-weight:600; color:#16a34a;">${row.singlePaidAmount > 0 ? '฿' + row.singlePaidAmount.toLocaleString() : '-'}</td>
-
         <td style="text-align: right; font-weight:600; color:${row.singleDebtAmount > 0 ? '#ef4444' : 'inherit'};">${row.singleDebtAmount > 0 ? '฿' + row.singleDebtAmount.toLocaleString() : '-'}</td>
-
         <td style="text-align: center;">${row.singleAndSubgroupCount || '-'}</td>
-
-        <td style="text-align: center;">${row.regularGroupCount || '-'}</td>
-
         <td style="text-align: right; font-weight:600; color: #64748b;">${row.groupFullAmount > 0 ? '฿' + row.groupFullAmount.toLocaleString() : '-'}</td>
-
         <td style="text-align: right; font-weight:600; color:#16a34a;">${row.groupPaidAmount > 0 ? '฿' + row.groupPaidAmount.toLocaleString() : '-'}</td>
-
         <td style="text-align: right; font-weight:600; color:${row.groupDebtAmount > 0 ? '#ef4444' : 'inherit'};">${row.groupDebtAmount > 0 ? '฿' + row.groupDebtAmount.toLocaleString() : '-'}</td>
-
+        <td style="text-align: center;">${row.regularGroupCount || '-'}</td>
         <td style="text-align: center; font-weight: 600; color: #1e3a8a;">${row.overFiveCount || '-'}</td>
-
-        <td style="font-size:0.75rem; max-width: 250px; overflow:hidden; text-overflow:ellipsis;" title="${row.notes.join(', ')}">${row.notes.length > 0 ? row.notes.slice(0, 2).join(', ') + '...' : '-'}</td>
-
       `;
-
       tbody.appendChild(tr);
 
     });
@@ -5296,25 +5282,14 @@ function renderRoundSummaryTable(summary, categories) {
   tfoot.innerHTML = `
 
     <td colspan="2" style="font-weight: 700;">ยอดรวมทั้งหมด${selectedBranch ? ' (' + selectedBranch + ')' : ''}</td>
-
     <td style="text-align: right; color:#16a34a; font-weight:700;">฿${totalSinglePaid.toLocaleString()}</td>
-
     <td style="text-align: right; color:#ef4444; font-weight:700;">฿${totalSingleDebt.toLocaleString()}</td>
-
     <td style="text-align: center; font-weight:700;">${totalSingleAndSubgroup}</td>
-
-    <td style="text-align: center; font-weight:700;">${totalRegularGroup}</td>
-
     <td style="text-align: right; font-weight:700;">฿${sumGroupFull.toLocaleString()}</td>
-
     <td style="text-align: right; color:#16a34a; font-weight:700;">฿${sumGroupPaid.toLocaleString()}</td>
-
     <td style="text-align: right; color:#ef4444; font-weight:700;">฿${sumGroupDebt.toLocaleString()}</td>
-
+    <td style="text-align: center; font-weight:700;">${totalRegularGroup}</td>
     <td style="text-align: center; color: #1e3a8a; font-weight:700;">${totalOverFive}</td>
-
-    <td>-</td>
-
   `;
 
 }
@@ -6537,14 +6512,42 @@ function filterGradeSheetGrid() {
 
   const filterSelect = document.getElementById('grade_sheet_round_filter');
 
+
   if (filterSelect) {
-
     state.gradeSheetFilterRound = filterSelect.value;
-
     renderGradeSheetTable();
-
   }
+}
 
+function syncAllFinancials() {
+  const btn = document.getElementById('btn_sync_all_financials');
+  if (!confirm('ต้องการซิงค์ข้อมูลการเงินทั้งหมดจาก StatusDB ลงตารางกลุ่มหลักหรือไม่? การดำเนินการนี้อาจใช้เวลาสักครู่')) return;
+  
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '🔄 กำลังซิงค์...';
+  }
+  setLoading(true, 'กำลังซิงค์ข้อมูลการเงินทั้งหมด...');
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '🔄 ซิงค์ยอดเงินทั้งหมด';
+      }
+      showToast('ซิงค์ข้อมูลสำเร็จ: ' + res, 'success');
+      loadGradeSheetGrid(true); // reload current view silently
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '🔄 ซิงค์ยอดเงินทั้งหมด';
+      }
+      showToast('เกิดข้อผิดพลาดในการซิงค์ข้อมูล: ' + err.message, 'error');
+    })
+    .migrateGradeSheetsFinancials();
 }
 
 

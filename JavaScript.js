@@ -2522,7 +2522,7 @@ function renderRoundSummaryTable(summary, categories) {
         <td style="text-align: right; font-weight:600; color:#16a34a;">${row.groupPaidAmount > 0 ? '฿' + row.groupPaidAmount.toLocaleString() : '-'}</td>
         <td style="text-align: right; font-weight:600; color:${row.groupDebtAmount > 0 ? '#ef4444' : 'inherit'};">${row.groupDebtAmount > 0 ? '฿' + row.groupDebtAmount.toLocaleString() : '-'}</td>
         <td style="text-align: center; font-weight: 600; color: #1e3a8a;">${row.overFiveCount || '-'}</td>
-        <td style="font-size:0.75rem; max-width: 250px; overflow:hidden; text-overflow:ellipsis;" title="${row.notes.join(', ')}">${row.notes.length > 0 ? row.notes.slice(0, 2).join(', ') + '...' : '-'}</td>
+        <td style="font-size:0.75rem; max-width: 250px; overflow:hidden; text-overflow:ellipsis;" title="${(row.notes || []).join(', ')}">${(row.notes || []).length > 0 ? (row.notes || []).slice(0, 2).join(', ') + '...' : '-'}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -11093,11 +11093,20 @@ window.openStudentModal = function(id = null) {
           document.getElementById('student_branch_learn').value = data.BranchLearn || 'สาขา1';
           document.getElementById('student_branch_pay').value = data.BranchPay || 'สาขา1';
           
-          if (data.ClassType === 'กลุ่มหลัก') {
-            // Check the checkboxes - handled by handleGradeBranchChange which we need to patch if needed
-            // But for simple edit, it's easier to just set shared_course_name
+          if (typeof window.handleGradeBranchChange === 'function') {
+            window.handleGradeBranchChange();
           }
-          document.getElementById('shared_course_name').value = data.Course || '';
+          setTimeout(() => {
+            if (data.ClassType === 'กลุ่มหลัก' && data.Course) {
+               const courses = data.Course.split(',').map(c => c.trim());
+               courses.forEach(c => {
+                  const chk = Array.from(document.querySelectorAll('input[name="shared_courses[]"]')).find(el => el.value === c);
+                  if (chk) chk.checked = true;
+               });
+               if(typeof window.updateSharedCourseName === 'function') window.updateSharedCourseName();
+            }
+            document.getElementById('shared_course_name').value = data.Course || '';
+          }, 100);
           
           // Populate Block 0
           document.getElementById('student_name_0').value = data.StudentName || '';
