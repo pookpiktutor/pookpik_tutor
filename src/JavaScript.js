@@ -7152,7 +7152,8 @@ function recalculateGridTotals() {
   
 
   students.forEach((s, idx) => {
-    let subtotal = 0;
+    let fullCourses = [];
+    let partialTotal = 0;
     courses.forEach(c => {
       if (s.sheetName === c.sheetName) {
         const val = s.courseValues[c.colIndex];
@@ -7162,19 +7163,37 @@ function recalculateGridTotals() {
           const totalSessions = parseInt(c.totalSessions) || 10;
           
           if (num === 30) {
-            subtotal += price * 0.7;
+            partialTotal += price * 0.7;
           } else if (num === 20) {
-            subtotal += price * 0.9;
+            partialTotal += price * 0.9;
           } else if (num === 50) {
-            subtotal += price * 0.5;
+            partialTotal += price * 0.5;
           } else if (num >= 1 && num <= 2) {
-            subtotal += num * 350;
+            partialTotal += num * 350;
           } else if (num >= 3) {
-            subtotal += num * (price / totalSessions);
+            if (num === totalSessions) {
+               fullCourses.push(price);
+            } else {
+               partialTotal += num * (price / totalSessions);
+            }
           }
         }
       }
     });
+
+    fullCourses.sort((a, b) => b - a);
+    let fullTotal = 0;
+    fullCourses.forEach((price, idx2) => {
+      if (idx2 === 0 || idx2 === 1) {
+        fullTotal += price;
+      } else if (idx2 === 2) {
+        fullTotal += price * 0.7;
+      } else {
+        fullTotal += price * 0.5;
+      }
+    });
+
+    let subtotal = partialTotal + fullTotal;
 
     
 
