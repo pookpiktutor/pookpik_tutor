@@ -1,0 +1,30 @@
+9670: let role = '';
+9671: 
+9672: if (cellB !== '' && cellC !== '' && cellC !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
+9673: 
+9674: if (!matchC) return; // Both filled but C doesn't match - skip
+9675: 
+9676: role = 'à¸„à¸£à¸¹à¹�à¸—à¸™';
+9677: 
+9678: } else if (cellB !== '') {
+9679: 
+9680: if (!matchB) return;
+9681: 
+9682: role = 'à¸„à¸£à¸¹à¸›à¸£à¸°à¸ˆà¸³';
+9683: 
+9684: } else if (cellC !== '' && cellC !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
+9685: 
+9686: if (!matchC) return;
+9687: 
+9688: role = 'à¸„à¸£à¸¹à¹�à¸—à¸™';
+9689: 
+9690: } else {
+9691: 
+9692: return; // No teacher in either column
+9693: 
+9694: }
+9695: 
+9696: 
+9697: 
+9698: // Skip lessons with leave note only for regular teacher
+9699: 

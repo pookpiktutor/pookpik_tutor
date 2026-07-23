@@ -1,0 +1,49 @@
+1917: newRow[10] = row[12] !== undefined ? row[12] : ''; // à¸¢à¸­à¸”à¸Šà¸³à¸£à¸°/à¸¢à¸­à¸”à¸£à¸§à¸¡ (à¸¢à¸­à¸”à¹€à¸•à¹‡à¸¡)
+1926: newRow[13] = row[13] !== undefined ? row[13] : ''; // à¸¢à¸­à¸”à¹€à¸£à¸µà¸¢à¸™à¸„à¸‡à¹€à¸«à¸¥à¸·à¸­/à¸¢à¸­à¸”à¸ˆà¹ˆà¸²à¸¢ (à¸ˆà¹ˆà¸²à¸¢à¸¡à¸²)
+6849: const dateRaw = cleanSheetDate(row[12]);
+6858: const roomBranchVal = row[13] ? row[13].toString().trim() : '';
+7854: const paymentDateStr = cleanSheetDate(row[12]);
+8454: const paidStr = row[13] ? row[13].toString().trim().replace(/,/g, '') : '0';
+9282: paymentDate: cleanSheetDate(row[12]),
+9285: paymentChannel: row[13] ? row[13].toString().trim() : '',
+9963: const price = parseFloat(row[13]) || 0;
+12399: outstanding: parseFloat(row[12]) || 0,
+12402: paid: parseFloat(row[13]) || 0,
+12714: rowVals[12] = outstanding;
+12717: rowVals[13] = s.paid;
+13458: const carriedForward = parseFloat(row[12]) || 0;
+13527: const currentFull = parseFloat(row[13]) || 0;
+13542: row[13] = realTimeFull;
+13599: const previousFull = parseFloat(row[13]) || 0;
+13605: const previousCarried = parseFloat(row[12]) || 0;
+13848: full: parseFloat(row[13]) || 0,
+13854: outstanding: (parseFloat(row[13]) || 0) - paid - carriedForward,
+16006: const logDate = cleanSheetDate(rowVals[13]);
+16072: const logDate = cleanSheetDate(rowVals[12]);
+16861: const dateRaw = cleanSheetDate(row[12]);
+16867: const roomBranchVal = row[13] ? row[13].toString().trim() : '';
+17071: hours: parseHoursValue(row[12]),
+17074: date: cleanSheetDate(row[13]),
+17236: const dateRaw = cleanSheetDate(row[12]);
+17239: const roomBranchVal = row[13] ? row[13].toString().trim() : '';
+17944: date: cleanSheetDate(rowVals[12]),
+17947: roomBranch: rowVals[13] ? rowVals[13].toString().trim() : ''
+18295: const logDate = cleanSheetDate(rowVals[13]);
+18418: hours: rowVals[12] ? rowVals[12].toString().trim() : '',
+18421: date: cleanSheetDate(rowVals[13]),
+18652: lng: row[12] ? row[12].toString().trim() : '',
+18655: photoInUrl: row[13] ? row[13].toString().trim() : '',
+19993: kgResults.push(`Row ${idx + 12}: Name: ${row[1]}, Nickname: ${row[2]}, Course: ${row[10]}, Note: ${row[11]}, CF: ${row[12]}, Full: ${row[13]}, Paid: ${row[14]}, Bal: ${row[15]}, Acc: ${row[19]}, Left: ${row[20]}`);
+20385: date: rowVals[12] ? rowVals[12].toString().trim() : '',
+20388: roomBranch: rowVals[13] ? rowVals[13].toString().trim() : ''
+20946: paymentDate: row[12] ? row[12].toString().trim() : '',
+20949: paymentChannel: row[13] ? row[13].toString().trim() : '',
+21090: hours: row[12] ? row[12].toString().trim() : '',
+21093: date: cleanSheetDate(row[13]),
+21663: paymentDate: cleanSheetDate(rowVals[12]),
+22551: row[12]
+23859: const dateVal = row[13];
+24243: PaymentDate: row[12] ? row[12].toString().trim() : '',
+24246: PaymentChannel: row[13] ? row[13].toString().trim() : '',
+24288: result.PayRound1Date = row[12] ? row[12].toString().trim() : '';
+24294: result.PayRound1Channel = row[13] ? row[13].toString().trim() : '';

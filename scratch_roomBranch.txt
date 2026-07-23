@@ -1,0 +1,8 @@
+1282: let displayBranch = (c.roomBranch || c.roomBranchInfo || '').toString().trim();
+8292: const rb = (c.roomBranch || '').replace(/\s+/g, '');
+8394: const rb = (c.roomBranch || '').replace(/\s+/g, '');
+8450: const classes = (w.classes || []).filter(c => matchRoomAndBranch(c.roomBranch, room.roomName, room.branch));
+8590: const ipadMatch = (c.roomBranch || '').match(/IPAD\s*\S*/i);
+9298: const ipadMatch = (c.roomBranch || '').match(/IPAD\s*\S*/i);
+9358: <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🏢 ห้อง: ${c.roomBranch || '-'}</div>
+15606: <div style="font-size: 0.75rem; color: var(--text-muted);">${c.roomBranch || '-'}</div>

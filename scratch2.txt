@@ -1,0 +1,80 @@
+function submitPublicRegistration(studentData, fileData) {
+  try {
+    Logger.log('=== submitPublicRegistration START ===');
+    Logger.log('studentData: ' + JSON.stringify(studentData));
+    Logger.log('fileData present: ' + (fileData ? 'yes' : 'no'));
+    
+    let slipUrl = '-';
+    
+    // 1. Get or Create Slip Folder in Google Drive (ONLY IF THERE IS SLIP)
+    if (fileData && fileData.base64) {
+      Logger.log('Step 1: Uploading slip file...');
+      let folder;
+      const folderName = 'data_PookPik_Tutor_Slips';
+      const folders = DriveApp.getFoldersByName(folderName);
+      if (folders.hasNext()) {
+        folder = folders.next();
+      } else {
+        folder = DriveApp.createFolder(folderName);
+      }
+      
+      // 2. Upload Slip File
+      const content = Utilities.base64Decode(fileData.base64);
+      const blob = Utilities.newBlob(content, fileData.mimeType, 'slip_' + Date.now() + '_' + fileData.fileName);
+      const file = folder.createFile(blob);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      slipUrl = file.getUrl();
+      Logger.log('Step 1: Slip uploaded: ' + slipUrl);
+    } else {
+      Logger.log('Step 1: No slip file to upload');
+    }
+    
+    let paidAmount = studentData.amount ? parseFloat(studentData.amount) : 0;
+    if (isNaN(paidAmount)) paidAmount = 0;
+    Logger.log('Step 2: paidAmount = ' + paidAmount);
+    
+    // 3. Save directly to StatusDB
+    const std = {
+      name: studentData.name,
+      nickname: studentData.nickname,
+      school: studentData.school || '-',
+      contact: studentData.contact,
+      branchLearn: studentData.branchLearn,
+      branchPay: studentData.branchLearn,
+      paymentTimeNote: slipUrl !== '-' ? 'ԻṺ: ' + slipUrl : 'ѧṺԻ',
+      extraNote: 'ԪҷѤ: ' + studentData.course,
+      paid: paidAmount,
+      full: paidAmount,
+      outstanding: 0,
+      paymentDate: Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy'),
+      paymentChannel: slipUrl !== '-' ? '͹Թ (ԻṺ͹Ź)' : 'ͪԹ',
+      staff: 'Online Registration',
+      round: 'M1/69',
+      grade: studentData.grade,
+      classSection: '-',
+      lineName: studentData.nickname,
+      lineId: studentData.lineId || '',
+      carriedForwardFee: 0,
+      classHours: '',
+      classHoursLeft: '',
+      classType: '',
+      isChecked: false
+    };
+    
+    Logger.log('Step 3: Calling syncStudentToStatusDB...');
+    syncStudentToStatusDB(std);
+    Logger.log('Step 3: syncStudentToStatusDB completed');
+    
+    invalidateStudentCache();
+    
+    logActivity('System', 'ѡ¹ŧ¹͹Ź (StatusDB)', '͹ѡ¹: ' + studentData.name + ', ʹ͹: ' + paidAmount);
+    Logger.log('=== submitPublicRegistration SUCCESS ===');
+    return { success: true };
+  } catch (err) {
+    Logger.log('=== submitPublicRegistration ERROR ===');
+    Logger.log('Error: ' + err.toString());
+    Logger.log('Stack: ' + err.stack);
+    return { success: false, error: err.toString() };
+  }
+}
+

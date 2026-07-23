@@ -1,0 +1,86 @@
+1917: newRow[10] = row[12] !== undefined ? row[12] : ''; // à¸¢à¸­à¸”à¸Šà¸³à¸£à¸°/à¸¢à¸­à¸”à¸£à¸§à¸¡ (à¸¢à¸­à¸”à¹€à¸•à¹‡à¸¡)
+1920: newRow[11] = row[11] !== undefined ? row[11] : ''; // à¸ªà¹ˆà¸§à¸™à¸¥à¸” (à¸ªà¹ˆà¸§à¸™à¸¥à¸”)
+1923: newRow[12] = row[14] !== undefined ? row[14] : ''; // à¸£à¸­à¸š/à¸„à¸‡à¹€à¸«à¸¥à¸·à¸­ (à¸„à¸‡à¹€à¸«à¸¥à¸·à¸­)
+1926: newRow[13] = row[13] !== undefined ? row[13] : ''; // à¸¢à¸­à¸”à¹€à¸£à¸µà¸¢à¸™à¸„à¸‡à¹€à¸«à¸¥à¸·à¸­/à¸¢à¸­à¸”à¸ˆà¹ˆà¸²à¸¢ (à¸ˆà¹ˆà¸²à¸¢à¸¡à¸²)
+1929: newRow[14] = row[15] !== undefined ? row[15] : ''; // à¸£à¸«à¸±à¸ªà¸šà¸±à¸•à¸£/à¸£à¸¹à¸”à¸šà¸±à¸•à¸£ (à¸§à¸±à¸™/à¹€à¸”à¸·à¸­à¸™/à¸›à¸µ)
+6849: const dateRaw = cleanSheetDate(row[13]);
+6858: const roomBranchVal = row[14] ? row[14].toString().trim() : '';
+6900: isOrange: parseInt(row[11]) || 0,
+6903: hours: row[12] ? row[12].toString().trim() : '',
+6912: teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
+7767: const round = row[15] ? row[15].toString().trim() : 'à¸—à¸±à¹ˆà¸§à¹„à¸›';
+7854: const paymentDateStr = cleanSheetDate(row[12]);
+8328: const paidStr = row[14] ? row[14].toString().trim().replace(/,/g, '') : '0';
+8454: const paidStr = row[13] ? row[13].toString().trim().replace(/,/g, '') : '0';
+9282: paymentDate: cleanSheetDate(row[12]),
+9285: paymentChannel: row[13] ? row[13].toString().trim() : '',
+9288: staff: row[14] ? row[14].toString().trim() : '',
+9291: round: row[15] ? row[15].toString().trim() : '',
+9297: grade: row[16] ? row[16].toString().trim() : '',
+9963: const price = parseFloat(row[13]) || 0;
+9966: const note = row[11] ? row[11].toString().trim() : '';
+12396: discount: parseFloat(row[11]) || 0,
+12399: outstanding: parseFloat(row[12]) || 0,
+12402: paid: parseFloat(row[13]) || 0,
+12405: isCard: parseInt(row[14]) === 1 ? 1 : 0,
+13455: const paid = parseFloat(row[14]) || 0;
+13458: const carriedForward = parseFloat(row[12]) || 0;
+13524: const currentOutstanding = parseFloat(row[15]) || 0;
+13527: const currentFull = parseFloat(row[13]) || 0;
+13542: row[13] = realTimeFull;
+13545: row[15] = realTimeOutstanding;
+13557: let note = row[11] ? row[11].toString().trim() : '';
+13599: const previousFull = parseFloat(row[13]) || 0;
+13602: const previousPaid = parseFloat(row[14]) || 0;
+13605: const previousCarried = parseFloat(row[12]) || 0;
+13701: row[11] = note;
+13779: row[11] = note;
+13848: full: parseFloat(row[13]) || 0,
+13854: outstanding: (parseFloat(row[13]) || 0) - paid - carriedForward,
+13857: paymentDate: row[16] ? row[16].toString().trim() : '',
+16861: const dateRaw = cleanSheetDate(row[13]);
+16867: const roomBranchVal = row[14] ? row[14].toString().trim() : '';
+16909: isOrange: parseInt(row[11]) || 0,
+16912: hours: parseHoursValue(row[12]),
+16921: teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
+16924: numKids: row[16] ? (parseInt(row[16]) || 0) : 0,
+17068: isOrange: parseInt(row[11]) || 0,
+17071: hours: parseHoursValue(row[12]),
+17074: date: cleanSheetDate(row[13]),
+17077: roomBranch: row[14] ? row[14].toString().trim() : '',
+17080: teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
+17083: numKids: row[16] ? (parseInt(row[16]) || 0) : 0,
+17236: const dateRaw = cleanSheetDate(row[13]);
+17239: const roomBranchVal = row[14] ? row[14].toString().trim() : '';
+17281: isOrange: parseInt(row[11]) || 0,
+17284: hours: parseHoursValue(row[12]),
+17293: teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
+17296: numKids: row[16] ? (parseInt(row[16]) || 0) : 0,
+18649: lat: row[11] ? row[11].toString().trim() : '',
+18652: lng: row[12] ? row[12].toString().trim() : '',
+18655: photoInUrl: row[13] ? row[13].toString().trim() : '',
+18658: photoOutUrl: row[14] ? row[14].toString().trim() : ''
+19993: kgResults.push(`Row ${idx + 12}: Name: ${row[1]}, Nickname: ${row[2]}, Course: ${row[10]}, Note: ${row[11]}, CF: ${row[12]}, Full: ${row[13]}, Paid: ${row[14]}, Bal: ${row[15]}, Acc: ${row[19]}, Left: ${row[20]}`);
+20929: courseName: row[15] ? row[15].toString().trim() : '',
+20941: outstanding: parseFloat(row[11]) || 0,
+20944: paymentDate: row[12] ? row[12].toString().trim() : '',
+20947: paymentChannel: row[13] ? row[13].toString().trim() : '',
+20950: staff: row[14] ? row[14].toString().trim() : '',
+21085: isOrange: parseInt(row[11], 10) || 0,
+21088: hours: row[12] ? row[12].toString().trim() : '',
+21091: date: cleanSheetDate(row[13]),
+21094: roomBranch: row[14] ? row[14].toString().trim() : '',
+22546: row[11],
+22549: row[12]
+22657: const note = row[11] ? row[11].toString().trim() : '';
+22681: const paidVal = parseFloat(row[14]) || 0;
+23857: const dateVal = row[13];
+24238: Outstanding: parseFloat(row[11]) || 0,
+24241: PaymentDate: row[12] ? row[12].toString().trim() : '',
+24244: PaymentChannel: row[13] ? row[13].toString().trim() : '',
+24247: Staff: row[14] ? row[14].toString().trim() : '',
+24250: Course: row[15] ? row[15].toString().trim() : '',
+24253: Grade: row[16] ? row[16].toString().trim() : '',
+24286: result.PayRound1Date = row[12] ? row[12].toString().trim() : '';
+24292: result.PayRound1Channel = row[13] ? row[13].toString().trim() : '';
+24295: result.PayRound1Staff = row[14] ? row[14].toString().trim() : '';

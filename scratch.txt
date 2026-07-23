@@ -1,0 +1,161 @@
+function addStudentRegistration(student, logUser) {
+  checkTeacherBlock(logUser);
+  try {
+    const sheet = getDb().getSheetByName('StatusDB');
+    if (!sheet) throw new Error('StatusDB sheet not found');
+    
+    // Handle subgroup registrations (split into multiple individual records)
+    if (student.isSubgroupNewLogic && student.subgroupStudents && student.subgroupStudents.length > 0) {
+      let lastResult = null;
+      for (let i = 0; i < student.subgroupStudents.length; i++) {
+          const sgMember = student.subgroupStudents[i];
+          
+          const memberStudent = Object.assign({}, student, {
+              name: sgMember.name,
+              nickname: sgMember.nickname,
+              school: sgMember.school,
+              contact: sgMember.contact,
+              grade: sgMember.grade,
+              classSection: sgMember.classSection,
+              lineName: sgMember.lineName,
+              lineId: sgMember.lineId,
+              
+              full: sgMember.full,
+              paid: sgMember.paid,
+              
+              payRound1_amount: sgMember.payRound1_amount,
+              payRound1_date: sgMember.payRound1_date,
+              payRound1_channel: sgMember.payRound1_channel,
+              payRound1_staff: sgMember.payRound1_staff,
+              payRound1_time: sgMember.payRound1_time,
+              
+              payRound2_amount: sgMember.payRound2_amount,
+              payRound2_date: sgMember.payRound2_date,
+              payRound2_channel: sgMember.payRound2_channel,
+              payRound2_staff: sgMember.payRound2_staff,
+              payRound2_time: sgMember.payRound2_time,
+              
+              payRound3_amount: sgMember.payRound3_amount,
+              payRound3_date: sgMember.payRound3_date,
+              payRound3_channel: sgMember.payRound3_channel,
+              payRound3_staff: sgMember.payRound3_staff,
+              payRound3_time: sgMember.payRound3_time,
+              
+              isSubgroupNewLogic: false,
+              subgroupStudents: null,
+              subgroupStudentList: null
+          });
+          
+          lastResult = addStudentRegistration(memberStudent, logUser);
+      }
+      
+      logActivity(logUser, 'ลงทะเบียนกลุ่มย่อย', `นักเรียน: ${student.subgroupStudents.map(m => m.name).join(', ')} คอร์ส: ${student.subgroupCourses.join(', ')}`);
+      invalidateStudentCache();
+      return { success: true, id: lastResult ? lastResult.id : 'SUBGROUP' };
+    }
+
+    // Check if subgroupCourses is present and has items (multiple courses)
+    if (student.subgroupCourses && student.subgroupCourses.length > 0) {
+      let lastId = '';
+      const totalPaid = parseFloat(student.paid) || 0;
+      const totalFull = parseFloat(student.full) || 0;
+      
+      // Build note text
+      const noteText = `ชำระรวม ${totalPaid.toLocaleString()} บาท`;
+      let extraNote = student.extraNote || '';
+      if (!extraNote.includes('ชำระรวม')) {
+        extraNote = noteText + (extraNote ? ' | ' + extraNote : '');
+      }
+      
+      student.subgroupCourses.forEach((round, index) => {
+        const timestamp = new Date().getTime() + index;
+        const id = `${student.name.replace(/\s+/g, '')}_${timestamp}_${round}`;
+        
+        let singleFee = student.full;
+        if (student.subgroupCourses.length > 1) {
+          singleFee = calculateIndividualCourseFee(student.classType, student.grade, round, student.subgroupCoursesSize);
+        }
+        
+        // Average/proportional allocation of paid amount
+        const proportionalPaid = totalFull > 0 ? (singleFee / totalFull) * totalPaid : 0;
+        const full = singleFee;
+        const outstanding = full - proportionalPaid;
+        
+        const rowData = [
+          id,
+          student.name,
+          student.nickname,
+          student.school,
+          formatPhoneNumber(student.contact),
+          student.branchLearn,
+          student.branchPay,
+          student.paymentTimeNote || '',
+          extraNote,
+          proportionalPaid,
+          full,
+          outstanding,
+          student.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy'),
+          student.paymentChannel,
+          student.staff || '',
+          round,
+          
+          student.grade || '',
+          student.classSection || '',
+          student.lineName || '',
+          student.lineId || '',
+          student.carriedForwardFee || 0,
+          student.classHours || '',
+          student.classHoursLeft || '',
+          student.classType || 'เดี่ยว'
+        ];
+        
+        sheet.appendRow(rowData);
+        
+        const studentCopy = Object.assign({}, student, { id: id, round: round, full: full, paid: proportionalPaid, extraNote: extraNote });
+        try {
+          syncToGradeSheet(studentCopy);
+        } catch (e) {}
+        
+        lastId = id;
+      });
+      
+      logActivity(logUser, 'ลงทะเบียนเด็กใหม่ (หลายคอร์ส)', `นักเรียน: ${student.name} คอร์สทั้งหมด: ${student.subgroupCourses.join(', ')}`);
+      invalidateStudentCache();
+      return { success: true, id: lastId };
+    } else {
+      const timestamp = new Date().getTime();
+      const round = student.round || 'Summer69';
+      const id = `${student.name.replace(/\s+/g, '')}_${timestamp}_${round}`;
+      
+      const paid = parseFloat(student.paid) || 0;
+      const full = parseFloat(student.full) || 0;
+      const outstanding = full - paid;
+      
+      const rowData = [
+        id,
+        student.name,
+        student.nickname,
+        student.school,
+        formatPhoneNumber(student.contact),
+        student.branchLearn,
+        student.branchPay,
+        student.paymentTimeNote || '',
+        student.extraNote || '',
+        paid,
+        full,
+        outstanding,
+        student.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy'),
+        student.paymentChannel,
+        student.staff || '',
+        round,
+        
+        student.grade || '',
+        student.classSection || '',
+        student.lineName || '',
+        student.lineId || '',
+        student.carriedForwardFee || 0,
+        student.classHours || '',
+        student.classHoursLeft || '',
+        student.classType || 'เดี่ยว'
+      ];
+      

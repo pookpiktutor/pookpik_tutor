@@ -1,0 +1,100 @@
+  try {
+    lock.waitLock(15000);
+    const sheet = getDb().getSheetByName('Data Learn');
+    if (!sheet) throw new Error('Data Learn sheet not found');
+    
+    const range = sheet.getRange(rowIndex, 1, 1, 15);
+    const rowVals = range.getValues()[0];
+    
+    let note = rowVals[5] ? rowVals[5].toString().trim() : '';
+    let isLeave = parseInt(rowVals[8]) || 0;
+    
+    if (type === 'nong') {
+      if (isChecked) {
+        if (!note.includes('น้องลา')) {
+          note = (note ? note + ' ' : '') + 'น้องลา';
+        }
+        isLeave = 1;
+        // Toggling nong leave to true clears live/online/makeup kids count in sheet
+        sheet.getRange(rowIndex, 7).setValue(0); // สด
+        sheet.getRange(rowIndex, 8).setValue(0); // ออน
+        sheet.getRange(rowIndex, 11).setValue(0); // ชด
+      } else {
+        note = note.replace(/น้องลา/g, '').trim();
+        isLeave = 0;
+      }
+    } else if (type === 'kru') {
+      if (isChecked) {
+        if (!note.includes('ครูลา')) {
+          note = (note ? note + ' ' : '') + 'ครูลา';
+        }
+      } else {
+        note = note.replace(/ครูลา/g, '').trim();
+      }
+    }
+    
+    sheet.getRange(rowIndex, 6).setValue(note); // note column F (6)
+    sheet.getRange(rowIndex, 9).setValue(isLeave); // isLeave column I (9)
+    
+    // Invalidate caches
+    const logDate = cleanSheetDate(rowVals[13]);
+    clearClassLogsCache(logDate);
+    invalidateTeacherSalaryCache([rowVals[1], rowVals[2]]);
+    
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function toggleTeacherConfirmInSheet(rowIndex, isChecked) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(15000);
+    const sheet = getDb().getSheetByName('Data Learn');
+    if (!sheet) throw new Error('Data Learn sheet not found');
+    
+    sheet.getRange(rowIndex, 16).setValue(isChecked ? 1 : 0);
+    
+    const rowVals = sheet.getRange(rowIndex, 1, 1, 15).getValues()[0];
+    const logDate = cleanSheetDate(rowVals[13]);
+    clearClassLogsCache(logDate);
+    invalidateTeacherSalaryCache([rowVals[1], rowVals[2]]);
+    
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// ----------------------------------------------------
+// Master Class Logs (Data Learn)
+// ----------------------------------------------------
+function parseDateString(str) {
+  if (!str) return null;
+  if (str instanceof Date) return str;
+  const parts = str.toString().trim().split('/');
+  if (parts.length === 3) {
+    const d = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    let y = parseInt(parts[2], 10);
+    if (y > 2400) y -= 543; // Convert BE to CE
+    return new Date(y, m - 1, d);
+  }
+  const partsDash = str.toString().trim().split('-');
+  if (partsDash.length === 3) {
+    let y = parseInt(partsDash[0], 10);
+    let m = parseInt(partsDash[1], 10);
+    const d = parseInt(partsDash[2], 10);
+    if (y > 2400) y -= 543;
+    return new Date(y, m - 1, d);
+  }
+  return null;
+}
+
+function areDatesSame(d1, d2) {
+  const date1 = parseDateString(d1);

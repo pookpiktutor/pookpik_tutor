@@ -1,0 +1,100 @@
+          student.grade || '',
+          student.classSection || '',
+          student.lineName || '',
+          student.lineId || '',
+          student.carriedForwardFee || 0,
+          student.classHours || '',
+          student.classHoursLeft || '',
+          student.classType || 'เดี่ยว'
+        ];
+        
+        sheet.appendRow(rowData);
+        
+        const studentCopy = Object.assign({}, student, { id: id, round: round, full: full, paid: proportionalPaid, extraNote: extraNote });
+        try {
+          syncToGradeSheet(studentCopy);
+        } catch (e) {}
+        
+        lastId = id;
+      });
+      
+      logActivity(logUser, 'ลงทะเบียนเด็กใหม่ (หลายคอร์ส)', `นักเรียน: ${student.name} คอร์สทั้งหมด: ${student.subgroupCourses.join(', ')}`);
+      invalidateStudentCache();
+      return { success: true, id: lastId };
+    } else {
+      const timestamp = new Date().getTime();
+      const round = student.round || 'Summer69';
+      const id = `${student.name.replace(/\s+/g, '')}_${timestamp}_${round}`;
+      
+      const paid = parseFloat(student.paid) || 0;
+      const full = parseFloat(student.full) || 0;
+      const outstanding = full - paid;
+      
+      const rowData = [
+        id,
+        student.name,
+        student.nickname,
+        student.school,
+        formatPhoneNumber(student.contact),
+        student.branchLearn,
+        student.branchPay,
+        student.paymentTimeNote || '',
+        student.extraNote || '',
+        paid,
+        full,
+        outstanding,
+        student.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy'),
+        student.paymentChannel,
+        student.staff || '',
+        round,
+        
+        student.grade || '',
+        student.classSection || '',
+        student.lineName || '',
+        student.lineId || '',
+        student.carriedForwardFee || 0,
+        student.classHours || '',
+        student.classHoursLeft || '',
+        student.classType || 'เดี่ยว'
+      ];
+      
+      sheet.appendRow(rowData);
+      syncToGradeSheet(student);
+      logActivity(logUser, 'ลงทะเบียนเด็กใหม่', `นักเรียน: ${student.name} คอร์ส: ${round} ยอดเต็ม: ${full}`);
+      invalidateStudentCache();
+      return { success: true, id: id };
+    }
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+function updateStudentRegistration(student, logUser) {
+  checkTeacherBlock(logUser);
+  try {
+    const sheet = getDb().getSheetByName('StatusDB');
+    if (!sheet) throw new Error('StatusDB sheet not found');
+    
+    const lastRow = sheet.getLastRow();
+    const keys = sheet.getRange(1, 1, lastRow, 1).getValues();
+    
+    let rowIndex = -1;
+    
+    // 1. If it's a TEMP ID, check that row first
+    if (student.id && student.id.startsWith('TEMP_')) {
+      const parts = student.id.split('_');
+      const tempIdx = parseInt(parts[1], 10);
+      if (!isNaN(tempIdx) && tempIdx >= 1 && tempIdx <= lastRow) {
+        const currentName = sheet.getRange(tempIdx, 2).getValue().toString().trim();
+        if (currentName === student.name.trim()) {
+          rowIndex = tempIdx;
+        }
+      }
+    }
+    
+    // 2. Fallback: Search by ID
+    if (rowIndex === -1) {
+      for (let i = 0; i < keys.length; i++) {
+        if (keys[i][0].toString().trim() === student.id) {
+          rowIndex = i + 1;
+          break;

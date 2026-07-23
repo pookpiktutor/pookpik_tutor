@@ -1,0 +1,14 @@
+13500: roomBranchInfo: c.roomBranch || "",
+13502: memo: c.note || "",
+13504: presentCount: c.isPresentLive || 0,
+13506: onlineCount: c.isPresentOnline || 0,
+13508: leaveCount: c.isLeave || 0,
+13510: absentCount: c.isAbsent || 0,
+13512: makeUpCount: c.isMakeup || 0,
+13514: extraCount: c.isOrange || 0,
+13516: hours: c.hours || 0,
+13518: roomBranch: c.roomBranch || "",
+13520: rowIndex: c.rowIndex
+13522: });
+13524: });
+13528: return classes;

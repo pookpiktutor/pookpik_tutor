@@ -1,0 +1,112 @@
+=== Around line 12950 ===
+12940: 
+12941: 
+12942: const learnSheet = db.getSheetByName('Data Learn');
+12943: 
+12944: const data = learnSheet.getDataRange().getValues();
+12945: 
+12946: const results = [];
+12947: 
+12948: for (let i = 1; i < data.length; i++) {
+12949: 
+12950: const subject = data[i][0] ? data[i][0].toString() : '';
+12951: 
+12952: if (subject.includes('à¸“à¸”à¸²') || subject.includes('à¸¥à¸´à¸™à¸¥à¸”à¸²')) {
+12953: 
+12954: results.push(`Row ${i + 1}: ${subject} (Live: ${data[i][6]}, Online: ${data[i][7]}, Makeup: ${data[i][10]}, Hours: ${data[i][12]}, Date: ${data[i][13]})`);
+12955: 
+12956: }
+12957: 
+12958: }
+12959: 
+
+=== Around line 14850 ===
+14840: const sunday = new Date(monday);
+14841: 
+14842: sunday.setDate(monday.getDate() + 6);
+14843: 
+14844: sunday.setHours(23,59,59,999);
+14845: 
+14846: 
+14847: 
+14848: const todayFormatted = Utilities.formatDate(todayDate, 'Asia/Bangkok', 'dd/MM/yyyy');
+14849: 
+14850: for (let i = 0; i < data.length; i++) {
+14851: 
+14852: const note = (data[i][5] || '').toString();
+14853: 
+14854: if (note.indexOf('à¸„à¸£à¸¹à¸¥à¸²') === -1) continue;
+14855: 
+14856: 
+14857: 
+14858: const dateValStr = cleanSheetDate(data[i][13]);
+14859: 
+14860: if (!dateValStr) continue;
+14861: 
+14862: 
+14863: 
+14864: const parts = dateValStr.split('/');
+14865: 
+14866: if (parts.length === 3) {
+14867: 
+14868: const d = parseInt(parts[0], 10);
+14869: 
+
+=== Around line 14930 ===
+14920: let teacherSub = (data[i][2] || '').toString().trim();
+14921: 
+14922: 
+14923: 
+14924: // If there is a substitute teacher, DO NOT show it in the leave list
+14925: 
+14926: if (teacherSub !== '' && teacherSub !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && teacherSub !== '-' && teacherSub !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
+14927: 
+14928: continue;
+14929: 
+14930: }
+14931: 
+14932: 
+14933: 
+14934: const room = data[i][14] || '';
+14935: 
+14936: if (teacherName && teachersMap[teacherName.toLowerCase()]) {
+14937: 
+14938: teacherName = teachersMap[teacherName.toLowerCase()];
+14939: 
+14940: }
+14941: 
+14942: leaves.push({
+14943: 
+14944: rowIndex: i + 2,
+
+=== Around line 16210 ===
+16200: var dateStr = cleanSheetDate(data[i][12]);
+16201: 
+16202: // Check if date >= 18/5/2026
+16203: 
+16204: var parts = dateStr.split('/');
+16205: 
+16206: if (parts.length !== 3) continue;
+16207: 
+16208: var d = parseInt(parts[0]), m = parseInt(parts[1]), y = parseInt(parts[2]);
+16209: 
+16210: if (new Date(y, m-1, d) < new Date(2026, 4, 18)) continue;
+16211: 
+16212: 
+16213: 
+16214: count++;
+16215: 
+16216: var roomBranch = data[i][13] ? data[i][13].toString().trim() : '';
+16217: 
+16218: var actualRow = startRow + i;
+16219: 
+16220: 
+16221: 
+16222: results.push('=== Row ' + actualRow + ' ===');
+16223: 
+16224: results.push('Col A: ' + colA);
+16225: 
+16226: results.push('Date: ' + dateStr);
+16227: 
+16228: results.push('RoomBranch: ' + roomBranch);
+16229: 

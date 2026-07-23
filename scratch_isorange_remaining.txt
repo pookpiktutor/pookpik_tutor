@@ -1,0 +1,6 @@
+4454: // isOrange removed
+4630: isOrange: parseInt(data[i][11]) || 0,
+10970: // isOrange removed
+13248: log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
+13304: log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
+13514: extraCount: c.isOrange || 0,

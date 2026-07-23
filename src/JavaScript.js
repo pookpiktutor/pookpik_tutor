@@ -10,6 +10,8 @@ window._nextTaskSilent = false;
 
 
 
+window._currentLoadingStatus = '';
+
 function updateTaskWidget() {
   const widget = document.getElementById('task_queue_widget');
   if (!widget) return;
@@ -23,37 +25,38 @@ function updateTaskWidget() {
   });
 
   const visibleTasks = window._bgTaskQueue.filter(t => !t.isSilent);
-
-  if (visibleTasks.length === 0) {
-    widget.style.display = 'flex';
-    widget.innerHTML = `
-      <div style="padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; color: #1e293b; font-size: 0.75rem; font-weight: 600;">
-        <div><i class="fas fa-check-circle" style="color: #10b981; margin-right: 6px;"></i> สถานะระบบ</div>
-        <div style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">พร้อมใช้งาน</div>
-      </div>
-    `;
-    return;
-  }
-  
-  widget.style.display = 'flex';
-  const activeCount = visibleTasks.filter(t => t.status !== 'success' && t.status !== 'error').length;
   
   const displayTask = visibleTasks.find(t => t.status === 'running')
                       || visibleTasks.find(t => t.status === 'queued')
                       || visibleTasks[0];
                       
-  let icon = '⏳';
-  if (displayTask.status === 'running') icon = '<i class="fas fa-circle-notch fa-spin" style="color:#3b82f6;"></i>';
-  else if (displayTask.status === 'success') icon = '✅';
-  else if (displayTask.status === 'error') icon = '❌';
+  let currentActionText = 'พร้อมใช้งาน';
+  let icon = '<i class="fas fa-check-circle" style="color: #10b981; margin-right: 6px;"></i>';
+  let badgeHTML = '<div style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">พร้อมใช้งาน</div>';
+  
+  if (window._currentLoadingStatus) {
+      currentActionText = window._currentLoadingStatus;
+      icon = '<i class="fas fa-circle-notch fa-spin" style="color:#3b82f6; margin-right: 6px;"></i>';
+      badgeHTML = `<div style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">กำลังทำงาน</div>`;
+  } else if (displayTask) {
+      currentActionText = displayTask.title;
+      icon = '<i class="fas fa-circle-notch fa-spin" style="color:#3b82f6; margin-right: 6px;"></i>';
+      if (displayTask.status === 'success') {
+          icon = '<i class="fas fa-check-circle" style="color: #10b981; margin-right: 6px;"></i>';
+          badgeHTML = `<div style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">สำเร็จ</div>`;
+      } else if (displayTask.status === 'error') {
+          icon = '<i class="fas fa-times-circle" style="color: #ef4444; margin-right: 6px;"></i>';
+          badgeHTML = `<div style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">ผิดพลาด</div>`;
+      } else {
+          badgeHTML = `<div style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">กำลังทำเบื้องหลัง</div>`;
+      }
+  }
 
+  widget.style.display = 'flex';
   widget.innerHTML = `
-    <div style="padding: 8px 14px; display: flex; justify-content: space-between; align-items: center; color: #1e293b; font-size: 0.75rem; font-weight: 600; border-bottom: 1px solid rgba(0,0,0,0.06);">
-      <div><i class="fas fa-tasks" style="color:#64748b; margin-right: 6px;"></i> สถานะระบบ</div>
-      <div style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">${activeCount} งานกำลังทำ</div>
-    </div>
-    <div style="padding: 10px 14px; font-size: 0.7rem; color: #334155; display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;">
-      ${icon} <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${displayTask.title}</span>
+    <div style="padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; color: #1e293b; font-size: 0.75rem; font-weight: 600; min-width: 220px; gap: 10px;">
+      <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;" title="${currentActionText !== 'พร้อมใช้งาน' ? currentActionText : 'สถานะระบบ'}">${icon} ${currentActionText !== 'พร้อมใช้งาน' ? currentActionText : 'สถานะระบบ'}</div>
+      ${badgeHTML}
     </div>
   `;
 }

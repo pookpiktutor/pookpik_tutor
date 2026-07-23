@@ -1,0 +1,282 @@
+17647: function addClassLog(log, logUser) {
+17648: 
+17649: 
+17650: checkTeacherBlock(logUser);
+17651: 
+17652: 
+17653: const lock = LockService.getScriptLock();
+17654: 
+17655: 
+17656: try {
+17657: 
+17658: 
+17659: lock.waitLock(15000);
+17660: 
+17661: 
+17662: ensureDataLearnMigrated(getDb());
+17663: 
+17664: 
+17665: const sheet = getDb().getSheetByName('Data Learn');
+17666: 
+17667: 
+17668: if (!sheet) throw new Error('Data Learn sheet not found');
+17669: 
+17670: 
+17671: 
+17672: 
+17673: 
+17674: // Resolve teacher names to tutor_xxxx IDs
+17675: 
+17676: 
+17677: const teachersList = getTeachersDB(null);
+17678: 
+17679: 
+17680: const resolveId = function(name) {
+17681: 
+17682: 
+17683: if (!name) return '';
+17684: 
+17685: 
+17686: const cleanTarget = name.toString().trim().toLowerCase().replace(/^à¸„à¸£à¸¹/, '').trim();
+17687: 
+17688: 
+17689: const match = teachersList.find(t => {
+17690: 
+17691: 
+17692: const tNick = t.nickname.toLowerCase().trim().replace(/^à¸„à¸£à¸¹/, '').trim();
+17693: 
+17694: 
+17695: const tId = (t.teacherId || '').toLowerCase().trim();
+17696: 
+17697: 
+17698: return tNick === cleanTarget || tId === cleanTarget;
+17699: 
+================
+17866: function updateClassLog(rowIndex, log, logUser) {
+17867: 
+17868: 
+17869: checkTeacherBlock(logUser);
+17870: 
+17871: 
+17872: const lock = LockService.getScriptLock();
+17873: 
+17874: 
+17875: try {
+17876: 
+17877: 
+17878: lock.waitLock(15000);
+17879: 
+17880: 
+17881: ensureDataLearnMigrated(getDb());
+17882: 
+17883: 
+17884: const sheet = getDb().getSheetByName('Data Learn');
+17885: 
+17886: 
+17887: if (!sheet) throw new Error('Data Learn sheet not found');
+17888: 
+17889: 
+17890: 
+17891: 
+17892: 
+17893: // Read old log values first to revert them
+17894: 
+17895: 
+17896: // Read old log values first to revert them
+17897: 
+17898: 
+17899: const rowVals = sheet.getRange(rowIndex, 1, 1, 17).getValues()[0];
+17900: 
+17901: 
+17902: const oldLog = {
+17903: 
+17904: 
+17905: subject: rowVals[0] ? rowVals[0].toString().trim() : '',
+17906: 
+17907: 
+17908: teacherRegular: rowVals[1] ? rowVals[1].toString().trim() : '',
+17909: 
+17910: 
+17911: teacherSub: rowVals[2] ? rowVals[2].toString().trim() : '',
+17912: 
+17913: 
+17914: timeStart: rowVals[3] ? rowVals[3].toString().trim() : '',
+17915: 
+17916: 
+17917: timeEnd: rowVals[4] ? rowVals[4].toString().trim() : '',
+17918: 
+17919: 
+17920: note: rowVals[5] ? rowVals[5].toString().trim() : '',
+17921: 
+17922: 
+17923: isPresentLive: parseInt(rowVals[6]) || 0,
+17924: 
+17925: 
+17926: isPresentOnline: parseInt(rowVals[7]) || 0,
+17927: 
+17928: 
+17929: isLeave: parseInt(rowVals[8]) || 0,
+17930: 
+17931: 
+17932: isAbsent: parseInt(rowVals[9]) || 0,
+17933: 
+17934: 
+17935: isMakeup: parseInt(rowVals[10]) || 0,
+17936: 
+17937: 
+17938: isOrange: parseInt(rowVals[11]) || 0,
+17939: 
+17940: 
+17941: hours: rowVals[12] ? rowVals[12].toString().trim() : '',
+17942: 
+17943: 
+17944: date: cleanSheetDate(rowVals[13]),
+17945: 
+17946: 
+17947: roomBranch: rowVals[14] ? rowVals[14].toString().trim() : ''
+17948: 
+17949: 
+================
+20128: function addMultipleClassLogs(logs, logUser) {
+20129: 
+20130: 
+20131: checkTeacherBlock(logUser);
+20132: 
+20133: 
+20134: const lock = LockService.getScriptLock();
+20135: 
+20136: 
+20137: try {
+20138: 
+20139: 
+20140: lock.waitLock(15000);
+20141: 
+20142: 
+20143: const sheet = getDb().getSheetByName('Data Learn');
+20144: 
+20145: 
+20146: if (!sheet) throw new Error('Data Learn sheet not found');
+20147: 
+20148: 
+20149: 
+20150: 
+20151: 
+20152: logs.forEach(function(log) { log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd); });
+20153: 
+20154: 
+20155: const rowsData = logs.map(log => [
+20156: 
+20157: 
+20158: log.subject,
+20159: 
+20160: 
+20161: log.teacherRegular,
+20162: 
+20163: 
+20164: log.teacherSub || '',
+20165: 
+20166: 
+20167: log.timeStart,
+20168: 
+20169: 
+20170: log.timeEnd,
+20171: 
+20172: 
+20173: log.note || '',
+20174: 
+20175: 
+20176: log.isPresentLive ? parseInt(log.isPresentLive, 10) || 0 : 0,
+20177: 
+20178: 
+20179: log.isPresentOnline ? parseInt(log.isPresentOnline, 10) || 0 : 0,
+================
+20290: function saveBatchClassLogs(adds, updates, deletes, logUser) {
+20291: 
+20292: 
+20293: checkTeacherBlock(logUser);
+20294: 
+20295: 
+20296: const lock = LockService.getScriptLock();
+20297: 
+20298: 
+20299: try {
+20300: 
+20301: 
+20302: lock.waitLock(15000);
+20303: 
+20304: 
+20305: const sheet = getDb().getSheetByName('Data Learn');
+20306: 
+20307: 
+20308: if (!sheet) throw new Error('Data Learn sheet not found');
+20309: 
+20310: 
+20311: const teachersToInvalidate = new Set();
+20312: 
+20313: 
+20314: const datesToInvalidate = new Set();
+20315: 
+20316: 
+20317: let actionLog = [];
+20318: 
+20319: 
+20320: 
+20321: 
+20322: 
+20323: // Process Updates
+20324: 
+20325: 
+20326: if (updates && updates.length > 0) {
+20327: 
+20328: 
+20329: updates.forEach(u => {
+20330: 
+20331: 
+20332: const rowIndex = u.rowIndex;
+20333: 
+20334: 
+20335: const log = u.log;
+20336: 
+20337: 
+20338: const rowVals = sheet.getRange(rowIndex, 1, 1, 17).getValues()[0];
+20339: 
+20340: 
+20341: const oldLog = {
+20342: 
+20343: 
+20344: subject: rowVals[0] ? rowVals[0].toString().trim() : '',
+20345: 
+20346: 
+20347: teacherRegular: rowVals[1] ? rowVals[1].toString().trim() : '',
+20348: 
+20349: 
+20350: teacherSub: rowVals[2] ? rowVals[2].toString().trim() : '',
+20351: 
+20352: 
+20353: timeStart: rowVals[3] ? rowVals[3].toString().trim() : '',
+20354: 
+20355: 
+20356: timeEnd: rowVals[4] ? rowVals[4].toString().trim() : '',
+20357: 
+20358: 
+20359: note: rowVals[5] ? rowVals[5].toString().trim() : '',
+20360: 
+20361: 
+20362: isPresentLive: parseInt(rowVals[6]) || 0,
+20363: 
+20364: 
+20365: isPresentOnline: parseInt(rowVals[7]) || 0,
+20366: 
+20367: 
+20368: isLeave: parseInt(rowVals[8]) || 0,
+20369: 
+20370: 
+20371: isAbsent: parseInt(rowVals[9]) || 0,
+20372: 
+20373: 
+20374: isMakeup: parseInt(rowVals[10]) || 0,
+20375: 
+20376: 
+20377: isOrange: parseInt(rowVals[11]) || 0,
+20378: 
+20379: 

@@ -1,0 +1,91 @@
+
+function getStudentHistoryData(name, nickname, logUser) {
+  if (logUser) checkTeacherBlock(logUser);
+  try {
+    const db = getDb();
+    ensureDataLearnMigrated(db);
+    const statusSheet = db.getSheetByName('StatusDB');
+    const allStudents = [];
+    if (statusSheet) {
+      const data = statusSheet.getDataRange().getValues();
+      for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        const stdName = row[1] ? row[1].toString().trim() : '';
+        const stdNick = row[2] ? row[2].toString().trim() : '';
+        
+        // ค้นหาด้วยชื่อ-นามสกุลเต็มเป็นหลัก (exact match)
+        if (stdName === name) {
+          allStudents.push({
+            id: row[0] ? row[0].toString().trim() : '',
+            name: stdName,
+            nickname: stdNick,
+            courseName: row[15] ? row[15].toString().trim() : '',
+            carriedForward: parseFloat(row[20]) || 0,
+            full: parseFloat(row[10]) || 0,
+            paid: parseFloat(row[9]) || 0,
+            outstanding: parseFloat(row[11]) || 0,
+            paymentDate: row[12] ? row[12].toString().trim() : '',
+            paymentChannel: row[13] ? row[13].toString().trim() : '',
+            staff: row[14] ? row[14].toString().trim() : '',
+            hours: row[21] ? row[21].toString().trim() : '',
+            hoursLeft: row[22] ? row[22].toString().trim() : '',
+            classType: row[23] ? row[23].toString().trim() : ''
+          });
+        }
+      }
+    }
+    
+    const classSheet = db.getSheetByName('Data Learn');
+    const matchedClasses = [];
+    
+    // ดึงรายการชื่อคอร์สทั้งหมดของนักเรียนคนนี้ (ซึ่งกรองด้วยชื่อ-นามสกุลตรงกันแล้ว)
+    const enrolledCourseNames = allStudents.map(s => s.courseName.toLowerCase().trim()).filter(c => c.length > 0);
+    
+    if (classSheet) {
+      const cData = classSheet.getDataRange().getValues();
+      for (let i = 1; i < cData.length; i++) {
+        const row = cData[i];
+        const subject = row[0] ? row[0].toString().trim() : '';
+        const subjectClean = subject.toLowerCase().trim();
+        
+        // เช็คว่าวิชาใน Data Learn ตรงกับคอร์สที่ลงทะเบียนจริง
+        let isCourseMatch = enrolledCourseNames.some(cName => {
+          return subjectClean === cName || subjectClean.indexOf(cName) !== -1 || cName.indexOf(subjectClean) !== -1;
+        });
+        
+        // Fallback exact name matching
+        if (!isCourseMatch && name) {
+          isCourseMatch = subjectClean.indexOf(name.toLowerCase().trim()) !== -1;
+        }
+        
+        if (isCourseMatch) {
+          matchedClasses.push({
+            subject: subject,
+            teacherRegular: row[1] ? row[1].toString().trim() : '',
+            teacherSub: row[2] ? row[2].toString().trim() : '',
+            timeStart: row[3] ? row[3].toString().trim() : '',
+            timeEnd: row[4] ? row[4].toString().trim() : '',
+            note: row[5] ? row[5].toString().trim() : '',
+            isPresentLive: parseInt(row[6], 10) || 0,
+            isPresentOnline: parseInt(row[7], 10) || 0,
+            isLeave: parseInt(row[8], 10) || 0,
+            isAbsent: parseInt(row[9], 10) || 0,
+            isMakeup: parseInt(row[10], 10) || 0,
+            isOrange: parseInt(row[11], 10) || 0,
+            hours: row[12] ? row[12].toString().trim() : '',
+            date: cleanSheetDate(row[13]),
+            roomBranch: row[14] ? row[14].toString().trim() : '',
+            rowIndex: i + 1
+          });
+        }
+      }
+    }
+    
+    matchedClasses.sort((a, b) => {
+      const dateA = convertDateToIso(a.date);
+      const dateB = convertDateToIso(b.date);
+      if (dateA !== dateB) return dateB.localeCompare(dateA);
+      return b.timeStart.localeCompare(a.timeStart);
+    });
+    
+    return { success: true, courses: allStudents, classes: matchedClasses };

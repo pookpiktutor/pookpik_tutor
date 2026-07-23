@@ -1,0 +1,25 @@
+9778: else rate = 950;
+9780: } else {
+9782: if (numKids === 0 || numKids === 1) rate = 150;
+9784: else if (numKids <= 5) rate = 150;
+9786: else if (numKids <= 10) rate = 200;
+9788: else if (numKids <= 15) rate = 250;
+9790: else if (numKids <= 20) rate = 300;
+9792: else if (numKids <= 25) rate = 350;
+9794: else if (numKids <= 30) rate = 400;
+9796: else if (numKids <= 35) rate = 450;
+9798: else if (numKids <= 40) rate = 500;
+9800: else if (numKids <= 45) rate = 550;
+9802: else if (numKids <= 50) rate = 600;
+9804: else if (numKids <= 55) rate = 650;
+9806: else if (numKids <= 60) rate = 700;
+9808: else if (numKids <= 65) rate = 750;
+9810: else if (numKids <= 70) rate = 800;
+9812: else if (numKids <= 75) rate = 850;
+9814: else rate = 900;
+9816: }
+9820: const pay = hoursVal * rate;
+9822: // if (numKids > 0) {
+9824: totalHours += hoursVal;
+9826: totalClasses += 1;
+9828: // }

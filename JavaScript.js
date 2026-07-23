@@ -1769,6 +1769,11 @@ function convertDateFromSheet(dateVal) {
 }
 
 function setLoading(show, text = 'กำลังโหลด...') {
+  window._currentLoadingStatus = show ? text : '';
+  if (typeof updateTaskWidget === 'function') {
+    updateTaskWidget();
+  }
+
   if (text.includes('บันทึก') || text.includes('save') || text.includes('Save')) {
     setSavingToast(show, text);
     return;
@@ -3448,6 +3453,9 @@ function renderGradeSheetTable() {
   });
   
   document.getElementById('save_grade_sheet_btn').disabled = false;
+  
+  // Calculate totals initially
+  recalculateGridTotals();
 }
 function handleCourseHeaderNameChange(colIndex, sheetName, input) {
   const val = input.value.trim();

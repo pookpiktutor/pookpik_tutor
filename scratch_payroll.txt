@@ -1,0 +1,90 @@
+  const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
+  const isTeacher = (role === 'Teacher' || role === 'ครู');
+  if (isTeacher && panelName !== 'teacher_schedule' && panelName !== 'teacher_payroll' && panelName !== 'evaluation_form') {
+    panelName = 'teacher_schedule';
+  }
+
+  // Update sidebar active link
+  document.querySelectorAll('.nav-item').forEach(item => {
+    if (item.getAttribute('data-panel') === panelName) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+  
+  // Update panels visibility
+  document.querySelectorAll('.view-panel').forEach(panel => {
+    if (panel.id === `${panelName}_panel`) {
+      panel.classList.add('active');
+    } else {
+      panel.classList.remove('active');
+    }
+  });
+  
+  // Set navbar title based on view
+  const titles = {
+    'dashboard': 'แดชบอร์ดสรุปผลปฏิบัติงาน',
+    'students': 'ทะเบียนนักเรียน',
+    'grade_sheets': 'คอร์สเรียน',
+    'daily_grid': 'ตารางเรียนรายห้องเรียนรายวัน',
+    'private_students': 'เด็กเรียนเดี่ยว & กลุ่มย่อย',
+    'class_logs': 'บันทึกรายรับ รายเดือน',
+    'teacher_schedule': 'ตารางสอนส่วนตัวคุณครู',
+    'teacher_payroll': state.currentUser && (state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู') ? 'ตารางสอนและรายละเอียดเงินเดือนของฉัน' : 'ค่าสอนครูรายเดือน',
+    'teacher_profiles': 'จัดการประวัติคุณครู',
+    'employee_management': 'จัดการพนักงานในระบบ',
+    'manager_logs': 'ลงเวลาทำงานผู้จัดการสาขา',
+    'activity_logs': 'รายงานการทำธุรกรรมของระบบ (Audit Trail)',
+    'debtors': 'ตรวจสอบและบันทึกค้างชำระเงินค่าเรียน',
+    'print_receipts': 'ออกใบเสร็จรับเงินค่าเรียน',
+    'evaluation_form': 'ใบประเมินผลการเรียนนักเรียน',
+    'admin_evaluation_form': 'รายการประเมินผลการเรียน (เจ้าหน้าที่)',
+    'staff_salary_summary': 'สรุปรายได้ครูทั้งหมด'
+  };
+  document.getElementById('page_title').innerText = titles[panelName] || 'ระบบดูแลโรงเรียนกวดวิชา';
+  
+  // Subtitles are now embedded directly in each panel's toolbar
+  
+  // Load panel specific data
+  if (panelName === 'dashboard') {
+    loadDashboard();
+    loadRoundSummary();
+  } else if (panelName === 'students') {
+    loadStudents();
+  } else if (panelName === 'grade_sheets') {
+    // Reset grade sheet display
+    document.getElementById('grade_sheet_grid_table').innerHTML = `<tr><td style="padding: 40px; text-align: center; color: var(--text-muted);">กรุณาเลือกตารางระดับชั้นด้านบน</td></tr>`;
+    document.getElementById('save_grade_sheet_btn').disabled = true;
+  } else if (panelName === 'daily_grid') {
+    loadDailyGrid();
+  } else if (panelName === 'private_students') {
+    if (!state.navigatingToPayment) {
+      loadPrivateStudents();
+    }
+  } else if (panelName === 'class_logs') {
+    switchRevenueSubTab('list');
+    loadRevenueLogs();
+  } else if (panelName === 'teacher_profiles') {
+    loadTeacherProfiles();
+  } else if (panelName === 'teacher_payroll') {
+    if(document.getElementById('calc_result_card')) document.getElementById('calc_result_card').style.display = 'none';
+    const staffBanner = document.getElementById('staff_yearly_summary_banner');
+    if (staffBanner) staffBanner.style.display = 'none';
+    const role = state.currentUser ? (state.currentUser.role || 'Staff').toString().trim() : 'Staff';
+    if (role === 'Teacher' || role === 'ครู') {
+      setTimeout(() => {
+        runTeacherPayCalculation();
+      }, 100);
+    }
+  } else if (panelName === 'manager_logs') {
+    loadManagerLogs();
+  } else if (panelName === 'activity_logs') {
+    loadActivityLogs();
+  } else if (panelName === 'debtors') {
+    loadDebtors();
+  } else if (panelName === 'print_receipts') {
+    loadReceipts();
+  } else if (panelName === 'teacher_schedule') {
+    loadTeacherSchedule(true);
+  } else if (panelName === 'employee_management') {

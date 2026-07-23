@@ -1,0 +1,105 @@
+
+function calculateTeacherYearlyPay(teacher, year, logUser) {
+  const cacheKey = 'yearly_pay_v2_' + teacher.toString().trim().toLowerCase() + '_' + year;
+  const cached = getCacheObject(cacheKey);
+  // if (cached) return cached;
+  
+  try {
+    logActivity(logUser || teacher || 'System', 'à¸„à¸³à¸™à¸§à¸“à¹€à¸‡à¸´à¸™à¹€à¸”à¸·à¸­à¸™à¸£à¸²à¸¢à¸›à¸µà¹€à¸£à¸´à¹ˆà¸¡', 'à¸„à¸¸à¸“à¸„à¸£à¸¹: ' + teacher + ', à¸›à¸µ: ' + year);
+    const classLogs = getClassLogs('');
+    if (!Array.isArray(classLogs)) throw new Error(classLogs.error || 'à¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¸”à¸¶à¸‡à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ Class Logs à¹„à¸”à¹‰');
+    
+    const teachersList = getTeachersDB(null);
+    if (!Array.isArray(teachersList) || teachersList.length === 0) {
+      throw new Error('à¹„à¸¡à¹ˆà¸žà¸šà¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸£à¸²à¸¢à¸Šà¸·à¹ˆà¸­à¸„à¸£à¸¹à¹ƒà¸™à¸�à¸²à¸™à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ TeachersDB');
+    }
+    const teacherProfile = teachersList.find(t => {
+      const tId = (t.teacherId || '').toLowerCase().trim();
+      const tNick = t.nickname.toLowerCase().trim().replace(/^à¸„à¸£à¸¹/, '').trim();
+      const targetNick = teacher.toLowerCase().trim().replace(/^à¸„à¸£à¸¹/, '').trim();
+      return (tId !== '' && tId === teacher.toLowerCase().trim()) || 
+             tNick === targetNick || tNick.includes(targetNick) || targetNick.includes(tNick);
+    });
+    if (!teacherProfile) {
+      throw new Error('à¹„à¸¡à¹ˆà¸žà¸šà¸›à¸£à¸°à¸§à¸±à¸•à¸´à¸„à¸¸à¸“à¸„à¸£à¸¹à¸Šà¸·à¹ˆà¸­/à¸£à¸«à¸±à¸ª: "' + teacher + '" à¹ƒà¸™à¸�à¸²à¸™à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ TeachersDB');
+    }
+    const resolvedNickname = teacherProfile.nickname;
+    const cleanResolvedNick = resolvedNickname.toLowerCase().trim();
+    
+    const isLeap = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    const getRangeForMonth = function(m) {
+      let startStr, endStr;
+      const yStr = year.toString();
+      const prevYStr = (year - 1).toString();
+      switch (m) {
+        case 1: startStr = `${prevYStr}-12-29`; endStr = `${yStr}-01-28`; break;
+        case 2: startStr = `${yStr}-01-29`; endStr = `${yStr}-02-28`; break;
+        case 3: startStr = isLeap ? `${yStr}-02-29` : `${yStr}-03-01`; endStr = `${yStr}-03-28`; break;
+        case 4: startStr = `${yStr}-03-29`; endStr = `${yStr}-04-28`; break;
+        case 5: startStr = `${yStr}-04-29`; endStr = `${yStr}-05-28`; break;
+        case 6: startStr = `${yStr}-05-29`; endStr = `${yStr}-06-28`; break;
+        case 7: startStr = `${yStr}-06-29`; endStr = `${yStr}-07-28`; break;
+        case 8: startStr = `${yStr}-07-29`; endStr = `${yStr}-08-28`; break;
+        case 9: startStr = `${yStr}-08-29`; endStr = `${yStr}-09-28`; break;
+        case 10: startStr = `${yStr}-09-29`; endStr = `${yStr}-10-28`; break;
+        case 11: startStr = `${yStr}-10-29`; endStr = `${yStr}-11-28`; break;
+        case 12: startStr = `${yStr}-11-29`; endStr = `${yStr}-12-28`; break;
+      }
+      return { start: parseDateString(startStr), end: parseDateString(endStr), startStr: startStr, endStr: endStr };
+    };
+
+    const monthlyResults = {};
+    for (let m = 1; m <= 12; m++) {
+      const range = getRangeForMonth(m);
+      const matchedClasses = [];
+      let totalHours = 0;
+      let totalPay = 0;
+      let totalClasses = 0;
+      
+      classLogs.forEach(c => {
+        const cDate = parseDateString(c.date);
+        if (cDate < range.start || cDate > range.end) return;
+        
+        // Check column B (teacherRegular) and C (teacherSub)
+        const cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
+        const cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
+        const cleanB = cellB.replace(/^à¸„à¸£à¸¹/, '').trim();
+        const cleanC = cellC.replace(/^à¸„à¸£à¸¹/, '').trim();
+        const cleanNick = cleanResolvedNick.replace(/^à¸„à¸£à¸¹/, '').trim();
+        
+        const matchB = cleanB !== '' && (cleanB === cleanNick || cleanB.includes(cleanNick) || cleanNick.includes(cleanB));
+        const matchC = cleanC !== '' && (cleanC === cleanNick || cleanC.includes(cleanNick) || cleanNick.includes(cleanC) || 
+                       (cellC.includes(cleanNick) && cellC !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)'));
+        
+        // If both B and C have values, use C (substitute teacher priority rule)
+        // If only one has value, use that one
+        let role = '';
+        if (cellB !== '' && cellC !== '' && cellC !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
+          if (!matchC) return; // Both filled but C doesn't match - skip
+          role = 'à¸„à¸£à¸¹à¹�à¸—à¸™';
+        } else if (cellB !== '') {
+          if (!matchB) return;
+          role = 'à¸„à¸£à¸¹à¸›à¸£à¸°à¸ˆà¸³';
+        } else if (cellC !== '' && cellC !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)') {
+          if (!matchC) return;
+          role = 'à¸„à¸£à¸¹à¹�à¸—à¸™';
+        } else {
+          return; // No teacher in either column
+        }
+        
+        // Skip lessons with leave note only for regular teacher
+        if (role === 'à¸„à¸£à¸¹à¸›à¸£à¸°à¸ˆà¸³' && (c.note || '').includes('à¸„à¸£à¸¹à¸¥à¸²')) return;
+        
+        // Parse hours
+        const hoursStr = c.hours || '';
+        let hoursVal = 0;
+        if (hoursStr.includes(':')) {
+          const parts = hoursStr.split(':');
+          hoursVal = parseFloat(parts[0]) + (parseFloat(parts[1] || '0') / 60);
+        } else {
+          hoursVal = parseFloat(hoursStr) || 0;
+        }
+        if (isNaN(hoursVal) || hoursVal <= 0) return;
+        
+        // Count only à¸ªà¸” + à¸­à¸­à¸™à¹„à¸¥à¸™à¹Œ + à¸Šà¸”à¹€à¸Šà¸¢ for totalHours calculation
+        let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);

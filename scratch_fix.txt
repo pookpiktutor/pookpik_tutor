@@ -1,0 +1,20 @@
+      
+      const dateValStr = cleanSheetDate(data[i][13]);
+      if (!dateValStr) continue;
+      
+      const parts = dateValStr.split('/');
+      if (parts.length === 3) {
+         const d = parseInt(parts[0], 10);
+         const m = parseInt(parts[1], 10) - 1;
+         const y = parseInt(parts[2], 10);
+         const rowDate = new Date(y, m, d);
+         
+         if (rowDate < monday || rowDate > sunday) {
+             continue;
+         }
+      }
+      
+      let teacherName = (data[i][1] || '').toString().trim();
+      const subject = cleanSubjectNameString((data[i][0] || '').toString().trim());
+      const key = teacherName + '|' + subject + '|' + dateValStr;
+      

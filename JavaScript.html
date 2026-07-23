@@ -11,90 +11,55 @@ window._nextTaskSilent = false;
 
 
 
+window._currentLoadingStatus = '';
+
 function updateTaskWidget() {
-
   const widget = document.getElementById('task_queue_widget');
-
-  const list = document.getElementById('tq_list');
-
-  const count = document.getElementById('tq_count');
-
-  if (!widget || !list || !count) return;
-
-
+  if (!widget) return;
 
   const now = Date.now();
-
   window._bgTaskQueue = window._bgTaskQueue.filter(t => {
-
      if (t.status === 'success' || t.status === 'error') {
-
         return now - t.endTime < 5000;
-
      }
-
      return true;
-
   });
 
-
-
-  // Filter out silent tasks for widget display
-
   const visibleTasks = window._bgTaskQueue.filter(t => !t.isSilent);
-
-
-
-  if (visibleTasks.length === 0) {
-
-    widget.style.display = 'none';
-
-    return;
-
-  }
-
   
+  const displayTask = visibleTasks.find(t => t.status === 'running')
+                      || visibleTasks.find(t => t.status === 'queued')
+                      || visibleTasks[0];
+                      
+  let currentActionText = 'พร้อมใช้งาน';
+  let icon = '<i class="fas fa-check-circle" style="color: #10b981; margin-right: 6px;"></i>';
+  let badgeHTML = '<div style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">พร้อมใช้งาน</div>';
+  
+  if (window._currentLoadingStatus) {
+      currentActionText = window._currentLoadingStatus;
+      icon = '<i class="fas fa-circle-notch fa-spin" style="color:#3b82f6; margin-right: 6px;"></i>';
+      badgeHTML = `<div style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">กำลังทำงาน</div>`;
+  } else if (displayTask) {
+      currentActionText = displayTask.title;
+      icon = '<i class="fas fa-circle-notch fa-spin" style="color:#3b82f6; margin-right: 6px;"></i>';
+      if (displayTask.status === 'success') {
+          icon = '<i class="fas fa-check-circle" style="color: #10b981; margin-right: 6px;"></i>';
+          badgeHTML = `<div style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">สำเร็จ</div>`;
+      } else if (displayTask.status === 'error') {
+          icon = '<i class="fas fa-times-circle" style="color: #ef4444; margin-right: 6px;"></i>';
+          badgeHTML = `<div style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">ผิดพลาด</div>`;
+      } else {
+          badgeHTML = `<div style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">กำลังทำเบื้องหลัง</div>`;
+      }
+  }
 
   widget.style.display = 'flex';
-
-  const activeCount = visibleTasks.filter(t => t.status !== 'success' && t.status !== 'error').length;
-
-  count.innerText = activeCount;
-
-
-
-  list.innerHTML = '';
-
-  const displayTask = visibleTasks.find(t => t.status === 'running')
-
-                      || visibleTasks.find(t => t.status === 'queued')
-
-                      || visibleTasks[0];
-
-                      
-
-  if (displayTask) {
-
-    let icon = '⏳';
-
-    if (displayTask.status === 'running') icon = '🔄';
-
-    else if (displayTask.status === 'success') icon = '✅';
-
-    else if (displayTask.status === 'error') icon = '❌';
-
-
-
-    const item = document.createElement('div');
-
-    item.className = 'tq-item status-' + displayTask.status;
-
-    item.innerHTML = `<span class="tq-icon">${icon}</span> <span class="tq-text">${displayTask.title}</span>`;
-
-    list.appendChild(item);
-
-  }
-
+  widget.innerHTML = `
+    <div style="padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; color: #1e293b; font-size: 0.75rem; font-weight: 600; min-width: 220px; gap: 10px;">
+      <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;" title="${currentActionText !== 'พร้อมใช้งาน' ? currentActionText : 'สถานะระบบ'}">${icon} ${currentActionText !== 'พร้อมใช้งาน' ? currentActionText : 'สถานะระบบ'}</div>
+      ${badgeHTML}
+    </div>
+  `;
 }
 
 
@@ -3780,55 +3745,35 @@ function convertDateFromSheet(dateVal) {
 
 
 function setLoading(show, text = 'กำลังโหลดข้อมูล...') {
-
+  window._currentLoadingStatus = show ? text : '';
   if (show) {
-
     window._nextTaskTitle = text;
-
   }
-
   
+  if (typeof updateTaskWidget === 'function') {
+    updateTaskWidget();
+  }
 
   const overlay = document.getElementById('loader_overlay');
-
   if (overlay) {
-
     overlay.classList.remove('active'); // Ensure full-screen loader is always hidden
-
   }
-
-
 
   const inlineLoader = document.getElementById('inline_loading_indicator');
-
   const inlineText = document.getElementById('inline_loading_text');
 
-
-
   if (show) {
-
     if (inlineLoader) {
-
       inlineLoader.style.display = 'flex';
-
     }
-
     if (inlineText) {
-
       inlineText.innerText = text;
-
     }
-
   } else {
-
     if (inlineLoader) {
-
       inlineLoader.style.display = 'none';
-
     }
-
   }
-
 }
 
 
@@ -6958,7 +6903,7 @@ function renderGradeSheetTable() {
   
 
   document.getElementById('save_grade_sheet_btn').disabled = false;
-
+  recalculateGridTotals();
 }
 
 function handleCourseHeaderNameChange(colIndex, sheetName, input) {

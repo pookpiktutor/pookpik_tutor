@@ -1,0 +1,25 @@
+        
+        const pay = hoursVal * rate;
+        if (numKids > 0) {
+          totalHours += hoursVal;
+          totalClasses += 1;
+        }
+        totalPay += pay;
+        matchedClasses.push({
+          date: c.date,
+          subject: c.subject,
+          room: (c.roomBranch || '').replace(/\s*zoom\s*\d*/gi, '').trim(),
+          role: role,
+          numKids: numKids,
+          hours: hoursStr,
+          rate: rate,
+          pay: Math.round(pay * 100) / 100,
+          rowIndex: c.rowIndex,
+          teacherConfirmed: c.teacherConfirmed || 0
+        });
+      });
+      
+      monthlyResults[m] = {
+        classes: matchedClasses,
+        totalHours: Math.round(totalHours * 100) / 100,
+        totalClasses: totalClasses,

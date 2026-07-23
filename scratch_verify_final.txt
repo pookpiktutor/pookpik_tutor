@@ -1,0 +1,59 @@
+=== REMAINING isOrange ===
+
+=== REMAINING data[i][13] ===
+4602: const roomBranchVal = data[i][13] ? data[i][13].toString().trim() : '';
+12954: results.push(`Row ${i + 1}: ${subject} (Live: ${data[i][6]}, Online: ${data[i][7]}, Makeup: ${data[i][10]}, Hours: ${data[i][12]}, Date: ${data[i][13]})`);
+14858: const dateValStr = cleanSheetDate(data[i][13]);
+16216: var roomBranch = data[i][13] ? data[i][13].toString().trim() : '';
+
+=== REMAINING data[i][14] ===
+14934: const room = data[i][14] || '';
+
+=== REMAINING row[14] (possible Data Learn) ===
+1252: newRow[12] = row[14] !== undefined ? row[14] : ''; // à¸£à¸­à¸š/à¸„à¸‡à¹€à¸«à¸¥à¸·à¸­ (à¸„à¸‡à¹€à¸«à¸¥à¸·à¸­)
+5384: const paidStr = row[14] ? row[14].toString().trim().replace(/,/g, '') : '0';
+5992: staff: row[14] ? row[14].toString().trim() : '',
+8042: isCard: parseInt(row[14]) === 1 ? 1 : 0,
+8724: const paid = parseFloat(row[14]) || 0;
+8822: const previousPaid = parseFloat(row[14]) || 0;
+10978: teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
+11082: teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
+11220: teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
+12108: photoOutUrl: row[14] ? row[14].toString().trim() : ''
+12970: kgResults.push(`Row ${idx + 12}: Name: ${row[1]}, Nickname: ${row[2]}, Course: ${row[10]}, Note: ${row[11]}, CF: ${row[12]}, Full: ${row[13]}, Paid: ${row[14]}, Bal: ${row[15]}, Acc: ${row[19]}, Left: ${row[20]}`);
+13592: staff: row[14] ? row[14].toString().trim() : '',
+14730: const paidVal = parseFloat(row[14]) || 0;
+15726: Staff: row[14] ? row[14].toString().trim() : '',
+15758: result.PayRound1Staff = row[14] ? row[14].toString().trim() : '';
+
+=== REMAINING row[15] ===
+1256: newRow[14] = row[15] !== undefined ? row[15] : ''; // à¸£à¸«à¸±à¸ªà¸šà¸±à¸•à¸£/à¸£à¸¹à¸”à¸šà¸±à¸•à¸£ (à¸§à¸±à¸™/à¹€à¸”à¸·à¸­à¸™/à¸›à¸µ)
+5020: const round = row[15] ? row[15].toString().trim() : 'à¸—à¸±à¹ˆà¸§à¹„à¸›';
+5994: round: row[15] ? row[15].toString().trim() : '',
+8770: const currentOutstanding = parseFloat(row[15]) || 0;
+8784: row[15] = realTimeOutstanding;
+10980: numKids: row[15] ? (parseInt(row[15]) || 0) : 0,
+11084: numKids: row[15] ? (parseInt(row[15]) || 0) : 0,
+11222: numKids: row[15] ? (parseInt(row[15]) || 0) : 0,
+12970: kgResults.push(`Row ${idx + 12}: Name: ${row[1]}, Nickname: ${row[2]}, Course: ${row[10]}, Note: ${row[11]}, CF: ${row[12]}, Full: ${row[13]}, Paid: ${row[14]}, Bal: ${row[15]}, Acc: ${row[19]}, Left: ${row[20]}`);
+13578: courseName: row[15] ? row[15].toString().trim() : '',
+15728: Course: row[15] ? row[15].toString().trim() : '',
+
+=== REMAINING row[16] ===
+5998: grade: row[16] ? row[16].toString().trim() : '',
+8992: paymentDate: row[16] ? row[16].toString().trim() : '',
+15730: Grade: row[16] ? row[16].toString().trim() : '',
+
+=== REMAINING rowVals[14] ===
+8250: rowVals[14] = s.isCard ? 1 : 0;
+11694: const currentConfirmed = rowVals[14] ? (parseInt(rowVals[14]) || 0) : 0;
+14064: staff: rowVals[14] ? rowVals[14].toString().trim() : '',
+
+=== REMAINING rowVals[15] ===
+7796: const round = rowVals[15] ? rowVals[15].toString().trim() : '';
+13844: const round = rowVals[15] ? rowVals[15].toString().trim() : '';
+14050: round: rowVals[15] ? rowVals[15].toString().trim() : '',
+
+=== REMAINING rowVals[16] ===
+7792: const grade = rowVals[16] ? rowVals[16].toString().trim() : 'à¸­à¸™à¸¸à¸šà¸²à¸¥';
+13846: const grade = rowVals[16] ? rowVals[16].toString().trim() : '';

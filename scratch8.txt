@@ -1,0 +1,50 @@
+      const textEl = document.getElementById('teacher_leave_warning_text');
+      
+      if (res && res.success && res.leaves && res.leaves.length > 0) {
+        const leaveLinks = res.leaves.map(l => {
+          const isToday = l.isToday;
+          const dateBadge = isToday 
+            ? `<span style="background:#f59e0b; color:#fff; padding:0 4px; border-radius:3px; font-size:0.6rem; font-weight:700; margin-right:3px;">📍 วันนี้</span>`
+            : `<span style="background:#e5e7eb; color:#6b7280; padding:0 4px; border-radius:3px; font-size:0.6rem;">${l.date || ''}</span>`;
+          const borderColor = isToday ? '#f59e0b' : '#fbd58d';
+          const bgColor = isToday ? '#fef3c7' : '#fffbeb';
+          return `<span onclick="jumpToLeaveClass('${l.date}', ${l.rowIndex})" class="leave-card-clickable" style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 4px; font-size: 0.68rem; text-align: center; line-height: 1.4; cursor: pointer; transition: all 0.2s;">
+            ${dateBadge}👨‍🏫 <strong>ครู ${l.teacher} ลา</strong> — ${formatSubjectName(l.subject)} (${cleanTimeStr(l.timeStart)}-${cleanTimeStr(l.timeEnd)})${l.teacherSub ? ` ครูแทน: ${l.teacherSub}` : ' ⚠️ไม่มีครูแทน'}
+          </span>`;
+        });
+        const todayCount = res.leaves.filter(l => l.isToday).length;
+        const totalCount = res.leaves.length;
+        const toggleId = 'teacher_leave_toggle_content';
+        const isCollapsed = document.getElementById(toggleId) ? document.getElementById(toggleId).style.display === 'none' : false;
+        textEl.innerHTML = `<div style="margin-bottom: 4px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;" onclick="const el=document.getElementById('${toggleId}'); el.style.display = el.style.display==='none' ? 'grid' : 'none'; this.querySelector('.toggle-icon').textContent = el.style.display==='none' ? '▶' : '▼';">
+          <span class="toggle-icon" style="font-size: 0.7rem;">▼</span>
+          <strong style="font-size: 0.75rem; color: #92400e;">ประวัติแจ้งลาของคุณครู: ${totalCount} รายการ${todayCount > 0 ? ` (วันนี้ ${todayCount} รายการ)` : ''}</strong>
+        </div>
+        <div id="${toggleId}" style="display: ${isCollapsed ? 'none' : 'grid'}; grid-template-columns: repeat(5, 1fr); gap: 3px;">${leaveLinks.join('')}</div>`;
+        banner.style.display = 'flex';
+      } else {
+        banner.style.display = 'none';
+      }
+    })
+    .withFailureHandler(err => {
+      console.error('Failed to check teacher leaves: ', err);
+    })
+    .getTeacherLeaveToday(getLogUser());
+}
+
+function navigateToPrivateStudentPayment(studentName, courseName, sheetName) {
+  state.pendingPrivateStudentPayment = { name: studentName, courseName: courseName };
+  
+  // ป้องกันการโหลดข้อมูลซ้อนซ้ำจาก switchPanel
+  state.navigatingToPayment = true;
+  switchPanel('private_students');
+  state.navigatingToPayment = false;
+  
+  const selectEl = document.getElementById('private_sheet_select');
+  if (selectEl) {
+    selectEl.value = sheetName;
+  }
+  loadPrivateStudents();
+}
+
+function formatHoursMinutes(val) {

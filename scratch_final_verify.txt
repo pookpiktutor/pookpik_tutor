@@ -1,0 +1,73 @@
+=== getClassLogs mapping (around 10920-10985) ===
+10920: return match ? match.nickname : nameOrId;
+10922: };
+10926: const logs = [];
+10930: rawData.forEach((row, idx) => {
+10932: if (idx === 0) return;
+10934: if (!row[0] || row[0] === '0') return;
+10938: const dateRaw = cleanSheetDate(row[12]);
+10940: if (filterDate && !areDatesSame(dateRaw, filterDate)) return;
+10942: const roomBranchVal = row[13] ? row[13].toString().trim() : '';
+10946: logs.push({
+10948: subject: resolveDynamicCourseName(row[0] ? row[0].toString().trim() : '', dateRaw, roomBranchVal),
+10950: teacherRegular: resolveNick(row[1]),
+10952: teacherSub: resolveNick(row[2]),
+10954: timeStart: formatTimeValue(row[3]),
+10956: timeEnd: formatTimeValue(row[4]),
+10958: note: row[5] ? row[5].toString().trim() : '',
+10960: isPresentLive: parseInt(row[6]) || 0,
+10962: isPresentOnline: parseInt(row[7]) || 0,
+10964: isLeave: parseInt(row[8]) || 0,
+10966: isAbsent: parseInt(row[9]) || 0,
+10968: isMakeup: parseInt(row[10]) || 0,
+10970: // isOrange removed
+10972: hours: parseHoursValue(row[11]),
+10974: date: dateRaw,
+10976: roomBranch: roomBranchVal,
+10978: teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
+10980: numKids: row[15] ? (parseInt(row[15]) || 0) : 0,
+10982: rowIndex: idx + 1
+10984: });
+
+=== getClassLogsForTeacher mapping (around 11060-11090) ===
+11060: timeEnd: formatTimeValue(row[4]),
+11062: note: row[5] ? row[5].toString().trim() : '',
+11064: isPresentLive: parseInt(row[6]) || 0,
+11066: isPresentOnline: parseInt(row[7]) || 0,
+11068: isLeave: parseInt(row[8]) || 0,
+11070: isAbsent: parseInt(row[9]) || 0,
+11072: isMakeup: parseInt(row[10]) || 0,
+11074: // log.isOrange removed
+11076: hours: parseHoursValue(row[11]),
+11078: date: cleanSheetDate(row[12]),
+11080: roomBranch: row[13] ? row[13].toString().trim() : '',
+11082: teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
+11084: numKids: row[15] ? (parseInt(row[15]) || 0) : 0,
+11086: rowIndex: rowIndex
+11088: }
+11090: };
+11092: } catch (err) {
+11094: return { success: false, error: err.message };
+11096: }
+11098: }
+
+=== getClassLogByRow mapping (around 11680-11720) ===
+11680: log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd);
+11682: log.subject = resolveDynamicCourseName(log.subject, log.date, log.roomBranch);
+11686: const iPresentLive = log.isPresentLive ? parseInt(log.isPresentLive) || 0 : 0;
+11688: const iPresentOnline = log.isPresentOnline ? parseInt(log.isPresentOnline) || 0 : 0;
+11690: const iMakeup = log.isMakeup ? parseInt(log.isMakeup) || 0 : 0;
+11692: const numKids = iPresentLive + iPresentOnline + iMakeup;
+11694: const currentConfirmed = rowVals[14] ? (parseInt(rowVals[14]) || 0) : 0;
+11696: const rowValues = [
+11698: [
+11700: log.subject,
+11702: resolvedTeacherRegular,
+11704: resolvedTeacherSub || '',
+11706: log.timeStart,
+11708: log.timeEnd,
+11710: log.note || '',
+11712: iPresentLive,
+11714: iPresentOnline,
+11716: log.isLeave ? parseInt(log.isLeave) || 0 : 0,
+11718: log.isAbsent ? parseInt(log.isAbsent) || 0 : 0,
