@@ -764,7 +764,47 @@ function handleLogin(e) {
 
         if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'none';
 
-        showToast('เข้าสู่ระบบสำเร็จ!', 'success');
+        document.getElementById('mobile_menu_btn')?.addEventListener('click', function() {
+
+    const sidebar = document.getElementById('sidebar');
+
+    if (sidebar.style.transform === 'translateX(0px)') {
+
+      sidebar.style.transform = 'translateX(-100%)';
+
+    } else {
+
+      sidebar.style.transform = 'translateX(0px)';
+
+    }
+
+  });
+
+  
+
+  // Call updateTaskWidget on load to show "ready" state if desired
+
+  updateTaskWidget();
+
+  
+
+  // Custom form bindings
+
+  function setupCharCounting() {
+
+    const inputs = document.querySelectorAll('input[maxlength], textarea[maxlength]');
+
+    inputs.forEach(input => {
+
+      function updateCount() {
+
+      }
+
+    });
+
+  }
+
+  showToast('เข้าสู่ระบบสำเร็จ!', 'success');
 
         checkSession();
 
@@ -1303,6 +1343,17 @@ function loadTeacherDailySchedule() {
           const leaveCount = parseInt(c.leaveCount) || parseInt(c.isLeave) || 0;
 
           const totalKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
+          
+          const attendances = [];
+          attendances.push(`สด: ${c.isPresentLive || 0}`);
+          attendances.push(`ออน: ${c.isPresentOnline || 0}`);
+          attendances.push(`ลา: ${c.isLeave || 0}`);
+          attendances.push(`ขาด: ${c.isAbsent || 0}`);
+          attendances.push(`ชด: ${c.isMakeup || 0}`);
+          const attendanceSummaryHtml = attendances.length > 0 
+            ? `<div style="font-size: 0.72rem; margin-top: 4px; color: var(--color-primary-hover); font-weight: 500;">👥 ${attendances.join(' ')}</div>` 
+            : '';
+
 
           
 
@@ -1375,6 +1426,7 @@ function loadTeacherDailySchedule() {
             <div class="teacher-card-subject" style="font-size: 0.78rem; margin: 2px 0;">${c.subject}</div>
 
             <div class="teacher-card-meta" style="gap: 6px;">
+              ${attendanceSummaryHtml}
 
               <div class="teacher-card-meta-item" style="font-size: 0.76rem;">
 
@@ -2351,6 +2403,8 @@ function bootApp() {
       window._nextTaskSilent = true;
 
       checkTeacherLeaves();
+
+      updateTaskWidget();
 
     })
 
@@ -3506,7 +3560,7 @@ function checkTeacherLeaves() {
 
           const safeRoom = (l.room || '').replace(/'/g, "\\'");
 
-          return `<span onclick="jumpToLeaveClass('${l.date}', ${l.rowIndex}, '${safeRoom}')" class="leave-card-clickable" style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 4px; font-size: 0.68rem; text-align: center; line-height: 1.4; cursor: pointer; transition: all 0.2s;">
+          return `<span onclick="showEditClassLogModal(${l.rowIndex})" class="leave-card-clickable" style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 4px; font-size: 0.68rem; text-align: center; line-height: 1.4; cursor: pointer; transition: all 0.2s;">
 
             ${dateBadge}👨‍🏫 <strong>ครู ${l.teacher} ลา</strong> — ${formatSubjectName(l.subject)} (${cleanTimeStr(l.timeStart)}-${cleanTimeStr(l.timeEnd)})${l.teacherSub ? ` ครูแทน: ${l.teacherSub}` : ' ⚠️ไม่มีครูแทน'}
 
@@ -3745,35 +3799,55 @@ function convertDateFromSheet(dateVal) {
 
 
 function setLoading(show, text = 'กำลังโหลดข้อมูล...') {
-  window._currentLoadingStatus = show ? text : '';
+
   if (show) {
+
     window._nextTaskTitle = text;
+
   }
+
   
-  if (typeof updateTaskWidget === 'function') {
-    updateTaskWidget();
-  }
 
   const overlay = document.getElementById('loader_overlay');
+
   if (overlay) {
+
     overlay.classList.remove('active'); // Ensure full-screen loader is always hidden
+
   }
+
+
 
   const inlineLoader = document.getElementById('inline_loading_indicator');
+
   const inlineText = document.getElementById('inline_loading_text');
 
+
+
   if (show) {
+
     if (inlineLoader) {
+
       inlineLoader.style.display = 'flex';
+
     }
+
     if (inlineText) {
+
       inlineText.innerText = text;
+
     }
+
   } else {
+
     if (inlineLoader) {
+
       inlineLoader.style.display = 'none';
+
     }
+
   }
+
 }
 
 
@@ -4779,6 +4853,14 @@ function loadDashboard(isSilent = false) {
       if (data && !data.error) {
 
         renderDashboardData(data);
+
+        // Fetch today's student counts for the dashboard
+
+        if (typeof loadDailyGrid === 'function') {
+
+          loadDailyGrid(true);
+
+        }
 
       } else if (!isSilent) {
 
@@ -6515,7 +6597,39 @@ function loadGradeSheetGrid(isSilent = false) {
     .getGradeSheetData(grade, branch, getLogUser());
 
 }
-
+function searchGlobalBackend() {
+  const input = document.getElementById('grade_sheet_search');
+  if (!input) return;
+  const term = input.value.trim();
+  if (!term) {
+    showToast('กรุณาพิมพ์ชื่อหรือชื่อเล่นที่ต้องการค้นหา', 'warning');
+    return;
+  }
+  
+  // Set grade and branch to "all" automatically for global search
+  const gradeSelect = document.getElementById('grade_sheet_grade_select');
+  const branchSelect = document.getElementById('grade_sheet_branch_select');
+  if (gradeSelect) gradeSelect.value = 'all';
+  if (branchSelect) branchSelect.value = 'all';
+  
+  setLoading(true, 'กำลังค้นหานักเรียนทั่วทั้งระบบ...');
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        state.gradeSheetData = res;
+        updateRoundFilterDropdown();
+        renderGradeSheetTable();
+      } else {
+        showToast('ค้นหาล้มเหลว: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('การเชื่อมต่อนอกสถานที่ล้มเหลว: ' + err.message, 'error');
+    })
+    .getGradeSheetData('all', 'all', getLogUser(), term);
+}
 
 
 function editStudentFromGradeSheet(studentName) {
@@ -6651,35 +6765,20 @@ function renderGradeSheetTable() {
   
 
   const displayedCourses = courses.filter(c => {
-
-    if (c.branch !== selectedBranch) return false;
-
+    if (selectedBranch !== 'all' && c.branch !== selectedBranch) return false;
     
-
     if (filterRound === 'ALL') {
-
       return true;
-
     } else {
-
       if (filterRound === 'ไม่ระบุรอบเรียน') {
-
         return getCourseRound(c.courseName) === 'None';
-
       }
-
       return c.courseName.toUpperCase().includes(filterRound.toUpperCase());
-
     }
-
   });
 
-
-
   const displayedStudents = students.filter(s => {
-
-    return s.branch === selectedBranch;
-
+    return selectedBranch === 'all' || s.branch === selectedBranch;
   });
 
   
@@ -7001,19 +7100,13 @@ function handleCourseHeaderDayTimeChange(colIndex, sheetName, input) {
 
 
 function handleCourseHeaderPriceChange(colIndex, sheetName, input) {
-
-  const val = parseFloat(input.value) || 0;
-
+  const rawVal = input.value.toString().replace(/,/g, '');
+  const val = parseFloat(rawVal) || 0;
   const course = state.displayedCourses.find(c => c.colIndex === colIndex && c.sheetName === sheetName);
-
   if (course) {
-
     course.price = val;
-
     recalculateGridTotals();
-
   }
-
 }
 
 
@@ -7077,52 +7170,48 @@ function recalculateGridTotals() {
   
 
   students.forEach((s, idx) => {
-
-    let subtotal = 0;
-
+    let fullCourses = [];
+    let partialTotal = 0;
     courses.forEach(c => {
-
       if (s.sheetName === c.sheetName) {
-
         const val = s.courseValues[c.colIndex];
-
         if (val !== '' && val !== undefined && !isNaN(val)) {
-
           const num = parseFloat(val);
-
-          const price = parseFloat(c.price) || 0;
-
+          const price = parseFloat(c.price.toString().replace(/,/g, '')) || 0;
           const totalSessions = parseInt(c.totalSessions) || 10;
-
           
-
           if (num === 30) {
-
-            subtotal += price * 0.7;
-
+            partialTotal += price * 0.7;
           } else if (num === 20) {
-
-            subtotal += price * 0.9;
-
+            partialTotal += price * 0.9;
           } else if (num === 50) {
-
-            subtotal += price * 0.5;
-
+            partialTotal += price * 0.5;
           } else if (num >= 1 && num <= 2) {
-
-            subtotal += num * 350;
-
+            partialTotal += num * 350;
           } else if (num >= 3) {
-
-            subtotal += num * (price / totalSessions);
-
+            if (num === totalSessions) {
+               fullCourses.push(price);
+            } else {
+               partialTotal += num * (price / totalSessions);
+            }
           }
-
         }
-
       }
-
     });
+
+    fullCourses.sort((a, b) => b - a);
+    let fullTotal = 0;
+    fullCourses.forEach((price, idx2) => {
+      if (idx2 === 0 || idx2 === 1) {
+        fullTotal += price;
+      } else if (idx2 === 2) {
+        fullTotal += price * 0.7;
+      } else {
+        fullTotal += price * 0.5;
+      }
+    });
+
+    let subtotal = partialTotal + fullTotal;
 
     
 
@@ -8246,7 +8335,7 @@ function renderMonthlyGrid(data) {
 
   let html = `
 
-    <div style="background: linear-gradient(135deg, rgba(0,132,255,0.06) 0%, rgba(16,185,129,0.06) 100%); border-radius: 12px; padding: 12px 16px; border: 1px dashed rgba(0,132,255,0.25); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+    <div style="background: linear-gradient(135deg, rgba(0,132,255,0.06) 0%, rgba(16,185,129,0.06) 100%); border-radius: 12px; padding: 12px 16px; border: 1px dashed rgba(0,132,255,0.25); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; min-width: 0; overflow: hidden;">
 
       <h3 style="margin: 0; font-size: 1rem; color: var(--color-primary-hover); font-weight: 700;">
 
@@ -8620,7 +8709,7 @@ function renderMonthlyGrid(data) {
 
           const isStudentLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.studentLeave) || (c.isLeave > 0);
 
-          const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && c.note.includes('ครูลา'));
+        const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && String(c.note).includes('ครูลา'));
 
           
 
@@ -8640,15 +8729,15 @@ function renderMonthlyGrid(data) {
 
           const attendances = [];
 
-          if (c.isPresentLive > 0) attendances.push(`สด: ${c.isPresentLive}`);
+          attendances.push(`สด: ${c.isPresentLive || 0}`);
 
-          if (c.isPresentOnline > 0) attendances.push(`ออน: ${c.isPresentOnline}`);
+          attendances.push(`ออน: ${c.isPresentOnline || 0}`);
 
-          if (c.isLeave > 0) attendances.push(`ลา: ${c.isLeave}`);
+          attendances.push(`ลา: ${c.isLeave || 0}`);
 
-          if (c.isMakeup > 0) attendances.push(`ชด: ${c.isMakeup}`);
+          attendances.push(`ชด: ${c.isMakeup || 0}`);
 
-          if (c.isAbsent > 0) attendances.push(`ขาด: ${c.isAbsent}`);
+          attendances.push(`ขาด: ${c.isAbsent || 0}`);
 
           // isOrange display removed
 
@@ -8724,7 +8813,7 @@ function renderMonthlyGrid(data) {
 
               <div style="font-size:0.7rem; color:var(--text-muted); display:flex; justify-content:space-between; flex-direction: column; gap: 1px;">
 
-                <span>ครู: ${c.teacherRegular}${c.teacherSub ? ' (แทน:' + c.teacherSub + ')' : ''}</span>
+                <span>ครูประจำ: ${c.teacherRegular}${c.teacherSub ? ' (แทน:' + c.teacherSub + ')' : ''}</span>
 
                 ${isTeacherConfirmed ? `<span style="color:#15803d; font-weight:bold;">✅ ครูยืนยันแล้ว</span>` : ''}
 
@@ -8896,7 +8985,27 @@ function renderDailyAttendanceSummary() {
 
   const container = document.getElementById('daily_attendance_summary_container');
 
-  if (!container) return;
+  let dashboardContainer = document.getElementById('dashboard_daily_attendance_summary_container');
+
+  if (!dashboardContainer) {
+
+    const dashGrid = document.querySelector('#dashboard_panel .grid-cols-3');
+
+    if (dashGrid) {
+
+      dashboardContainer = document.createElement('div');
+
+      dashboardContainer.id = 'dashboard_daily_attendance_summary_container';
+
+      dashboardContainer.style.cssText = 'grid-column: 1 / -1; margin-bottom: 20px; background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); overflow-x: auto; padding: 15px;';
+
+      dashGrid.insertBefore(dashboardContainer, dashGrid.firstChild);
+
+    }
+
+  }
+
+  if (!container && !dashboardContainer) return;
 
   
 
@@ -8914,7 +9023,11 @@ function renderDailyAttendanceSummary() {
 
   if (filteredLogs.length === 0) {
 
-    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">ไม่มีข้อมูลคลาสเรียนในสาขานี้สำหรับวันนี้</div>`;
+    const emptyHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">ไม่มีข้อมูลคลาสเรียนในสาขานี้สำหรับวันนี้</div>`;
+
+    if (container) container.innerHTML = emptyHTML;
+
+    if (dashboardContainer) dashboardContainer.innerHTML = emptyHTML;
 
     return;
 
@@ -9168,30 +9281,20 @@ function renderDailyAttendanceSummary() {
 
       if (hasData) {
 
-        const tooltip = `นร.ลงทะเบียน:${s.enrolled} สด:${s.live} ออนไลน์:${s.online} ลา:${s.leave} ขาด:${s.absent} ชดเชย:${s.makeup} รวมมาเรียน:${totalAttended}`;
+        const displayEnrolled = cat === 'main' ? s.studentNames.length : totalAttended;
+        const tooltip = `นร.ลงทะเบียน:${displayEnrolled} สด:${s.live} ออนไลน์:${s.online} ลา:${s.leave} ขาด:${s.absent} ชดเชย:${s.makeup} รวมมาเรียน:${totalAttended}`;
 
         html += `
-
           <td style="padding: 4px 3px; border-right: 1px solid var(--border-color); vertical-align: middle;" title="${tooltip}">
-
             <div style="display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; align-items: center;">
-
-              ${cat === 'main' ? `<span style="background:#e0f7fa; color:#00838f; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.6rem;">นร.${s.enrolled}</span>` : ''}
-
+              ${displayEnrolled > 0 ? `<span style="background:#e0f7fa; color:#00838f; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.6rem;">นร.${displayEnrolled}</span>` : ''}
               ${s.live > 0 ? `<span style="background:#e8f5e9; color:#2e7d32; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">สด ${s.live}</span>` : ''}
-
               ${s.online > 0 ? `<span style="background:#e3f2fd; color:#1565c0; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ออน ${s.online}</span>` : ''}
-
               ${s.leave > 0 ? `<span style="background:#fff3e0; color:#ef6c00; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ลา ${s.leave}</span>` : ''}
-
               ${s.absent > 0 ? `<span style="background:#ffebee; color:#c62828; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ขาด ${s.absent}</span>` : ''}
-
               ${s.makeup > 0 ? `<span style="background:#f3e5f5; color:#6a1b9a; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ชด ${s.makeup}</span>` : ''}
-
               ${totalAttended > 0 ? `<span style="font-weight:800; color:#0f172a; font-size:0.62rem; border-left:1px solid #e2e8f0; padding-left:3px; margin-left:1px;">⭐${totalAttended}</span>` : ''}
-
             </div>
-
           </td>
 
         `;
@@ -9213,69 +9316,42 @@ function renderDailyAttendanceSummary() {
   
 
   const grandTotal = totalMainLiveOnline + totalPrivateLiveOnline;
-
-  
+  const totalUnique = allMainUniqueNames.length + totalPrivateLiveOnline;
 
   html += `
-
         </tbody>
-
       </table>
-
     </div>
-
     
-
     <div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 10px;">
-
       <div style="flex: 1; min-width: 200px; background: rgba(0, 132, 255, 0.05); border-radius: 8px; padding: 10px; border: 1px solid rgba(0, 132, 255, 0.1);">
-
         <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;">ยอดรวมนักเรียนที่มาเรียนสดและออนไลน์</div>
-
         <div style="display: flex; flex-direction: column; gap: 4px;">
-
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
-
             <span style="color: #00838f;">1. ยอดรวมกลุ่มหลัก</span>
-
             <span style="color: #00838f;">${totalMainLiveOnline} คน</span>
-
           </div>
-
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
-
             <span style="color: #ef6c00;">2. ยอดรวมเดี่ยว-กลุ่มย่อย</span>
-
             <span style="color: #ef6c00;">${totalPrivateLiveOnline} คน</span>
-
           </div>
-
           <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
-
             <span style="color: #2e7d32;">3. รวมทั้งหมด</span>
-
             <span style="color: #2e7d32;">${grandTotal} คน</span>
-
           </div>
-
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700;">
-
-            <span style="color: #6a1b9a;">4. รวมแบบไม่ซ้ำชื่อ (รวมกลุ่มย่อยด้วย)</span>
-
-            <span style="color: #6a1b9a;">${allMainUniqueNames.length} คน</span>
-
+            <span style="color: #6a1b9a;">4. รวมแบบไม่ซ้ำชื่อ</span>
+            <span style="color: #6a1b9a;">${totalUnique} คน</span>
           </div>
-
         </div>
-
       </div>
 
     </div>
 
   `;
 
-  container.innerHTML = html;
-
+  if (container) container.innerHTML = html;
+  if (dashboardContainer) dashboardContainer.innerHTML = html;
 }
 
 
@@ -9286,6 +9362,9 @@ function renderDailyGrid() {
 
   if (!container) return;
   container.innerHTML = '';
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.gap = '16px';
 
   // Render daily statistics summary at the top
 
@@ -9299,21 +9378,50 @@ function renderDailyGrid() {
     const roomBranchClean = (room.branch || '').replace(/\s+/g, '');
     return roomBranchClean.includes(branchFilter);
   });
+  console.log("renderDailyGrid - activeBranchFilter:", state.activeBranchFilter);
+  console.log("renderDailyGrid - branchFilter:", branchFilter);
+  console.log("renderDailyGrid - state.rooms length:", state.rooms ? state.rooms.length : 0);
+  console.log("renderDailyGrid - filteredRooms length:", filteredRooms.length);
+
+  if (filteredRooms.length === 0) {
+    const emptyMsg = document.createElement('div');
+    emptyMsg.className = 'empty-state-message';
+    emptyMsg.textContent = 'ไม่พบข้อมูลห้องสำหรับสาขา: ' + branchFilter;
+    emptyMsg.style.padding = '20px';
+    emptyMsg.style.textAlign = 'center';
+    emptyMsg.style.color = 'var(--text-muted)';
+    container.appendChild(emptyMsg);
+  }
+
+
+  const uniqueStartTimes = new Set();
+
+  filteredRooms.forEach(room => {
+
+    (state.classLogs || []).filter(log => matchRoomAndBranch(log.roomBranch, room.roomName, room.branch)).forEach(c => {
+
+      if (c.timeStart) uniqueStartTimes.add(c.timeStart);
+
+    });
+
+  });
+
+  const sortedStartTimes = Array.from(uniqueStartTimes).sort();
+
+  const numCols = Math.max(6, sortedStartTimes.length);
 
 
 
   filteredRooms.forEach(room => {
 
     const card = document.createElement('div');
-
     card.className = 'room-card';
+    card.style.flexDirection = 'row';
+    card.style.alignItems = 'stretch';
+    card.style.overflowX = 'auto';
 
-    
-
-    const roomClasses = state.classLogs.filter(log => {
-
+    const roomClasses = (state.classLogs || []).filter(log => {
       return matchRoomAndBranch(log.roomBranch, room.roomName, room.branch);
-
     });
 
     
@@ -9342,7 +9450,7 @@ function renderDailyGrid() {
 
     if (roomClasses.length > 0) {
 
-      roomClasses.sort((a,b) => a.timeStart.localeCompare(b.timeStart));
+      roomClasses.sort((a,b) => (a.timeStart || '').localeCompare(b.timeStart || ''));
 
       roomClasses.forEach(c => {
 
@@ -9370,15 +9478,15 @@ function renderDailyGrid() {
 
         const attendances = [];
 
-        if (c.isPresentLive > 0) attendances.push(`สด: ${c.isPresentLive}`);
+        attendances.push(`สด: ${c.isPresentLive || 0}`);
 
-        if (c.isPresentOnline > 0) attendances.push(`ออน: ${c.isPresentOnline}`);
+        attendances.push(`ออน: ${c.isPresentOnline || 0}`);
 
-        if (c.isLeave > 0) attendances.push(`ลา: ${c.isLeave}`);
+        attendances.push(`ลา: ${c.isLeave || 0}`);
 
-        if (c.isMakeup > 0) attendances.push(`ชด: ${c.isMakeup}`);
+        attendances.push(`ชด: ${c.isMakeup || 0}`);
 
-        if (c.isAbsent > 0) attendances.push(`ขาด: ${c.isAbsent}`);
+        attendances.push(`ขาด: ${c.isAbsent || 0}`);
 
         // isOrange display removed
 
@@ -9404,7 +9512,7 @@ function renderDailyGrid() {
 
         const isStudentLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.studentLeave) || (c.isLeave > 0);
 
-        const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && c.note.includes('ครูลา'));
+        const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && String(c.note).includes('ครูลา'));
 
         
 
@@ -9434,9 +9542,25 @@ function renderDailyGrid() {
 
         
 
+        const colIndex = sortedStartTimes.indexOf(c.timeStart) + 1;
+
+        let displayRoomText = c.roomBranch || '-';
+
+        let displayDeviceText = '';
+
+        const deviceMatch = displayRoomText.match(/(?:ipad|zoom).*/i);
+
+        if (deviceMatch) {
+
+            displayDeviceText = deviceMatch[0];
+
+            displayRoomText = displayRoomText.replace(deviceMatch[0], '').trim();
+
+        }
+
         classesHTML += `
 
-          <div id="scheduled_item_${c.rowIndex}" class="scheduled-item ${statusClass}" style="position: relative; padding: 6px 8px; border-radius: 8px; margin-bottom: 0px; border: 1.2px solid var(--border-color); ${cardBgStyle} ${cardBorderStyle}">
+          <div id="scheduled_item_${c.rowIndex}" class="scheduled-item ${statusClass}" style="grid-column: ${colIndex}; position: relative; padding: 6px 8px; border-radius: 8px; margin-bottom: 0px; border: 1.2px solid var(--border-color); ${cardBgStyle} ${cardBorderStyle}; height: 100%; min-height: 190px; display: flex; flex-direction: column; justify-content: space-between;">
 
             <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 2px;">
 
@@ -9454,9 +9578,11 @@ function renderDailyGrid() {
 
             <div style="font-size: 0.72rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; border-top: 1px dashed var(--border-color); padding-top: 4px; margin-top: 4px;">
 
-              <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🏢 ห้อง: ${c.roomBranch || '-'}</div>
+              <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🏢 ห้อง: ${displayRoomText}</div>
 
-              <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👨‍🏫 ครู: ${c.teacherRegular}${c.teacherSub ? ` (แทน: ${c.teacherSub})` : ''}</div>
+              ${displayDeviceText ? `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-primary-hover);"><span style="font-size:0.85em">💻</span> ${displayDeviceText}</div>` : ''}
+
+              <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👨‍🏫 ครูประจำ: ${c.teacherRegular}<br>🔄 ครูแทน: ${c.teacherSub ? c.teacherSub : '-'}</div>
 
               ${isTeacherConfirmed ? `<div style="font-weight: bold; color: #2e7d32; display: flex; align-items: center; gap: 2px; margin-top: 1px;">✅ ยืนยันสอนแล้ว</div>` : ''}
 
@@ -9532,7 +9658,7 @@ function renderDailyGrid() {
 
     card.innerHTML = `
 
-      <div class="room-info-side" style="width: 165px; min-width: 165px; border-right: 1px dashed var(--border-color); padding-right: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+      <div class="room-info-side" style="width: 165px; min-width: 165px; border-right: 1px dashed var(--border-color); padding-right: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; position: sticky; left: -16px; background: var(--bg-card); z-index: 10; padding-left: 16px; margin-left: -16px; box-shadow: 4px 0 6px -2px rgba(0,0,0,0.05);">
 
         <div class="room-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%;">
 
@@ -9562,7 +9688,7 @@ function renderDailyGrid() {
 
       </div>
 
-      <div class="room-classes">
+      <div class="room-classes" style="display: grid !important; grid-template-columns: repeat(${numCols}, 220px) !important; gap: 10px !important;">
 
         ${classesHTML}
 
@@ -9672,6 +9798,141 @@ function showAddRoomModal() {
 
 
 
+
+
+window.createClassTab = function(i) {
+
+  if (document.getElementById('class_tab_' + i)) return;
+
+
+
+  const btnContainer = document.querySelector('#class_tabs_container').previousElementSibling;
+
+  const newBtn = document.createElement('button');
+
+  newBtn.type = 'button';
+
+  newBtn.className = 'btn class-tab-btn';
+
+  newBtn.id = 'class_tab_btn_' + i;
+
+  newBtn.setAttribute('onclick', `switchClassTab(${i})`);
+
+  newBtn.style.cssText = 'padding: 6px 16px; font-size: 0.82rem; border-radius: 8px 8px 0 0;';
+
+  newBtn.innerHTML = `📚 คลาส ${i + 1}`;
+
+  
+
+  const copyBtn = document.getElementById('copy_from_class1_btn');
+
+  if (copyBtn) {
+
+    btnContainer.insertBefore(newBtn, copyBtn);
+
+  } else {
+
+    btnContainer.appendChild(newBtn);
+
+  }
+
+
+
+  const tab0 = document.getElementById('class_tab_0');
+
+  const newTab = tab0.cloneNode(true);
+
+  newTab.id = 'class_tab_' + i;
+
+  newTab.style.display = 'none';
+
+
+
+  newTab.querySelectorAll('[id]').forEach(el => {
+
+    if (el.id.endsWith('_0')) el.id = el.id.replace('_0', '_' + i);
+
+  });
+
+
+
+  newTab.querySelectorAll('[list]').forEach(el => {
+
+    if (el.getAttribute('list').endsWith('_0')) {
+
+      el.setAttribute('list', el.getAttribute('list').replace('_0', '_' + i));
+
+    }
+
+  });
+
+
+
+  newTab.querySelectorAll('[onchange]').forEach(el => {
+
+    const val = el.getAttribute('onchange');
+
+    if (val.includes('(0)')) el.setAttribute('onchange', val.replace('(0)', `(${i})`));
+
+  });
+
+  
+
+  newTab.querySelectorAll('[oninput]').forEach(el => {
+
+    const val = el.getAttribute('oninput');
+
+    if (val.includes('(0)')) el.setAttribute('oninput', val.replace('(0)', `(${i})`));
+
+  });
+
+
+
+  newTab.querySelectorAll('input, select').forEach(input => {
+
+    if (input.type === 'checkbox' || input.type === 'radio') input.checked = false;
+
+    else if (input.type === 'number') input.value = 0;
+
+    else input.value = '';
+
+  });
+
+
+
+  newTab.querySelectorAll('select.form-select').forEach(select => {
+
+    const parent = select.parentNode;
+
+    if (parent && parent.classList.contains('searchable-select-container')) {
+
+      parent.parentNode.insertBefore(select, parent);
+
+      parent.remove();
+
+      select.style.display = '';
+
+    }
+
+  });
+
+
+
+  document.getElementById('class_tabs_container').appendChild(newTab);
+
+
+
+  if (typeof makeSelectSearchable === 'function') {
+
+    makeSelectSearchable('class_teacher_reg_' + i);
+
+    makeSelectSearchable('class_teacher_sub_' + i);
+
+  }
+
+};
+
+
 function showEditClassLogModal(rowIndex) {
 
   const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
@@ -9718,7 +9979,11 @@ function showEditClassLogModal(rowIndex) {
 
     classes.forEach((data, i) => {
 
-      if (i > 3) return; // Support up to 4 classes
+      if (i > 3) {
+
+        if (typeof window.createClassTab === 'function') window.createClassTab(i);
+
+      }
 
       modalState.editingIndexes[i] = data.rowIndex;
 
@@ -10540,7 +10805,9 @@ function showAddClassLogModal() {
 
   }
 
-  for (let i = 0; i < 4; i++) {
+  const numTabs = document.querySelectorAll('.class-tab-content').length || 4;
+
+  for (let i = 0; i < numTabs; i++) {
 
     const dateEl = document.getElementById('class_date_' + i);
 
@@ -10628,7 +10895,7 @@ function renderModalClassesList() {
 
     const isStudentLeaveChecked = log.isLeave > 0;
 
-    const isTeacherLeaveChecked = log.note && log.note.includes('ครูลา');
+    const isTeacherLeaveChecked = log.note && String(log.note).includes('ครูลา');
 
     
 
@@ -10738,7 +11005,7 @@ function renderModalClassesList() {
 
         <div>🏢 ห้อง/สาขา: ${log.roomBranch || '-'}</div>
 
-        <div>👨‍🏫 ครูหลัก: ${log.teacherRegular}${log.teacherSub ? ` (แทน: ${log.teacherSub})` : ''}</div>
+        <div>👨‍🏫 ครูประจำ: ${log.teacherRegular}<br>🔄 ครูแทน: ${log.teacherSub ? log.teacherSub : '-'}</div>
 
         ${log.note ? `<div style="font-style: italic; color: #64748b; margin-top: 2px;">📝 หมายเหตุ: ${log.note}</div>` : ''}
 
@@ -10976,7 +11243,9 @@ function clearClassForm() {
 
   modalState.editingIndex = -1;
 
-  modalState.editingIndexes = [-1, -1, -1, -1];
+  const numTabs = document.querySelectorAll('.class-tab-content').length || 4;
+
+  modalState.editingIndexes = Array(numTabs).fill(-1);
 
   document.getElementById('class_modal_title').innerText = 'บันทึกชั่วโมงสอนคลาสใหม่';
 
@@ -10988,9 +11257,9 @@ function clearClassForm() {
 
 
 
-  // Reset all 4 tab inputs
+  // Reset all tab inputs
 
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < numTabs; i++) {
 
     const get = id => document.getElementById(id + '_' + i);
 
@@ -11042,7 +11311,9 @@ function clearClassForm() {
 
 function switchClassTab(idx) {
 
-  for (let i = 0; i < 4; i++) {
+  const numTabs = document.querySelectorAll('.class-tab-content').length || 4;
+
+  for (let i = 0; i < numTabs; i++) {
 
     const tab = document.getElementById('class_tab_' + i);
 
@@ -11118,7 +11389,9 @@ function copyClassLogFromFirst() {
 
   const fields = ['class_teacher_reg', 'class_time_start', 'class_time_end', 'class_hours', 'class_date', 'class_note'];
 
-  for (let i = 1; i < 4; i++) {
+  const numTabs = document.querySelectorAll('.class-tab-content').length || 4;
+
+  for (let i = 1; i < numTabs; i++) {
 
     fields.forEach(f => {
 
@@ -11552,13 +11825,27 @@ function saveClassLog(e) {
 
 
 
-    for (let i = 0; i < 4; i++) {
+    const numTabs = document.querySelectorAll('.class-tab-content').length || 4;
+
+    for (let i = 0; i < numTabs; i++) {
 
       const g = id => document.getElementById(id + '_' + i);
 
       const subject = g('class_subject')?.value.trim() || '';
 
       if (!subject) continue; // skip empty tabs
+      
+      const listId = g('class_subject').getAttribute('list');
+      if (listId) {
+        const datalist = document.getElementById(listId);
+        if (datalist) {
+          const options = Array.from(datalist.options).map(opt => opt.value);
+          if (subject.includes('เดี่ยว') && !options.includes(subject)) {
+             showToast(`คลาส ${i+1}: ชื่อคอร์สเด็กเดี่ยว ห้ามพิมพ์ข้อความต่อท้าย (กรุณาเลือกจากรายการเท่านั้น)`, 'error');
+             return; // Stop saving
+          }
+        }
+      }
 
 
 
@@ -12280,15 +12567,15 @@ function renderTeacherScheduleGrid(teacher) {
 
     const attendances = [];
 
-    if (log.isPresentLive > 0) attendances.push(`<span class="badge badge-success" style="font-size:0.6rem; padding: 2px 4px;">สด: ${log.isPresentLive}</span>`);
+    attendances.push(`<span class="badge badge-success" style="font-size:0.6rem; padding: 2px 4px;">สด: ${log.isPresentLive || 0}</span>`);
 
-    if (log.isPresentOnline > 0) attendances.push(`<span class="badge badge-info" style="font-size:0.6rem; padding: 2px 4px;">ออน: ${log.isPresentOnline}</span>`);
+    attendances.push(`<span class="badge badge-info" style="font-size:0.6rem; padding: 2px 4px;">ออน: ${log.isPresentOnline || 0}</span>`);
 
-    if (log.isLeave > 0) attendances.push(`<span class="badge badge-warning" style="font-size:0.6rem; padding: 2px 4px;">ลา: ${log.isLeave}</span>`);
+    attendances.push(`<span class="badge badge-warning" style="font-size:0.6rem; padding: 2px 4px;">ลา: ${log.isLeave || 0}</span>`);
 
-    if (log.isAbsent > 0) attendances.push(`<span class="badge badge-danger" style="font-size:0.6rem; padding: 2px 4px;">ขาด: ${log.isAbsent}</span>`);
+    attendances.push(`<span class="badge badge-danger" style="font-size:0.6rem; padding: 2px 4px;">ขาด: ${log.isAbsent || 0}</span>`);
 
-    if (log.isMakeup > 0) attendances.push(`<span class="badge" style="font-size:0.6rem; background-color:#c095e7; color:white; padding: 2px 4px;">ชด: ${log.isMakeup}</span>`);
+    attendances.push(`<span class="badge" style="font-size:0.6rem; background-color:#c095e7; color:white; padding: 2px 4px;">ชด: ${log.isMakeup || 0}</span>`);
 
     
 
@@ -20186,6 +20473,12 @@ function generateStudentBlock(idx) {
 
             </label>
 
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_unpaid_${idx}" value="unpaid" onchange="calculateBlockOutstanding(${idx})"> ยังไม่ชำระ
+
+            </label>
+
           </div>
 
         </div>
@@ -20426,7 +20719,19 @@ window.handleClassTypeChange = function() {
 
   
 
-  renderStudentBlocks(numBlocks);
+    const isEditing = !!document.getElementById('student_id').value;
+
+  if (!isEditing) {
+
+    renderStudentBlocks(numBlocks);
+
+  } else {
+
+    // Even if we are editing, we might need to show/hide the subgroup size dropdown
+
+    // but we don't need to re-render the block, because it clears inputs.
+
+  }
 
   handleGradeBranchChange();
 
@@ -20831,95 +21136,55 @@ window.saveStudent = function(e) {
     
 
     const obj = {
-
       id: studentId,
-
-      Date: new Date().toISOString().split('T')[0], // Defaults to today, backend handles server timestamp if needed
-
-      Grade: grade,
-
-      StudentName: name,
-
-      Nickname: document.getElementById(`student_nickname_${idx}`).value.trim(),
-
-      School: document.getElementById(`student_school_${idx}`).value.trim(),
-
-      ClassSection: document.getElementById(`student_class_section_${idx}`).value.trim(),
-
-      Contact: document.getElementById(`student_contact_${idx}`).value.trim(),
-
-      LineName: document.getElementById(`student_line_name_${idx}`).value.trim(),
-
-      LineID: document.getElementById(`student_line_id_${idx}`).value.trim(),
-
-      BranchLearn: branchLearn,
-
-      BranchPay: branchPay,
-
-      ClassType: classType,
-
-      SubgroupSize: subgroupSize,
-
-      Course: courseStr,
-
+      date: new Date().toISOString().split('T')[0],
+      grade: grade,
+      name: name,
+      nickname: document.getElementById(`student_nickname_${idx}`).value.trim(),
+      school: document.getElementById(`student_school_${idx}`).value.trim(),
+      classSection: document.getElementById(`student_class_section_${idx}`).value.trim(),
+      contact: document.getElementById(`student_contact_${idx}`).value.trim(),
+      lineName: document.getElementById(`student_line_name_${idx}`).value.trim(),
+      lineId: document.getElementById(`student_line_id_${idx}`).value.trim(),
+      branchLearn: branchLearn,
+      branchPay: branchPay,
+      classType: classType,
+      subgroupCoursesSize: subgroupSize,
       
-
-      PayMode: document.getElementById(`pay_mode_card_${idx}`).checked ? 'card' : (document.getElementById(`pay_mode_transfer_${idx}`).checked ? 'transfer' : 'cash'),
-
-      FullAmount: document.getElementById(`student_full_${idx}`).value,
-
-      PaidAmount: document.getElementById(`student_paid_${idx}`).value,
-
-      Outstanding: document.getElementById(`student_outstanding_${idx}`).value,
-
-      CarriedForward: document.getElementById(`has_carried_forward_${idx}`).checked ? document.getElementById(`student_carried_forward_${idx}`).value : 0,
-
+      round: courseStr,
+      subgroupCourses: courseStr.split(',').map(s => s.trim()).filter(s => s),
       
-
-      TimeNote: document.getElementById(`student_time_note_${idx}`).value.trim(),
-
-      ExtraNote: document.getElementById(`student_extra_note_${idx}`).value.trim(),
-
-      Hours: document.getElementById(`student_hours_${idx}`).value.trim(),
-
-      HoursLeft: document.getElementById(`student_hours_left_${idx}`).value.trim(),
-
+      paymentChannel: document.getElementById(`pay_mode_unpaid_${idx}`) && document.getElementById(`pay_mode_unpaid_${idx}`).checked ? 'unpaid' : (document.getElementById(`pay_mode_card_${idx}`).checked ? 'card' : (document.getElementById(`pay_mode_transfer_${idx}`).checked ? 'transfer' : 'cash')),
+      full: parseFloat(document.getElementById(`student_full_${idx}`).value) || 0,
+      paid: parseFloat(document.getElementById(`student_paid_${idx}`).value) || 0,
+      outstanding: parseFloat(document.getElementById(`student_outstanding_${idx}`).value) || 0,
+      carriedForwardFee: document.getElementById(`has_carried_forward_${idx}`).checked ? (parseFloat(document.getElementById(`student_carried_forward_${idx}`).value) || 0) : 0,
       
-
-      PayRound1Date: document.getElementById(`pay_r1_date_${idx}`).value,
-
-      PayRound1Amount: document.getElementById(`pay_r1_amount_${idx}`).value,
-
-      PayRound1Channel: document.getElementById(`pay_r1_channel_${idx}`).value,
-
-      PayRound1Staff: document.getElementById(`pay_r1_staff_${idx}`).value,
-
-      PayRound1Time: document.getElementById(`pay_r1_time_${idx}`).value,
-
+      paymentTimeNote: document.getElementById(`student_time_note_${idx}`).value.trim(),
+      extraNote: document.getElementById(`student_extra_note_${idx}`).value.trim(),
+      classHours: document.getElementById(`student_hours_${idx}`).value.trim(),
+      classHoursLeft: document.getElementById(`student_hours_left_${idx}`).value.trim(),
       
-
-      PayRound2Date: document.getElementById(`pay_r2_date_${idx}`).value,
-
-      PayRound2Amount: document.getElementById(`pay_r2_amount_${idx}`).value,
-
-      PayRound2Channel: document.getElementById(`pay_r2_channel_${idx}`).value,
-
-      PayRound2Staff: document.getElementById(`pay_r2_staff_${idx}`).value,
-
-      PayRound2Time: document.getElementById(`pay_r2_time_${idx}`).value,
-
+      payRound1_date: document.getElementById(`pay_r1_date_${idx}`).value,
+      payRound1_amount: document.getElementById(`pay_r1_amount_${idx}`).value,
+      payRound1_channel: document.getElementById(`pay_r1_channel_${idx}`).value,
+      payRound1_staff: document.getElementById(`pay_r1_staff_${idx}`).value,
+      payRound1_time: document.getElementById(`pay_r1_time_${idx}`).value,
       
-
-      PayRound3Date: document.getElementById(`pay_r3_date_${idx}`).value,
-
-      PayRound3Amount: document.getElementById(`pay_r3_amount_${idx}`).value,
-
-      PayRound3Channel: document.getElementById(`pay_r3_channel_${idx}`).value,
-
-      PayRound3Staff: document.getElementById(`pay_r3_staff_${idx}`).value,
-
-      PayRound3Time: document.getElementById(`pay_r3_time_${idx}`).value
-
+      payRound2_date: document.getElementById(`pay_r2_date_${idx}`).value,
+      payRound2_amount: document.getElementById(`pay_r2_amount_${idx}`).value,
+      payRound2_channel: document.getElementById(`pay_r2_channel_${idx}`).value,
+      payRound2_staff: document.getElementById(`pay_r2_staff_${idx}`).value,
+      payRound2_time: document.getElementById(`pay_r2_time_${idx}`).value,
+      
+      payRound3_date: document.getElementById(`pay_r3_date_${idx}`).value,
+      payRound3_amount: document.getElementById(`pay_r3_amount_${idx}`).value,
+      payRound3_channel: document.getElementById(`pay_r3_channel_${idx}`).value,
+      payRound3_staff: document.getElementById(`pay_r3_staff_${idx}`).value,
+      payRound3_time: document.getElementById(`pay_r3_time_${idx}`).value,
+      
+      paymentDate: new Date().toISOString().split('T')[0],
+      staff: getLogUser()
     };
 
     studentDataArray.push(obj);
@@ -20976,7 +21241,7 @@ window.openStudentModal = function(id = null) {
 
     renderStudentBlocks(1);
 
-    document.getElementById('student_class_type').disabled = true; // Lock class type when editing
+    document.getElementById('student_class_type').disabled = false; // Allow editing class type
 
     document.getElementById('student_id').value = id;
 
@@ -21403,4 +21668,28 @@ if (document.readyState === 'loading') {
   initializeApp();
 
 }
+
+// Validate if input matches an option in its datalist
+function validateDatalistInput(input) {
+  if (!input || !input.value) return;
+  
+  const listId = input.getAttribute('list');
+  if (!listId) return;
+  
+  const datalist = document.getElementById(listId);
+  if (!datalist) return;
+  
+  const options = Array.from(datalist.options).map(opt => opt.value);
+  
+  // If the typed value is not exactly one of the options
+  if (!options.includes(input.value)) {
+    // Apply strict validation only for private classes (contains 'เดี่ยว')
+    if (input.value.includes('เดี่ยว')) {
+      showToast('ชื่อคอร์สเด็กเดี่ยว กรุณาเลือกจากรายการที่มีอยู่เท่านั้น ห้ามพิมพ์ข้อความต่อท้าย', 'warning');
+      input.value = ''; // Clear the invalid input
+      input.focus();
+    }
+  }
+}
+
 </script>
