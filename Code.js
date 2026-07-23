@@ -16723,10 +16723,17 @@ function migrateGradeSheetsFinancials() {
       
       const studentMatch = mapForSheet.find(s => s.name === rowName);
       if (studentMatch) {
+        // ยอดรวม
         dataValues[r][0] = studentMatch.full;
-        // dataValues[r][1] is preserved (discount from grade sheet)
-        dataValues[r][2] = studentMatch.outstanding;
-        dataValues[r][3] = studentMatch.paid;
+        
+        // dataValues[r][1] is preserved (ส่วนลด)
+        // dataValues[r][3] is preserved (ยอดจ่าย)
+        
+        // คงเหลือ = ยอดรวม - ส่วนลด - ยอดจ่าย
+        const currentDiscount = parseFloat(dataValues[r][1]) || 0;
+        const currentPaid = parseFloat(dataValues[r][3]) || 0;
+        dataValues[r][2] = Math.max(0, studentMatch.full - currentDiscount - currentPaid);
+        
         changed = true;
         totalUpdated++;
       }

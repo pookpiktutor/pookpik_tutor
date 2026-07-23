@@ -15458,13 +15458,13 @@ function renderDebtorsTable() {
 
     
 
-    const roundList = s.round ? s.round.split(',').map(c => `<div style="margin-bottom:2px;">${c.trim()}</div>`).join('') : '-';
+    const roundList = s.round ? s.round.split(',').map(c => `<div style="margin-bottom:1px; white-space:nowrap;">${c.trim()}</div>`).join('') : '-';
 
     const courseText = `
 
-      <div style="font-weight:500;">${roundList}</div>
+      <div style="font-weight:500; font-size:0.65rem; white-space:nowrap;">${roundList}</div>
 
-      <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">ชั้น: ${s.grade || '-'} ${s.classSection || ''}</div>
+      <div style="font-size:0.6rem; color:var(--text-muted); margin-top:2px; white-space:nowrap;">ชั้น: ${s.grade || '-'} ${s.classSection || ''}</div>
 
     `;
 
@@ -15476,13 +15476,13 @@ function renderDebtorsTable() {
 
       <td>${courseText}</td>
 
-      <td style="text-align: right; font-weight: 500;">฿${s.full.toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 500; white-space: nowrap;">฿${s.full.toLocaleString()}</td>
 
-      <td style="text-align: right; font-weight: 500; color: var(--color-warning);">฿${(s.discount || 0).toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 500; color: var(--color-warning); white-space: nowrap;">฿${(s.discount || 0).toLocaleString()}</td>
 
-      <td style="text-align: right; font-weight: 500; color: var(--color-success);">฿${s.paid.toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 500; color: var(--color-success); white-space: nowrap;">฿${s.paid.toLocaleString()}</td>
 
-      <td style="text-align: right; font-weight: 700; color: var(--color-danger);">฿${s.outstanding.toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 700; color: var(--color-danger); white-space: nowrap;">฿${s.outstanding.toLocaleString()}</td>
 
       <td style="white-space: nowrap;"><span class="badge badge-info">${s.classType || 'เดี่ยว'}</span></td>
 
