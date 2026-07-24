@@ -5487,7 +5487,7 @@ function renderStudentsTable() {
 
         <div style="display: flex; gap: 6px;">
 
-          <button class="btn btn-secondary btn-icon" onclick="showEditStudentModal('${s.id}')" title="แก้ไข">✏️</button>
+          <button class="btn btn-secondary btn-icon" onclick="showEditStudentModal('${s.id}', '${(s.name || '').replace(/'/g, "\\'")}')" title="แก้ไข">✏️</button>
 
           <button class="btn btn-danger btn-icon" onclick="deleteStudent('${s.id}')" title="ลบ">🗑️</button>
 
@@ -6291,9 +6291,9 @@ function showAddStudentModal() {
 
 
 
-function showEditStudentModal(id) {
+function showEditStudentModal(id, name) {
 
-  openStudentModal(id);
+  openStudentModal(id, name);
 
 }
 
@@ -6688,7 +6688,7 @@ function openEditModalByName(studentName) {
   const selectedGrade = document.getElementById('grade_sheet_grade_select').value;
 
   
-
+  // Search in state.students (from getStudentsList)
   let match = state.students.find(reg => 
 
     reg.name.trim() === studentName.trim() && 
@@ -6731,15 +6731,32 @@ function openEditModalByName(studentName) {
 
   }
 
+  // Fallback: search in state.gradeSheetData.students if available
+  if (!match && state.gradeSheetData && state.gradeSheetData.students) {
+    const gsMatch = state.gradeSheetData.students.find(s => s.name && s.name.trim() === studentName.trim());
+    if (gsMatch) {
+      match = {
+        id: gsMatch.studentId || gsMatch.name,
+        name: gsMatch.name,
+        grade: gsMatch.grade,
+        branchLearn: gsMatch.branch || gsMatch.branchLearn || '',
+        branchPay: gsMatch.branchPay || '',
+        classType: 'กลุ่มหลัก'
+      };
+    }
+  }
+
   
 
   if (match) {
 
-    showEditStudentModal(match.id);
+    // Pass both id and name for proper lookup
+    showEditStudentModal(match.id || match.name, match.name);
 
   } else {
 
-    showToast('ไม่พบข้อมูลลงทะเบียนของนักเรียนชื่อนี้ในระบบ', 'warning');
+    // Even if no local match, try backend directly with the name
+    showEditStudentModal(studentName, studentName);
 
   }
 
@@ -6940,7 +6957,7 @@ function renderGradeSheetTable() {
 
         <div style="margin-top: 4px;">
 
-          <a href="#" onclick="editStudentFromGradeSheet('${s.name}'); return false;" style="font-size: 0.72rem; color: var(--color-primary); text-decoration: underline; font-weight: 600;">✏️ แก้ไขการลงทะเบียนเรียน</a>
+          <a href="#" onclick="editStudentFromGradeSheet('${s.studentId || s.name}'); return false;" style="font-size: 0.72rem; color: var(--color-primary); text-decoration: underline; font-weight: 600;">✏️ แก้ไขการลงทะเบียนเรียน</a>
 
         </div>
 
@@ -6948,7 +6965,7 @@ function renderGradeSheetTable() {
 
       <td><div style="font-size:0.85rem; color:var(--text-main); font-weight:500; text-align:center;">${s.nickname || '-'}</div></td>
 
-      <td><div style="font-size:0.85rem; color:var(--text-muted); text-align:center;">฿${s.discount.toLocaleString()}</div></td>
+      <td><div style="text-align:center;"><input type="number" value="${s.discount}" class="form-input grid-cell-input" style="width:70px; text-align:center; padding:2px;" onchange="handleGridDiscountChange(${stdIdx}, this.value)"></div></td>
 
       <td><div style="font-size:0.85rem; color:var(--text-main); font-weight:600; text-align:center;">฿${s.paid.toLocaleString()}</div></td>
 
@@ -7148,6 +7165,23 @@ function handleStudentFieldChange(stdIdx, field, val) {
 
 
 
+function handleGridDiscountChange(stdIdx, val) {
+  if (!state.displayedStudents || !state.displayedStudents[stdIdx]) return;
+  const s = state.displayedStudents[stdIdx];
+  const newVal = parseFloat(val) || 0;
+  s.discount = newVal;
+  s.outstanding = Math.max(0, s.full - s.discount - s.paid);
+  
+  const outEl = document.getElementById(`grid_student_outstanding_${stdIdx}`);
+  if (outEl) {
+    outEl.textContent = `฿${s.outstanding.toLocaleString()}`;
+    outEl.style.color = s.outstanding > 0 ? '#ef4444' : '#466352';
+  }
+  
+  // enable save button
+  document.getElementById('save_grade_sheet_btn').disabled = false;
+}
+
 function handleGridCellValueChange(stdIdx, colIndex, val) {
 
   const std = state.displayedStudents[stdIdx];
@@ -7174,7 +7208,8 @@ function recalculateGridTotals() {
 
   students.forEach((s, idx) => {
     let fullCourses = [];
-    let partialTotal = 0;
+    let partialGross = 0;
+    let partialNet = 0;
     courses.forEach(c => {
       if (s.sheetName === c.sheetName) {
         const val = s.courseValues[c.colIndex];
@@ -7184,63 +7219,75 @@ function recalculateGridTotals() {
           const totalSessions = parseInt(c.totalSessions) || 10;
           
           if (num === 30) {
-            partialTotal += price * 0.7;
+            // 30% discount code
+            partialGross += price;
+            partialNet += price * 0.7;
           } else if (num === 20) {
-            partialTotal += price * 0.9;
+            // 20% discount code (actually 10% off)
+            partialGross += price;
+            partialNet += price * 0.9;
           } else if (num === 50) {
-            partialTotal += price * 0.5;
+            // 50% discount code
+            partialGross += price;
+            partialNet += price * 0.5;
           } else if (num >= 1 && num <= 2) {
-            partialTotal += num * 350;
+            partialGross += num * 350;
+            partialNet += num * 350;
           } else if (num >= 3) {
             if (num === totalSessions) {
                fullCourses.push(price);
             } else {
-               partialTotal += num * (price / totalSessions);
+               const itemPrice = num * (price / totalSessions);
+               partialGross += itemPrice;
+               partialNet += itemPrice;
             }
           }
         }
       }
     });
 
+    // Sort full-price courses descending for promotion discount
     fullCourses.sort((a, b) => b - a);
-    let fullTotal = 0;
+    let fullGross = 0;
+    let fullNet = 0;
     fullCourses.forEach((price, idx2) => {
+      fullGross += price;
       if (idx2 === 0 || idx2 === 1) {
-        fullTotal += price;
+        fullNet += price;           // 1st & 2nd: full price
       } else if (idx2 === 2) {
-        fullTotal += price * 0.7;
+        fullNet += price * 0.7;     // 3rd: 30% off
       } else {
-        fullTotal += price * 0.5;
+        fullNet += price * 0.5;     // 4th+: 50% off
       }
     });
 
-    let subtotal = partialTotal + fullTotal;
+    let grossTotal = partialGross + fullGross;
+    let netTotal = partialNet + fullNet;
 
     
 
     if (s.isCard) {
-
-      subtotal *= 1.03;
-
+      grossTotal *= 1.03;
+      netTotal *= 1.03;
     }
 
+    // Auto discount = gross - net (from promotions)
+    const autoDiscount = Math.round((grossTotal - netTotal) * 100) / 100;
     
-
-    const full = subtotal - s.discount;
-
-    const outstanding = full - s.paid;
-
-    
-
-    s.full = Math.round(full * 100) / 100;
-
-    s.outstanding = Math.round(outstanding * 100) / 100;
+    // full = ค่าเรียนทั้งหมด (gross), discount = ส่วนลดโปรโมชัน, outstanding = ยอดค้าง
+    s.full = Math.round(grossTotal * 100) / 100;
+    s.discount = autoDiscount;
+    s.outstanding = Math.round(Math.max(0, grossTotal - autoDiscount - s.paid) * 100) / 100;
 
     
 
     const fullEl = document.getElementById(`grid_student_full_${idx}`);
 
     if (fullEl) fullEl.innerText = '฿' + s.full.toLocaleString();
+
+    // Update discount display
+    const discEl = document.querySelector(`#grade_grid_tbody tr:nth-child(${idx + 1}) .grid-cell-input`);
+    if (discEl) discEl.value = s.discount;
 
     const outEl = document.getElementById(`grid_student_outstanding_${idx}`);
 
@@ -7794,7 +7841,7 @@ function editPrivateStudent(idx) {
 
   if (!std) return;
 
-  editStudentFromGradeSheet(std.name);
+  editStudentFromGradeSheet(std.studentId || std.name);
 
 }
 
@@ -15442,13 +15489,13 @@ function renderDebtorsTable() {
 
     
 
-    const roundList = s.round ? s.round.split(',').map(c => `<div style="margin-bottom:2px;">${c.trim()}</div>`).join('') : '-';
+    const roundList = s.round ? s.round.split(',').map(c => `<div style="margin-bottom:1px; white-space:nowrap;">${c.trim()}</div>`).join('') : '-';
 
     const courseText = `
 
-      <div style="font-weight:500;">${roundList}</div>
+      <div style="font-weight:500; font-size:0.65rem; white-space:nowrap;">${roundList}</div>
 
-      <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">ชั้น: ${s.grade || '-'} ${s.classSection || ''}</div>
+      <div style="font-size:0.6rem; color:var(--text-muted); margin-top:2px; white-space:nowrap;">ชั้น: ${s.grade || '-'} ${s.classSection || ''}</div>
 
     `;
 
@@ -15460,13 +15507,13 @@ function renderDebtorsTable() {
 
       <td>${courseText}</td>
 
-      <td style="text-align: right; font-weight: 500;">฿${s.full.toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 500; white-space: nowrap;">฿${s.full.toLocaleString()}</td>
 
-      <td style="text-align: right; font-weight: 500; color: var(--color-warning);">฿${(s.discount || 0).toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 500; color: var(--color-warning); white-space: nowrap;">฿${(s.discount || 0).toLocaleString()}</td>
 
-      <td style="text-align: right; font-weight: 500; color: var(--color-success);">฿${s.paid.toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 500; color: var(--color-success); white-space: nowrap;">฿${s.paid.toLocaleString()}</td>
 
-      <td style="text-align: right; font-weight: 700; color: var(--color-danger);">฿${s.outstanding.toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 700; color: var(--color-danger); white-space: nowrap;">฿${s.outstanding.toLocaleString()}</td>
 
       <td style="white-space: nowrap;"><span class="badge badge-info">${s.classType || 'เดี่ยว'}</span></td>
 
@@ -21238,11 +21285,14 @@ window.saveStudent = function(e) {
 
 const originalOpenStudentModal = window.openStudentModal;
 
-window.openStudentModal = function(id = null) {
+window.openStudentModal = function(id = null, studentName = null) {
 
   // If editing an existing student, we must render exactly 1 block
 
   if (id) {
+    if (document.getElementById('btn_register_new_course')) {
+      document.getElementById('btn_register_new_course').style.display = 'inline-flex';
+    }
 
     renderStudentBlocks(1);
 
@@ -21254,177 +21304,141 @@ window.openStudentModal = function(id = null) {
 
     
 
-    // The previous populate logic needs to be rewritten to fill `_0` ids
+    // Helper function to populate form from data object
+    function populateEditForm(data) {
+      document.getElementById('student_class_type').value = data.ClassType || data.classType || 'กลุ่มหลัก';
+      handleClassTypeChange();
+      
+      document.getElementById('student_grade').value = data.Grade || data.grade || 'ป.1';
+      document.getElementById('student_branch_learn').value = data.BranchLearn || data.branchLearn || 'สาขา1';
+      document.getElementById('student_branch_pay').value = data.BranchPay || data.branchPay || 'สาขา1';
+      
+      const courseVal = data.Course || data.round || '';
+      if (document.getElementById('shared_course_name')) {
+        document.getElementById('shared_course_name').value = courseVal;
+      }
+      
+      // Populate Block 0
+      document.getElementById('student_name_0').value = data.StudentName || data.name || '';
+      document.getElementById('student_nickname_0').value = data.Nickname || data.nickname || '';
+      document.getElementById('student_school_0').value = data.School || data.school || '';
+      document.getElementById('student_class_section_0').value = data.ClassSection || data.classSection || '';
+      document.getElementById('student_contact_0').value = data.Contact || data.contact || '';
+      document.getElementById('student_line_name_0').value = data.LineName || data.lineName || '';
+      document.getElementById('student_line_id_0').value = data.LineID || data.lineId || '';
+      
+      // Payment mode
+      const payChannel = data.PaymentChannel || data.paymentChannel || '';
+      const payMode = data.PayMode || '';
+      if (payMode === 'card' || payChannel.includes('รูด') || payChannel.includes('card')) {
+        if (document.getElementById('pay_mode_card_0')) document.getElementById('pay_mode_card_0').checked = true;
+      } else if (payMode === 'transfer' || payChannel.includes('โอน') || payChannel.includes('กสิกร') || payChannel.includes('SCB') || payChannel.includes('กรุง')) {
+        if (document.getElementById('pay_mode_transfer_0')) document.getElementById('pay_mode_transfer_0').checked = true;
+      } else if (payChannel.includes('สด') || payChannel.includes('cash')) {
+        if (document.getElementById('pay_mode_cash_0')) document.getElementById('pay_mode_cash_0').checked = true;
+      } else {
+        if (document.getElementById('pay_mode_transfer_0')) document.getElementById('pay_mode_transfer_0').checked = true;
+      }
+      
+      document.getElementById('student_full_0').value = data.FullAmount || data.full || '';
+      document.getElementById('student_paid_0').value = data.PaidAmount || data.paid || '';
+      document.getElementById('student_outstanding_0').value = data.Outstanding || data.outstanding || '';
+      
+      const cf = parseFloat(data.CarriedForward) || 0;
+      if (cf > 0) {
+        document.getElementById('has_carried_forward_0').checked = true;
+        toggleCarriedForwardBlock(0);
+        document.getElementById('student_carried_forward_0').value = cf;
+      }
+      
+      if (document.getElementById('student_time_note_0')) document.getElementById('student_time_note_0').value = data.TimeNote || '';
+      if (document.getElementById('student_extra_note_0')) document.getElementById('student_extra_note_0').value = data.ExtraNote || '';
+      if (document.getElementById('student_hours_0')) document.getElementById('student_hours_0').value = cleanTimeStr(data.Hours || '') || '';
+      if (document.getElementById('student_hours_left_0')) document.getElementById('student_hours_left_0').value = cleanTimeStr(data.HoursLeft || '') || '';
+      
+      // Installment data
+      if (data.PayRound1Date) document.getElementById('pay_r1_date_0').value = data.PayRound1Date || '';
+      if (data.PayRound1Amount) document.getElementById('pay_r1_amount_0').value = data.PayRound1Amount || '';
+      if (data.PayRound1Channel) document.getElementById('pay_r1_channel_0').value = data.PayRound1Channel || '';
+      if (data.PayRound1Staff) document.getElementById('pay_r1_staff_0').value = data.PayRound1Staff || '';
+      if (data.PayRound1Time) document.getElementById('pay_r1_time_0').value = data.PayRound1Time || '';
+      
+      if (data.PayRound2Date) document.getElementById('pay_r2_date_0').value = data.PayRound2Date || '';
+      if (data.PayRound2Amount) document.getElementById('pay_r2_amount_0').value = data.PayRound2Amount || '';
+      if (data.PayRound2Channel) document.getElementById('pay_r2_channel_0').value = data.PayRound2Channel || '';
+      if (data.PayRound2Staff) document.getElementById('pay_r2_staff_0').value = data.PayRound2Staff || '';
+      if (data.PayRound2Time) document.getElementById('pay_r2_time_0').value = data.PayRound2Time || '';
+      
+      if (data.PayRound3Date) document.getElementById('pay_r3_date_0').value = data.PayRound3Date || '';
+      if (data.PayRound3Amount) document.getElementById('pay_r3_amount_0').value = data.PayRound3Amount || '';
+      if (data.PayRound3Channel) document.getElementById('pay_r3_channel_0').value = data.PayRound3Channel || '';
+      if (data.PayRound3Staff) document.getElementById('pay_r3_staff_0').value = data.PayRound3Staff || '';
+      if (data.PayRound3Time) document.getElementById('pay_r3_time_0').value = data.PayRound3Time || '';
+      
+      calculateBlockOutstanding(0);
+      
+      // For main group students, load course checkboxes from grade sheet
+      const classTypeVal = data.ClassType || data.classType || '';
+      if (isMainGroup(classTypeVal)) {
+        const gradeVal = data.Grade || data.grade || '';
+        const branchVal = data.BranchLearn || data.branchLearn || '';
+        // Determine branch number from branch name
+        let branchNum = '1';
+        if (branchVal.includes('2')) branchNum = '2';
+        else if (branchVal.includes('3')) branchNum = '3';
+        
+        // Map grade to sheet name
+        let gradePrefix = gradeVal;
+        const sheetName = gradePrefix + '/' + branchNum;
+        
+        // Load grade sheet courses
+        handleGradeBranchChange();
+      }
+    }
 
+    // Primary: Try local state.students first (data already loaded in table)
+    const cleanName = studentName ? studentName.replace(/\s+/g, '').trim() : '';
+    const localStudent = state.students.find(s => {
+      if (s.id === id) return true;
+      if (studentName && s.name === studentName) return true;
+      if (studentName && s.name && s.name.replace(/\s+/g, '').trim() === cleanName) return true;
+      if (s.name === id) return true;
+      return false;
+    });
+
+    if (localStudent) {
+      populateEditForm(localStudent);
+      document.getElementById('student_modal').classList.add('active');
+      return;
+    }
+
+    // Fallback: Try backend if not found locally
     setLoading(true, 'กำลังโหลดข้อมูล...');
+    const lookupId = (id.startsWith('DB_') && studentName) ? studentName : id;
 
     google.script.run
-
       .withSuccessHandler(res => {
-
         setLoading(false);
-
         if (res && res.success && res.data) {
-
-          const data = res.data;
-
-          
-
-          document.getElementById('student_class_type').value = data.ClassType || 'กลุ่มหลัก';
-
-          handleClassTypeChange(); // This sets it back to 1 block visually if we unlock, but we leave it as 1 block for edit
-
-          
-
-          document.getElementById('student_grade').value = data.Grade || 'ป.1';
-
-          document.getElementById('student_branch_learn').value = data.BranchLearn || 'สาขา1';
-
-          document.getElementById('student_branch_pay').value = data.BranchPay || 'สาขา1';
-
-          
-
-          if (data.ClassType === 'กลุ่มหลัก') {
-
-            // Check the checkboxes - handled by handleGradeBranchChange which we need to patch if needed
-
-            // But for simple edit, it's easier to just set shared_course_name
-
-          }
-
-          document.getElementById('shared_course_name').value = data.Course || '';
-
-          
-
-          // Populate Block 0
-
-          document.getElementById('student_name_0').value = data.StudentName || '';
-
-          document.getElementById('student_nickname_0').value = data.Nickname || '';
-
-          document.getElementById('student_school_0').value = data.School || '';
-
-          document.getElementById('student_class_section_0').value = data.ClassSection || '';
-
-          document.getElementById('student_contact_0').value = data.Contact || '';
-
-          document.getElementById('student_line_name_0').value = data.LineName || '';
-
-          document.getElementById('student_line_id_0').value = data.LineID || '';
-
-          
-
-          const loadedPayMode = data.PayMode || 'cash';
-
-          if (loadedPayMode === 'card') {
-
-            document.getElementById('pay_mode_card_0').checked = true;
-
-          } else if (loadedPayMode === 'transfer') {
-
-            document.getElementById('pay_mode_transfer_0').checked = true;
-
-          } else {
-
-            document.getElementById('pay_mode_cash_0').checked = true;
-
-          }
-
-          
-
-          document.getElementById('student_full_0').value = data.FullAmount || '';
-
-          document.getElementById('student_paid_0').value = data.PaidAmount || '';
-
-          document.getElementById('student_outstanding_0').value = data.Outstanding || '';
-
-          
-
-          if (data.CarriedForward && parseFloat(data.CarriedForward) > 0) {
-
-            document.getElementById('has_carried_forward_0').checked = true;
-
-            toggleCarriedForwardBlock(0);
-
-            document.getElementById('student_carried_forward_0').value = data.CarriedForward;
-
-          }
-
-          
-
-          document.getElementById('student_time_note_0').value = data.TimeNote || '';
-
-          document.getElementById('student_extra_note_0').value = data.ExtraNote || '';
-
-          document.getElementById('student_hours_0').value = cleanTimeStr(data.Hours) || '';
-
-          document.getElementById('student_hours_left_0').value = cleanTimeStr(data.HoursLeft) || '';
-
-          
-
-          document.getElementById('pay_r1_date_0').value = data.PayRound1Date || '';
-
-          document.getElementById('pay_r1_amount_0').value = data.PayRound1Amount || '';
-
-          document.getElementById('pay_r1_channel_0').value = data.PayRound1Channel || '';
-
-          document.getElementById('pay_r1_staff_0').value = data.PayRound1Staff || '';
-
-          document.getElementById('pay_r1_time_0').value = data.PayRound1Time || '';
-
-          
-
-          document.getElementById('pay_r2_date_0').value = data.PayRound2Date || '';
-
-          document.getElementById('pay_r2_amount_0').value = data.PayRound2Amount || '';
-
-          document.getElementById('pay_r2_channel_0').value = data.PayRound2Channel || '';
-
-          document.getElementById('pay_r2_staff_0').value = data.PayRound2Staff || '';
-
-          document.getElementById('pay_r2_time_0').value = data.PayRound2Time || '';
-
-          
-
-          document.getElementById('pay_r3_date_0').value = data.PayRound3Date || '';
-
-          document.getElementById('pay_r3_amount_0').value = data.PayRound3Amount || '';
-
-          document.getElementById('pay_r3_channel_0').value = data.PayRound3Channel || '';
-
-          document.getElementById('pay_r3_staff_0').value = data.PayRound3Staff || '';
-
-          document.getElementById('pay_r3_time_0').value = data.PayRound3Time || '';
-
-          
-
-          calculateBlockOutstanding(0);
-
-          
-
+          populateEditForm(res.data);
           document.getElementById('student_modal').classList.add('active');
-
         } else {
-
-          showToast('ไม่พบข้อมูลนักเรียน', 'error');
-
+          showToast('ไม่พบข้อมูลนักเรียนรายนี้ในระบบ', 'error');
         }
-
       })
-
       .withFailureHandler(err => {
-
         setLoading(false);
-
-        showToast('Error: ' + err.message, 'error');
-
+        showToast('ไม่สามารถโหลดข้อมูลได้: ' + err.message, 'error');
       })
-
-      .getStudentData(id);
+      .getStudentData(lookupId);
 
   } else {
 
     // Add mode
+
+    if (document.getElementById('btn_register_new_course')) {
+      document.getElementById('btn_register_new_course').style.display = 'none';
+    }
 
     document.getElementById('student_id').value = '';
 
@@ -21453,7 +21467,9 @@ function initializeApp() {
   // Check Login Session first
 
   checkSession();
-
+  
+  // Load dynamic dropdown options
+  initAvailableRounds();
 
 
   // Setup character counting for evaluation forms
@@ -21696,5 +21712,81 @@ function validateDatalistInput(input) {
     }
   }
 }
+
+function initAvailableRounds() {
+  const select = document.getElementById('summary_round_filter');
+  if (!select) return;
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res && res.success && res.rounds) {
+        select.innerHTML = '';
+        if (res.rounds.length === 0) {
+          select.innerHTML = '<option value="">ไม่มีรอบเรียนในระบบ</option>';
+          return;
+        }
+        res.rounds.forEach(r => {
+          const opt = document.createElement('option');
+          opt.value = r;
+          opt.innerText = r;
+          select.appendChild(opt);
+        });
+        
+        // Load default summary right after filling dropdown
+        loadRoundSummary(true);
+      } else {
+        select.innerHTML = '<option value="">โหลดล้มเหลว</option>';
+      }
+    })
+    .getAvailableRounds();
+}
+
+window.registerNewCourseForCurrentStudent = function() {
+  const name = document.getElementById('student_name_0').value;
+  const nickname = document.getElementById('student_nickname_0').value;
+  const school = document.getElementById('student_school_0').value;
+  const section = document.getElementById('student_class_section_0').value;
+  const contact = document.getElementById('student_contact_0').value;
+  const lineName = document.getElementById('student_line_name_0').value;
+  const lineId = document.getElementById('student_line_id_0').value;
+  
+  // Clear ID to switch to add mode
+  document.getElementById('student_id').value = '';
+  
+  // Change title
+  document.getElementById('student_modal_title').innerText = `ลงทะเบียนคอร์สใหม่สำหรับ ${name}`;
+  
+  // Hide register button since we are now in add mode
+  if (document.getElementById('btn_register_new_course')) {
+    document.getElementById('btn_register_new_course').style.display = 'none';
+  }
+  
+  // Reset payment and course fields
+  if (document.getElementById('shared_course_name')) {
+    document.getElementById('shared_course_name').value = '';
+  }
+  const checkboxes = document.querySelectorAll('.course-checkbox');
+  checkboxes.forEach(cb => cb.checked = false);
+  
+  document.getElementById('student_full_0').value = '';
+  document.getElementById('student_paid_0').value = '';
+  document.getElementById('student_outstanding_0').value = '';
+  
+  // Reset installments
+  for (let r = 1; r <= 3; r++) {
+    if (document.getElementById(`pay_r${r}_date_0`)) document.getElementById(`pay_r${r}_date_0`).value = '';
+    if (document.getElementById(`pay_r${r}_amount_0`)) document.getElementById(`pay_r${r}_amount_0`).value = '';
+    if (document.getElementById(`pay_r${r}_channel_0`)) document.getElementById(`pay_r${r}_channel_0`).value = '';
+    if (document.getElementById(`pay_r${r}_staff_0`)) document.getElementById(`pay_r${r}_staff_0`).value = '';
+    if (document.getElementById(`pay_r${r}_time_0`)) document.getElementById(`pay_r${r}_time_0`).value = '';
+  }
+  
+  // Uncheck carried forward
+  if (document.getElementById('has_carried_forward_0')) {
+    document.getElementById('has_carried_forward_0').checked = false;
+    toggleCarriedForwardBlock(0);
+  }
+  
+  showToast('เตรียมข้อมูลประวัตินักเรียนเรียบร้อย กรุณาเลือกวิชา/คอร์สใหม่และกรอกรายละเอียดการชำระเงิน', 'success');
+};
 
 </script>
