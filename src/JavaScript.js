@@ -4946,17 +4946,17 @@ function renderDashboardData(data) {
   const courseContainer = document.getElementById('dash_course_over_5_container');
   if (courseContainer) {
     if (data.coursesOver5 && data.coursesOver5.length > 0) {
-      let html = \`<ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">\`;
+      let html = `<ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">`;
       data.coursesOver5.forEach(c => {
-        html += \`<li style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px solid var(--border-color);">
+        html += `<li style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px solid var(--border-color);">
                    <span style="font-weight: 600; color: var(--color-primary);">\${c.course}</span>
                    <span style="font-weight: bold; background: var(--color-primary); color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">\${c.count} คน</span>
-                 </li>\`;
+                 </li>`;
       });
-      html += \`</ul>\`;
+      html += `</ul>`;
       courseContainer.innerHTML = html;
     } else {
-      courseContainer.innerHTML = \`<div style="text-align:center; color:var(--text-muted); padding: 20px;">ไม่มีคอร์สที่เข้าเงื่อนไข</div>\`;
+      courseContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 20px;">ไม่มีคอร์สที่เข้าเงื่อนไข</div>`;
     }
   }
 
@@ -4964,28 +4964,28 @@ function renderDashboardData(data) {
   const mainGroupContainer = document.getElementById('dash_main_group_container');
   if (mainGroupContainer) {
     if (data.mainGroupStats && Object.keys(data.mainGroupStats).length > 0) {
-      let html = \`<div style="display: flex; flex-direction: column; gap: 16px;">\`;
+      let html = `<div style="display: flex; flex-direction: column; gap: 16px;">`;
       for (const [round, branchData] of Object.entries(data.mainGroupStats)) {
-        html += \`<div style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+        html += `<div style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
                    <div style="background: var(--color-primary); color: #fff; padding: 8px 12px; font-weight: 600;">รอบ: \${round}</div>
-                   <div style="padding: 12px; display: flex; flex-direction: column; gap: 12px; background: #fff;">\`;
+                   <div style="padding: 12px; display: flex; flex-direction: column; gap: 12px; background: #fff;">`;
         for (const [branch, gradeData] of Object.entries(branchData)) {
-          html += \`<div>
+          html += `<div>
                      <div style="font-weight: 600; color: var(--text-main); margin-bottom: 6px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">🏢 \${branch}</div>
-                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">\`;
+                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
           for (const [grade, count] of Object.entries(gradeData)) {
-            html += \`<span style="background: rgba(0,0,0,0.04); padding: 4px 10px; border-radius: 16px; font-size: 0.85em;">\${grade}: <b>\${count}</b></span>\`;
+            html += `<span style="background: rgba(0,0,0,0.04); padding: 4px 10px; border-radius: 16px; font-size: 0.85em;">\${grade}: <b>\${count}</b></span>`;
           }
-          html += \`  </div>
-                   </div>\`;
+          html += `  </div>
+                   </div>`;
         }
-        html += \`  </div>
-                 </div>\`;
+        html += `  </div>
+                 </div>`;
       }
-      html += \`</div>\`;
+      html += `</div>`;
       mainGroupContainer.innerHTML = html;
     } else {
-      mainGroupContainer.innerHTML = \`<div style="text-align:center; color:var(--text-muted); padding: 20px;">ไม่มีข้อมูลเด็กกลุ่มหลัก</div>\`;
+      mainGroupContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 20px;">ไม่มีข้อมูลเด็กกลุ่มหลัก</div>`;
     }
   }
 
@@ -4993,23 +4993,23 @@ function renderDashboardData(data) {
   const privateGroupContainer = document.getElementById('dash_private_group_container');
   if (privateGroupContainer) {
     if (data.privateGroupStats && Object.keys(data.privateGroupStats).length > 0) {
-      let html = \`<table class="custom-table" style="width: 100%;">
+      let html = `<table class="custom-table" style="width: 100%;">
                     <thead>
                       <tr><th style="text-align:left;">เดือนที่ชำระเงิน</th><th style="text-align:right;">จำนวนนักเรียน</th></tr>
                     </thead>
-                    <tbody>\`;
+                    <tbody>`;
       for (let m = 1; m <= 12; m++) {
         if (data.privateGroupStats[m]) {
-          html += \`<tr>
+          html += `<tr>
                      <td>\${monthsTH[m-1]}</td>
                      <td style="text-align:right; font-weight: bold; color: var(--color-primary);">\${data.privateGroupStats[m]} คน</td>
-                   </tr>\`;
+                   </tr>`;
         }
       }
-      html += \`</tbody></table>\`;
+      html += `</tbody></table>`;
       privateGroupContainer.innerHTML = html;
     } else {
-      privateGroupContainer.innerHTML = \`<div style="text-align:center; color:var(--text-muted); padding: 20px;">ไม่มีข้อมูลเด็กเดี่ยว/ย่อย</div>\`;
+      privateGroupContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 20px;">ไม่มีข้อมูลเด็กเดี่ยว/ย่อย</div>`;
     }
   }
 }
