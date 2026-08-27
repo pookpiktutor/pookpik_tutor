@@ -1389,7 +1389,10 @@ function loadTeacherDailySchedule() {
 
           const isTeacherLeave = noteText.includes('ครูลา');
 
-          const hasStudentLeave = leaveCount > 0;
+          // ตรวจสอบว่าเป็นคลาสเดี่ยว/กลุ่มย่อย หรือกลุ่มหลัก
+          const subjectLower = (c.subject || '').toLowerCase();
+          const isPrivateOrSubGroup = subjectLower.includes('เดี่ยว') || subjectLower.includes('ย่อย');
+          const hasStudentLeave = leaveCount > 0 && isPrivateOrSubGroup;
 
           
 
@@ -3840,6 +3843,11 @@ function setLoading(show, text = 'กำลังโหลดข้อมูล.
 
 
 
+  // Update global status bar
+  const statusBar = document.getElementById('global_status_bar');
+  const statusDot = document.getElementById('global_status_dot');
+  const statusText = document.getElementById('global_status_text');
+
   if (show) {
 
     if (inlineLoader) {
@@ -3854,12 +3862,36 @@ function setLoading(show, text = 'กำลังโหลดข้อมูล.
 
     }
 
+    // Update status bar to loading state
+    if (statusBar) {
+      statusBar.style.background = 'rgba(59, 130, 246, 0.9)';
+    }
+    if (statusDot) {
+      statusDot.style.background = '#fbbf24';
+      statusDot.style.animation = 'pulse 1s infinite';
+    }
+    if (statusText) {
+      statusText.textContent = '⏳ ' + text;
+    }
+
   } else {
 
     if (inlineLoader) {
 
       inlineLoader.style.display = 'none';
 
+    }
+
+    // Update status bar to idle state
+    if (statusBar) {
+      statusBar.style.background = 'rgba(15, 23, 42, 0.85)';
+    }
+    if (statusDot) {
+      statusDot.style.background = '#22c55e';
+      statusDot.style.animation = 'none';
+    }
+    if (statusText) {
+      statusText.textContent = '✅ พร้อมใช้งาน';
     }
 
   }
@@ -19153,7 +19185,7 @@ function submitStudentEvaluation(event) {
 
         filledCount++;
 
-        if (val.length < 60) {
+        if (val.length < 50) {
 
           invalidLength = true;
 
@@ -19167,15 +19199,15 @@ function submitStudentEvaluation(event) {
 
     
 
-    if (filledCount < 4) {
+    if (filledCount < 3) {
 
-      return { valid: false, error: `หัวข้อ "${nameTh}" ต้องตอบอย่างน้อย 4 ข้อขึ้นไป` };
+      return { valid: false, error: `หัวข้อ "${nameTh}" ต้องตอบอย่างน้อย 3 ข้อขึ้นไป` };
 
     }
 
     if (invalidLength) {
 
-      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาว 60 ตัวอักษรขึ้นไป` };
+      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาว 50 ตัวอักษรขึ้นไป` };
 
     }
 
@@ -19811,7 +19843,7 @@ function saveAdminEvaluationEdit(e) {
 
         items.push(val);
 
-        if (val.length < 60) {
+        if (val.length < 50) {
 
           invalidLength = true;
 
@@ -19827,15 +19859,15 @@ function saveAdminEvaluationEdit(e) {
 
     
 
-    if (items.length < 4) {
+    if (items.length < 3) {
 
-      return { valid: false, error: `หัวข้อ "${nameTh}" ต้องตอบมากกว่า 3 ข้อขึ้นไป (อย่างน้อย 4 ข้อ)` };
+      return { valid: false, error: `หัวข้อ "${nameTh}" ต้องตอบอย่างน้อย 3 ข้อขึ้นไป` };
 
     }
 
     if (invalidLength) {
 
-      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาวตัวอักษรมากกว่า 60 ตัวอักษรขึ้นไป` };
+      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาว 50 ตัวอักษรขึ้นไป` };
 
     }
 
