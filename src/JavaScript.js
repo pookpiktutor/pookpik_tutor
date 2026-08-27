@@ -1318,15 +1318,15 @@ function loadTeacherDailySchedule() {
 
         rowWrapper.className = 'teacher-day-row-wrapper';
 
-        rowWrapper.style.cssText = 'grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; width: 100%;';
+        rowWrapper.style.cssText = 'grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; width: 100%;';
 
         container.appendChild(rowWrapper);
 
         
 
-        // Take at most 3 items per day
+        // Show all classes for this day
 
-        const dayClasses = groupedByDate[dateStr].slice(0, 3);
+        const dayClasses = groupedByDate[dateStr];
 
         
 
@@ -1419,28 +1419,40 @@ function loadTeacherDailySchedule() {
 
           card.innerHTML = `
 
-            <div class="teacher-card-header" style="padding-bottom: 8px;">
+            <div class="teacher-card-header" style="padding-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start;">
 
-              <span class="teacher-card-time" style="font-size: 0.78rem; padding: 2px 8px; font-weight: 700; color: var(--color-primary-hover); background: rgba(0, 132, 255, 0.08); border-radius: 20px;">⏰ ${cleanTimeStr(c.timeStart)} - ${cleanTimeStr(c.timeEnd)}</span>
+              <span class="teacher-card-time" style="font-size: 0.78rem; padding: 3px 10px; font-weight: 700; color: #fff; background: ${hasStudentLeave ? '#ef4444' : (c.teacherConfirmed ? '#15803d' : '#3b82f6')}; border-radius: 20px;">⏰ ${cleanTimeStr(c.timeStart)} - ${cleanTimeStr(c.timeEnd)}</span>
+
+              <div style="display: flex; gap: 4px;">
+                <span class="teacher-card-badge ${roleClass}" style="font-size: 0.65rem; padding: 2px 6px;">${roleLabel}</span>
+              </div>
 
             </div>
 
-            <div class="teacher-card-subject" style="font-size: 0.78rem; margin: 2px 0;">${c.subject}</div>
+            <div class="teacher-card-subject" style="font-size: 0.85rem; font-weight: 700; margin: 2px 0; color: var(--text-main);">${c.subject}</div>
 
-            <div class="teacher-card-meta" style="gap: 6px;">
+            <div class="teacher-card-meta" style="gap: 4px; font-size: 0.74rem;">
               ${attendanceSummaryHtml}
 
-              <div class="teacher-card-meta-item" style="font-size: 0.76rem;">
+              <div class="teacher-card-meta-item" style="font-size: 0.74rem;">
 
-                <span class="label" style="min-width: 65px; font-size: 0.74rem;">📍 สาขา/ห้องเรียน:</span>
+                <span class="label" style="min-width: 65px; font-size: 0.72rem;">📍 สาขา/ห้องเรียน:</span>
 
-                <span class="value">${displayBranch}</span>
+                <span class="value" style="font-weight: 600;">${displayBranch}</span>
 
               </div>
 
-              <div class="teacher-card-meta-item" style="gap: 8px; flex-wrap: wrap; margin-top: 2px;">
+              <div class="teacher-card-meta-item" style="font-size: 0.74rem;">
+                <span class="label" style="min-width: 65px; font-size: 0.72rem;">👨‍🏫 ครูประจำ:</span>
+                <span class="value">${c.teacherRegular || '-'}</span>
+              </div>
 
-                <span class="teacher-card-badge ${roleClass}" style="font-size: 0.7rem; padding: 2px 8px;">${roleLabel}</span>
+              ${c.teacherSub ? `<div class="teacher-card-meta-item" style="font-size: 0.74rem;">
+                <span class="label" style="min-width: 65px; font-size: 0.72rem;">🔄 ครูแทน:</span>
+                <span class="value" style="color: var(--color-danger);">${c.teacherSub}</span>
+              </div>` : ''}
+
+              <div class="teacher-card-meta-item" style="gap: 8px; flex-wrap: wrap; margin-top: 2px;">
 
                 <span class="teacher-card-badge hours" style="font-size: 0.7rem; padding: 2px 8px;">⏳ ${formatHoursMinutes(c.hours)}</span>
 
