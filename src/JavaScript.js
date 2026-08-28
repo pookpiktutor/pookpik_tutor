@@ -2357,7 +2357,7 @@ function bootApp() {
 
       setLoading(false);
 
-      let initialPanel = 'dashboard';
+      let initialPanel = 'daily_grid';
 
       if (settings && !settings.error) {
 
@@ -9467,10 +9467,10 @@ function renderDailyGrid() {
     });
 
     var maxRows = rowPlacements.length > 0 ? rowPlacements.length : 1;
-    var rowHeight = maxRows * 135 + 20;
+    var rowHeight = maxRows * 200 + 30;
 
     // Room row
-    tableHTML += '<div style="display:flex;border-bottom:1px solid var(--border-color);min-height:' + Math.max(rowHeight, 130) + 'px;position:relative">';
+    tableHTML += '<div style="display:flex;border-bottom:1px solid var(--border-color);min-height:' + Math.max(rowHeight, 200) + 'px;position:relative">';
     
     // Left sticky room info
     tableHTML += '<div style="width:180px;min-width:180px;position:sticky;left:0;z-index:10;background:#fff;padding:12px;border-right:2px solid var(--border-color);box-shadow:2px 0 5px -2px rgba(0,0,0,0.05);display:flex;flex-direction:column">';
@@ -9490,14 +9490,14 @@ function renderDailyGrid() {
       tableHTML += '<div style="flex:1;border-right:1px dashed #e2e8f0;pointer-events:none"></div>';
     }
 
-    // Cards container (absolute positioned)
-    tableHTML += '<div style="position:absolute;top:0;left:0;right:0;bottom:0;padding:4px 0">';
+    // Cards container (absolute positioned with enough height)
+    tableHTML += '<div style="position:absolute;top:0;left:0;right:0;min-height:' + Math.max(rowHeight, 200) + 'px;padding:4px 0">';
 
     cardPositions.forEach(function(pos) {
       var c = pos.c;
       var leftPct = ((pos.s - timelineStart) / timelineSpan) * 100;
       var widthPct = ((pos.e - pos.s) / timelineSpan) * 100;
-      var topPx = pos.row * 135 + 4;
+      var topPx = pos.row * 200 + 4;
 
       var isTeacherConfirmed = c.teacherConfirmed > 0;
       var isStudentLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex] && state.classAbsences[c.rowIndex].studentLeave) || (c.isLeave > 0);
