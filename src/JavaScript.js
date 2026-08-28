@@ -9405,7 +9405,7 @@ function renderDailyGrid() {
 
   // Fixed timeline columns from 08.00 to 19.00
   const hourlyColumns = [];
-  for (let h = 8; h <= 19; h++) {
+  for (let h = 8; h <= 22; h++) {
     hourlyColumns.push(String(h).padStart(2, '0') + '.00');
   }
   
