@@ -9410,7 +9410,7 @@ function renderDailyGrid() {
   }
   
   let tableHTML = `
-    <div style="width: 100%; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+    <div style="width: 100%; max-height: 80vh; overflow: auto; border: 1px solid var(--border-color); border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
       <table style="width: 100%; border-collapse: separate; border-spacing: 0; min-width: max-content;">
         <thead>
           <tr>
