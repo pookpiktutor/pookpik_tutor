@@ -9403,14 +9403,11 @@ function renderDailyGrid() {
     return;
   }
 
-  const uniqueStartTimes = new Set();
-  filteredRooms.forEach(room => {
-    (state.classLogs || []).filter(log => matchRoomAndBranch(log.roomBranch, room.roomName, room.branch)).forEach(c => {
-      if (c.timeStart) uniqueStartTimes.add(c.timeStart);
-    });
-  });
-  
-  const sortedStartTimes = Array.from(uniqueStartTimes).sort();
+  // Fixed timeline columns from 08.00 to 19.00
+  const hourlyColumns = [];
+  for (let h = 8; h <= 19; h++) {
+    hourlyColumns.push(String(h).padStart(2, '0') + '.00');
+  }
   
   let tableHTML = `
     <div style="width: 100%; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
@@ -9420,13 +9417,9 @@ function renderDailyGrid() {
             <th style="position: sticky; left: 0; top: 0; z-index: 20; background: #f8fafc; padding: 12px 16px; border-bottom: 2px solid var(--border-color); border-right: 2px solid var(--border-color); font-weight: 700; color: var(--text-main); text-align: left; width: 180px; min-width: 180px;">ห้องเรียน / อุปกรณ์</th>
   `;
   
-  if (sortedStartTimes.length === 0) {
-    tableHTML += `<th style="position: sticky; top: 0; z-index: 10; background: #f8fafc; padding: 12px 16px; border-bottom: 2px solid var(--border-color); font-weight: 600; color: var(--text-muted); text-align: center;">ไม่มีชั่วโมงเรียน</th>`;
-  } else {
-    sortedStartTimes.forEach(time => {
-      tableHTML += `<th style="position: sticky; top: 0; z-index: 10; background: #f8fafc; padding: 12px 16px; border-bottom: 2px solid var(--border-color); font-weight: 700; color: var(--text-main); text-align: center; min-width: 240px; width: 240px;">เวลา ${cleanTimeStr(time)}</th>`;
-    });
-  }
+  hourlyColumns.forEach(time => {
+    tableHTML += `<th style="position: sticky; top: 0; z-index: 10; background: #f8fafc; padding: 12px 16px; border-bottom: 2px solid var(--border-color); font-weight: 700; color: var(--text-main); text-align: center; min-width: 240px; width: 240px;">${time}</th>`;
+  });
   
   tableHTML += `
           </tr>
@@ -9466,11 +9459,15 @@ function renderDailyGrid() {
             </td>
     `;
     
-    if (sortedStartTimes.length === 0) {
-       tableHTML += `<td style="padding: 16px; border-bottom: 1px solid var(--border-color); text-align: center; color: var(--text-muted); font-size: 0.85rem; vertical-align: middle;">ไม่มีชั่วโมงเรียน</td>`;
-    } else {
-       sortedStartTimes.forEach(time => {
-         const classesAtTime = roomClasses.filter(c => c.timeStart === time);
+    // Render fixed hourly columns
+    hourlyColumns.forEach(time => {
+      const columnHour = parseInt(time.split('.')[0], 10);
+      const classesInHour = roomClasses.filter(c => {
+        if (!c.timeStart) return false;
+        const startHour = parseInt(String(c.timeStart).replace(':', '.').split('.')[0], 10);
+        return startHour === columnHour;
+      });
+      const classesAtTime = classesInHour;
          
          tableHTML += `<td style="padding: 12px; border-bottom: 1px solid var(--border-color); border-right: 1px dashed var(--border-color); vertical-align: top;">`;
          
@@ -9581,7 +9578,7 @@ function renderDailyGrid() {
          }
          tableHTML += `</td>`;
        });
-    }
+    
     
     tableHTML += `
           </tr>
