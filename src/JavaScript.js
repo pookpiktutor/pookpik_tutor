@@ -9393,203 +9393,213 @@ function renderDailyGrid() {
   });
   
   if (filteredRooms.length === 0) {
-    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted)">ไม่พบข้อมูลห้องสำหรับสาขา: ' + branchFilter + '</div>';
+    const emptyMsg = document.createElement('div');
+    emptyMsg.className = 'empty-state-message';
+    emptyMsg.textContent = 'ไม่พบข้อมูลห้องสำหรับสาขา: ' + branchFilter;
+    emptyMsg.style.padding = '20px';
+    emptyMsg.style.textAlign = 'center';
+    emptyMsg.style.color = 'var(--text-muted)';
+    container.appendChild(emptyMsg);
     return;
   }
 
-  function parseTimeToHours(t) {
-    var parts = (t || '00.00').replace(':', '.').split('.');
-    return parseInt(parts[0] || 0) + (parseInt(parts[1] || 0) / 60);
-  }
-
-  var timelineStart = 8;
-  var timelineEnd = 20;
-  var timelineSpan = timelineEnd - timelineStart;
-
-  var tableHTML = '<div style="width:100%;overflow-x:auto;border:1px solid var(--border-color);border-radius:8px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.02)">';
-  tableHTML += '<div style="min-width:1300px;position:relative">';
+  const uniqueStartTimes = new Set();
+  filteredRooms.forEach(room => {
+    (state.classLogs || []).filter(log => matchRoomAndBranch(log.roomBranch, room.roomName, room.branch)).forEach(c => {
+      if (c.timeStart) uniqueStartTimes.add(c.timeStart);
+    });
+  });
   
-  // Header
-  tableHTML += '<div style="display:flex;position:sticky;top:0;z-index:20;background:#f8fafc;border-bottom:2px solid var(--border-color)">';
-  tableHTML += '<div style="width:180px;min-width:180px;position:sticky;left:0;z-index:30;background:#f8fafc;padding:12px;font-weight:700;border-right:2px solid var(--border-color);color:var(--text-main);display:flex;align-items:center;justify-content:center">ห้องเรียน / อุปกรณ์</div>';
-  tableHTML += '<div style="flex:1;display:flex;position:relative">';
-  for (var h = timelineStart; h < timelineEnd; h++) {
-    tableHTML += '<div style="flex:1;padding:12px 4px;text-align:center;font-weight:700;border-right:1px dashed #e2e8f0;color:var(--text-main);font-size:0.82rem">' + String(h).padStart(2, '0') + '.00</div>';
+  const sortedStartTimes = Array.from(uniqueStartTimes).sort();
+  
+  let tableHTML = `
+    <div style="width: 100%; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+      <table style="width: 100%; border-collapse: separate; border-spacing: 0; min-width: max-content;">
+        <thead>
+          <tr>
+            <th style="position: sticky; left: 0; top: 0; z-index: 20; background: #f8fafc; padding: 12px 16px; border-bottom: 2px solid var(--border-color); border-right: 2px solid var(--border-color); font-weight: 700; color: var(--text-main); text-align: left; width: 180px; min-width: 180px;">ห้องเรียน / อุปกรณ์</th>
+  `;
+  
+  if (sortedStartTimes.length === 0) {
+    tableHTML += `<th style="position: sticky; top: 0; z-index: 10; background: #f8fafc; padding: 12px 16px; border-bottom: 2px solid var(--border-color); font-weight: 600; color: var(--text-muted); text-align: center;">ไม่มีชั่วโมงเรียน</th>`;
+  } else {
+    sortedStartTimes.forEach(time => {
+      tableHTML += `<th style="position: sticky; top: 0; z-index: 10; background: #f8fafc; padding: 12px 16px; border-bottom: 2px solid var(--border-color); font-weight: 700; color: var(--text-main); text-align: center; min-width: 240px; width: 240px;">เวลา ${cleanTimeStr(time)}</th>`;
+    });
   }
-  tableHTML += '</div></div>';
+  
+  tableHTML += `
+          </tr>
+        </thead>
+        <tbody>
+  `;
 
-  // Body
-  tableHTML += '<div style="display:flex;flex-direction:column">';
-
-  filteredRooms.forEach(function(room) {
-    var roomClasses = (state.classLogs || []).filter(function(log) {
+  filteredRooms.forEach(room => {
+    const roomClasses = (state.classLogs || []).filter(log => {
       return matchRoomAndBranch(log.roomBranch, room.roomName, room.branch);
     });
-
-    var details = [];
-    if (room.ipad) details.push('📱 ' + room.ipad);
-    if (room.zoom) details.push('💻 ' + room.zoom);
-    var detailsStr = details.length > 0 ? '<div style="font-size:0.74rem;color:var(--text-muted);display:flex;flex-direction:column;gap:2px;margin-top:4px">' + details.map(function(d){return '<span>'+d+'</span>';}).join('') + '</div>' : '';
-
-    var fullRoomLabel = (room.roomName + ' ' + room.branch + ' ' + (room.ipad || '') + ' ' + (room.zoom || '')).replace(/\s+/g, ' ').trim();
-
-    // Calculate overlap rows
-    var rowPlacements = [];
-    roomClasses.sort(function(a, b) {
-      return parseTimeToHours(a.timeStart) - parseTimeToHours(b.timeStart);
-    });
-
-    var cardPositions = [];
-    roomClasses.forEach(function(c) {
-      var s = parseTimeToHours(c.timeStart || '08.00');
-      var e = parseTimeToHours(c.timeEnd || '10.00');
-      if (s < timelineStart) s = timelineStart;
-      if (e > timelineEnd) e = timelineEnd;
-      if (e <= s) e = s + 1;
-      
-      var rowIndex = 0;
-      while (true) {
-        if (!rowPlacements[rowIndex]) rowPlacements[rowIndex] = [];
-        var overlaps = false;
-        for (var p = 0; p < rowPlacements[rowIndex].length; p++) {
-          if (s < rowPlacements[rowIndex][p].e && e > rowPlacements[rowIndex][p].s) {
-            overlaps = true;
-            break;
-          }
-        }
-        if (!overlaps) {
-          rowPlacements[rowIndex].push({s: s, e: e});
-          break;
-        }
-        rowIndex++;
-      }
-      cardPositions.push({c: c, s: s, e: e, row: rowIndex});
-    });
-
-    var maxRows = rowPlacements.length > 0 ? rowPlacements.length : 1;
-    var rowHeight = maxRows * 200 + 30;
-
-    // Room row
-    tableHTML += '<div style="display:flex;border-bottom:1px solid var(--border-color);min-height:' + Math.max(rowHeight, 200) + 'px;position:relative">';
     
-    // Left sticky room info
-    tableHTML += '<div style="width:180px;min-width:180px;position:sticky;left:0;z-index:10;background:#fff;padding:12px;border-right:2px solid var(--border-color);box-shadow:2px 0 5px -2px rgba(0,0,0,0.05);display:flex;flex-direction:column">';
-    tableHTML += '<div style="font-weight:700;font-size:0.95rem;color:var(--color-primary-hover);margin-bottom:4px;word-break:break-word">' + room.roomName + '</div>';
-    tableHTML += detailsStr;
-    tableHTML += '<div style="display:flex;gap:6px;align-items:center;margin-top:8px">';
-    tableHTML += '<button onclick="showEditRoomModal(\'' + room.branch + '\',\'' + room.roomName + '\',\'' + (room.ipad||'') + '\',\'' + (room.zoom||'') + '\')" style="font-size:0.72rem;padding:3px 6px;border:1px solid var(--border-color);border-radius:4px;background:#f8fafc;cursor:pointer" title="แก้ไข">✏️ แก้ไข</button>';
-    tableHTML += '<button onclick="deleteRoomFrontend(\'' + room.branch + '\',\'' + room.roomName + '\')" style="font-size:0.72rem;padding:3px 6px;border:1px solid var(--border-color);border-radius:4px;background:#fff5f5;color:var(--color-danger);cursor:pointer" title="ลบ">🗑️ ลบ</button>';
-    tableHTML += '</div>';
-    tableHTML += '<div style="margin-top:auto;padding-top:12px"><button onclick="quickAddClassLog(\'' + fullRoomLabel.replace(/'/g, "\\'") + '\')" style="width:100%;padding:6px;font-size:0.76rem;border-radius:4px;border:1px dashed var(--color-primary);background:rgba(70,99,82,0.03);color:var(--color-primary);font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px"><span>➕</span> เพิ่มคลาสเรียน</button></div>';
-    tableHTML += '</div>';
-
-    // Timeline area
-    tableHTML += '<div style="flex:1;display:flex;position:relative">';
-    // Background vertical dashed lines
-    for (var h = timelineStart; h < timelineEnd; h++) {
-      tableHTML += '<div style="flex:1;border-right:1px dashed #e2e8f0;pointer-events:none"></div>';
+    let detailsStr = '';
+    const details = [];
+    if (room.ipad) details.push(`📱 ${room.ipad}`);
+    if (room.zoom) details.push(`💻 ${room.zoom}`);
+    if (details.length > 0) {
+      detailsStr = `<div style="font-size: 0.74rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; margin-top: 4px;">` +
+                   details.map(d => `<span>${d}</span>`).join('') +
+                   `</div>`;
     }
+    
+    const fullRoomLabel = `${room.roomName} ${room.branch} ${room.ipad ? room.ipad : ''} ${room.zoom ? room.zoom : ''}`.replace(/\s+/g, ' ').trim();
+    
+    tableHTML += `
+          <tr>
+            <td style="position: sticky; left: 0; z-index: 10; background: #fff; padding: 16px; border-bottom: 1px solid var(--border-color); border-right: 2px solid var(--border-color); vertical-align: top; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05);">
+              <div style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary-hover); word-break: break-word; margin-bottom: 4px;">${room.roomName}</div>
+              ${detailsStr}
+              <div style="display: flex; gap: 6px; align-items: center; margin-top: 8px;">
+                <button onclick="showEditRoomModal('${room.branch}', '${room.roomName}', '${room.ipad}', '${room.zoom}')" style="font-size: 0.72rem; padding: 3px 6px; border: 1px solid var(--border-color); border-radius: 4px; background: #f8fafc; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'" title="แก้ไข IPAD/Zoom">✏️ แก้ไข</button>
+                <button onclick="deleteRoomFrontend('${room.branch}', '${room.roomName}')" title="ลบห้องเรียน" style="font-size: 0.72rem; padding: 3px 6px; border: 1px solid var(--border-color); border-radius: 4px; background: #fff5f5; color: var(--color-danger); cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff5f5'">🗑️ ลบ</button>
+              </div>
+              <button onclick="quickAddClassLog('${fullRoomLabel}')" style="margin-top: 12px; width: 100%; justify-content: center; display: flex; align-items: center; gap: 4px; padding: 6px; font-size: 0.76rem; border-radius: var(--radius-sm); border: 1px dashed var(--color-primary); background: rgba(70,99,82,0.03); color: var(--color-primary); font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(70,99,82,0.08)'" onmouseout="this.style.background='rgba(70,99,82,0.03)'">
+                <span>➕</span> เพิ่มคลาสเรียน
+              </button>
+            </td>
+    `;
+    
+    if (sortedStartTimes.length === 0) {
+       tableHTML += `<td style="padding: 16px; border-bottom: 1px solid var(--border-color); text-align: center; color: var(--text-muted); font-size: 0.85rem; vertical-align: middle;">ไม่มีชั่วโมงเรียน</td>`;
+    } else {
+       sortedStartTimes.forEach(time => {
+         const classesAtTime = roomClasses.filter(c => c.timeStart === time);
+         
+         tableHTML += `<td style="padding: 12px; border-bottom: 1px solid var(--border-color); border-right: 1px dashed var(--border-color); vertical-align: top;">`;
+         
+         if (classesAtTime.length > 0) {
+           classesAtTime.sort((a,b) => (a.timeEnd || '').localeCompare(b.timeEnd || ''));
+           
+           classesAtTime.forEach(c => {
+             let statusClass = '';
+             if (c.isPresentLive > 0 || c.isPresentOnline > 0) {
+               statusClass = ''; 
+             } else if (c.isMakeup > 0) {
+               statusClass = 'status-makeup';
+             } else if (c.isLeave > 0) {
+               statusClass = 'status-leave';
+             } else if (c.isAbsent > 0) {
+               statusClass = 'status-absent';
+             }
+             
+             const attendances = [];
+             attendances.push(`สด: ${c.isPresentLive || 0}`);
+             attendances.push(`ออน: ${c.isPresentOnline || 0}`);
+             attendances.push(`ลา: ${c.isLeave || 0}`);
+             attendances.push(`ชด: ${c.isMakeup || 0}`);
+             attendances.push(`ขาด: ${c.isAbsent || 0}`);
+             
+             const attendanceSummary = attendances.length > 0 
+               ? `<span class="scheduled-students" style="font-size:0.68rem; color:var(--color-primary-hover); font-weight:500; display:block; margin-top:2px;">👥 ${attendances.join(' ')}</span>`
+               : '';
+             
+             const ipadMatch = (c.roomBranch || '').match(/IPAD\s*\S*/i);
+             const ipadText = ipadMatch ? `📱 ${ipadMatch[0].toUpperCase()}` : '';
 
-    // Cards container (absolute positioned with enough height)
-    tableHTML += '<div style="position:absolute;top:0;left:0;right:0;min-height:' + Math.max(rowHeight, 200) + 'px;padding:4px 0">';
+             const isTeacherConfirmed = c.teacherConfirmed > 0;
+             const isStudentLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.studentLeave) || (c.isLeave > 0);
+             const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && String(c.note).includes('ครูลา'));
+             
+             let cardBgStyle = '';
+             let cardBorderStyle = '';
+             if (isTeacherConfirmed) {
+               cardBgStyle = 'background-color: rgba(25, 135, 84, 0.08) !important;';
+               cardBorderStyle = 'border: 1.5px solid rgba(25, 135, 84, 0.4) !important;';
+             } else if (isStudentLeaveChecked) {
+               cardBgStyle = 'background-color: rgb(254, 226, 226) !important;';
+               cardBorderStyle = 'border-color: rgba(239, 68, 68, 0.35) !important;';
+             } else if (isTeacherLeaveChecked) {
+               cardBgStyle = 'background-color: rgb(254, 243, 199) !important;'; 
+               cardBorderStyle = 'border-color: rgba(245, 158, 11, 0.45) !important;'; 
+             } else {
+               const subjStr = String(c.subject || '');
+               const isPrivate = subjStr.includes('เดี่ยว') || subjStr.includes('ย่อย');
+               if (!isPrivate) {
+                 cardBgStyle = 'background-color: rgba(56, 189, 248, 0.08) !important;'; 
+                 cardBorderStyle = 'border-color: rgba(56, 189, 248, 0.4) !important;';
+               }
+             }
+             
+             let displayRoomText = c.roomBranch || '-';
+             let displayDeviceText = '';
+             const deviceMatch = displayRoomText.match(/(?:ipad|zoom).*/i);
+             if (deviceMatch) {
+                 displayDeviceText = deviceMatch[0];
+                 displayRoomText = displayRoomText.replace(deviceMatch[0], '').trim();
+             }
+             
+             tableHTML += `
+               <div id="scheduled_item_${c.rowIndex}" class="scheduled-item ${statusClass}" style="position: relative; padding: 8px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border-color); ${cardBgStyle} ${cardBorderStyle}; min-height: 180px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                 <div style="display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 4px;">
+                   <span class="scheduled-subject" style="font-family: var(--font-heading); font-weight: 700; font-size: 0.75rem; color: var(--text-main); line-height: 1.3; white-space: normal; word-break: keep-all; overflow-wrap: break-word;">${formatSubjectName(c.subject)}</span>
+                   <span style="font-size: 0.72rem; font-weight: bold; color: var(--color-primary-hover); white-space: nowrap; background: rgba(0, 132, 255, 0.06); padding: 2px 8px; border-radius: 12px; display: inline-block;">
+                     ${cleanTimeStr(c.timeStart)} - ${cleanTimeStr(c.timeEnd)}
+                   </span>
+                 </div>
+                 
+                 <div style="font-size: 0.72rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 3px; border-top: 1px dashed var(--border-color); padding-top: 6px; margin-top: 6px;">
+                   <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🏢 ห้อง: ${displayRoomText}</div>
+                   ${displayDeviceText ? `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-primary-hover);"><span style="font-size:0.85em">💻</span> ${displayDeviceText}</div>` : ''}
+                   <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👨‍🏫 ครูประจำ: ${c.teacherRegular}<br>🔄 ครูแทน: ${c.teacherSub ? c.teacherSub : '-'}</div>
+                   ${isTeacherConfirmed ? `<div style="font-weight: bold; color: #2e7d32; display: flex; align-items: center; gap: 2px; margin-top: 2px;">✅ ยืนยันสอนแล้ว</div>` : ''}
+                   ${attendanceSummary}
+                 </div>
+                 
+                 <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px; border-top: 1px dashed rgba(0,0,0,0.06); padding-top: 6px;" onclick="event.stopPropagation();">
+                   <label style="display: flex; align-items: center; gap: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 600; color: var(--color-danger);">
+                     <input type="checkbox" class="student-leave-chk" data-row="${c.rowIndex}" ${isStudentLeaveChecked ? 'checked' : ''} onchange="toggleClassAbsence(${c.rowIndex}, 'studentLeave', this)" style="width: 14px; height: 14px; cursor: pointer; accent-color: var(--color-danger);"> น้องลา
+                   </label>
+                   <label style="display: flex; align-items: center; gap: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 600; color: var(--color-danger);">
+                     <input type="checkbox" class="teacher-leave-chk" data-row="${c.rowIndex}" ${isTeacherLeaveChecked ? 'checked' : ''} onchange="toggleClassAbsence(${c.rowIndex}, 'teacherLeave', this)" style="width: 14px; height: 14px; cursor: pointer; accent-color: var(--color-danger);"> ครูลา
+                   </label>
+                 </div>
 
-    cardPositions.forEach(function(pos) {
-      var c = pos.c;
-      var leftPct = ((pos.s - timelineStart) / timelineSpan) * 100;
-      var widthPct = ((pos.e - pos.s) / timelineSpan) * 100;
-      var topPx = pos.row * 200 + 4;
-
-      var isTeacherConfirmed = c.teacherConfirmed > 0;
-      var isStudentLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex] && state.classAbsences[c.rowIndex].studentLeave) || (c.isLeave > 0);
-      var isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex] && state.classAbsences[c.rowIndex].teacherLeave) || (c.note && String(c.note).includes('ครูลา'));
-
-      var cardBg = '';
-      var cardBorderStyle = '';
-      if (isTeacherConfirmed) {
-        cardBg = 'background:rgba(25,135,84,0.08);';
-        cardBorderStyle = 'border:1.5px solid rgba(25,135,84,0.4);';
-      } else if (isStudentLeaveChecked) {
-        cardBg = 'background:rgb(254,226,226);';
-        cardBorderStyle = 'border:1px solid rgba(239,68,68,0.35);';
-      } else if (isTeacherLeaveChecked) {
-        cardBg = 'background:rgb(254,243,199);';
-        cardBorderStyle = 'border:1px solid rgba(245,158,11,0.45);';
-      } else {
-        var subjStr = String(c.subject || '');
-        var isPrivate = subjStr.includes('เดี่ยว') || subjStr.includes('ย่อย');
-        if (!isPrivate) {
-          cardBg = 'background:rgba(56,189,248,0.08);';
-          cardBorderStyle = 'border:1px solid rgba(56,189,248,0.4);';
-        } else {
-          cardBg = 'background:#fff;';
-          cardBorderStyle = 'border:1px solid var(--border-color);';
-        }
-      }
-
-      var attendances = [];
-      attendances.push('สด:' + (c.isPresentLive || 0));
-      attendances.push('ออน:' + (c.isPresentOnline || 0));
-      attendances.push('ลา:' + (c.isLeave || 0));
-      attendances.push('ขาด:' + (c.isAbsent || 0));
-      attendances.push('ชด:' + (c.isMakeup || 0));
-      var attendanceHTML = '<div style="font-size:0.66rem;color:var(--color-primary-hover);font-weight:500;margin-top:3px">👥 ' + attendances.join(' ') + '</div>';
-
-      var displayRoomText = c.roomBranch || '-';
-      var displayDeviceText = '';
-      var deviceMatch = displayRoomText.match(/(?:ipad|zoom).*/i);
-      if (deviceMatch) {
-        displayDeviceText = deviceMatch[0];
-        displayRoomText = displayRoomText.replace(deviceMatch[0], '').trim();
-      }
-
-      var confirmBtn = '';
-      if (isTeacherConfirmed) {
-        confirmBtn = '<button type="button" onclick="toggleDailyGridConfirm(' + c.rowIndex + ',false)" style="font-size:0.65rem;padding:2px 6px;background:#15803d;color:white;font-weight:700;border-radius:10px;border:none;cursor:pointer">✓ ยืนยัน</button>';
-      } else {
-        confirmBtn = '<button type="button" onclick="toggleDailyGridConfirm(' + c.rowIndex + ',true)" style="font-size:0.65rem;padding:2px 6px;background:#e2e8f0;color:#475569;font-weight:600;border-radius:10px;border:none;cursor:pointer">รอยืนยัน</button>';
-      }
-
-      tableHTML += '<div id="scheduled_item_' + c.rowIndex + '" style="position:absolute;left:' + leftPct + '%;width:calc(' + widthPct + '% - 4px);top:' + topPx + 'px;' + cardBg + cardBorderStyle + 'border-radius:6px;padding:6px 8px;font-size:0.75rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);overflow:hidden;white-space:normal;min-width:100px">';
-      
-      // Subject + time
-      tableHTML += '<div style="font-weight:700;color:var(--text-main);margin-bottom:2px;font-size:0.76rem;line-height:1.2;padding-right:40px">' + formatSubjectName(c.subject) + '</div>';
-      tableHTML += '<div style="font-size:0.68rem;font-weight:600;color:var(--color-primary-hover);margin-bottom:3px">' + cleanTimeStr(c.timeStart) + ' - ' + cleanTimeStr(c.timeEnd) + '</div>';
-      
-      // Teacher info
-      tableHTML += '<div style="font-size:0.68rem;color:var(--text-muted);line-height:1.3">';
-      tableHTML += '👨‍🏫 ' + (c.teacherRegular || '-');
-      if (c.teacherSub) tableHTML += '<br>🔄 ' + c.teacherSub;
-      tableHTML += '</div>';
-      
-      // Attendance
-      tableHTML += attendanceHTML;
-
-      // Checkboxes + confirm + edit/delete
-      tableHTML += '<div style="display:flex;align-items:center;gap:4px;margin-top:4px;flex-wrap:wrap;border-top:1px dashed rgba(0,0,0,0.06);padding-top:4px" onclick="event.stopPropagation()">';
-      tableHTML += '<label style="font-size:0.66rem;color:' + (isStudentLeaveChecked ? '#dc2626' : 'var(--text-muted)') + ';display:flex;align-items:center;gap:2px;cursor:pointer"><input type="checkbox" ' + (isStudentLeaveChecked ? 'checked' : '') + ' onchange="toggleClassAbsence(' + c.rowIndex + ',\'studentLeave\',this)" style="width:12px;height:12px;cursor:pointer;accent-color:var(--color-danger)"> น้องลา</label>';
-      tableHTML += '<label style="font-size:0.66rem;color:' + (isTeacherLeaveChecked ? '#dc2626' : 'var(--text-muted)') + ';display:flex;align-items:center;gap:2px;cursor:pointer"><input type="checkbox" ' + (isTeacherLeaveChecked ? 'checked' : '') + ' onchange="toggleClassAbsence(' + c.rowIndex + ',\'teacherLeave\',this)" style="width:12px;height:12px;cursor:pointer;accent-color:var(--color-danger)"> ครูลา</label>';
-      tableHTML += '<div style="margin-left:auto;display:flex;gap:3px">' + confirmBtn;
-      tableHTML += '<button type="button" onclick="showEditClassLogModal(' + c.rowIndex + ')" style="font-size:0.65rem;padding:2px 4px;background:none;border:1px solid var(--border-color);border-radius:4px;cursor:pointer" title="แก้ไข">✏️</button>';
-      tableHTML += '<button type="button" onclick="deleteClassLog(' + c.rowIndex + ')" style="font-size:0.65rem;padding:2px 4px;background:none;border:1px solid var(--border-color);border-radius:4px;cursor:pointer;color:var(--color-danger)" title="ลบ">🗑️</button>';
-      tableHTML += '</div></div>';
-
-      tableHTML += '</div>'; // end card
-    });
-
-    tableHTML += '</div>'; // end cards container
-    tableHTML += '</div>'; // end timeline area
-    tableHTML += '</div>'; // end room row
+                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px;" onclick="event.stopPropagation();">
+                   <div>
+                     ${isTeacherConfirmed 
+                       ? `<button type="button" class="btn" onclick="toggleDailyGridConfirm(${c.rowIndex}, false)" style="font-size: 0.68rem; padding: 3px 8px; background-color: #15803d; color: white; font-weight: 700; border-radius: 12px; border: none; height: auto; display: inline-flex; align-items: center; gap: 2px; cursor: pointer; transition: all 0.2s;">✓ ยืนยัน</button>` 
+                       : `<button type="button" class="btn" onclick="toggleDailyGridConfirm(${c.rowIndex}, true)" style="font-size: 0.68rem; padding: 3px 8px; background-color: #e2e8f0; color: #475569; font-weight: 700; border-radius: 12px; border: none; height: auto; display: inline-flex; align-items: center; gap: 2px; cursor: pointer; transition: all 0.2s;">รอยืนยัน</button>`
+                     }
+                   </div>
+                   <div style="display: flex; gap: 6px;">
+                     <button type="button" class="btn btn-secondary btn-icon" onclick="showEditClassLogModal(${c.rowIndex})" style="padding: 3px 6px; font-size: 0.7rem; height: auto; border-radius: 4px; display: flex; align-items: center; justify-content: center;" title="แก้ไข">✏️</button>
+                     <button type="button" class="btn btn-danger btn-icon" onclick="deleteClassLog(${c.rowIndex})" style="padding: 3px 6px; font-size: 0.7rem; height: auto; border-radius: 4px; display: flex; align-items: center; justify-content: center;" title="ลบ">🗑️</button>
+                   </div>
+                 </div>
+               </div>
+             `;
+           });
+         } else {
+           // empty cell indicator if desired, but we can just leave it blank
+         }
+         tableHTML += `</td>`;
+       });
+    }
+    
+    tableHTML += `
+          </tr>
+    `;
   });
-
-  tableHTML += '</div>'; // end body
-  tableHTML += '</div></div>'; // end wrapper
-
+  
+  tableHTML += `
+        </tbody>
+      </table>
+    </div>
+  `;
+  
   container.innerHTML = tableHTML;
-
+  
   if (state.pendingScrollRowIndex) {
-    var targetRowIndex = state.pendingScrollRowIndex;
+    const targetRowIndex = state.pendingScrollRowIndex;
     state.pendingScrollRowIndex = null;
-    setTimeout(function() {
+    setTimeout(() => {
       highlightScheduledItem(targetRowIndex);
     }, 400);
   }
@@ -12226,196 +12236,393 @@ function loadTeacherSchedule(isSilent = false) {
 
 
 function renderTeacherScheduleGrid(teacher) {
-  var container = document.getElementById('teacher_calendar_container');
+
+  const container = document.getElementById('teacher_calendar_container');
+
   container.innerHTML = '';
-  container.style.display = 'block';
+
+  container.style.display = 'block'; // Avoid rooms-grid column constraints
+
+  
 
   if (!state.teacherClasses || state.teacherClasses.length === 0) {
-    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px">ไม่มีข้อมูลตารางสอนของคุณครูท่านนี้</div>';
+
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลตารางสอนของคุณครูท่านนี้</div>`;
+
     return;
+
   }
+
+  
+
+  // Helper for sorting
 
   function parseSheetDate(dateStr) {
+
     if (!dateStr) return { sortKey: '0000-00-00' };
-    var parts = dateStr.split('/');
+
+    const parts = dateStr.split('/');
+
     if (parts.length === 3) {
-      var d = parseInt(parts[0], 10);
-      var m = parseInt(parts[1], 10);
-      var y = parseInt(parts[2], 10);
-      return { sortKey: y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0') };
+
+      const d = parseInt(parts[0], 10);
+
+      const m = parseInt(parts[1], 10);
+
+      const y = parseInt(parts[2], 10);
+
+      const sortKey = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+      return { sortKey };
+
     }
+
     return { sortKey: '0000-00-00' };
+
   }
 
-  function getThaiDateLabel(dateStr) {
-    if (!dateStr) return '-';
-    var parts = dateStr.split('/');
+  
+
+  function getMonthYearThai(dateStr) {
+
+    if (!dateStr) return 'อื่นๆ';
+
+    const parts = dateStr.split('/');
+
     if (parts.length === 3) {
-      var d = parseInt(parts[0], 10);
-      var m = parseInt(parts[1], 10) - 1;
-      var thMonths = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-      return d + ' ' + thMonths[m] + ' ' + parts[2];
+
+      const m = parseInt(parts[1], 10) - 1;
+
+      const y = parseInt(parts[2], 10);
+
+      const thMonthsFull = [
+
+        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+
+        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+
+      ];
+
+      return `${thMonthsFull[m]} ${y}`;
+
     }
-    return dateStr;
+
+    return 'อื่นๆ';
+
   }
 
-  function parseTimeToHours(t) {
-    var parts = (t || '00.00').replace(':', '.').split('.');
-    return parseInt(parts[0] || 0) + (parseInt(parts[1] || 0) / 60);
-  }
+  
 
-  var timelineStart = 8;
-  var timelineEnd = 20;
-  var timelineSpan = timelineEnd - timelineStart;
+  // Sort classes chronologically (oldest to newest)
 
-  var sorted = state.teacherClasses.slice().sort(function(a, b) {
-    var keyA = parseSheetDate(a.date).sortKey + ' ' + (a.timeStart || '');
-    var keyB = parseSheetDate(b.date).sortKey + ' ' + (b.timeStart || '');
+  const sorted = [...state.teacherClasses].sort((a, b) => {
+
+    const keyA = parseSheetDate(a.date).sortKey + ' ' + (a.timeStart || '');
+
+    const keyB = parseSheetDate(b.date).sortKey + ' ' + (b.timeStart || '');
+
     return keyA.localeCompare(keyB);
+
   });
 
-  // Group by date
-  var dateGroups = {};
-  var dateOrder = [];
-  sorted.forEach(function(log) {
-    var dk = log.date || 'ไม่ระบุ';
-    if (!dateGroups[dk]) {
-      dateGroups[dk] = [];
-      dateOrder.push(dk);
-    }
-    dateGroups[dk].push(log);
-  });
+  
 
-  var html = '<div style="width:100%;overflow-x:auto;border:1px solid var(--border-color);border-radius:8px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.02)">';
-  html += '<div style="min-width:1300px;position:relative">';
+  let currentMonthYear = null;
 
-  // Header
-  html += '<div style="display:flex;position:sticky;top:0;z-index:20;background:#f8fafc;border-bottom:2px solid var(--border-color)">';
-  html += '<div style="width:150px;min-width:150px;position:sticky;left:0;z-index:30;background:#f8fafc;padding:12px;font-weight:700;border-right:2px solid var(--border-color);color:var(--text-main);display:flex;align-items:center;justify-content:center">วันที่</div>';
-  html += '<div style="flex:1;display:flex">';
-  for (var h = timelineStart; h < timelineEnd; h++) {
-    html += '<div style="flex:1;padding:12px 4px;text-align:center;font-weight:700;border-right:1px dashed #e2e8f0;color:var(--text-main);font-size:0.82rem">' + String(h).padStart(2, '0') + '.00</div>';
-  }
-  html += '</div></div>';
+  let monthWrapper = null;
 
-  // Body
-  html += '<div style="display:flex;flex-direction:column">';
+  let monthItemsContainer = null;
 
-  dateOrder.forEach(function(dateKey) {
-    var dateClasses = dateGroups[dateKey];
-    var thaiDate = getThaiDateLabel(dateKey);
+  let monthCount = 0;
 
-    // Calculate overlap
-    var rowPlacements = [];
-    var cardPositions = [];
-    dateClasses.forEach(function(c) {
-      var s = parseTimeToHours(c.timeStart || '08.00');
-      var e = parseTimeToHours(c.timeEnd || '10.00');
-      if (s < timelineStart) s = timelineStart;
-      if (e > timelineEnd) e = timelineEnd;
-      if (e <= s) e = s + 1;
+  
 
-      var rowIdx = 0;
-      while (true) {
-        if (!rowPlacements[rowIdx]) rowPlacements[rowIdx] = [];
-        var overlaps = false;
-        for (var p = 0; p < rowPlacements[rowIdx].length; p++) {
-          if (s < rowPlacements[rowIdx][p].e && e > rowPlacements[rowIdx][p].s) { overlaps = true; break; }
-        }
-        if (!overlaps) {
-          rowPlacements[rowIdx].push({s: s, e: e});
-          break;
-        }
-        rowIdx++;
-      }
-      cardPositions.push({c: c, s: s, e: e, row: rowIdx});
-    });
+  sorted.forEach(log => {
 
-    var maxRows = rowPlacements.length > 0 ? rowPlacements.length : 1;
-    var rowHeight = maxRows * 135 + 20;
+    const monthYear = getMonthYearThai(log.date);
 
-    // Date row
-    html += '<div style="display:flex;border-bottom:1px solid var(--border-color);min-height:' + Math.max(rowHeight, 130) + 'px;position:relative">';
-    // Left: date label
-    html += '<div style="width:150px;min-width:150px;position:sticky;left:0;z-index:10;background:#fff;padding:16px 10px;border-right:2px solid var(--border-color);box-shadow:2px 0 5px -2px rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:center;text-align:center"><div style="font-weight:700;font-size:0.95rem;color:var(--color-primary-hover)">' + thaiDate + '</div></div>';
     
-    // Timeline area
-    html += '<div style="flex:1;display:flex;position:relative">';
-    for (var hh = timelineStart; hh < timelineEnd; hh++) {
-      html += '<div style="flex:1;border-right:1px dashed #e2e8f0;pointer-events:none"></div>';
-    }
 
-    // Cards
-    html += '<div style="position:absolute;top:0;left:0;right:0;bottom:0;padding:4px 0">';
+    if (monthYear !== currentMonthYear) {
 
-    cardPositions.forEach(function(pos) {
-      var c = pos.c;
-      var leftPct = ((pos.s - timelineStart) / timelineSpan) * 100;
-      var widthPct = ((pos.e - pos.s) / timelineSpan) * 100;
-      var topPx = pos.row * 135 + 4;
+      currentMonthYear = monthYear;
 
-      // Color logic
-      var cleanRoom = (c.roomBranch || '').toLowerCase();
-      var borderColor = 'var(--border-color)';
-      if (cleanRoom.includes('สาขา 1') || cleanRoom.includes('สาขา1')) borderColor = 'var(--color-success)';
-      else if (cleanRoom.includes('สาขา 2') || cleanRoom.includes('สาขา2')) borderColor = '#3b82f6';
-      else if (cleanRoom.includes('สาขา 3') || cleanRoom.includes('สาขา3')) borderColor = '#f59e0b';
-      else if (cleanRoom.includes('ออนไลน์') || cleanRoom.includes('online')) borderColor = '#8b5cf6';
-
-      var isConfirmed = c.teacherConfirmed > 0;
-      var cardBg = isConfirmed ? 'background:rgba(25,135,84,0.08);' : 'background:#fff;';
-      var cardBorder = isConfirmed ? 'border:1.5px solid rgba(25,135,84,0.4);' : 'border:1px solid var(--border-color);';
-      var borderLeft = 'border-left:4px solid ' + (isConfirmed ? '#15803d' : borderColor) + ';';
-
-      var isSub = c.teacherSub && c.teacherSub.toLowerCase().includes(teacher.toLowerCase().trim());
-      var roleBadge = isSub
-        ? '<span style="font-size:0.6rem;background:var(--color-danger);color:white;padding:1px 4px;border-radius:4px;font-weight:700">สอนแทน</span>'
-        : '<span style="font-size:0.6rem;background:var(--color-primary);color:white;padding:1px 4px;border-radius:4px;font-weight:700">ครูหลัก</span>';
-
-      var attendances = [];
-      attendances.push('<span class="badge badge-success" style="font-size:0.58rem;padding:1px 3px">สด:' + (c.isPresentLive || 0) + '</span>');
-      attendances.push('<span class="badge badge-info" style="font-size:0.58rem;padding:1px 3px">ออน:' + (c.isPresentOnline || 0) + '</span>');
-      attendances.push('<span class="badge badge-warning" style="font-size:0.58rem;padding:1px 3px">ลา:' + (c.isLeave || 0) + '</span>');
-      attendances.push('<span class="badge badge-danger" style="font-size:0.58rem;padding:1px 3px">ขาด:' + (c.isAbsent || 0) + '</span>');
-      attendances.push('<span class="badge" style="font-size:0.58rem;background:#c095e7;color:white;padding:1px 3px">ชด:' + (c.isMakeup || 0) + '</span>');
-
-      var confirmedBadge = isConfirmed ? '<span style="font-size:0.6rem;background:#15803d;color:#fff;padding:1px 4px;border-radius:4px;font-weight:700">✅ ยืนยัน</span>' : '';
-
-      var roomDisplay = (c.roomBranch || '').replace(/Zoom\s*\S*/i, '').replace(/\s+/g, ' ').trim() || '-';
-
-      html += '<div style="position:absolute;left:' + leftPct + '%;width:calc(' + widthPct + '% - 4px);top:' + topPx + 'px;' + cardBg + cardBorder + borderLeft + 'border-radius:6px;padding:6px 8px;font-size:0.75rem;box-shadow:0 1px 3px rgba(0,0,0,0.06);overflow:hidden;white-space:normal;min-width:100px">';
       
-      // Subject
-      html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px">';
-      html += '<div style="font-weight:700;font-size:0.76rem;color:var(--text-main);line-height:1.2;word-break:break-word">' + formatSubjectName(c.subject) + '</div>';
-      html += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0">' + roleBadge + confirmedBadge + '</div>';
-      html += '</div>';
-      
-      // Time + room
-      html += '<div style="font-size:0.68rem;font-weight:600;color:var(--color-primary-hover);margin:2px 0">⏰ ' + cleanTimeStr(c.timeStart) + ' - ' + cleanTimeStr(c.timeEnd) + '</div>';
-      html += '<div style="font-size:0.68rem;color:var(--text-muted)">🏢 ' + roomDisplay + '</div>';
-      html += '<div style="font-size:0.68rem;color:var(--text-muted)">👨‍🏫 ' + (c.teacherRegular || '-') + (c.teacherSub ? ' (แทน: ' + c.teacherSub + ')' : '') + '</div>';
 
-      // Note
-      if (c.note) {
-        html += '<div style="font-size:0.66rem;margin-top:3px;padding:3px 6px;background:rgba(0,0,0,0.02);border-radius:4px;font-style:italic;color:#64748b;word-break:break-word">📝 ' + c.note + '</div>';
+      // If we had a previous month, update its count
+
+      if (monthWrapper && monthItemsContainer) {
+
+        const countBadge = monthWrapper.querySelector('.month-class-count');
+
+        if (countBadge) countBadge.innerText = `${monthCount} คลาส`;
+
       }
 
-      // Attendance
-      html += '<div style="display:flex;gap:2px;flex-wrap:wrap;margin-top:3px;border-top:1px dashed var(--border-color);padding-top:3px">' + attendances.join('') + '</div>';
+      
 
-      html += '</div>'; // end card
-    });
+      monthCount = 0;
 
-    html += '</div>'; // cards container
-    html += '</div>'; // timeline area
-    html += '</div>'; // date row
+      
+
+      monthWrapper = document.createElement('div');
+
+      monthWrapper.style.marginBottom = '28px';
+
+      monthWrapper.style.width = '100%';
+
+      
+
+      monthWrapper.innerHTML = `
+
+        <div style="background: rgba(0, 132, 255, 0.08); border-left: 4px solid var(--color-primary); padding: 12px 16px; border-radius: var(--radius-md) var(--radius-md) 0 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; box-shadow: var(--shadow-sm);">
+
+          <span style="font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: var(--color-primary-hover);">📅 ${monthYear}</span>
+
+          <span class="month-class-count badge badge-primary" style="font-size: 0.85rem; padding: 4px 10px;">0 คลาส</span>
+
+        </div>
+
+      `;
+
+      
+
+      monthItemsContainer = document.createElement('div');
+
+      monthItemsContainer.style.display = 'grid';
+
+      monthItemsContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(210px, 1fr))';
+
+      monthItemsContainer.style.gap = '12px';
+
+      monthWrapper.appendChild(monthItemsContainer);
+
+      
+
+      container.appendChild(monthWrapper);
+
+    }
+
+    
+
+    monthCount++;
+
+    
+
+    // Card left border based on branch code
+
+    const cleanRoom = (log.roomBranch || '').toLowerCase();
+
+    let borderColor = 'var(--border-color)';
+
+    let bgLight = '#ffffff';
+
+    if (cleanRoom.includes('สาขา 1') || cleanRoom.includes('สาขา1')) {
+
+      borderColor = 'var(--color-success)';
+
+      bgLight = '#ffffff';
+
+    } else if (cleanRoom.includes('สาขา 2') || cleanRoom.includes('สาขา2')) {
+
+      borderColor = '#3b82f6';
+
+      bgLight = '#ffffff';
+
+    } else if (cleanRoom.includes('สาขา 3') || cleanRoom.includes('สาขา3')) {
+
+      borderColor = '#f59e0b';
+
+      bgLight = '#ffffff';
+
+    } else if (cleanRoom.includes('ออนไลน์') || cleanRoom.includes('online')) {
+
+      borderColor = '#8b5cf6';
+
+      bgLight = '#ffffff';
+
+    }
+
+    
+
+    const attendances = [];
+
+    attendances.push(`<span class="badge badge-success" style="font-size:0.6rem; padding: 2px 4px;">สด: ${log.isPresentLive || 0}</span>`);
+
+    attendances.push(`<span class="badge badge-info" style="font-size:0.6rem; padding: 2px 4px;">ออน: ${log.isPresentOnline || 0}</span>`);
+
+    attendances.push(`<span class="badge badge-warning" style="font-size:0.6rem; padding: 2px 4px;">ลา: ${log.isLeave || 0}</span>`);
+
+    attendances.push(`<span class="badge badge-danger" style="font-size:0.6rem; padding: 2px 4px;">ขาด: ${log.isAbsent || 0}</span>`);
+
+    attendances.push(`<span class="badge" style="font-size:0.6rem; background-color:#c095e7; color:white; padding: 2px 4px;">ชด: ${log.isMakeup || 0}</span>`);
+
+    
+
+    const attendancesHTML = attendances.length > 0 ? `<div style="display:flex; gap:3px; flex-wrap:wrap;">${attendances.join('')}</div>` : '<span style="font-size:0.65rem; color:var(--text-muted);">ไม่มีเช็คอิน</span>';
+
+    
+
+    const isSub = log.teacherSub && log.teacherSub.toLowerCase().includes(teacher.toLowerCase().trim());
+
+    const roleBadge = isSub 
+
+      ? `<span class="badge" style="background: var(--color-danger); color: white; font-size: 0.6rem; font-weight: bold; padding: 1px 4px;">สอนแทน</span>`
+
+      : `<span class="badge" style="background: var(--color-primary); color: white; font-size: 0.6rem; font-weight: bold; padding: 1px 4px;">ครูหลัก</span>`;
+
+    
+
+    const card = document.createElement('div');
+
+    const isTeacherConfirmedCard = log.teacherConfirmed > 0;
+
+    card.style.background = isTeacherConfirmedCard ? 'rgba(25, 135, 84, 0.08)' : bgLight;
+
+    card.style.border = isTeacherConfirmedCard ? '1px solid rgba(25, 135, 84, 0.3)' : '1px solid var(--border-color)';
+
+    card.style.borderLeft = `4px solid ${isTeacherConfirmedCard ? '#15803d' : borderColor}`;
+
+    card.style.borderRadius = 'var(--radius-md)';
+
+    card.style.padding = '10px 12px';
+
+    card.style.boxShadow = 'var(--shadow-sm)';
+
+    card.style.display = 'flex';
+
+    card.style.flexDirection = 'column';
+
+    card.style.gap = '6px';
+
+    card.style.position = 'relative';
+
+    card.style.height = 'auto';
+
+    card.style.transition = 'transform 0.2s, box-shadow 0.2s';
+
+    
+
+    // Add hover behavior
+
+    card.onmouseenter = () => {
+
+      card.style.transform = 'translateY(-2px)';
+
+      card.style.boxShadow = 'var(--shadow-md)';
+
+    };
+
+    card.onmouseleave = () => {
+
+      card.style.transform = 'none';
+
+      card.style.boxShadow = 'var(--shadow-sm)';
+
+    };
+
+    
+
+    const confirmedBadge = isTeacherConfirmedCard
+
+      ? `<span style="background:#15803d; color:#fff; font-size:0.63rem; padding:2px 6px; border-radius:4px; font-weight:700; white-space:nowrap;">✅ ครูยืนยันแล้ว</span>`
+
+      : '';
+
+    
+
+    card.innerHTML = `
+
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px;">
+
+        <div style="font-weight: 700; font-size: 0.78rem; color: var(--text-main); line-height: 1.25; word-break: break-word; overflow-wrap: anywhere;">
+
+          ${formatSubjectName(log.subject)}
+
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
+
+          <span style="font-size: 0.7rem; font-weight: bold; color: var(--color-primary-hover); background: rgba(0, 132, 255, 0.08); padding: 1px 4px; border-radius: var(--radius-sm); white-space: nowrap;">
+
+            ⏰ ${cleanTimeStr(log.timeStart)} - ${cleanTimeStr(log.timeEnd)}
+
+          </span>
+
+          ${roleBadge}
+
+          ${confirmedBadge}
+
+        </div>
+
+      </div>
+
+      
+
+      <div style="font-size: 0.72rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 3px; border-top: 1px dashed var(--border-color); padding-top: 6px; margin-top: 2px;">
+
+        <div style="display: flex; justify-content: space-between; gap: 4px;">
+
+          <span style="white-space: nowrap;">📅 วันที่:</span>
+
+          <span style="font-weight: 600; color: var(--text-main); text-align: right;">${formatDateTimeToThaiLong(log.date)}</span>
+
+        </div>
+
+        <div style="display: flex; justify-content: space-between; gap: 4px;">
+
+          <span style="white-space: nowrap;">🏢 ห้อง:</span>
+
+          <span style="font-weight: 500; color: var(--text-main); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px;">${(log.roomBranch || '').replace(/Zoom\s*\S*/i, '').replace(/\s+/g, ' ').trim() || '-'}</span>
+
+        </div>
+
+        <div style="display: flex; justify-content: space-between; gap: 4px;">
+
+          <span style="white-space: nowrap;">👨‍🏫 ครูหลัก/แทน:</span>
+
+          <span style="color: var(--text-main); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px;">${log.teacherRegular}\ ${log.teacherSub ? `(แทน: ${log.teacherSub})` : ''}</span>
+
+        </div>
+
+        ${log.note ? `
+
+        <div style="margin-top: 3px; padding: 4px; background: rgba(0,0,0,0.02); border-radius: var(--radius-sm); font-style: italic; color: #64748b; line-height: 1.2; word-break: break-word;">
+
+          📝 หมายเหตุ: ${log.note}
+
+        </div>` : ''}
+
+      </div>
+
+      
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px; border-top: 1px dashed var(--border-color); padding-top: 6px;">
+
+        ${attendancesHTML}
+
+      </div>
+
+    `;
+
+    
+
+    monthItemsContainer.appendChild(card);
+
   });
 
-  html += '</div>'; // body
-  html += '</div></div>'; // wrapper
+  
 
-  container.innerHTML = html;
+  // Update the count for the very last month group
+
+  if (monthWrapper && monthItemsContainer) {
+
+    const countBadge = monthWrapper.querySelector('.month-class-count');
+
+    if (countBadge) countBadge.innerText = `${monthCount} คลาส`;
+
+  }
+
 }
 
 
