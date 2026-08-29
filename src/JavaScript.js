@@ -4697,6 +4697,8 @@ function switchPanel(panelName) {
   // Restore parent scrolling when leaving daily_grid
   var contentBody = document.querySelector('.content-body');
   if (contentBody) contentBody.style.overflow = '';
+  document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
 
   // Update sidebar active link
 
@@ -9390,7 +9392,9 @@ function renderDailyGrid() {
 
   // Prevent parent from scrolling - only the grid should scroll
   var contentBody = container.closest('.content-body');
-  if (contentBody) contentBody.style.overflow = 'hidden';
+  if (contentBody) contentBody.style.setProperty('overflow', 'hidden', 'important');
+  document.body.style.setProperty('overflow', 'hidden', 'important');
+  document.documentElement.style.setProperty('overflow', 'hidden', 'important');
 
   renderDailyAttendanceSummary();
   
