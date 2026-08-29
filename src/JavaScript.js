@@ -4694,6 +4694,10 @@ function switchPanel(panelName) {
 
 
 
+  // Restore parent scrolling when leaving daily_grid
+  var contentBody = document.querySelector('.content-body');
+  if (contentBody) contentBody.style.overflow = '';
+
   // Update sidebar active link
 
   document.querySelectorAll('.nav-item').forEach(item => {
@@ -9384,6 +9388,10 @@ function renderDailyGrid() {
   container.innerHTML = '';
   container.style.display = 'block';
 
+  // Prevent parent from scrolling - only the grid should scroll
+  var contentBody = container.closest('.content-body');
+  if (contentBody) contentBody.style.overflow = 'hidden';
+
   renderDailyAttendanceSummary();
   
   const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
@@ -9429,7 +9437,7 @@ function renderDailyGrid() {
     headerCols += '<div style="position:absolute; left:' + ((h - HOUR_START) * COL_WIDTH) + 'px; width:' + COL_WIDTH + 'px; text-align:center; font-weight:700; font-size:0.72rem; color:var(--text-main); padding:8px 0; box-sizing:border-box; border-right:1px dashed #e2e8f0;">' + label + '</div>';
   }
 
-  var html = '<div style="width:100%; max-height:75vh; overflow:auto; border:1px solid var(--border-color); border-radius:8px; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.02);">';
+  var html = '<div style="width:100%; height:calc(100vh - 180px); overflow:auto; border:1px solid var(--border-color); border-radius:8px; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.02);">';
   html += '<div style="display:flex; min-width:' + (ROOM_COL_WIDTH + TIMELINE_WIDTH) + 'px;">';
   
   // Sticky header
