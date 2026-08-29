@@ -385,6 +385,8 @@ let state = {
   students: [],
 
   classLogs: [],
+  dailyGridCache: {},
+  allClassLogsCache: null,
 
   managerLogs: [],
 
@@ -2375,19 +2377,7 @@ function bootApp() {
 
         window._nextTaskSilent = true;
 
-        google.script.run
-
-          .withSuccessHandler(students => {
-
-            if (Array.isArray(students)) {
-
-              state.students = students;
-
-            }
-
-          })
-
-          .getStudentsList(getLogUser());
+        fetchCachedStudents(true);
 
         
 
@@ -5320,43 +5310,9 @@ function renderRoundSummaryTable(summary, categories) {
 // ----------------------------------------------------
 
 function loadStudents(isSilent = false) {
-
-  if (!isSilent) setLoading(true, 'กำลังดึงรายชื่อนักเรียน...');
-
-  google.script.run
-
-    .withSuccessHandler(data => {
-
-      if (!isSilent) setLoading(false);
-
-      if (Array.isArray(data)) {
-
-        state.students = data;
-
-        renderStudentsTable();
-
-      } else if (!isSilent) {
-
-        showToast('ไม่สามารถโหลดข้อมูลรายชื่อนักเรียนได้: ' + (data ? data.error : 'unknown'), 'error');
-
-      }
-
-    })
-
-    .withFailureHandler(err => {
-
-      if (!isSilent) {
-
-        setLoading(false);
-
-        showToast('ดึงข้อมูลรายชื่อล้มเหลว: ' + err.message, 'error');
-
-      }
-
-    })
-
-    .getStudentsList(getLogUser());
-
+  fetchCachedStudents(isSilent, data => {
+    renderStudentsTable();
+  });
 }
 
 
@@ -6614,47 +6570,9 @@ function searchGlobalBackend() {
 
 
 function editStudentFromGradeSheet(studentName) {
-
-  if (!state.students || state.students.length === 0) {
-
-    setLoading(true, 'กำลังดึงข้อมูลนักเรียนเพื่อแก้ไข...');
-
-    google.script.run
-
-      .withSuccessHandler(data => {
-
-        setLoading(false);
-
-        if (Array.isArray(data)) {
-
-          state.students = data;
-
-          openEditModalByName(studentName);
-
-        } else {
-
-          showToast('ไม่สามารถดึงข้อมูลเพื่อแก้ไขได้', 'error');
-
-        }
-
-      })
-
-      .withFailureHandler(err => {
-
-        setLoading(false);
-
-        showToast('การดึงข้อมูลล้มเหลว: ' + err.message, 'error');
-
-      })
-
-      .getStudentsList(getLogUser());
-
-  } else {
-
+  fetchCachedStudents(false, data => {
     openEditModalByName(studentName);
-
-  }
-
+  });
 }
 
 
@@ -8952,14 +8870,29 @@ function loadDailyGrid(isSilent = false) {
   
 
   if (!isSilent) {
-
     setLoading(true, 'กำลังดึงตารางสอนรายห้องเรียนประจำวันที่ ' + formatDateToThai(sheetDate) + '...');
-
   }
+  
+  if (state.dailyGridCache[sheetDate] && !isSilent && window._forceDailyGridRefresh !== true) {
+    // Use cached data
+    const data = state.dailyGridCache[sheetDate];
+    setTimeout(() => {
+      setLoading(false);
+      state.rooms = data.rooms;
+      state.classLogs = data.classes;
+      state.enrollments = data.enrollments || {};
+      renderDailyGrid();
+      populateRoomsDatalist();
+    }, 10);
+    return;
+  }
+  window._forceDailyGridRefresh = false;
 
   google.script.run
-
     .withSuccessHandler(data => {
+      if (data && !data.error) {
+        state.dailyGridCache[sheetDate] = data; // Save to cache
+      }
 
       if (!isSilent) setLoading(false);
 
@@ -9390,11 +9323,7 @@ function renderDailyGrid() {
   container.innerHTML = '';
   container.style.display = 'block';
 
-  // Prevent parent from scrolling - only the grid should scroll
-  var contentBody = container.closest('.content-body');
-  if (contentBody) contentBody.style.setProperty('overflow', 'hidden', 'important');
-  document.body.style.setProperty('overflow', 'hidden', 'important');
-  document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+
 
   renderDailyAttendanceSummary();
   
@@ -9441,7 +9370,7 @@ function renderDailyGrid() {
     headerCols += '<div style="position:absolute; left:' + ((h - HOUR_START) * COL_WIDTH) + 'px; width:' + COL_WIDTH + 'px; text-align:center; font-weight:700; font-size:0.72rem; color:var(--text-main); padding:8px 0; box-sizing:border-box; border-right:1px dashed #e2e8f0;">' + label + '</div>';
   }
 
-  var html = '<div style="width:100%; height:calc(100vh - 180px); overflow:auto; border:1px solid var(--border-color); border-radius:8px; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.02);">';
+  var html = '<div style="width:100%; height:65vh; overflow:auto; border:1px solid var(--border-color); border-radius:8px; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.02);">';
   html += '<div style="display:flex; min-width:' + (ROOM_COL_WIDTH + TIMELINE_WIDTH) + 'px;">';
   
   // Sticky header
@@ -10301,41 +10230,7 @@ function loadRevenueLogs(isSilent = false) {
 
   
 
-  if (!isSilent) {
-
-    setLoading(true, 'กำลังดึงรายการรายรับ...');
-
-  }
-
-  google.script.run
-
-    .withSuccessHandler(data => {
-
-      if (!isSilent) setLoading(false);
-
-      if (Array.isArray(data)) {
-
-        state.students = data;
-
-        renderRevenueLogs();
-
-      } else {
-
-        if (!isSilent) showToast('ไม่สามารถดึงข้อมูลรายรับได้: ' + (data ? data.error : 'unknown'), 'error');
-
-      }
-
-    })
-
-    .withFailureHandler(err => {
-
-      if (!isSilent) setLoading(false);
-
-      if (!isSilent) showToast('ดึงข้อมูลล้มเหลว: ' + err.message, 'error');
-
-    })
-
-    .getStudentsList(getLogUser());
+  fetchCachedStudents(isSilent, data => { renderRevenueLogs(); });
 
 }
 
@@ -10905,7 +10800,7 @@ function renderModalClassesList() {
 
       </div>
 
-      <div style="font-size: 0.72rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; border-top: 1px dashed var(--border-color); padding-top: 4px; margin-top: 2px;">
+      <div style="font-size: 0.65rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; border-top: 1px dashed var(--border-color); padding-top: 4px; margin-top: 2px;">
 
         <div>🏢 ห้อง/สาขา: ${log.roomBranch || '-'}</div>
 
@@ -11997,10 +11892,11 @@ function saveClassLog(e) {
 
           const activePanel = document.querySelector('.nav-item.active')?.getAttribute('data-panel');
 
-          if (activePanel === 'daily_grid') loadDailyGrid();
-
-          else loadRevenueLogs();
-
+          window._forceDailyGridRefresh = true;
+          window._forceTeacherGridRefresh = true;
+          if (activePanel === 'daily_grid') loadDailyGrid(true);
+          else loadRevenueLogs(true);
+          loadTeacherSchedule(true); // background sync
           checkLowBalanceStudents();
 
         } else {
@@ -12147,19 +12043,18 @@ function deleteClassLog(rowIndex) {
 
           const activePanel = document.querySelector('.nav-item.active').getAttribute('data-panel');
 
-          if (activePanel === 'daily_grid') loadDailyGrid();
-
-          else if (activePanel === 'teacher_schedule') loadTeacherSchedule(true);
-
-          else loadRevenueLogs();
-
+          // Optimistic UI update
+          state.classLogs = state.classLogs.filter(c => c.rowIndex !== rowIndex);
+          if (activePanel === 'daily_grid') renderDailyGrid();
+          else if (activePanel === 'teacher_schedule') renderTeacherScheduleGrid(document.getElementById('teacher_schedule_select').value);
           
-
-          // Force update teacher schedule to keep it synced
-
-          loadTeacherSchedule(true);
-
-          checkLowBalanceStudents(); // update warning banner
+          window._forceDailyGridRefresh = true;
+          window._forceTeacherGridRefresh = true;
+          if (activePanel === 'daily_grid') loadDailyGrid(true);
+          else if (activePanel === 'teacher_schedule') loadTeacherSchedule(true);
+          else loadRevenueLogs(true);
+          
+          checkLowBalanceStudents();
 
         } else {
 
@@ -12208,16 +12103,29 @@ function loadTeacherSchedule(isSilent = false) {
   
 
   if (!isSilent) {
-
     setLoading(true, 'กำลังดึงตารางสอนคุณครู ' + teacher + '...');
-
   }
-
   
+  if (state.allClassLogsCache && !isSilent && window._forceTeacherGridRefresh !== true) {
+    const data = state.allClassLogsCache;
+    setTimeout(() => {
+      setLoading(false);
+      state.classLogs = data;
+      state.teacherClasses = data.filter(c => 
+        (c.teacherRegular && c.teacherRegular.toLowerCase().includes(teacher.toLowerCase().trim())) ||
+        (c.teacherSub && c.teacherSub.toLowerCase().includes(teacher.toLowerCase().trim()))
+      );
+      renderTeacherScheduleGrid(teacher);
+    }, 10);
+    return;
+  }
+  window._forceTeacherGridRefresh = false;
 
   google.script.run
-
     .withSuccessHandler(data => {
+      if (Array.isArray(data)) {
+        state.allClassLogsCache = data;
+      }
 
       if (!isSilent) setLoading(false);
 
@@ -12260,397 +12168,206 @@ function loadTeacherSchedule(isSilent = false) {
 
 
 function renderTeacherScheduleGrid(teacher) {
-
   const container = document.getElementById('teacher_calendar_container');
-
   container.innerHTML = '';
-
-  container.style.display = 'block'; // Avoid rooms-grid column constraints
-
-  
+  container.style.display = 'block';
 
   if (!state.teacherClasses || state.teacherClasses.length === 0) {
-
     container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลตารางสอนของคุณครูท่านนี้</div>`;
-
     return;
-
   }
 
-  
-
-  // Helper for sorting
+  function parseTimeToHours(t) {
+    if (!t) return null;
+    var s = String(t).replace(':', '.').replace(/\s/g, '');
+    var parts = s.split('.');
+    var h = parseInt(parts[0], 10) || 0;
+    var m = parseInt(parts[1], 10) || 0;
+    return h + m / 60;
+  }
 
   function parseSheetDate(dateStr) {
-
     if (!dateStr) return { sortKey: '0000-00-00' };
-
     const parts = dateStr.split('/');
-
     if (parts.length === 3) {
-
       const d = parseInt(parts[0], 10);
-
       const m = parseInt(parts[1], 10);
-
       const y = parseInt(parts[2], 10);
-
       const sortKey = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-
       return { sortKey };
-
     }
-
     return { sortKey: '0000-00-00' };
-
   }
 
-  
-
-  function getMonthYearThai(dateStr) {
-
-    if (!dateStr) return 'อื่นๆ';
-
-    const parts = dateStr.split('/');
-
-    if (parts.length === 3) {
-
-      const m = parseInt(parts[1], 10) - 1;
-
-      const y = parseInt(parts[2], 10);
-
-      const thMonthsFull = [
-
-        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-
-        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-
-      ];
-
-      return `${thMonthsFull[m]} ${y}`;
-
+  const groupedByDate = {};
+  state.teacherClasses.forEach(log => {
+    const sortKey = parseSheetDate(log.date).sortKey;
+    if (!groupedByDate[sortKey]) {
+      groupedByDate[sortKey] = {
+        dateStr: log.date,
+        sortKey: sortKey,
+        classes: []
+      };
     }
-
-    return 'อื่นๆ';
-
-  }
-
-  
-
-  // Sort classes chronologically (oldest to newest)
-
-  const sorted = [...state.teacherClasses].sort((a, b) => {
-
-    const keyA = parseSheetDate(a.date).sortKey + ' ' + (a.timeStart || '');
-
-    const keyB = parseSheetDate(b.date).sortKey + ' ' + (b.timeStart || '');
-
-    return keyA.localeCompare(keyB);
-
+    groupedByDate[sortKey].classes.push(log);
   });
 
+  const sortedDates = Object.values(groupedByDate).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+
+  const HOUR_START = 8;
+  const HOUR_END = 22;
+  const TOTAL_HOURS = HOUR_END - HOUR_START;
+  const COL_WIDTH = 180;
+  const TIMELINE_WIDTH = TOTAL_HOURS * COL_WIDTH;
+  const ROW_HEADER_WIDTH = 160;
+  const CARD_ROW_HEIGHT = 120;
+
+  var headerCols = '';
+  for (var h = HOUR_START; h <= HOUR_END; h++) {
+    var label = String(h).padStart(2, '0') + '.00';
+    headerCols += '<div style="position:absolute; left:' + ((h - HOUR_START) * COL_WIDTH) + 'px; width:' + COL_WIDTH + 'px; text-align:center; font-weight:700; font-size:0.72rem; color:var(--text-main); padding:8px 0; box-sizing:border-box; border-right:1px dashed #e2e8f0;">' + label + '</div>';
+  }
+
+  var html = '<div style="width:100%; height:65vh; overflow:auto; border:1px solid var(--border-color); border-radius:8px; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.02);">';
+  html += '<div style="display:flex; min-width:' + (ROW_HEADER_WIDTH + TIMELINE_WIDTH) + 'px;">';
   
+  html += '<div style="position:sticky; top:0; z-index:20; display:flex; width:100%; background:#f8fafc; border-bottom:2px solid var(--border-color);">';
+  html += '<div style="position:sticky; left:0; z-index:30; min-width:' + ROW_HEADER_WIDTH + 'px; width:' + ROW_HEADER_WIDTH + 'px; padding:8px 10px; font-weight:700; font-size:0.72rem; color:var(--text-main); border-right:2px solid var(--border-color); background:#f8fafc; display:flex; align-items:center;">วันที่สอน</div>';
+  html += '<div style="position:relative; width:' + TIMELINE_WIDTH + 'px; height:36px;">' + headerCols + '</div>';
+  html += '</div></div>';
 
-  let currentMonthYear = null;
+  sortedDates.forEach(dateGroup => {
+    var cards = [];
+    dateGroup.classes.forEach(function(c) {
+      var sh = parseTimeToHours(c.timeStart);
+      var eh = parseTimeToHours(c.timeEnd);
+      if (sh === null) return;
+      if (eh === null || eh <= sh) eh = sh + 1;
+      cards.push({ c: c, sh: sh, eh: eh });
+    });
+    cards.sort(function(a, b) { return a.sh - b.sh || a.eh - b.eh; });
 
-  let monthWrapper = null;
+    var rows = [];
+    cards.forEach(function(card) {
+      var placed = false;
+      for (var r = 0; r < rows.length; r++) {
+        var conflict = false;
+        for (var k = 0; k < rows[r].length; k++) {
+          if (card.sh < rows[r][k].eh && card.eh > rows[r][k].sh) {
+            conflict = true;
+            break;
+          }
+        }
+        if (!conflict) {
+          rows[r].push(card);
+          card.row = r;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        card.row = rows.length;
+        rows.push([card]);
+      }
+    });
 
-  let monthItemsContainer = null;
+    var maxRows = rows.length || 1;
+    var rowHeight = maxRows * CARD_ROW_HEIGHT + 10;
 
-  let monthCount = 0;
-
-  
-
-  sorted.forEach(log => {
-
-    const monthYear = getMonthYearThai(log.date);
-
+    html += '<div style="display:flex; min-width:' + (ROW_HEADER_WIDTH + TIMELINE_WIDTH) + 'px; border-bottom:1px solid var(--border-color);">';
     
+    const thDateStr = formatDateTimeToThaiLong ? formatDateTimeToThaiLong(dateGroup.dateStr) : dateGroup.dateStr;
+    html += '<div style="position:sticky; left:0; z-index:10; min-width:' + ROW_HEADER_WIDTH + 'px; width:' + ROW_HEADER_WIDTH + 'px; padding:15px 10px; border-right:2px solid var(--border-color); background:#fff; box-shadow:2px 0 5px -2px rgba(0,0,0,0.05); vertical-align:top; display: flex; flex-direction: column; align-items: center; justify-content: center;">';
+    html += '<div style="font-size:0.85rem; font-weight:700; color:var(--color-primary-hover); text-align:center;">' + thDateStr + '</div>';
+    html += '<div style="font-size:0.65rem; color:var(--text-muted); margin-top: 4px; background: rgba(0,0,0,0.04); padding: 2px 6px; border-radius: 4px;">' + cards.length + ' คลาส</div>';
+    html += '</div>';
 
-    if (monthYear !== currentMonthYear) {
+    html += '<div style="position:relative; width:' + TIMELINE_WIDTH + 'px; min-height:' + rowHeight + 'px;">';
+    
+    var bgCols = '';
+    for (var h = HOUR_START; h <= HOUR_END; h++) {
+      bgCols += '<div style="position:absolute; left:' + ((h - HOUR_START) * COL_WIDTH) + 'px; width:' + COL_WIDTH + 'px; height:100%; box-sizing:border-box; border-right:1px dashed #e2e8f0; pointer-events:none;"></div>';
+    }
+    html += bgCols;
 
-      currentMonthYear = monthYear;
+    cards.forEach(function(cardObj) {
+      var c = cardObj.c;
+      var leftPos = (cardObj.sh - HOUR_START) * COL_WIDTH;
+      var cardW = (cardObj.eh - cardObj.sh) * COL_WIDTH;
+      if (leftPos < 0) { cardW += leftPos; leftPos = 0; }
+      if (leftPos + cardW > TIMELINE_WIDTH) { cardW = TIMELINE_WIDTH - leftPos; }
+      if (cardW < 20) cardW = 20;
 
-      
+      var topPos = cardObj.row * CARD_ROW_HEIGHT + 5;
 
-      // If we had a previous month, update its count
-
-      if (monthWrapper && monthItemsContainer) {
-
-        const countBadge = monthWrapper.querySelector('.month-class-count');
-
-        if (countBadge) countBadge.innerText = `${monthCount} คลาส`;
-
+      const cleanRoom = (c.roomBranch || '').toLowerCase();
+      let borderColor = 'var(--border-color)';
+      let bgLight = '#ffffff';
+      if (cleanRoom.includes('สาขา 1') || cleanRoom.includes('สาขา1')) {
+        borderColor = 'var(--color-success)';
+      } else if (cleanRoom.includes('สาขา 2') || cleanRoom.includes('สาขา2')) {
+        borderColor = '#3b82f6';
+      } else if (cleanRoom.includes('สาขา 3') || cleanRoom.includes('สาขา3')) {
+        borderColor = '#f59e0b';
+      } else if (cleanRoom.includes('ออนไลน์') || cleanRoom.includes('online')) {
+        borderColor = '#8b5cf6';
       }
 
+      const isTeacherConfirmedCard = c.teacherConfirmed > 0;
+      const cardBg = isTeacherConfirmedCard ? 'rgba(25, 135, 84, 0.08)' : bgLight;
+      const cardBorderLeft = isTeacherConfirmedCard ? '#15803d' : borderColor;
+      const cardBorder = isTeacherConfirmedCard ? '1px solid rgba(25, 135, 84, 0.3)' : '1px solid var(--border-color)';
+
+      const isSub = c.teacherSub && c.teacherSub.toLowerCase().includes(teacher.toLowerCase().trim());
+      const roleBadge = isSub 
+        ? `<span class="badge" style="background: var(--color-danger); color: white; font-size: 0.55rem; font-weight: bold; padding: 1px 3px;">สอนแทน</span>`
+        : `<span class="badge" style="background: var(--color-primary); color: white; font-size: 0.55rem; font-weight: bold; padding: 1px 3px;">ครูหลัก</span>`;
       
+      const confirmedBadge = isTeacherConfirmedCard
+        ? `<span style="background:#15803d; color:#fff; font-size:0.58rem; padding:1px 4px; border-radius:4px; font-weight:700; white-space:nowrap;">✅ ครูยืนยันแล้ว</span>`
+        : '';
 
-      monthCount = 0;
-
+      const attendances = [];
+      attendances.push(`<span class="badge badge-success" style="font-size:0.55rem; padding: 1px 3px;">สด: ${c.isPresentLive || 0}</span>`);
+      attendances.push(`<span class="badge badge-info" style="font-size:0.55rem; padding: 1px 3px;">ออน: ${c.isPresentOnline || 0}</span>`);
+      attendances.push(`<span class="badge badge-warning" style="font-size:0.55rem; padding: 1px 3px;">ลา: ${c.isLeave || 0}</span>`);
+      attendances.push(`<span class="badge badge-danger" style="font-size:0.55rem; padding: 1px 3px;">ขาด: ${c.isAbsent || 0}</span>`);
+      attendances.push(`<span class="badge" style="font-size:0.55rem; background-color:#c095e7; color:white; padding: 1px 3px;">ชด: ${c.isMakeup || 0}</span>`);
+      const attendancesHTML = attendances.length > 0 ? `<div style="display:flex; gap:2px; flex-wrap:wrap; margin-top:2px;">${attendances.join('')}</div>` : '';
       
+      const noteHtml = c.note ? `<div style="font-style:italic; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📝 ${c.note}</div>` : '';
+      const teacherStr = `${c.teacherRegular} ${c.teacherSub ? `(แทน: ${c.teacherSub})` : ''}`;
 
-      monthWrapper = document.createElement('div');
-
-      monthWrapper.style.marginBottom = '28px';
-
-      monthWrapper.style.width = '100%';
-
-      
-
-      monthWrapper.innerHTML = `
-
-        <div style="background: rgba(0, 132, 255, 0.08); border-left: 4px solid var(--color-primary); padding: 12px 16px; border-radius: var(--radius-md) var(--radius-md) 0 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; box-shadow: var(--shadow-sm);">
-
-          <span style="font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: var(--color-primary-hover);">📅 ${monthYear}</span>
-
-          <span class="month-class-count badge badge-primary" style="font-size: 0.85rem; padding: 4px 10px;">0 คลาส</span>
-
+      html += `
+        <div class="timeline-card" style="position:absolute; left:${leftPos}px; top:${topPos}px; width:${cardW - 4}px; height:${CARD_ROW_HEIGHT - 10}px; background:${cardBg}; border:${cardBorder}; border-left:4px solid ${cardBorderLeft}; border-radius:6px; padding:6px 8px; box-shadow:var(--shadow-sm); z-index:15; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; transition:transform 0.2s, box-shadow 0.2s;" onmouseenter="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)';" onmouseleave="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)';">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:4px;">
+            <div style="font-weight:700; font-size:0.7rem; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${c.subject}">${formatSubjectName ? formatSubjectName(c.subject) : c.subject}</div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px; flex-shrink:0;">
+              <span style="font-size:0.65rem; font-weight:bold; color:var(--color-primary-hover); background:rgba(0,132,255,0.08); padding:1px 4px; border-radius:3px;">
+                ⏰ ${cleanTimeStr ? cleanTimeStr(c.timeStart) : c.timeStart}-${cleanTimeStr ? cleanTimeStr(c.timeEnd) : c.timeEnd}
+              </span>
+              ${roleBadge}
+              ${confirmedBadge}
+            </div>
+          </div>
+          <div style="font-size:0.65rem; color:var(--text-muted); display:flex; flex-direction:column; gap:2px; margin-top:2px;">
+            <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">🏢 ห้อง: <span style="font-weight:500; color:var(--text-main);">${(c.roomBranch||'').replace(/Zoom\s*\S*/i, '').replace(/\s+/g, ' ').trim() || '-'}</span></div>
+            <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${teacherStr}">👨‍🏫 ครู: <span style="color:var(--text-main);">${teacherStr}</span></div>
+            ${noteHtml}
+          </div>
+          ${attendancesHTML}
         </div>
-
       `;
+    });
 
-      
-
-      monthItemsContainer = document.createElement('div');
-
-      monthItemsContainer.style.display = 'grid';
-
-      monthItemsContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(210px, 1fr))';
-
-      monthItemsContainer.style.gap = '12px';
-
-      monthWrapper.appendChild(monthItemsContainer);
-
-      
-
-      container.appendChild(monthWrapper);
-
-    }
-
-    
-
-    monthCount++;
-
-    
-
-    // Card left border based on branch code
-
-    const cleanRoom = (log.roomBranch || '').toLowerCase();
-
-    let borderColor = 'var(--border-color)';
-
-    let bgLight = '#ffffff';
-
-    if (cleanRoom.includes('สาขา 1') || cleanRoom.includes('สาขา1')) {
-
-      borderColor = 'var(--color-success)';
-
-      bgLight = '#ffffff';
-
-    } else if (cleanRoom.includes('สาขา 2') || cleanRoom.includes('สาขา2')) {
-
-      borderColor = '#3b82f6';
-
-      bgLight = '#ffffff';
-
-    } else if (cleanRoom.includes('สาขา 3') || cleanRoom.includes('สาขา3')) {
-
-      borderColor = '#f59e0b';
-
-      bgLight = '#ffffff';
-
-    } else if (cleanRoom.includes('ออนไลน์') || cleanRoom.includes('online')) {
-
-      borderColor = '#8b5cf6';
-
-      bgLight = '#ffffff';
-
-    }
-
-    
-
-    const attendances = [];
-
-    attendances.push(`<span class="badge badge-success" style="font-size:0.6rem; padding: 2px 4px;">สด: ${log.isPresentLive || 0}</span>`);
-
-    attendances.push(`<span class="badge badge-info" style="font-size:0.6rem; padding: 2px 4px;">ออน: ${log.isPresentOnline || 0}</span>`);
-
-    attendances.push(`<span class="badge badge-warning" style="font-size:0.6rem; padding: 2px 4px;">ลา: ${log.isLeave || 0}</span>`);
-
-    attendances.push(`<span class="badge badge-danger" style="font-size:0.6rem; padding: 2px 4px;">ขาด: ${log.isAbsent || 0}</span>`);
-
-    attendances.push(`<span class="badge" style="font-size:0.6rem; background-color:#c095e7; color:white; padding: 2px 4px;">ชด: ${log.isMakeup || 0}</span>`);
-
-    
-
-    const attendancesHTML = attendances.length > 0 ? `<div style="display:flex; gap:3px; flex-wrap:wrap;">${attendances.join('')}</div>` : '<span style="font-size:0.65rem; color:var(--text-muted);">ไม่มีเช็คอิน</span>';
-
-    
-
-    const isSub = log.teacherSub && log.teacherSub.toLowerCase().includes(teacher.toLowerCase().trim());
-
-    const roleBadge = isSub 
-
-      ? `<span class="badge" style="background: var(--color-danger); color: white; font-size: 0.6rem; font-weight: bold; padding: 1px 4px;">สอนแทน</span>`
-
-      : `<span class="badge" style="background: var(--color-primary); color: white; font-size: 0.6rem; font-weight: bold; padding: 1px 4px;">ครูหลัก</span>`;
-
-    
-
-    const card = document.createElement('div');
-
-    const isTeacherConfirmedCard = log.teacherConfirmed > 0;
-
-    card.style.background = isTeacherConfirmedCard ? 'rgba(25, 135, 84, 0.08)' : bgLight;
-
-    card.style.border = isTeacherConfirmedCard ? '1px solid rgba(25, 135, 84, 0.3)' : '1px solid var(--border-color)';
-
-    card.style.borderLeft = `4px solid ${isTeacherConfirmedCard ? '#15803d' : borderColor}`;
-
-    card.style.borderRadius = 'var(--radius-md)';
-
-    card.style.padding = '10px 12px';
-
-    card.style.boxShadow = 'var(--shadow-sm)';
-
-    card.style.display = 'flex';
-
-    card.style.flexDirection = 'column';
-
-    card.style.gap = '6px';
-
-    card.style.position = 'relative';
-
-    card.style.height = 'auto';
-
-    card.style.transition = 'transform 0.2s, box-shadow 0.2s';
-
-    
-
-    // Add hover behavior
-
-    card.onmouseenter = () => {
-
-      card.style.transform = 'translateY(-2px)';
-
-      card.style.boxShadow = 'var(--shadow-md)';
-
-    };
-
-    card.onmouseleave = () => {
-
-      card.style.transform = 'none';
-
-      card.style.boxShadow = 'var(--shadow-sm)';
-
-    };
-
-    
-
-    const confirmedBadge = isTeacherConfirmedCard
-
-      ? `<span style="background:#15803d; color:#fff; font-size:0.63rem; padding:2px 6px; border-radius:4px; font-weight:700; white-space:nowrap;">✅ ครูยืนยันแล้ว</span>`
-
-      : '';
-
-    
-
-    card.innerHTML = `
-
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px;">
-
-        <div style="font-weight: 700; font-size: 0.78rem; color: var(--text-main); line-height: 1.25; word-break: break-word; overflow-wrap: anywhere;">
-
-          ${formatSubjectName(log.subject)}
-
-        </div>
-
-        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
-
-          <span style="font-size: 0.7rem; font-weight: bold; color: var(--color-primary-hover); background: rgba(0, 132, 255, 0.08); padding: 1px 4px; border-radius: var(--radius-sm); white-space: nowrap;">
-
-            ⏰ ${cleanTimeStr(log.timeStart)} - ${cleanTimeStr(log.timeEnd)}
-
-          </span>
-
-          ${roleBadge}
-
-          ${confirmedBadge}
-
-        </div>
-
-      </div>
-
-      
-
-      <div style="font-size: 0.72rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 3px; border-top: 1px dashed var(--border-color); padding-top: 6px; margin-top: 2px;">
-
-        <div style="display: flex; justify-content: space-between; gap: 4px;">
-
-          <span style="white-space: nowrap;">📅 วันที่:</span>
-
-          <span style="font-weight: 600; color: var(--text-main); text-align: right;">${formatDateTimeToThaiLong(log.date)}</span>
-
-        </div>
-
-        <div style="display: flex; justify-content: space-between; gap: 4px;">
-
-          <span style="white-space: nowrap;">🏢 ห้อง:</span>
-
-          <span style="font-weight: 500; color: var(--text-main); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px;">${(log.roomBranch || '').replace(/Zoom\s*\S*/i, '').replace(/\s+/g, ' ').trim() || '-'}</span>
-
-        </div>
-
-        <div style="display: flex; justify-content: space-between; gap: 4px;">
-
-          <span style="white-space: nowrap;">👨‍🏫 ครูหลัก/แทน:</span>
-
-          <span style="color: var(--text-main); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px;">${log.teacherRegular}\ ${log.teacherSub ? `(แทน: ${log.teacherSub})` : ''}</span>
-
-        </div>
-
-        ${log.note ? `
-
-        <div style="margin-top: 3px; padding: 4px; background: rgba(0,0,0,0.02); border-radius: var(--radius-sm); font-style: italic; color: #64748b; line-height: 1.2; word-break: break-word;">
-
-          📝 หมายเหตุ: ${log.note}
-
-        </div>` : ''}
-
-      </div>
-
-      
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px; border-top: 1px dashed var(--border-color); padding-top: 6px;">
-
-        ${attendancesHTML}
-
-      </div>
-
-    `;
-
-    
-
-    monthItemsContainer.appendChild(card);
-
+    html += '</div></div>';
   });
 
-  
+  html += '</div>';
+  html += '</div>';
 
-  // Update the count for the very last month group
-
-  if (monthWrapper && monthItemsContainer) {
-
-    const countBadge = monthWrapper.querySelector('.month-class-count');
-
-    if (countBadge) countBadge.innerText = `${monthCount} คลาส`;
-
-  }
-
+  container.innerHTML = html;
 }
-
-
-
 function loadTeacherProfiles() {
 
   setLoading(true, 'กำลังโหลดข้อมูลคุณครูทั้งหมด...');
@@ -15256,43 +14973,9 @@ function toggleRecurringDate(idx) {
 
 
 function loadDebtors(isSilent = false) {
-
-  if (!isSilent) setLoading(true, 'กำลังดึงรายชื่อนักเรียนค้างชำระ...');
-
-  google.script.run
-
-    .withSuccessHandler(students => {
-
-      if (!isSilent) setLoading(false);
-
-      if (Array.isArray(students)) {
-
-        state.students = students;
-
-        renderDebtorsTable();
-
-      } else if (!isSilent) {
-
-        showToast('ไม่สามารถดึงข้อมูลรายชื่อได้: ' + (students ? students.error : 'unknown'), 'error');
-
-      }
-
-    })
-
-    .withFailureHandler(err => {
-
-      if (!isSilent) {
-
-        setLoading(false);
-
-        showToast('เชื่อมต่อผิดพลาด: ' + err.message, 'error');
-
-      }
-
-    })
-
-    .getStudentsList(getLogUser());
-
+  fetchCachedStudents(isSilent, students => {
+    renderDebtorsTable();
+  });
 }
 
 
@@ -15988,43 +15671,9 @@ function parseHoursLeftToMinutes(str) {
 // ----------------------------------------------------
 
 function loadReceipts(isSilent = false) {
-
-  if (!isSilent) setLoading(true, 'กำลังดึงรายชื่อนักเรียน...');
-
-  google.script.run
-
-    .withSuccessHandler(data => {
-
-      if (!isSilent) setLoading(false);
-
-      if (Array.isArray(data)) {
-
-        state.students = data;
-
-        renderReceiptsTable();
-
-      } else if (!isSilent) {
-
-        showToast('ไม่สามารถโหลดข้อมูลรายชื่อเพื่อออกใบเสร็จได้: ' + (data ? data.error : 'unknown'), 'error');
-
-      }
-
-    })
-
-    .withFailureHandler(err => {
-
-      if (!isSilent) {
-
-        setLoading(false);
-
-        showToast('ดึงข้อมูลรายชื่อล้มเหลว: ' + err.message, 'error');
-
-      }
-
-    })
-
-    .getStudentsList(getLogUser());
-
+  fetchCachedStudents(isSilent, data => {
+    renderReceiptsTable();
+  });
 }
 
 
