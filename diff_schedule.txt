@@ -1,0 +1,29 @@
+--- v655
+
++++ curr
+
+@@ -28,18 +28,14 @@
+
+       const end = new Date(endVal + 'T23:59:59');
+       
+       const filtered = logs.filter(c => {
+-        const parts = c.date.split('/');
+-        if (parts.length !== 3) return false;
+-        const cDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+-        return cDate >= start && cDate <= end;
++        const cDate = parseDateThai(c.date);
++        return cDate && cDate >= start && cDate <= end;
+       });
+       
+       filtered.sort((a, b) => {
+-        const partsA = a.date.split('/');
+-        const partsB = b.date.split('/');
+-        const dateA = new Date(parseInt(partsA[2]), parseInt(partsA[1]) - 1, parseInt(partsA[0]));
+-        const dateB = new Date(parseInt(partsB[2]), parseInt(partsB[1]) - 1, parseInt(partsB[0]));
+-        if (dateA.getTime() !== dateB.getTime()) {
++        const dateA = parseDateThai(a.date);
++        const dateB = parseDateThai(b.date);
++        if (dateA && dateB && dateA.getTime() !== dateB.getTime()) {
+           return dateA - dateB; // Ascending order: earliest date first
+         }
+         return a.timeStart.localeCompare(b.timeStart);

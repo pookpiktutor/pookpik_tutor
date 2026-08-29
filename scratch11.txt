@@ -1,0 +1,44 @@
+function cleanSheetDate(val) {
+  if (val instanceof Date) {
+    if (val.getFullYear() <= 1900) return '';
+    return Utilities.formatDate(val, 'Asia/Bangkok', 'dd/MM/yyyy');
+  }
+  var str = val ? val.toString().trim() : '';
+  if (str.indexOf('1899') !== -1 || str.indexOf('1900') !== -1 || str.indexOf('เวลาอินโดจีน') !== -1) {
+    return '';
+  }
+  return str;
+}
+
+function cleanSheetTime(val) {
+  if (!val) return '';
+  if (val instanceof Date) {
+    if (val.getFullYear() <= 1900) return '';
+    return Utilities.formatDate(val, 'Asia/Bangkok', 'HH:mm');
+  }
+  var str = val.toString().trim();
+  // Strip any "Sat Dec 30 1899..." or GMT strings
+  if (str.indexOf('GMT') !== -1 || str.indexOf('1899') !== -1 || str.indexOf('1900') !== -1) {
+    try {
+      var d = new Date(str);
+      if (!isNaN(d.getTime())) {
+        if (d.getFullYear() <= 1900) {
+          // If it's a default date but has actual time, keep the time
+          var hh = ('0' + d.getHours()).slice(-2);
+          var mm = ('0' + d.getMinutes()).slice(-2);
+          if (hh === '00' && mm === '00') return ''; // ignore completely blank
+          return hh + ':' + mm;
+        }
+        var hh = ('0' + d.getHours()).slice(-2);
+        var mm = ('0' + d.getMinutes()).slice(-2);
+        return hh + ':' + mm;
+      }
+    } catch(e) {}
+  }
+  var m = str.match(/(\d{1,2}):(\d{1,2})/);
+  if (m) return ('0' + m[1]).slice(-2) + ':' + ('0' + m[2]).slice(-2);
+  return str;
+}
+
+function cleanSheetTimestamp(val) {
+  if (val instanceof Date) {

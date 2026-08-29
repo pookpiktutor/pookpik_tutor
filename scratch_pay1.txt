@@ -1,0 +1,30 @@
+9641: 
+9642: 
+9643: 
+9644: // Check column B (teacherRegular) and C (teacherSub)
+9645: 
+9646: const cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
+9647: 
+9648: const cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
+9649: 
+9650: const cleanB = cellB.replace(/^à¸„à¸£à¸¹/, '').trim();
+9651: 
+9652: const cleanC = cellC.replace(/^à¸„à¸£à¸¹/, '').trim();
+9653: 
+9654: const cleanNick = cleanResolvedNick.replace(/^à¸„à¸£à¸¹/, '').trim();
+9655: 
+9656: 
+9657: 
+9658: const matchB = cleanB !== '' && (cleanB === cleanNick || cleanB.includes(cleanNick) || cleanNick.includes(cleanB));
+9659: 
+9660: const matchC = cleanC !== '' && (cleanC === cleanNick || cleanC.includes(cleanNick) || cleanNick.includes(cleanC) ||
+9661: 
+9662: (cellC.includes(cleanNick) && cellC !== 'âš ï¸�à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸£à¸¹à¹�à¸—à¸™' && cellC !== '-' && cellC !== '(à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¹à¹‰à¸ªà¸­à¸™à¹�à¸—à¸™)'));
+9663: 
+9664: 
+9665: 
+9666: // If both B and C have values, use C (substitute teacher priority rule)
+9667: 
+9668: // If only one has value, use that one
+9669: 
+9670: let role = '';

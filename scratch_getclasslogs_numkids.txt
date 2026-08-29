@@ -1,0 +1,19 @@
+10960: isPresentLive: parseInt(row[6]) || 0,
+10962: isPresentOnline: parseInt(row[7]) || 0,
+10964: isLeave: parseInt(row[8]) || 0,
+10966: isAbsent: parseInt(row[9]) || 0,
+10968: isMakeup: parseInt(row[10]) || 0,
+10970: // isOrange removed
+10972: hours: parseHoursValue(row[11]),
+10974: date: dateRaw,
+10976: roomBranch: roomBranchVal,
+10978: teacherConfirmed: row[14] ? (parseInt(row[14]) || 0) : 0,
+10980: numKids: row[15] ? (parseInt(row[15]) || 0) : 0,
+10982: rowIndex: idx + 1
+10984: });
+10986: });
+10990: // Cache for 2 minutes
+10992: return logs;
+10994: } catch (err) {
+10996: return { error: err.message };
+10998: }

@@ -1,0 +1,30 @@
+        teacherName = teachersMap[teacherName.toLowerCase()];
+      }
+
+      leaves.push({
+        rowIndex: i + 2,
+        teacher: teacherName,
+        subject: subject,
+        timeStart: timeStart,
+        timeEnd: timeEnd,
+        teacherSub: '', // Force empty so UI knows there's no sub
+        room: room,
+        date: dateValStr,
+        isToday: (dateValStr === todayFormatted)
+      });
+    }
+
+    leaves.sort((a,b) => {
+        const pa = a.date.split('/');
+        const pb = b.date.split('/');
+        if (pa.length !== 3 || pb.length !== 3) return 0;
+        const da = new Date(pa[2], pa[1]-1, pa[0]);
+        const db = new Date(pb[2], pb[1]-1, pb[0]);
+        return da - db;
+    });
+
+    return { success: true, leaves: leaves, today: todayFormatted };
+  } catch (e) {
+    return { success: false, error: e.message, leaves: [] };
+  }
+}

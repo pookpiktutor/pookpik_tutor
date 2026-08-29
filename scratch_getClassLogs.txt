@@ -1,0 +1,53 @@
+function getClassLogs(filterDate, logUser) {
+  // à¸„à¸£à¸¹à¸ªà¸²à¸¡à¸²à¸£à¸–à¸”à¸¹à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸•à¸²à¸£à¸²à¸‡à¹€à¸£à¸µà¸¢à¸™à¹„à¸”à¹‰
+  const cacheKey = 'class_logs_date_' + (filterDate || 'all');
+  const cached = getCacheObject(cacheKey);
+  if (cached) return cached;
+  try {
+    ensureDataLearnMigrated(getDb());
+    const rawData = getSheetRows('Data Learn');
+    const teachersList = getTeachersDB(null);
+    
+    const resolveNick = function(nameOrId) {
+      if (!nameOrId) return '';
+      const cleanVal = nameOrId.toString().trim().toLowerCase();
+      const match = teachersList.find(t => {
+        const tId = (t.teacherId || '').toLowerCase().trim();
+        const tNick = t.nickname.toLowerCase().trim();
+        return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
+      });
+      return match ? match.nickname : nameOrId;
+    };
+    
+    const logs = [];
+    
+    rawData.forEach((row, idx) => {
+      if (idx === 0) return;
+      if (!row[0] || row[0] === '0') return;
+      
+      const dateRaw = cleanSheetDate(row[13]);
+      if (filterDate && !areDatesSame(dateRaw, filterDate)) return;
+      const roomBranchVal = row[14] ? row[14].toString().trim() : '';
+      
+      logs.push({
+        subject: resolveDynamicCourseName(row[0] ? row[0].toString().trim() : '', dateRaw, roomBranchVal),
+        teacherRegular: resolveNick(row[1]),
+        teacherSub: resolveNick(row[2]),
+        timeStart: formatTimeValue(row[3]),
+        timeEnd: formatTimeValue(row[4]),
+        note: row[5] ? row[5].toString().trim() : '',
+        isPresentLive: parseInt(row[6]) || 0,
+        isPresentOnline: parseInt(row[7]) || 0,
+        isLeave: parseInt(row[8]) || 0,
+        isAbsent: parseInt(row[9]) || 0,
+        isMakeup: parseInt(row[10]) || 0,
+        isOrange: parseInt(row[11]) || 0,
+        hours: parseHoursValue(row[12]),
+        date: dateRaw,
+                roomBranch: roomBranchVal,
+        teacherConfirmed: row[15] ? (parseInt(row[15]) || 0) : 0,
+        numKids: row[16] ? (parseInt(row[16]) || 0) : 0,
+        rowIndex: idx + 1
+      });
+    });
+    

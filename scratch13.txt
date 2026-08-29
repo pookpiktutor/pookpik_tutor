@@ -1,0 +1,50 @@
+      const teachersList = getTeachersDB(null);
+      if (Array.isArray(teachersList)) {
+        teachersList.forEach(t => {
+          if (t.teacherId) teachersMap[t.teacherId.toLowerCase().trim()] = t.nickname;
+          if (t.nickname) teachersMap[t.nickname.toLowerCase().trim()] = t.nickname;
+        });
+      }
+    } catch(err) {}
+
+    const data = sheet.getRange(2, 1, lastRow - 1, 15).getValues();
+    const leaves = [];
+    const seen = new Set();
+    
+    // Calculate current week boundaries (Monday to Sunday)
+    const todayDate = new Date();
+    const currentDay = todayDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+    const monday = new Date(todayDate);
+    monday.setDate(todayDate.getDate() + diffToMonday);
+    monday.setHours(0,0,0,0);
+    
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23,59,59,999);
+    
+    const todayFormatted = Utilities.formatDate(todayDate, 'Asia/Bangkok', 'd/M/yyyy');
+
+    for (let i = 0; i < data.length; i++) {
+      const note = (data[i][5] || '').toString();
+      if (note.indexOf('ครูลา') === -1) continue;
+      
+      const dateValStr = cleanSheetDate(data[i][13]);
+      if (!dateValStr) continue;
+      
+      const parts = dateValStr.split('/');
+      if (parts.length === 3) {
+         const d = parseInt(parts[0], 10);
+         const m = parseInt(parts[1], 10) - 1;
+         const y = parseInt(parts[2], 10);
+         const rowDate = new Date(y, m, d);
+         
+         if (rowDate < monday || rowDate > sunday) {
+             continue;
+         }
+      }
+      
+      let teacherName = (data[i][1] || '').toString().trim();
+      const subject = cleanSubjectNameString((data[i][0] || '').toString().trim());
+      const key = teacherName + '|' + subject + '|' + dateValStr;
+      

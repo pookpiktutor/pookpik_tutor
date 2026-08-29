@@ -1,0 +1,55 @@
+9524: function calculateTeacherYearlyPay(teacher, year, logUser) {
+9526: const cacheKey = 'yearly_pay_v3_' + teacher.toString().trim().toLowerCase() + '_' + year;
+9528: const cached = getCacheObject(cacheKey);
+9530: // if (cached) return cached;
+9534: try {
+9536: logActivity(logUser || teacher || 'System', 'à¸„à¸³à¸™à¸§à¸“à¹€à¸‡à¸´à¸™à¹€à¸”à¸·à¸­à¸™à¸£à¸²à¸¢à¸›à¸µà¹€à¸£à¸´à¹ˆà¸¡', 'à¸„à¸¸à¸“à¸„à¸£à¸¹: ' + teacher + ', à¸›à¸µ: ' + year);
+9538: const classLogs = getClassLogs('');
+9540: if (!Array.isArray(classLogs)) throw new Error(classLogs.error || 'à¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¸”à¸¶à¸‡à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ Class Logs à¹„à¸”à¹‰');
+9544: const teachersList = getTeachersDB(null);
+9546: if (!Array.isArray(teachersList) || teachersList.length === 0) {
+9548: throw new Error('à¹„à¸¡à¹ˆà¸žà¸šà¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸£à¸²à¸¢à¸Šà¸·à¹ˆà¸­à¸„à¸£à¸¹à¹ƒà¸™à¸�à¸²à¸™à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ TeachersDB');
+9550: }
+9552: const teacherProfile = teachersList.find(t => {
+9554: const tId = (t.teacherId || '').toLowerCase().trim();
+9556: const tNick = t.nickname.toLowerCase().trim().replace(/^à¸„à¸£à¸¹/, '').trim();
+9558: const targetNick = teacher.toLowerCase().trim().replace(/^à¸„à¸£à¸¹/, '').trim();
+9560: return (tId !== '' && tId === teacher.toLowerCase().trim()) ||
+9562: tNick === targetNick || tNick.includes(targetNick) || targetNick.includes(tNick);
+9564: });
+9566: if (!teacherProfile) {
+9568: throw new Error('à¹„à¸¡à¹ˆà¸žà¸šà¸›à¸£à¸°à¸§à¸±à¸•à¸´à¸„à¸¸à¸“à¸„à¸£à¸¹à¸Šà¸·à¹ˆà¸­/à¸£à¸«à¸±à¸ª: "' + teacher + '" à¹ƒà¸™à¸�à¸²à¸™à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ TeachersDB');
+9570: }
+9572: const resolvedNickname = teacherProfile.nickname;
+9574: const cleanResolvedNick = resolvedNickname.toLowerCase().trim();
+9578: const isLeap = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+9580: const getRangeForMonth = function(m) {
+9582: let startStr, endStr;
+9584: const yStr = year.toString();
+9586: const prevYStr = (year - 1).toString();
+9588: switch (m) {
+9590: case 1: startStr = `${prevYStr}-12-29`; endStr = `${yStr}-01-28`; break;
+9592: case 2: startStr = `${yStr}-01-29`; endStr = `${yStr}-02-28`; break;
+9594: case 3: startStr = isLeap ? `${yStr}-02-29` : `${yStr}-03-01`; endStr = `${yStr}-03-28`; break;
+9596: case 4: startStr = `${yStr}-03-29`; endStr = `${yStr}-04-28`; break;
+9598: case 5: startStr = `${yStr}-04-29`; endStr = `${yStr}-05-28`; break;
+9600: case 6: startStr = `${yStr}-05-29`; endStr = `${yStr}-06-28`; break;
+9602: case 7: startStr = `${yStr}-06-29`; endStr = `${yStr}-07-28`; break;
+9604: case 8: startStr = `${yStr}-07-29`; endStr = `${yStr}-08-28`; break;
+9606: case 9: startStr = `${yStr}-08-29`; endStr = `${yStr}-09-28`; break;
+9608: case 10: startStr = `${yStr}-09-29`; endStr = `${yStr}-10-28`; break;
+9610: case 11: startStr = `${yStr}-10-29`; endStr = `${yStr}-11-28`; break;
+9612: case 12: startStr = `${yStr}-11-29`; endStr = `${yStr}-12-28`; break;
+9614: }
+9616: return { start: parseDateString(startStr), end: parseDateString(endStr), startStr: startStr, endStr: endStr };
+9618: };
+9620: const monthlyResults = {};
+9622: for (let m = 1; m <= 12; m++) {
+9624: const range = getRangeForMonth(m);
+9626: const matchedClasses = [];
+9628: let totalHours = 0;
+9630: let totalPay = 0;
+9632: let totalClasses = 0;
+9636: classLogs.forEach(c => {
+9638: const cDate = parseDateString(c.date);
+9640: if (cDate < range.start || cDate > range.end) return;

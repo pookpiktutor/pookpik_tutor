@@ -1,0 +1,30 @@
+4620: isPresentLive: parseInt(data[i][6]) || 0,
+4621: 
+4622: isPresentOnline: parseInt(data[i][7]) || 0,
+4623: 
+4624: isLeave: parseInt(data[i][8]) || 0,
+4625: 
+4626: isAbsent: parseInt(data[i][9]) || 0,
+4627: 
+4628: isMakeup: parseInt(data[i][10]) || 0,
+4629: 
+4630: isOrange: parseInt(data[i][11]) || 0,
+4631: 
+4632: hours: data[i][12] ? data[i][12].toString().trim() : '',
+4633: 
+4634: date: dateRaw,
+4635: 
+4636: roomBranch: roomBranchVal
+4637: 
+4638: });
+4639: 
+4640: }
+4641: 
+4642: }
+4643: 
+4644: 
+4645: 
+4646: const payload = JSON.stringify({
+4647: 
+4648: timestamp: new Date().toISOString(),
+4649: 

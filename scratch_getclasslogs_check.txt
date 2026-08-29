@@ -1,0 +1,60 @@
+16780: function getClassLogs(filterDate, logUser) {
+16781: 
+16782: 
+16783: // à¸„à¸£à¸¹à¸ªà¸²à¸¡à¸²à¸£à¸–à¸”à¸¹à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸•à¸²à¸£à¸²à¸‡à¹€à¸£à¸µà¸¢à¸™à¹„à¸”à¹‰
+16784: 
+16785: 
+16786: const cacheKey = 'class_logs_date_' + (filterDate || 'all');
+16787: 
+16788: 
+16789: const cached = getCacheObject(cacheKey);
+16790: 
+16791: 
+16792: if (cached) return cached;
+16793: 
+16794: 
+16795: try {
+16796: 
+16797: 
+16798: ensureDataLearnMigrated(getDb());
+16799: 
+16800: 
+16801: const rawData = getSheetRows('Data Learn');
+16802: 
+16803: 
+16804: const teachersList = getTeachersDB(null);
+16805: 
+16806: 
+16807: 
+16808: 
+16809: 
+16810: const resolveNick = function(nameOrId) {
+16811: 
+16812: 
+16813: if (!nameOrId) return '';
+16814: 
+16815: 
+16816: const cleanVal = nameOrId.toString().trim().toLowerCase();
+16817: 
+16818: 
+16819: const match = teachersList.find(t => {
+16820: 
+16821: 
+16822: const tId = (t.teacherId || '').toLowerCase().trim();
+16823: 
+16824: 
+16825: const tNick = t.nickname.toLowerCase().trim();
+16826: 
+16827: 
+16828: return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
+16829: 
+16830: 
+16831: });
+16832: 
+16833: 
+16834: return match ? match.nickname : nameOrId;
+16835: 
+16836: 
+16837: };
+16838: 
+16839: 

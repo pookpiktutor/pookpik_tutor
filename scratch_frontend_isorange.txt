@@ -1,0 +1,13 @@
+3016: (parseInt(c.isOrange) || 0) > 0;
+8578: if (c.isOrange > 0) attendances.push(`แสด: ${c.isOrange}`);
+9252: if (c.isPresentLive > 0 || c.isPresentOnline > 0 || c.isOrange > 0) {
+9284: if (c.isOrange > 0) attendances.push(`แสด: ${c.isOrange}`);
+9656: if (g('class_kids_orange')) g('class_kids_orange').value = data.isOrange || 0;
+10808: document.getElementById('class_kids_orange').value = log.isOrange || 0;
+11496: isOrange: parseInt(g('class_kids_orange')?.value) || 0
+
+=== numKids calculation ===
+1822: // if (c.numKids > 0) {
+1904: <td style="text-align: center;">${c.numKids} คน</td>
+13382: // if (c.numKids > 0) {
+13484: <td style="text-align: center; white-space: nowrap;">${c.numKids} คน</td>

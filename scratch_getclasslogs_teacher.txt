@@ -1,0 +1,25 @@
+11100: function getClassLogsForTeacher(teacherName, nickname) {
+11102: try {
+11104: // ensureDataLearnMigrated(getDb());
+11106: const rawData = getSheetRows('Data Learn');
+11108: const teachersList = getTeachersDB(null);
+11110: const resolveNick = function(nameOrId) {
+11112: if (!nameOrId) return '';
+11114: const cleanVal = nameOrId.toString().trim().toLowerCase();
+11116: const match = Array.isArray(teachersList) ? teachersList.find(t => {
+11118: const tId = (t.teacherId || '').toLowerCase().trim();
+11120: const tNick = t.nickname.toLowerCase().trim();
+11122: return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
+11124: }) : null;
+11126: return match ? match.nickname : nameOrId;
+11128: };
+11132: const logs = [];
+11136: const cleanName = teacherName ? teacherName.toString().trim().toLowerCase() : '';
+11138: const cleanNick = nickname ? nickname.toString().trim().toLowerCase() : '';
+11142: const searchNickClean = cleanNick.replace(/^à¸„à¸£à¸¹/, '').trim();
+11144: const searchNameClean = cleanName.replace(/^à¸„à¸£à¸¹/, '').trim();
+11148: rawData.forEach((row, idx) => {
+11150: if (idx === 0) return;
+11152: if (!row[0] || row[0] === '0') return;
+11156: const teacherRegular = row[1] ? row[1].toString().trim().toLowerCase() : '';
+11158: const teacherSub = row[2] ? row[2].toString().trim().toLowerCase() : '';

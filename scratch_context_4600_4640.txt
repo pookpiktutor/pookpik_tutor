@@ -1,0 +1,40 @@
+4600: const dateRaw = cleanSheetDate(data[i][13]);
+4601: 
+4602: const roomBranchVal = data[i][14] ? data[i][14].toString().trim() : '';
+4603: 
+4604: classes.push({
+4605: 
+4606: rowIndex: i + 1,
+4607: 
+4608: subject: resolveDynamicCourseName(data[i][0] ? data[i][0].toString().trim() : '', dateRaw, roomBranchVal),
+4609: 
+4610: teacherRegular: resolveNick(data[i][1]),
+4611: 
+4612: teacherSub: resolveNick(data[i][2]),
+4613: 
+4614: timeStart: data[i][3] ? data[i][3].toString().trim() : '',
+4615: 
+4616: timeEnd: data[i][4] ? data[i][4].toString().trim() : '',
+4617: 
+4618: note: data[i][5] ? data[i][5].toString().trim() : '',
+4619: 
+4620: isPresentLive: parseInt(data[i][6]) || 0,
+4621: 
+4622: isPresentOnline: parseInt(data[i][7]) || 0,
+4623: 
+4624: isLeave: parseInt(data[i][8]) || 0,
+4625: 
+4626: isAbsent: parseInt(data[i][9]) || 0,
+4627: 
+4628: isMakeup: parseInt(data[i][10]) || 0,
+4629: 
+4630: isOrange: parseInt(data[i][11]) || 0,
+4631: 
+4632: hours: data[i][12] ? data[i][12].toString().trim() : '',
+4633: 
+4634: date: dateRaw,
+4635: 
+4636: roomBranch: roomBranchVal
+4637: 
+4638: });
+4639: 

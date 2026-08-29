@@ -580,6 +580,8 @@ function checkSession() {
 
               document.getElementById('teacher_sidebar_account').innerText = p.accountNumber || '-';
 
+              document.getElementById('teacher_sidebar_account_type').innerText = p.accountType || '-';
+
               document.getElementById('teacher_sidebar_phone').innerText = formatPhone(p.phone) || '-';
 
             }
@@ -2581,11 +2583,7 @@ function renderTeacherSalaryDetail(res) {
     document.getElementById('ts_adj_bonus').innerText = '฿' + (res.adjustmentBonus || 0).toLocaleString();
     document.getElementById('ts_adj_deduction').innerText = '฿' + (res.adjustmentDeduction || 0).toLocaleString();
     document.getElementById('ts_adj_insurance').innerText = '฿' + (res.insuranceDeduction || 0).toLocaleString();
-    if (res.isNewTeacher) {
-      document.getElementById('ts_adj_insurance_progress').innerText = '(สะสม: ' + (res.insuranceRunningTotal || 0).toLocaleString() + ' / 2,000)';
-    } else {
-      document.getElementById('ts_adj_insurance_progress').innerText = '(ครูเก่า: ไม่หักประกัน)';
-    }
+    document.getElementById('ts_adj_insurance_progress').innerText = '(สะสม: ' + (res.insuranceRunningTotal || 0).toLocaleString() + ' / 2,000)';
   }
 
   document.getElementById('teacher_salary_total_hours').innerText = formattedSumHours;
@@ -18806,6 +18804,8 @@ function updateSessionAndSidebar(nickname, profilePic) {
             document.getElementById('teacher_sidebar_bank').innerText = p.bank || '-';
 
             document.getElementById('teacher_sidebar_account').innerText = p.accountNumber || '-';
+
+            document.getElementById('teacher_sidebar_account_type').innerText = p.accountType || '-';
 
             document.getElementById('teacher_sidebar_phone').innerText = formatPhone(p.phone) || '-';
 

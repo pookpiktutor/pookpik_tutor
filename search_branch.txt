@@ -1,0 +1,46 @@
+23:   activeBranchFilter: 'สาขา1',
+408:                 <span class="label" style="min-width: 65px; font-size: 0.74rem;">📍 สาขา/ห้องเรียน:</span>
+1917:     'manager_logs': 'ลงเวลาทำงานผู้จัดการสาขา',
+2003:   const fin1 = data.branchFin['สาขา1'] || { full: 0, paid: 0, debt: 0 };
+2004:   const fin2 = data.branchFin['สาขา2'] || { full: 0, paid: 0, debt: 0 };
+2005:   const fin3 = data.branchFin['สาขา3'] || { full: 0, paid: 0, debt: 0 };
+2042:       const s1 = monthData['สาขา1'] || 0;
+2043:       const s2 = monthData['สาขา2'] || 0;
+2044:       const s3 = monthData['สาขา3'] || 0;
+2093:   const branch = ''; // ดึงข้อมูลทั้งหมดจากฐานข้อมูล ไม่แยกสาขา
+2147:     tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 30px; color: var(--text-muted); font-size: 0.9rem;">ไม่พบข้อมูลตามสาขาที่เลือก</td></tr>';
+2160:     if (branchName === 'สาขา1') branchDisplayName = 'สาขา 1 แยกPMY';
+2161:     else if (branchName === 'สาขา2') branchDisplayName = 'สาขา 2 ข้างโรงเรียนระยองวิทยาคม';
+2162:     else if (branchName === 'สาขา3') branchDisplayName = 'สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ';
+3503:     const branch = branchSelect ? branchSelect.value : 'สาขา1';
+3653:     // Normalizing branch values (e.g. "สาขา2" vs "สาขา 2")
+3701:     tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบประวัติเด็กเรียนเดี่ยวในกลุ่มหรือสาขานี้</td></tr>`;
+3936:   const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+4212:     html += '<div style="text-align: center; color: var(--text-muted); padding: 30px;">ไม่มีห้องเรียนในสาขานี้</div>';
+4269:   const branches = ['สาขา1', 'สาขา2', 'สาขา3'];
+4282:     if (roomBranchStr.includes('สาขา1')) logBranch = 'สาขา1';
+4283:     else if (roomBranchStr.includes('สาขา2')) logBranch = 'สาขา2';
+4284:     else if (roomBranchStr.includes('สาขา3')) logBranch = 'สาขา3';
+4319:             <th style="padding: 6px 10px; text-align: left; font-weight: 700; border-right: 1px solid var(--border-color); color: var(--color-primary-hover); white-space: nowrap; font-size: 0.68rem;">สาขา</th>
+4333:     const branchShort = b === 'สาขา1' ? 'สาขา 1' : b === 'สาขา2' ? 'สาขา 2' : 'สาขา 3';
+4367:       return (b === 'สาขา1' && roomBranchStr.includes('สาขา1')) ||
+4368:              (b === 'สาขา2' && roomBranchStr.includes('สาขา2')) ||
+4369:              (b === 'สาขา3' && roomBranchStr.includes('สาขา3'));
+4397:   const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+4541:     container.innerHTML = `<div style="grid-column: span 3; text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลห้องเรียนในสาขานี้</div>`;
+4567:   // Pre-select current active branch tab filter (or default to สาขา1)
+4568:   const currentBranch = state.activeBranchFilter || 'สาขา1';
+5043:         <div>🏢 ห้อง/สาขา: ${log.roomBranch || '-'}</div>
+5751:     if (cleanRoom.includes('สาขา 1') || cleanRoom.includes('สาขา1')) {
+5754:     } else if (cleanRoom.includes('สาขา 2') || cleanRoom.includes('สาขา2')) {
+5757:     } else if (cleanRoom.includes('สาขา 3') || cleanRoom.includes('สาขา3')) {
+7012:         สาขาเรียน: ${s.branchLearn || '-'} | ไลน์: ${s.lineName || '-'}
+7384:         <div style="font-size: 0.8rem; color: var(--text-muted);">สาขาเรียน: ${s.branchLearn || '-'} | Line: ${s.lineName || '-'}</div>
+7808:     branchAddressThai = headOfficeThai + '<br>สาขา 2 : 2/17 ถนนวุฒิสาร ต.ท่าประดู่ อ.เมือง จ.ระยอง 21000 โทร. 083-834-6067, 081-863-1311';
+7811:     branchAddressThai = headOfficeThai + '<br>สาขา 3 : 13/7 ม. 3 ถนนสุขุมวิท ต.เนินพระ อ.เมือง จ.ระยอง 21000 โทร. 095-806-7979, 083-834-6067';
+8214:     'สาขา1': '#3b82f6',
+8215:     'สาขา2': '#f97316',
+8216:     'สาขา3': '#a855f7',
+8217:     'สาขา 1': '#3b82f6',
+8218:     'สาขา 2': '#f97316',
+8219:     'สาขา 3': '#a855f7',

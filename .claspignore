@@ -1,0 +1,10 @@
+# ignore all files
+**
+# except these
+!Code.js
+!Index.html
+!JavaScript.html
+!register.html
+!Styles.html
+!appsscript.json
+!Migration.js

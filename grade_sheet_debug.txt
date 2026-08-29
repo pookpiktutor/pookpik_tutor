@@ -1,0 +1,93 @@
+function getGradeSheetData(grade, branch, logUser) {
+  if (logUser) checkTeacherBlock(logUser);
+  try {
+    const db = getDb();
+    const suffixes = ['1', '2', '3'];
+    const allCourses = [];
+    const allStudents = [];
+    
+    suffixes.forEach(suffix => {
+      const sheetName = `${grade}/${suffix}`;
+      const sheet = db.getSheetByName(sheetName);
+      if (!sheet) return;
+      
+      const lastRow = sheet.getLastRow();
+      const lastCol = sheet.getLastColumn();
+      if (lastRow < 5) return;
+      
+      const branchName = `สาขา${suffix}`;
+      
+      const sheetCourses = [];
+      if (lastCol >= 16) {
+        const headerRow1 = sheet.getRange(1, 16, 1, lastCol - 15).getValues()[0];
+        const headerRow2 = sheet.getRange(2, 16, 1, lastCol - 15).getValues()[0];
+        const headerRow3 = sheet.getRange(3, 16, 1, lastCol - 15).getValues()[0];
+        const headerRow4 = sheet.getRange(4, 16, 1, lastCol - 15).getValues()[0];
+        
+        for (let i = 0; i < headerRow1.length; i++) {
+          if (headerRow1[i]) {
+            sheetCourses.push({
+              colIndex: 16 + i,
+              courseName: headerRow1[i].toString().trim(),
+              price: parseFloat(headerRow2[i]) || 0,
+              dayTime: headerRow3[i] ? headerRow3[i].toString().trim() : '',
+              totalSessions: parseInt(headerRow4[i]) || 10,
+              sheetName: sheetName,
+              branch: branchName
+            });
+          }
+        }
+      }
+      
+      allCourses.push(...sheetCourses);
+      
+      if (lastRow >= 6) {
+        const studentData = sheet.getRange(6, 1, lastRow - 5, lastCol).getValues();
+        studentData.forEach((row, idx) => {
+          const name = row[1] ? row[1].toString().trim() : '';
+          if (!name) return;
+          
+          const courseValues = {};
+          sheetCourses.forEach(c => {
+            const val = row[c.colIndex - 1];
+            courseValues[c.colIndex] = val !== '' ? parseFloat(val) : '';
+          });
+          
+          allStudents.push({
+            rowIndex: 6 + idx,
+            grade: row[0] ? row[0].toString().trim() : '',
+            name: name,
+            nickname: row[2] ? row[2].toString().trim() : '',
+            school: row[3] ? row[3].toString().trim() : '',
+            classSection: row[4] ? row[4].toString().trim() : '',
+            contact: row[5] ? row[5].toString().trim() : '',
+            lineName: row[6] ? row[6].toString().trim() : '',
+            lineId: row[7] ? row[7].toString().trim() : '',
+            branchLearn: row[8] ? row[8].toString().trim() : '',
+            branchPay: row[9] ? row[9].toString().trim() : '',
+            
+            full: parseFloat(row[10]) || 0, 
+            discount: parseFloat(row[11]) || 0, 
+            outstanding: parseFloat(row[12]) || 0, 
+            paid: parseFloat(row[13]) || 0, 
+            isCard: parseInt(row[14]) === 1 ? 1 : 0, 
+            
+            courseValues: courseValues,
+            sheetName: sheetName,
+            branch: branchName
+          });
+        });
+      }
+    });
+    
+    return {
+      success: true,
+      sheetName: `${grade}/merged`,
+      courses: allCourses,
+      students: allStudents
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+

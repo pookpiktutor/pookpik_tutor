@@ -1,0 +1,60 @@
+        if (hoursStr.includes(':')) {
+          const parts = hoursStr.split(':');
+          hoursVal = parseFloat(parts[0]) + (parseFloat(parts[1] || '0') / 60);
+        } else {
+          hoursVal = parseFloat(hoursStr) || 0;
+        }
+        if (isNaN(hoursVal) || hoursVal <= 0) return;
+        
+        // Count only à¸ªà¸” + à¸­à¸­à¸™à¹„à¸¥à¸™à¹Œ + à¸Šà¸”à¹€à¸Šà¸¢ for totalHours calculation
+        let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
+        
+        const subject = c.subject || '';
+        const hasEx = subject.toLowerCase().includes('ex');
+        const hasRyw = cleanResolvedNick.includes('à¸£à¸¢à¸§.') || resolvedNickname.includes('à¸£à¸¢à¸§.');
+        
+        let rate = 0;
+        if (numKids === 0) {
+          rate = 0;
+        } else if (hasEx || hasRyw) {
+          if (numKids === 1) rate = hasEx ? 200 : 150;
+          else if (numKids <= 5) rate = 200;
+          else if (numKids <= 10) rate = 250;
+          else if (numKids <= 15) rate = 300;
+          else if (numKids <= 20) rate = 350;
+          else if (numKids <= 25) rate = 400;
+          else if (numKids <= 30) rate = 450;
+          else if (numKids <= 35) rate = 500;
+          else if (numKids <= 40) rate = 550;
+          else if (numKids <= 45) rate = 600;
+          else if (numKids <= 50) rate = 650;
+          else if (numKids <= 55) rate = 700;
+          else if (numKids <= 60) rate = 750;
+          else if (numKids <= 65) rate = 800;
+          else if (numKids <= 70) rate = 850;
+          else if (numKids <= 75) rate = 900;
+          else rate = 950;
+        } else {
+          if (numKids === 1) rate = 150;
+          else if (numKids <= 5) rate = 150;
+          else if (numKids <= 10) rate = 200;
+          else if (numKids <= 15) rate = 250;
+          else if (numKids <= 20) rate = 300;
+          else if (numKids <= 25) rate = 350;
+          else if (numKids <= 30) rate = 400;
+          else if (numKids <= 35) rate = 450;
+          else if (numKids <= 40) rate = 500;
+          else if (numKids <= 45) rate = 550;
+          else if (numKids <= 50) rate = 600;
+          else if (numKids <= 55) rate = 650;
+          else if (numKids <= 60) rate = 700;
+          else if (numKids <= 65) rate = 750;
+          else if (numKids <= 70) rate = 800;
+          else if (numKids <= 75) rate = 850;
+          else rate = 900;
+        }
+        
+        const pay = hoursVal * rate;
+        if (numKids > 0) {
+          totalHours += hoursVal;
+          totalClasses += 1;

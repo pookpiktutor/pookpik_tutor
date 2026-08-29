@@ -1,0 +1,33 @@
+17113: function getClassLogsForTeacher(teacherName, nickname) {
+17116: try {
+17119: ensureDataLearnMigrated(getDb());
+17122: const rawData = getSheetRows('Data Learn');
+17125: const teachersList = getTeachersDB(null);
+17128: const resolveNick = function(nameOrId) {
+17131: if (!nameOrId) return '';
+17134: const cleanVal = nameOrId.toString().trim().toLowerCase();
+17137: const match = Array.isArray(teachersList) ? teachersList.find(t => {
+17140: const tId = (t.teacherId || '').toLowerCase().trim();
+17143: const tNick = t.nickname.toLowerCase().trim();
+17146: return (tId !== '' && tId === cleanVal) || tNick === cleanVal;
+17149: }) : null;
+17152: return match ? match.nickname : nameOrId;
+17155: };
+17161: const logs = [];
+17167: const cleanName = teacherName ? teacherName.toString().trim().toLowerCase() : '';
+17170: const cleanNick = nickname ? nickname.toString().trim().toLowerCase() : '';
+17176: const searchNickClean = cleanNick.replace(/^à¸„à¸£à¸¹/, '').trim();
+17179: const searchNameClean = cleanName.replace(/^à¸„à¸£à¸¹/, '').trim();
+17185: rawData.forEach((row, idx) => {
+17188: if (idx === 0) return;
+17191: if (!row[0] || row[0] === '0') return;
+17197: const teacherRegular = row[1] ? row[1].toString().trim().toLowerCase() : '';
+17200: const teacherSub = row[2] ? row[2].toString().trim().toLowerCase() : '';
+17206: const cleanReg = teacherRegular.replace(/^à¸„à¸£à¸¹/, '').trim();
+17209: const cleanSub = teacherSub.replace(/^à¸„à¸£à¸¹/, '').trim();
+17215: // à¸„à¸­à¸¥à¸±à¸¡à¸™à¹Œ B (à¸„à¸£à¸¹à¸«à¸¥à¸±à¸�) à¸«à¸£à¸·à¸­à¸„à¸­à¸¥à¸±à¸¡à¸™à¹Œ C (à¸„à¸£à¸¹à¸ªà¸­à¸™à¹�à¸—à¸™) à¸•à¸£à¸‡à¸�à¸±à¸šà¸Šà¸·à¹ˆà¸­à¸«à¸£à¸·à¸­à¸Šà¸·à¹ˆà¸­à¹€à¸¥à¹ˆà¸™à¸‚à¸­à¸‡à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰ (à¸¥à¸šà¸„à¸³à¸§à¹ˆà¸² à¸„à¸£à¸¹ à¹€à¸žà¸·à¹ˆà¸­à¹€à¸—à¸µà¸¢à¸šà¹�à¸šà¸šà¸¢à¸·à¸”à¸«à¸¢à¸¸à¹ˆà¸™)
+17218: const isMatch = (searchNickClean !== '' && (cleanReg === searchNickClean || cleanSub === searchNickClean)) ||
+17221: (searchNameClean !== '' && (cleanReg === searchNameClean || cleanSub === searchNameClean)) ||
+17224: (cleanName !== '' && (teacherRegular === cleanName || teacherSub === cleanName)) ||
+17227: (cleanNick !== '' && (teacherRegular === cleanNick || teacherSub === cleanNick));
+17230: if (!isMatch) return;

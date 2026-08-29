@@ -1,0 +1,36 @@
+=== addClassLog ===
+11490: const resolvedTeacherRegular = resolveId(log.teacherRegular);
+11492: const resolvedTeacherSub = resolveId(log.teacherSub);
+11494: log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd);
+11496: log.subject = resolveDynamicCourseName(log.subject, log.date, log.roomBranch);
+11500: const iPresentLive = log.isPresentLive ? parseInt(log.isPresentLive) || 0 : 0;
+11502: const iPresentOnline = log.isPresentOnline ? parseInt(log.isPresentOnline) || 0 : 0;
+11504: const iMakeup = log.isMakeup ? parseInt(log.isMakeup) || 0 : 0;
+11512: log.subject,
+11518: log.timeStart,
+11520: log.timeEnd,
+11522: log.note || '',
+11528: log.isLeave ? parseInt(log.isLeave) || 0 : 0,
+11530: log.isAbsent ? parseInt(log.isAbsent) || 0 : 0,
+11534: log.hours || '',
+11536: log.date || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'd/M/yyyy'),
+11538: log.roomBranch || '',
+=== updateClassLog ===
+11690: const iMakeup = log.isMakeup ? parseInt(log.isMakeup) || 0 : 0;
+11696: const rowValues = [
+11700: log.subject,
+11706: log.timeStart,
+11708: log.timeEnd,
+11710: log.note || '',
+11716: log.isLeave ? parseInt(log.isLeave) || 0 : 0,
+11718: log.isAbsent ? parseInt(log.isAbsent) || 0 : 0,
+11722: // log.isOrange removed
+11724: log.hours || '',
+11726: log.date,
+11728: log.roomBranch || '',
+11740: sheet.getRange(rowIndex, 1, 1, 16).setValues(rowValues);
+11748: if (log.subject !== oldLog.subject) {
+11750: recalculateSubjectHours(log.subject);
+11762: logActivity(logUser, 'à¹�à¸�à¹‰à¹„à¸‚à¸šà¸±à¸™à¸—à¸¶à¸�à¸„à¸²à¸šà¸ªà¸­à¸™', `à¸§à¸´à¸Šà¸²: ${log.subject} (à¹�à¸–à¸§à¸—à¸µà¹ˆ: ${rowIndex})`);
+11768: clearClassLogsCache(log.date);
+11772: invalidateTeacherSalaryCache([log.teacherRegular, log.teacherSub, oldLog.teacherRegular, oldLog.teacherSub]);

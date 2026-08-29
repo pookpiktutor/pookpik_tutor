@@ -1,0 +1,36 @@
+9700: if (role === 'à¸„à¸£à¸¹à¸›à¸£à¸°à¸ˆà¸³' && (c.note || '').includes('à¸„à¸£à¸¹à¸¥à¸²')) return;
+9704: // Parse hours
+9706: const hoursStr = c.hours || '';
+9708: let hoursVal = 0;
+9710: if (hoursStr.includes(':')) {
+9712: const parts = hoursStr.split(':');
+9714: hoursVal = parseFloat(parts[0]) + (parseFloat(parts[1] || '0') / 60);
+9716: } else {
+9718: hoursVal = parseFloat(hoursStr) || 0;
+9720: }
+9722: if (isNaN(hoursVal) || hoursVal <= 0) return;
+9726: // Count only à¸ªà¸” + à¸­à¸­à¸™à¹„à¸¥à¸™à¹Œ + à¸Šà¸”à¹€à¸Šà¸¢ for totalHours calculation
+9728: let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
+9732: const subject = c.subject || '';
+9734: const hasEx = subject.toLowerCase().includes('ex');
+9736: const hasRyw = cleanResolvedNick.includes('à¸£à¸¢à¸§.') || resolvedNickname.includes('à¸£à¸¢à¸§.');
+9740: let rate = 0;
+9742: // if (numKids === 0) { rate = 0; } removed
+9744: if (hasEx || hasRyw) {
+9746: if (numKids === 0 || numKids === 1) rate = hasEx ? 200 : 150;
+9748: else if (numKids <= 5) rate = 200;
+9750: else if (numKids <= 10) rate = 250;
+9752: else if (numKids <= 15) rate = 300;
+9754: else if (numKids <= 20) rate = 350;
+9756: else if (numKids <= 25) rate = 400;
+9758: else if (numKids <= 30) rate = 450;
+9760: else if (numKids <= 35) rate = 500;
+9762: else if (numKids <= 40) rate = 550;
+9764: else if (numKids <= 45) rate = 600;
+9766: else if (numKids <= 50) rate = 650;
+9768: else if (numKids <= 55) rate = 700;
+9770: else if (numKids <= 60) rate = 750;
+9772: else if (numKids <= 65) rate = 800;
+9774: else if (numKids <= 70) rate = 850;
+9776: else if (numKids <= 75) rate = 900;
+9778: else rate = 950;

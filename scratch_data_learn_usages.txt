@@ -1,0 +1,64 @@
+219: name: 'Data Learn',
+1284: // Check Data Learn
+1287: const learnSheet = db.getSheetByName('Data Learn');
+1293: html += '<p style="color:red;"><b>â�Œ à¹„à¸¡à¹ˆà¸žà¸šà¸•à¸²à¸£à¸²à¸‡ Data Learn</b></p>';
+1299: html += `<p style="color:green;"><b>âœ“ à¸žà¸šà¸•à¸²à¸£à¸²à¸‡ Data Learn</b> (${learnSheet.getLastRow()} à¹�à¸–à¸§)</p>`;
+1308: html += `<p><b>à¸„à¸­à¸¥à¸±à¸¡à¸™à¹Œà¹ƒà¸™ Data Learn:</b> ${JSON.stringify(lHeaders)}</p>`;
+2484: const learnSheet = db.getSheetByName('Data Learn');
+2535: Logger.log('Error migrating Data Learn (remover): ' + e.message);
+2814: // 2c. Data Learn â€” migration check
+2820: const learnSheet = db.getSheetByName('Data Learn');
+2835: Logger.log('Data Learn migration error: ' + e.message);
+5670: const sheet = db.getSheetByName('Data Learn');
+5673: if (!sheet) throw new Error('Data Learn sheet not found');
+6420: // Build a set of "subject|date" combinations taught by this teacher from Data Learn
+6429: const dlSheet = db.getSheetByName('Data Learn');
+6759: const rawData = getSheetRows('Data Learn');
+7071: const learnSheet = db.getSheetByName('Data Learn');
+9459: // 2. Scan Data Learn for teacher's courses
+13227: const learnSheet = db.getSheetByName('Data Learn');
+15895: const sheet = getDb().getSheetByName('Data Learn');
+15898: if (!sheet) throw new Error('Data Learn sheet not found');
+16054: const sheet = getDb().getSheetByName('Data Learn');
+16057: if (!sheet) throw new Error('Data Learn sheet not found');
+16111: // Master Class Logs (Data Learn)
+16801: const rawData = getSheetRows('Data Learn');
+16969: const sheet = getDb().getSheetByName('Data Learn');
+16972: if (!sheet) throw new Error('Data Learn sheet not found');
+17122: const rawData = getSheetRows('Data Learn');
+17383: const sheet = db.getSheetByName('Data Learn');
+17452: Logger.log('Error cleaning Data Learn Col A: ' + e.message);
+17665: const sheet = getDb().getSheetByName('Data Learn');
+17668: if (!sheet) throw new Error('Data Learn sheet not found');
+17884: const sheet = getDb().getSheetByName('Data Learn');
+17887: if (!sheet) throw new Error('Data Learn sheet not found');
+18190: const sheet = db.getSheetByName('Data Learn');
+18193: if (!sheet) throw new Error('Data Learn sheet not found');
+18364: const sheet = getDb().getSheetByName('Data Learn');
+18367: if (!sheet) throw new Error('Data Learn sheet not found');
+19951: const learnSheet = db.getSheetByName('Data Learn');
+20143: const sheet = getDb().getSheetByName('Data Learn');
+20146: if (!sheet) throw new Error('Data Learn sheet not found');
+20305: const sheet = getDb().getSheetByName('Data Learn');
+20308: if (!sheet) throw new Error('Data Learn sheet not found');
+20977: const classSheet = db.getSheetByName('Data Learn');
+21016: // à¹€à¸Šà¹‡à¸„à¸§à¹ˆà¸²à¸§à¸´à¸Šà¸²à¹ƒà¸™ Data Learn à¸•à¸£à¸‡à¸�à¸±à¸šà¸„à¸­à¸£à¹Œà¸ªà¸—à¸µà¹ˆà¸¥à¸‡à¸—à¸°à¹€à¸šà¸µà¸¢à¸™à¸ˆà¸£à¸´à¸‡
+22765: const sheet = getDb().getSheetByName('Data Learn');
+23683: var lSheet = db.getSheetByName('Data Learn');
+23686: var lData = lSheet ? lSheet.getRange(1, 1, 5, 10).getValues() : 'No Data Learn';
+23806: const sheet = db.getSheetByName('Data Learn');
+23809: if (!sheet) return { success: false, error: 'Sheet Data Learn not found' };
+24805: const oldSheet = oldDb.getSheetByName('Data Learn');
+24811: Logger.log('à¹„à¸¡à¹ˆà¸žà¸šà¸Šà¸µà¸• Data Learn à¹ƒà¸™à¸�à¸²à¸™à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¹€à¸�à¹ˆà¸²');
+24814: return { success: false, error: 'à¹„à¸¡à¹ˆà¸žà¸šà¸Šà¸µà¸• Data Learn à¹ƒà¸™à¸�à¸²à¸™à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¹€à¸�à¹ˆà¸²' };
+24823: let newSheet = newDb.getSheetByName('Data Learn');
+24829: newSheet = newDb.insertSheet('Data Learn');
+24853: Logger.log('à¹‚à¸­à¸™à¸¢à¹‰à¸²à¸¢à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ Data Learn à¸ªà¸³à¹€à¸£à¹‡à¸ˆ à¸ˆà¸³à¸™à¸§à¸™ ' + data.length + ' à¹�à¸–à¸§');
+24856: return { success: true, message: 'à¹‚à¸­à¸™à¸¢à¹‰à¸²à¸¢à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ Data Learn à¸ªà¸³à¹€à¸£à¹‡à¸ˆ à¸ˆà¸³à¸™à¸§à¸™ ' + (data.length - 1) + ' à¹�à¸–à¸§' };
+24862: Logger.log('à¸Šà¸µà¸• Data Learn à¹€à¸�à¹ˆà¸²à¹„à¸¡à¹ˆà¸¡à¸µà¸‚à¹‰à¸­à¸¡à¸¹à¸¥');
+24865: return { success: false, error: 'à¸Šà¸µà¸• Data Learn à¹€à¸�à¹ˆà¸²à¹„à¸¡à¹ˆà¸¡à¸µà¸‚à¹‰à¸­à¸¡à¸¹à¸¥' };
+24931: var sheet = db.getSheetByName('Data Learn');
+24934: if (!sheet) return 'Data Learn sheet not found';
+24946: results.push('Total rows in Data Learn: ' + totalRows);
+25282: var sheet = db.getSheetByName('Data Learn');
+25285: if (!sheet) return 'Data Learn sheet not found';

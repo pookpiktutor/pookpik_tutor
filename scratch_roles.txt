@@ -1,0 +1,19 @@
+const role = data[i][2];
+let role = rows[i][2] ? rows[i][2].toString().trim() : 'Staff';
+role = 'Teacher';
+logActivity(rows[i][0].toString().trim(), 'เข้าสู่ระบบ', 'เจ้าหน้าที่เข้าใช้ระบบสำเร็จ' + (role === 'Teacher' ? ' (จำกัดสิทธิ์ครูผู้สอน)' : ''));
+let role = 'Staff';
+role = userRow[2] ? userRow[2].toString().trim() : 'Staff';
+role = 'Teacher';
+role = 'Teacher';
+if (role === 'Teacher') {
+let role = '';
+role = 'ครูแทน';
+role = 'ครูประจำ';
+role = 'ครูแทน';
+if (role === 'ครูประจำ' && (c.note || '').includes('ครูลา')) return;
+let role = '';
+role = 'ครูแทน';
+role = 'ครูประจำ';
+role = 'ครูแทน';
+if (role === 'ครูประจำ' && (c.note || '').includes('ครูลา')) return;

@@ -1,0 +1,6 @@
+    });
+    
+    logActivity(logUser, 'à¸šà¸±à¸™à¸—à¸¶à¸�à¸„à¸²à¸šà¸ªà¸­à¸™à¸«à¸¥à¸²à¸¢à¸£à¸²à¸¢à¸�à¸²à¸£', 'à¸ˆà¸³à¸™à¸§à¸™: ' + logs.length + ' à¸§à¸´à¸Šà¸²: ' + logs[0].subject);
+    
+    // Invalidate caches
+    const teachers = [];

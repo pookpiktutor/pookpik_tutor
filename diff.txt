@@ -1,0 +1,593 @@
+--- v655
+
++++ curr
+
+@@ -1,7 +1,61 @@
+
+ <script>
++window.onerror = function(message, source, lineno, colno, error) {
++  const errMsg = "Error: " + message + " at " + source + ":" + lineno + ":" + colno;
++  alert(errMsg + (error && error.stack ? "\n\nStack:\n" + error.stack : ""));
++  console.error(errMsg, error);
++  try {
++    const div = document.createElement('div');
++    div.style.cssText = "position:fixed;top:0;left:0;width:100%;background:#fee2e2;color:#991b1b;padding:20px;z-index:999999;font-family:monospace;border-bottom:3px solid #ef4444;font-size:14px;box-sizing:border-box;overflow-y:auto;max-height:50%;";
++    div.innerHTML = "<h3>🔴 System Error Detected:</h3><p>" + errMsg + "</p>" + (error && error.stack ? "<pre style='text-align:left;white-space:pre-wrap;'>" + error.stack + "</pre>" : "");
++    document.body.appendChild(div);
++  } catch(e) {}
++  return false;
++};
++
++window.addEventListener('unhandledrejection', function(event) {
++  const reason = event.reason;
++  const errMsg = "Unhandled Promise Rejection: " + (reason ? (reason.message || reason) : 'unknown');
++  alert(errMsg + (reason && reason.stack ? "\n\nStack:\n" + reason.stack : ""));
++  console.error(errMsg, reason);
++  try {
++    const div = document.createElement('div');
++    div.style.cssText = "position:fixed;top:0;left:0;width:100%;background:#fee2e2;color:#991b1b;padding:20px;z-index:999999;font-family:monospace;border-bottom:3px solid #ef4444;font-size:14px;box-sizing:border-box;overflow-y:auto;max-height:50%;";
++    div.innerHTML = "<h3>🔴 Unhandled Promise Rejection:</h3><p>" + errMsg + "</p>" + (reason && reason.stack ? "<pre style='text-align:left;white-space:pre-wrap;'>" + reason.stack + "</pre>" : "");
++    document.body.appendChild(div);
++  } catch(e) {}
++});
++
+ // Version 63.0.0: อัปเดตตารางสรุปรายได้สะสมปีและหน้ารายละเอียดเงินเดือนแยกย่อย 12 หน้า (ม.ค. - ธ.ค.)
++const safeStorage = {
++  memoryStorage: {},
++  getItem: function(key) {
++    try {
++      return sessionStorage.getItem(key);
++    } catch(e) {
++      console.warn("sessionStorage.getItem blocked:", e);
++      return this.memoryStorage[key] || null;
++    }
++  },
++  setItem: function(key, value) {
++    try {
++      sessionStorage.setItem(key, value);
++    } catch(e) {
++      console.warn("sessionStorage.setItem blocked:", e);
++      this.memoryStorage[key] = value;
++    }
++  },
++  removeItem: function(key) {
++    try {
++      sessionStorage.removeItem(key);
++    } catch(e) {
++      console.warn("sessionStorage.removeItem blocked:", e);
++      delete this.memoryStorage[key];
++    }
++  }
++};
++
+ // Global State
+ let state = {
+-  classAbsences: (() => { try { return JSON.parse(localStorage.getItem('classAbsences')) || {}; } catch(e) { return {}; } })(),
++  classAbsences: (() => { try { return JSON.parse(safeStorage.getItem('classAbsences')) || {}; } catch(e) { return {}; } })(),
+   settings: { teachers: [], schools: [], paymentChannels: [] },
+   students: [],
+@@ -32,4 +86,26 @@
+
+ };
+ 
++function parseDateThai(str) {
++  if (!str) return null;
++  if (str instanceof Date) return str;
++  const parts = str.toString().trim().split('/');
++  if (parts.length === 3) {
++    const d = parseInt(parts[0], 10);
++    const m = parseInt(parts[1], 10);
++    let y = parseInt(parts[2], 10);
++    if (y > 2400) y -= 543;
++    return new Date(y, m - 1, d);
++  }
++  const partsDash = str.toString().trim().split('-');
++  if (partsDash.length === 3) {
++    let y = parseInt(partsDash[0], 10);
++    let m = parseInt(partsDash[1], 10);
++    const d = parseInt(partsDash[2], 10);
++    if (y > 2400) y -= 543;
++    return new Date(y, m - 1, d);
++  }
++  return null;
++}
++
+ // Initialize Application
+ document.addEventListener('DOMContentLoaded', () => {
+@@ -53,5 +129,5 @@
+
+         state.heartbeatInterval = null;
+       }
+-      sessionStorage.removeItem('pookpik_session');
++      safeStorage.removeItem('pookpik_session');
+       state.currentUser = null;
+       showLoginScreen();
+@@ -70,5 +146,5 @@
+
+ 
+ function checkSession() {
+-  const session = sessionStorage.getItem('pookpik_session');
++  const session = safeStorage.getItem('pookpik_session');
+   if (session) {
+     try {
+@@ -142,5 +218,5 @@
+
+     } catch (e) {
+       alert('System Error in checkSession: ' + e.message + '\n' + e.stack);
+-      sessionStorage.removeItem('pookpik_session');
++      safeStorage.removeItem('pookpik_session');
+       showLoginScreen();
+     }
+@@ -171,5 +247,5 @@
+
+       setLoading(false);
+       if (res && res.success) {
+-        sessionStorage.setItem('pookpik_session', JSON.stringify(res.user));
++        safeStorage.setItem('pookpik_session', JSON.stringify(res.user));
+         document.getElementById('login_overlay').style.display = 'none';
+         showToast('เข้าสู่ระบบเสร็จสิ้น!', 'success');
+@@ -192,5 +268,5 @@
+
+       state.heartbeatInterval = null;
+     }
+-    sessionStorage.removeItem('pookpik_session');
++    safeStorage.removeItem('pookpik_session');
+     state.currentUser = null;
+     showLoginScreen();
+@@ -304,16 +380,12 @@
+
+       
+       const filtered = logs.filter(c => {
+-        const parts = c.date.split('/');
+-        if (parts.length !== 3) return false;
+-        const cDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+-        return cDate >= start && cDate <= end;
++        const cDate = parseDateThai(c.date);
++        return cDate && cDate >= start && cDate <= end;
+       });
+       
+       filtered.sort((a, b) => {
+-        const partsA = a.date.split('/');
+-        const partsB = b.date.split('/');
+-        const dateA = new Date(parseInt(partsA[2]), parseInt(partsA[1]) - 1, parseInt(partsA[0]));
+-        const dateB = new Date(parseInt(partsB[2]), parseInt(partsB[1]) - 1, parseInt(partsB[0]));
+-        if (dateA.getTime() !== dateB.getTime()) {
++        const dateA = parseDateThai(a.date);
++        const dateB = parseDateThai(b.date);
++        if (dateA && dateB && dateA.getTime() !== dateB.getTime()) {
+           return dateA - dateB; // Ascending order: earliest date first
+         }
+@@ -824,4 +896,5 @@
+
+   google.script.run
+     .withSuccessHandler(settings => {
++      setLoading(false);
+       let initialPanel = 'dashboard';
+       if (settings && !settings.error) {
+@@ -843,4 +916,5 @@
+
+     })
+     .withFailureHandler(err => {
++      setLoading(false);
+       showToast('เชื่อมต่อฐานข้อมูลล้มเหลว: ' + err.message, 'error');
+       switchPanel('dashboard');
+@@ -902,4 +976,11 @@
+
+   }
+   
++  if (document.getElementById('teacher_filter_start_date')) {
++    document.getElementById('teacher_filter_start_date').value = firstDayStr;
++  }
++  if (document.getElementById('teacher_filter_end_date')) {
++    document.getElementById('teacher_filter_end_date').value = lastDayStr;
++  }
++  
+   // Set display strings for dates
+   setTimeout(() => {
+@@ -928,4 +1009,22 @@
+
+     document.getElementById('calc_end_date').value = `${currentYear}-${currentMonth < 10 ? '0' + currentMonth : currentMonth}-28`;
+   }
++
++  // Populate weekend planner filters
++  if (document.getElementById('weekend_year_filter')) {
++    const yrFilter = document.getElementById('weekend_year_filter');
++    yrFilter.innerHTML = '';
++    const yrNow = new Date().getFullYear();
++    for (let y = yrNow - 1; y <= yrNow + 2; y++) {
++      const opt = document.createElement('option');
++      opt.value = y;
++      opt.text = y + 543;
++      if (y === yrNow) opt.selected = true;
++      yrFilter.appendChild(opt);
++    }
++  }
++  if (document.getElementById('weekend_month_filter')) {
++    document.getElementById('weekend_month_filter').value = new Date().getMonth() + 1;
++  }
++
+ 
+   // Start background auto-refresh interval for daily grid, class logs, and teacher schedule
+@@ -941,5 +1040,5 @@
+
+       loadTeacherSchedule(true); // Silent reload
+     }
+-  }, 10000); // refresh every 10 seconds
++  }, 5000); // refresh every 5 seconds (real-time)
+ }
+ 
+@@ -1374,20 +1473,17 @@
+
+ function convertDateToSheet(dateVal) {
+   if (!dateVal) return '';
+-  const d = new Date(dateVal);
++  const d = new Date(dateVal + 'T00:00:00');
+   return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+ }
+ 
+ function convertDateFromSheet(dateVal) {
+-  if (!dateVal) return '';
+-  const parts = dateVal.split('/');
+-  if (parts.length === 3) {
+-    let day = parts[0];
+-    let month = parts[1];
+-    const year = parts[2];
+-    if (day.length < 2) day = '0' + day;
+-    if (month.length < 2) month = '0' + month;
+-    return `${year}-${month}-${day}`;
+-  }
+-  return '';
++  const dObj = parseDateThai(dateVal);
++  if (!dObj) return '';
++  let day = dObj.getDate().toString();
++  let month = (dObj.getMonth() + 1).toString();
++  const year = dObj.getFullYear();
++  if (day.length < 2) day = '0' + day;
++  if (month.length < 2) month = '0' + month;
++  return `${year}-${month}-${day}`;
+ }
+ 
+@@ -1812,4 +1908,5 @@
+
+     'grade_sheets': 'คอร์สเรียน',
+     'daily_grid': 'ตารางเรียนรายห้องเรียนรายวัน',
++    'weekend_planner': 'จัดตารางครูวันเสาร์-อาทิตย์',
+     'private_students': 'เด็กเรียนเดี่ยว & กลุ่มย่อย',
+     'class_logs': 'บันทึกรายรับ รายเดือน',
+@@ -1841,4 +1938,6 @@
+
+   } else if (panelName === 'daily_grid') {
+     loadDailyGrid();
++  } else if (panelName === 'weekend_planner') {
++    loadWeekendPlanner();
+   } else if (panelName === 'private_students') {
+     if (!state.navigatingToPayment) {
+@@ -3621,4 +3720,184 @@
+
+     .savePrivateStudentPayment(sheetName, name, courseName, paymentData, user);
+ }
++
++/**
++ * ดึงตารางเรียนวันเสาร์-อาทิตย์และประมวลผลการแสดงผล
++ */
++function loadWeekendPlanner() {
++  setLoading(true, 'กำลังรวบรวมตารางเรียนวันเสาร์-อาทิตย์...');
++  google.script.run
++    .withSuccessHandler(data => {
++      setLoading(false);
++      if (data && !data.error) {
++        renderWeekendPlannerGrid(data);
++      } else {
++        showToast('ดึงข้อมูลตารางเรียนวันเสาร์-อาทิตย์ล้มเหลว: ' + (data ? data.error : 'unknown'), 'error');
++      }
++    })
++    .withFailureHandler(err => {
++      setLoading(false);
++      showToast('เชื่อมต่อผิดพลาด: ' + err.message, 'error');
++    })
++    .getWeekendRoomSchedule(getLogUser());
++}
++
++function renderWeekendPlannerGrid(data) {
++  const container = document.getElementById('weekend_planner_content');
++  if (!container) return;
++  container.innerHTML = '';
++  
++  const branchFilter = document.getElementById('weekend_branch_filter').value;
++  const monthFilter = document.getElementById('weekend_month_filter').value;
++  const yearFilter = document.getElementById('weekend_year_filter').value;
++  
++  // 1. กรองห้องตามสาขา
++  const filteredRooms = (data.rooms || []).filter(r => {
++    if (branchFilter !== 'all') {
++      return r.branch.replace(/\s+/g, '') === branchFilter.replace(/\s+/g, '');
++    }
++    return true;
++  });
++  
++  // 2. กรองคาบเรียนเสาร์-อาทิตย์ ตามเงื่อนไข วันที่/เดือน/ปี
++  const filteredClasses = (data.classes || []).filter(c => {
++    // แยกวันที่
++    const parts = c.date.split('/');
++    if (parts.length !== 3) return false;
++    const d = parseInt(parts[0], 10);
++    const m = parseInt(parts[1], 10);
++    let y = parseInt(parts[2], 10);
++    if (y > 2400) y -= 543; // แปลง พ.ศ. เป็น ค.ศ. สำหรับเปรียบเทียบ
++    
++    // กรองเดือน
++    if (monthFilter && m !== parseInt(monthFilter, 10)) return false;
++    // กรองปี
++    if (yearFilter && y !== parseInt(yearFilter, 10)) return false;
++    
++    return true;
++  });
++  
++  if (filteredRooms.length === 0) {
++    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบห้องเรียนที่ตรงกับเงื่อนไขสาขา</div>`;
++    return;
++  }
++  
++  // ช่วงเวลาที่กำหนด
++  const timeSlots = [
++    { label: '08:00 - 10:00', start: '08:00', end: '10:00' },
++    { label: '10:00 - 12:00', start: '10:00', end: '12:00' },
++    { label: '13:00 - 15:00', start: '13:00', end: '15:00' },
++    { label: '15:00 - 17:00', start: '15:00', end: '17:00' }
++  ];
++  
++  // กลุ่มห้องตามสาขา
++  const roomsByBranch = {};
++  filteredRooms.forEach(room => {
++    if (!roomsByBranch[room.branch]) {
++      roomsByBranch[room.branch] = [];
++    }
++    roomsByBranch[room.branch].push(room);
++  });
++  
++  // สร้างตารางสำหรับแต่ละสาขา
++  Object.keys(roomsByBranch).sort().forEach(branch => {
++    const branchLabel = branch === 'สาขา1' ? 'สาขา 1' : branch === 'สาขา2' ? 'สาขา 2' : 'สาขา 3';
++    const branchRooms = roomsByBranch[branch];
++    
++    const branchSection = document.createElement('div');
++    branchSection.className = 'glass-panel';
++    branchSection.style.cssText = 'padding: 20px; border-radius: 12px; margin-bottom: 24px; box-shadow: var(--shadow-md);';
++    
++    let html = `
++      <div style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: var(--color-primary-hover); margin-bottom: 12px; border-bottom: 2px solid var(--color-primary); padding-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
++        <span>🏫 ตารางห้องเรียนวันเสาร์-อาทิตย์ — ${branchLabel}</span>
++        <span style="font-size: 0.76rem; background: rgba(0, 132, 255, 0.08); padding: 3px 8px; border-radius: 12px;">ห้องทั้งหมด ${branchRooms.length} ห้อง</span>
++      </div>
++      <div class="table-responsive">
++        <table class="custom-table" style="font-size: 0.78rem; border-collapse: collapse; text-align: left; width: 100%;">
++          <thead>
++            <tr style="background: rgba(0, 132, 255, 0.05);">
++              <th style="padding: 10px; width: 140px; border: 1px solid var(--border-color); font-weight: 700; color: var(--color-primary-hover);">ห้องเรียน</th>
++    `;
++    
++    timeSlots.forEach(slot => {
++      html += `<th style="padding: 10px; text-align: center; border: 1px solid var(--border-color); font-weight: 700; color: var(--text-main); min-width: 180px;">${slot.label}</th>`;
++    });
++    
++    html += `
++            </tr>
++          </thead>
++          <tbody>
++    `;
++    
++    branchRooms.forEach(room => {
++      html += `
++        <tr style="border-bottom: 1px solid var(--border-color);">
++          <td style="padding: 10px; font-weight: 700; border: 1px solid var(--border-color); vertical-align: middle; background: rgba(0,0,0,0.01);">
++            <div style="font-size: 0.8rem; color: var(--color-primary-hover);">🚪 ${room.roomName}</div>
++            <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">
++              ${room.ipad ? `📱 ${room.ipad}` : ''}
++              ${room.ipad && room.zoom ? ' | ' : ''}
++              ${room.zoom ? `🌐 Zoom` : ''}
++            </div>
++          </td>
++      `;
++      
++      timeSlots.forEach(slot => {
++        // หาคาบที่สอนในห้องนี้ สาขานี้ และตรงกับช่วงเวลาเริ่มต้น
++        const matches = filteredClasses.filter(c => {
++          const roomBranchClean = (c.roomBranch || '').replace(/\s+/g, '').toLowerCase();
++          const targetRoomClean = `${branch}/${room.roomName}`.replace(/\s+/g, '').toLowerCase();
++          const startClean = cleanTimeStr(c.timeStart);
++          
++          return roomBranchClean === targetRoomClean && startClean === slot.start;
++        });
++        
++        html += `<td style="padding: 6px; border: 1px solid var(--border-color); vertical-align: top; background: #fff; height: 80px;">`;
++        if (matches.length > 0) {
++          matches.forEach(c => {
++            const isConfirmed = c.teacherConfirmed;
++            const isLeave = c.note && c.note.includes('ครูลา');
++            
++            let cardStyle = 'padding: 6px 8px; border-radius: 6px; font-size: 0.72rem; margin-bottom: 4px; border: 1px solid;';
++            if (isConfirmed) {
++              cardStyle += ' background-color: rgba(25, 135, 84, 0.08); border-color: rgba(25, 135, 84, 0.25); color: #166534;';
++            } else if (isLeave) {
++              cardStyle += ' background-color: rgb(254, 226, 226); border-color: rgba(239, 68, 68, 0.25); color: #991b1b;';
++            } else {
++              cardStyle += ' background-color: rgba(0, 132, 255, 0.04); border-color: rgba(0, 132, 255, 0.15); color: var(--text-main);';
++            }
++            
++            html += `
++              <div style="${cardStyle}" onclick="showEditClassLogModal(${c.rowIndex})" title="คลิกเพื่อแก้ไขบันทึกการสอน">
++                <div style="font-weight: 700; font-size: 0.74rem; display: flex; justify-content: space-between; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
++                  <span>📚 ${c.subject.replace(/\s*\([^)]*สัปดาห์[^)]*\)/g, '')}</span>
++                </div>
++                <div style="font-size: 0.68rem; margin-top: 3px; display: flex; align-items: center; justify-content: space-between;">
++                  <span>👨‍🏫 ครู: <b>${c.teacherRegular}</b> ${c.teacherSub ? ` (แทน: ${c.teacherSub})` : ''}</span>
++                  <span style="font-size: 0.62rem; opacity: 0.85;">📅 ${c.date.split('/')[0]}/${c.date.split('/')[1]}</span>
++                </div>
++                ${c.note && c.note !== '-' ? `<div style="font-size: 0.64rem; font-style: italic; opacity: 0.8; margin-top: 2px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">📝 ${c.note}</div>` : ''}
++              </div>
++            `;
++          });
++        } else {
++          html += `<div style="color: var(--text-muted); font-size: 0.7rem; text-align: center; line-height: 60px; font-style: italic;">(ว่าง)</div>`;
++        }
++        html += `</td>`;
++      });
++      
++      html += `</tr>`;
++    });
++    
++    html += `
++          </tbody>
++        </table>
++      </div>
++    `;
++    branchSection.innerHTML = html;
++    container.appendChild(branchSection);
++  });
++}
++
+ 
+ function autoCalculateHoursFromPaid() {
+@@ -4325,9 +4604,5 @@
+
+   document.getElementById('class_room').value = roomLabel;
+   if (dateStr) {
+-    const parts = dateStr.split('/');
+-    if (parts.length === 3) {
+-      const formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+-      document.getElementById('class_date').value = formattedDate;
+-    }
++    document.getElementById('class_date').value = convertDateFromSheet(dateStr);
+   }
+ }
+@@ -4839,6 +5114,6 @@
+
+   state.classAbsences[rowIndex][type] = checkbox.checked;
+   
+-  // Save to localStorage
+-  localStorage.setItem('classAbsences', JSON.stringify(state.classAbsences));
++  // Save to safeStorage
++  safeStorage.setItem('classAbsences', JSON.stringify(state.classAbsences));
+   
+   const item = checkbox.closest('.scheduled-item') || checkbox.closest('.today-class-item');
+@@ -5272,29 +5547,19 @@
+
+   // Helper for sorting
+   function parseSheetDate(dateStr) {
+-    if (!dateStr) return { sortKey: '0000-00-00' };
+-    const parts = dateStr.split('/');
+-    if (parts.length === 3) {
+-      const d = parseInt(parts[0], 10);
+-      const m = parseInt(parts[1], 10);
+-      const y = parseInt(parts[2], 10);
+-      const sortKey = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+-      return { sortKey };
+-    }
+-    return { sortKey: '0000-00-00' };
++    const dObj = parseDateThai(dateStr);
++    if (!dObj) return { sortKey: '0000-00-00' };
++    const sortKey = `${dObj.getFullYear()}-${String(dObj.getMonth() + 1).padStart(2, '0')}-${String(dObj.getDate()).padStart(2, '0')}`;
++    return { sortKey };
+   }
+   
+   function getMonthYearThai(dateStr) {
+-    if (!dateStr) return 'อื่นๆ';
+-    const parts = dateStr.split('/');
+-    if (parts.length === 3) {
+-      const m = parseInt(parts[1], 10) - 1;
+-      const y = parseInt(parts[2], 10);
+-      const thMonthsFull = [
+-        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+-        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+-      ];
+-      return `${thMonthsFull[m]} ${y}`;
+-    }
+-    return 'อื่นๆ';
++    const dObj = parseDateThai(dateStr);
++    if (!dObj) return 'อื่นๆ';
++    const thMonthsFull = [
++      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
++      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
++    ];
++    const displayYear = dObj.getFullYear() + 543;
++    return `${thMonthsFull[dObj.getMonth()]} ${displayYear}`;
+   }
+   
+@@ -7082,8 +7347,6 @@
+
+   let payDateStr = s.paymentDate || '';
+   if (payDateStr) {
+-    const parts = payDateStr.split('/');
+-    if (parts.length === 3) {
+-      payDateObj = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+-    }
++    const parsed = parseDateThai(payDateStr);
++    if (parsed) payDateObj = parsed;
+   } else {
+     payDateStr = `${payDateObj.getDate()}/${payDateObj.getMonth() + 1}/${payDateObj.getFullYear()}`;
+@@ -7666,8 +7929,6 @@
+
+ 
+ function parseDateDDMMYYYY(str) {
+-  if (!str) return 0;
+-  const parts = str.split('/');
+-  if (parts.length !== 3) return 0;
+-  return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
++  const dObj = parseDateThai(str);
++  return dObj ? dObj.getTime() : 0;
+ }
+ 
+@@ -7685,18 +7946,14 @@
+
+ 
+ function getMonthYearString(dateStr) {
+-  if (!dateStr) return 'ไม่ระบุ';
+-  const parts = dateStr.split('/');
+-  if (parts.length !== 3) return 'ไม่ระบุ';
+-  const monthIdx = parseInt(parts[1], 10) - 1;
+-  const year = parseInt(parts[2], 10);
+-  if (monthIdx < 0 || monthIdx > 11) return 'ไม่ระบุ';
+-  return `${thaiMonths[monthIdx]} ${year}`;
++  const dObj = parseDateThai(dateStr);
++  if (!dObj) return 'ไม่ระบุ';
++  const displayYear = dObj.getFullYear() + 543;
++  return `${thaiMonths[dObj.getMonth()]} ${displayYear}`;
+ }
+ 
+ function getMonthYearSortKey(dateStr) {
+-  if (!dateStr) return 0;
+-  const parts = dateStr.split('/');
+-  if (parts.length !== 3) return 0;
+-  return parseInt(parts[2], 10) * 100 + parseInt(parts[1], 10);
++  const dObj = parseDateThai(dateStr);
++  if (!dObj) return 0;
++  return dObj.getFullYear() * 100 + (dObj.getMonth() + 1);
+ }
+ 
+@@ -7743,8 +8000,6 @@
+
+     
+     // Group by Weekly
+-    const parts = dateStr.split('/');
+-    if (parts.length === 3) {
+-      const date = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+-      if (!isNaN(date.getTime())) {
++    const date = parseDateThai(dateStr);
++    if (date && !isNaN(date.getTime())) {
+         const day = date.getDay();
+         const diffToMonday = day === 0 ? -6 : 1 - day;
+@@ -7764,5 +8019,4 @@
+
+         weeklyGroups[monTime].sum += amt;
+       }
+-    }
+     
+     // Group by Monthly
+@@ -8087,5 +8341,5 @@
+
+     state.currentUser.nickname = nickname;
+     state.currentUser.profilePic = profilePic;
+-    sessionStorage.setItem('pookpik_session', JSON.stringify(state.currentUser));
++    safeStorage.setItem('pookpik_session', JSON.stringify(state.currentUser));
+     
+     // Update displayed elements

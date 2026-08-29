@@ -1,0 +1,100 @@
+      // ignore sync courses details error to keep main save successful
+    }
+  }
+}
+
+let cachedStatusValues_ = null;
+
+function syncStudentToStatusDB(std) {
+  const sheet = getDb().getSheetByName('StatusDB');
+  
+  if (!cachedStatusValues_) {
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 0) {
+      cachedStatusValues_ = sheet.getRange(1, 1, lastRow, 25).getValues();
+    } else {
+      cachedStatusValues_ = [];
+    }
+  }
+  
+  let rowIndex = -1;
+  let id = "";
+  for (let i = 0; i < cachedStatusValues_.length; i++) {
+    const dbName = cachedStatusValues_[i][1] ? cachedStatusValues_[i][1].toString().trim() : "";
+    const dbRound = cachedStatusValues_[i][15] ? cachedStatusValues_[i][15].toString().trim() : "";
+    if (dbName === std.name && dbRound === std.round) {
+      rowIndex = i + 1;
+      id = cachedStatusValues_[i][0] ? cachedStatusValues_[i][0].toString().trim() : "";
+      break;
+    }
+  }
+  
+  const timestamp = new Date().getTime();
+  if (rowIndex === -1) {
+    id = `${std.name.replace(/\s+/g, '')}_${timestamp}_${std.round}`;
+  }
+  
+  const rowValues = [
+    id,
+    std.name,
+    std.nickname,
+    std.school,
+    formatPhoneNumber(std.contact),
+    std.branchLearn,
+    std.branchPay,
+    std.paymentTimeNote || '',
+    std.extraNote || '',
+    std.paid,
+    std.full,
+    std.outstanding,
+    std.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy'),
+    std.paymentChannel || 'กสิกร บัญชีบริษัท(สแกน)',
+    std.staff || '',
+    std.round,
+    std.grade,
+    std.classSection || '',
+    std.lineName || '',
+    std.lineId || '',
+    std.carriedForwardFee || 0,
+    std.classHours || '',
+    std.classHoursLeft || '',
+    std.classType,
+    std.isChecked ? 1 : 0
+  ];
+  
+  if (rowIndex === -1) {
+    sheet.appendRow(rowValues);
+    cachedStatusValues_.push(rowValues);
+  } else {
+    sheet.getRange(rowIndex, 1, 1, 25).setValues([rowValues]);
+    cachedStatusValues_[rowIndex - 1] = rowValues;
+  }
+  
+  // Invalidate students cache
+  invalidateStudentCache();
+}
+
+function calculateIndividualCourseFee(classType, grade, roundText, subSize) {
+  let price = 2000;
+  if (classType && classType.includes('เดี่ยว')) {
+    const cleanRound = (roundText || '').toLowerCase().trim();
+    const isEx = cleanRound.endsWith('ex') || cleanRound.includes('ex');
+    if (['ม.4', 'ม.5', 'ม.6'].includes(grade) || isEx) {
+      price = 2500;
+    } else {
+      price = 2000;
+    }
+  } else if (classType && (classType.includes('ย่อย') || classType.includes('กลุ่มย่อย'))) {
+    const size = subSize || '';
+    if (size.includes('2-3')) {
+      price = 3000;
+    } else if (size.includes('4-5')) {
+      price = 2500;
+    } else if (size.includes('6-10')) {
+      price = 2000;
+    }
+  }
+  return price;
+}
+
+function addStudentRegistration(student, logUser) {

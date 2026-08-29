@@ -1,0 +1,6 @@
+15904: const range = sheet.getRange(rowIndex, 1, 1, 15);
+15943: sheet.getRange(rowIndex, 7).setValue(0); // à¸ªà¸”
+15946: sheet.getRange(rowIndex, 8).setValue(0); // à¸­à¸­à¸™
+15949: sheet.getRange(rowIndex, 11).setValue(0); // à¸Šà¸”
+15994: sheet.getRange(rowIndex, 6).setValue(note); // note column F (6)
+15997: sheet.getRange(rowIndex, 9).setValue(isLeave); // isLeave column I (9)

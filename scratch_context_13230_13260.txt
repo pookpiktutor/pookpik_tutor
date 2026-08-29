@@ -1,0 +1,42 @@
+13230: log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd);
+13232: const newVals = [[
+13234: log.subject, log.teacherRegular, log.teacherSub || '',
+13236: log.timeStart, log.timeEnd, log.note || '',
+13238: log.isPresentLive ? parseInt(log.isPresentLive, 10) || 0 : 0,
+13240: log.isPresentOnline ? parseInt(log.isPresentOnline, 10) || 0 : 0,
+13242: log.isLeave ? parseInt(log.isLeave, 10) || 0 : 0,
+13244: log.isAbsent ? parseInt(log.isAbsent, 10) || 0 : 0,
+13246: log.isMakeup ? parseInt(log.isMakeup, 10) || 0 : 0,
+13248: log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
+13250: log.hours || '', log.date || '', log.roomBranch || ''
+13252: ]];
+13254: sheet.getRange(rowIndex, 1, 1, 15).setValues(newVals);
+13256: sheet.getRange(rowIndex, 17).setValue(''); // clear confirm
+13258: try { processClassHoursDeduction(log, false); } catch(e){}
+13262: datesToInvalidate.add(oldLog.date);
+13264: datesToInvalidate.add(log.date);
+13266: teachersToInvalidate.add(oldLog.teacherRegular);
+13268: if (oldLog.teacherSub) teachersToInvalidate.add(oldLog.teacherSub);
+13270: teachersToInvalidate.add(log.teacherRegular);
+13272: if (log.teacherSub) teachersToInvalidate.add(log.teacherSub);
+13274: actionLog.push('à¹�à¸�à¹‰à¹„à¸‚: ' + log.subject);
+13276: });
+13278: }
+13282: // Process Adds
+13284: if (adds && adds.length > 0) {
+13286: adds.forEach(function(log) { log.subject = formatSubjectWithDayTime(log.subject, log.date, log.timeStart, log.timeEnd); });
+13288: const rowsData = adds.map(log => [
+13290: log.subject, log.teacherRegular, log.teacherSub || '',
+13292: log.timeStart, log.timeEnd, log.note || '',
+13294: log.isPresentLive ? parseInt(log.isPresentLive, 10) || 0 : 0,
+13296: log.isPresentOnline ? parseInt(log.isPresentOnline, 10) || 0 : 0,
+13298: log.isLeave ? parseInt(log.isLeave, 10) || 0 : 0,
+13300: log.isAbsent ? parseInt(log.isAbsent, 10) || 0 : 0,
+13302: log.isMakeup ? parseInt(log.isMakeup, 10) || 0 : 0,
+13304: log.isOrange ? parseInt(log.isOrange, 10) || 0 : 0,
+13306: log.hours || '', log.date || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'd/M/yyyy'),
+13308: log.roomBranch || ''
+13310: ]);
+13312: const lastRow = sheet.getLastRow();
+13314: sheet.getRange(lastRow + 1, 1, rowsData.length, 15).setValues(rowsData);
+13318: adds.forEach(log => {

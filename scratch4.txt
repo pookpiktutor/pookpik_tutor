@@ -1,0 +1,100 @@
+      sheet.getRange(targetRow, 1, 1, 10).setValues([[
+        student.grade, student.name, student.nickname, student.school, student.classSection,
+        student.contact, student.lineName, student.lineId, student.branchLearn, student.branchPay
+      ]]);
+      sheet.getRange(targetRow, 11).setValue(student.full); 
+      sheet.getRange(targetRow, 12).setValue(0); 
+      sheet.getRange(targetRow, 14).setValue(student.paid); 
+      sheet.getRange(targetRow, 15).setValue(student.isCard ? 1 : 0);
+      sheet.getRange(targetRow, 16).setValue(student.paymentDate || '');
+      sheet.getRange(targetRow, 17).setValue(student.paymentChannel || '');
+      sheet.getRange(targetRow, 18).setValue(student.staff || '');
+    } else {
+      sheet.getRange(targetRow, 1, 1, 10).setValues([[
+        student.grade, student.name, student.nickname, student.school, student.classSection,
+        student.contact, student.lineName, student.lineId, student.branchLearn, student.branchPay
+      ]]);
+            sheet.getRange(targetRow, 11).setValue(student.full);
+      sheet.getRange(targetRow, 14).setValue(student.paid);
+      sheet.getRange(targetRow, 15).setValue(student.isCard ? 1 : 0);
+      sheet.getRange(targetRow, 16).setValue(student.paymentDate || '');
+      sheet.getRange(targetRow, 17).setValue(student.paymentChannel || '');
+      sheet.getRange(targetRow, 18).setValue(student.staff || '');
+    }
+    
+    // Sync checked courses into columns 16+ in the grade sheet
+    try {
+      const selectedList = student.selectedCourses || [];
+      if (selectedList.length > 0) {
+        const lastCol = sheet.getLastColumn();
+        if (lastCol >= 19) {
+          const header1 = sheet.getRange(1, 19, 1, lastCol - 18).getValues()[0];
+          const header2 = sheet.getRange(2, 19, 1, lastCol - 18).getValues()[0];
+          const header4 = sheet.getRange(4, 19, 1, lastCol - 18).getValues()[0];
+          
+          const coursesInSheet = [];
+          for (let j = 0; j < header1.length; j++) {
+            if (header1[j]) {
+              coursesInSheet.push({
+                colIndex: 19 + j,
+                courseName: header1[j].toString().trim(),
+                price: parseFloat(header2[j]) || 0,
+                sessions: parseInt(header4[j]) || 10
+              });
+            }
+          }
+          
+          // Map selected list items (which could be string or object)
+          const selectedMap = {};
+          selectedList.forEach(item => {
+            if (item && typeof item === 'object' && item.courseName) {
+              selectedMap[item.courseName.toString().trim()] = parseInt(item.sessions) || 0;
+            } else if (item) {
+              selectedMap[item.toString().trim()] = null;
+            }
+          });
+          
+          const selectedConfig = coursesInSheet.filter(c => c.courseName in selectedMap);
+          const fullCourses = [];
+          const partialCourses = [];
+          
+          selectedConfig.forEach(c => {
+            const userSessions = selectedMap[c.courseName];
+            const isPartial = (userSessions !== null && userSessions !== undefined && userSessions !== c.sessions);
+            if (isPartial) {
+              c.userSessions = userSessions;
+              partialCourses.push(c);
+            } else {
+              c.userSessions = c.sessions;
+              fullCourses.push(c);
+            }
+          });
+          
+          const courseValuesToWrite = {};
+          coursesInSheet.forEach(c => {
+            courseValuesToWrite[c.colIndex] = ''; // clear cell by default
+          });
+          
+          // Sort descending by price to apply discounts correctly to full courses
+          fullCourses.sort((a, b) => b.price - a.price);
+          fullCourses.forEach((c, idx) => {
+            if (idx === 0 || idx === 1) {
+              courseValuesToWrite[c.colIndex] = c.sessions; // full sessions
+            } else if (idx === 2) {
+              courseValuesToWrite[c.colIndex] = 30; // 30% discount
+            } else {
+              courseValuesToWrite[c.colIndex] = 50; // 50% discount
+            }
+          });
+          
+          // Write partial courses (directly custom sessions count, no discount)
+          partialCourses.forEach(c => {
+            courseValuesToWrite[c.colIndex] = c.userSessions;
+          });
+          
+          for (const colIndex in courseValuesToWrite) {
+            sheet.getRange(targetRow, parseInt(colIndex)).setValue(courseValuesToWrite[colIndex]);
+          }
+        }
+      }
+    } catch (err) {

@@ -1,0 +1,1 @@
+{"date": "30/03/2026", "subject": "หลัก คณิต ป.4", "room": "ห้อง 33 สาขา 2\niPad025", "role": "à¸„à¸£à¸¹à¸›à¸£à¸°à¸ˆà¸³", "numKids": 2, "hours": "2", "rate": 150, "pay": 300, "rowIndex": 38, "teacherConfirmed": 0}

@@ -1,0 +1,69 @@
+function renderStudentsTable() {
+  const query = document.getElementById('student_search').value.toLowerCase().trim();
+  const branchFilter = document.getElementById('student_branch_filter').value;
+  const gradeFilter = document.getElementById('student_grade_filter') ? document.getElementById('student_grade_filter').value : '';
+  const tbody = document.getElementById('students_tbody');
+  tbody.innerHTML = '';
+  
+  const filtered = state.students.filter(s => {
+    const matchQuery = !query || s.name.toLowerCase().includes(query) || 
+                       s.nickname.toLowerCase().includes(query) || 
+                       s.contact.toLowerCase().includes(query) ||
+                       s.lineName.toLowerCase().includes(query);
+                       
+    const matchBranch = !branchFilter || (s.branchLearn && s.branchLearn.includes(branchFilter));
+    const matchGrade = !gradeFilter || (s.grade && s.grade.includes(gradeFilter)) || (s.classType && s.classType.includes(gradeFilter));
+    return matchQuery && matchBranch && matchGrade;
+  });
+  
+  filtered.forEach(s => {
+    const tr = document.createElement('tr');
+    const statusBadge = s.outstanding <= 0 ? 
+      '<span class="badge badge-success">ชำระครบแล้ว</span>' : 
+      `<span class="badge badge-danger">ค้าง ฿${s.outstanding.toLocaleString()}</span>`;
+      
+    let hoursDisplay = '';
+    const classType = s.classType || 'เดี่ยว';
+    const courseName = s.round || '-';
+    if (classType === 'เดี่ยว' || classType.includes('ย่อย')) {
+      const h = formatHoursMinutes(s.classHours);
+      const hl = formatHoursMinutes(s.classHoursLeft);
+      hoursDisplay = `<div style="font-size: 0.68rem; color: var(--color-primary-hover); font-weight: 500; white-space: nowrap;">📘 ${courseName}</div>`;
+      hoursDisplay += `<div style="font-size: 0.62rem; color: var(--text-muted); white-space: nowrap;">⏱ ${h} (เหลือ: ${hl})</div>`;
+    } else {
+      hoursDisplay = `<div style="font-size: 0.68rem; color: var(--color-primary-hover); font-weight: 500; white-space: nowrap;">📘 ${courseName}</div>`;
+    }
+      
+    tr.innerHTML = `
+      <td>
+        <div style="font-weight: 600; color: var(--color-primary-hover); cursor: pointer; white-space: nowrap;" onclick="showStudentHistoryModal('${s.name}', '${s.nickname}')">🧒 ${s.name}</div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); white-space: nowrap;">${s.classType} ${s.grade || ''} | Line: ${s.lineName || '-'}</div>
+      </td>
+      <td>${s.nickname}</td>
+      <td style="white-space: nowrap;">${s.school || '-'} ${s.classSection ? `(${s.classSection})` : ''}</td>
+      <td>
+        <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-main); white-space: nowrap;">${s.branchLearn || '-'}</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted); white-space: nowrap;">${formatPhone(s.contact) || '-'}</div>
+      </td>
+      <td>
+        <div style="font-weight: 600; white-space: nowrap;">฿${s.full.toLocaleString()}</div>
+        ${hoursDisplay}
+      </td>
+      <td>${statusBadge}</td>
+      <td style="white-space: nowrap;">${formatDateTimeToThaiLong(s.paymentDate) || '-'}</td>
+      <td>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-secondary btn-icon" onclick="showEditStudentModal('${s.id}')" title="แก้ไข">✏️</button>
+          <button class="btn btn-danger btn-icon" onclick="deleteStudent('${s.id}')" title="ลบ">🗑️</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบรายชื่อนักเรียน</td></tr>`;
+  }
+}
+
+// Helper: Check if classType represents a main group course (either legacy name or selected grade option)
