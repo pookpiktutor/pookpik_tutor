@@ -18332,8 +18332,10 @@ function openProfileModal() {
         if (bEl) bEl.value = p.bank || '';
 
         const aEl = document.getElementById('profile_account_no');
-
         if (aEl) aEl.value = p.accountNumber || '';
+        
+        const atEl = document.getElementById('profile_account_type');
+        if (atEl) atEl.value = p.accountType || 'บัญชีทั่วไป';
 
         
 
@@ -18592,8 +18594,10 @@ function saveUserProfileData(e) {
   const bank = bEl ? bEl.value.trim() : '';
 
   const aEl = document.getElementById('profile_account_no');
-
   const accountNo = aEl ? aEl.value.trim() : '';
+
+  const atEl = document.getElementById('profile_account_type');
+  const accountType = atEl ? atEl.value : 'บัญชีทั่วไป';
 
   
 
@@ -18648,11 +18652,9 @@ function saveUserProfileData(e) {
     fullName: fullName,
 
     phone: phone,
-
     bank: bank,
-
     accountNumber: accountNo,
-
+    accountType: accountType,
     profilePic: profileImageDataUrl
 
   };
