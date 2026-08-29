@@ -18328,9 +18328,21 @@ function openProfileModal() {
         if (pEl) pEl.value = p.phone || '';
 
         const bEl = document.getElementById('profile_bank');
-
-        if (bEl) bEl.value = p.bank || '';
-
+        if (bEl) {
+          const bankVal = p.bank || '';
+          // Try to find existing option
+          let found = false;
+          for (let opt of bEl.options) {
+            if (opt.value === bankVal) { found = true; break; }
+          }
+          if (!found && bankVal) {
+            // Add as "อื่นๆ" or pick closest - set as อื่นๆ
+            bEl.value = 'อื่นๆ';
+          } else {
+            bEl.value = bankVal;
+          }
+        }
+        
         const aEl = document.getElementById('profile_account_no');
         if (aEl) aEl.value = p.accountNumber || '';
         
