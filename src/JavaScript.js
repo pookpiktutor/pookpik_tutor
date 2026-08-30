@@ -22329,67 +22329,121 @@ let currentChatTeacher = '';
 let chatInterval = null;
 
 function openChatModal() {
-  const overlay = document.getElementById('chat_modal_overlay');
-  if (overlay) overlay.style.display = 'flex';
+  const widget = document.getElementById('chat_widget');
+  if (widget.style.display === 'flex') {
+    closeChatModal();
+    return;
+  }
+  widget.style.display = 'flex';
+  document.getElementById('chat_unread_badge').style.display = 'none';
+
+  const isStaff = state.currentUser.role === 'Staff' || state.currentUser.role === 'Admin' || state.currentUser.role === 'พนักงาน' || state.currentUser.role === 'ผู้บริหาร';
   
-  const isTeacher = state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู';
-  const selectorContainer = document.getElementById('chat_teacher_selector_container');
-  
-  if (isTeacher) {
-    selectorContainer.style.display = 'none';
-    currentChatTeacher = state.currentUser.username;
-    document.getElementById('chat_modal_title').innerText = 'สนทนากับเจ้าหน้าที่';
-    loadChatWithSelectedTeacher();
+  if (isStaff) {
+    if (!currentChatTeacher) {
+      showChatContactList();
+    } else {
+      showChatRoom(currentChatTeacher);
+    }
   } else {
-    selectorContainer.style.display = 'block';
-    document.getElementById('chat_modal_title').innerText = 'สนทนากับครูผู้สอน';
-    
-    // Load teacher list
-    setLoading(true, 'กำลังโหลดรายชื่อครู...');
-    google.script.run
-      .withSuccessHandler(res => {
-        setLoading(false);
-        if (res && res.success) {
-          const select = document.getElementById('chat_teacher_select');
-          select.innerHTML = '<option value="">-- เลือกครูผู้สอน --</option>';
-          res.data.forEach(t => {
-            const opt = document.createElement('option');
-            opt.value = t.username;
-            opt.innerText = t.nickname ? `${t.nickname} (${t.username})` : t.username;
-            select.appendChild(opt);
-          });
-          if (currentChatTeacher) {
-            select.value = currentChatTeacher;
-            loadChatWithSelectedTeacher();
-          }
-        }
-      })
-      .getTeachersDB(state.currentUser);
+    // Teacher directly opens chat with Admin
+    document.getElementById('chat_contact_list_view').style.display = 'none';
+    document.getElementById('chat_room_view').style.display = 'flex';
+    document.getElementById('chat_back_btn').style.display = 'none';
+    document.getElementById('chat_modal_title').textContent = 'สนทนากับเจ้าหน้าที่';
+    loadChatHistory('Admin');
   }
   
   if (chatInterval) clearInterval(chatInterval);
   chatInterval = setInterval(() => {
-    if (document.getElementById('chat_modal_overlay').style.display === 'flex' && currentChatTeacher) {
-      loadChatWithSelectedTeacher(true); // silent load
+    if (document.getElementById('chat_widget').style.display === 'flex') {
+      if (document.getElementById('chat_contact_list_view').style.display === 'flex') {
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res.success && res.contacts) renderChatContacts(res.contacts);
+          })
+          .getChatContactsWithUnread(state.currentUser);
+      } else if (currentChatTeacher) {
+        loadChatWithSelectedTeacher(true);
+      }
     }
-  }, 10000); // 10s auto refresh
+  }, 10000);
 }
 
 function closeChatModal() {
-  document.getElementById('chat_modal_overlay').style.display = 'none';
-  if (chatInterval) clearInterval(chatInterval);
+  document.getElementById('chat_widget').style.display = 'none';
+  if (chatInterval) {
+    clearInterval(chatInterval);
+    chatInterval = null;
+  }
+  checkUnreadBadge();
+}
+
+function showChatContactList() {
+  document.getElementById('chat_room_view').style.display = 'none';
+  document.getElementById('chat_contact_list_view').style.display = 'flex';
+  document.getElementById('chat_back_btn').style.display = 'none';
+  document.getElementById('chat_modal_title').textContent = 'ข้อความ';
+  currentChatTeacher = '';
+  
+  const container = document.getElementById('chat_contacts_container');
+  container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted);">กำลังโหลดรายชื่อ...</div>';
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res.success && res.contacts) {
+        renderChatContacts(res.contacts);
+      }
+    })
+    .getChatContactsWithUnread(state.currentUser);
+}
+
+function renderChatContacts(contacts) {
+  const container = document.getElementById('chat_contacts_container');
+  if (contacts.length === 0) {
+    container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted);">ไม่มีครูผู้สอนในระบบ</div>';
+    return;
+  }
+  
+  let htmlStr = '';
+  contacts.forEach(c => {
+    htmlStr += '<div style="padding: 12px 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="showChatRoom(\'' + c.username + '\', \'' + c.nickname + '\')" onmouseover="this.style.background=\'var(--bg-panel)\'" onmouseout="this.style.background=\'transparent\'">';
+    htmlStr += '<div style="display: flex; align-items: center; gap: 10px;">';
+    htmlStr += '<div style="width: 35px; height: 35px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; justify-content: center; align-items: center; font-weight: bold;">' + c.nickname.charAt(0) + '</div>';
+    htmlStr += '<div style="font-size: 0.95rem;">ครู' + c.nickname + '</div>';
+    htmlStr += '</div>';
+    if (c.unreadCount > 0) {
+      htmlStr += '<div style="background: var(--color-danger); color: white; font-size: 0.75rem; font-weight: bold; width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center;">' + c.unreadCount + '</div>';
+    }
+    htmlStr += '</div>';
+  });
+  container.innerHTML = htmlStr;
+}
+
+function showChatRoom(teacherUsername, teacherNickname) {
+  currentChatTeacher = teacherUsername;
+  document.getElementById('chat_contact_list_view').style.display = 'none';
+  document.getElementById('chat_room_view').style.display = 'flex';
+  document.getElementById('chat_back_btn').style.display = 'inline-block';
+  if (teacherNickname) {
+    document.getElementById('chat_modal_title').textContent = 'ครู' + teacherNickname;
+  }
+  
+  document.getElementById('chat_messages_container').innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">กำลังโหลดข้อความ...</div>';
+  loadChatHistory(teacherUsername);
+}
+
+function goBackToChatList() {
+  showChatContactList();
+}
+
+function loadChatHistory(target) {
+  currentChatTeacher = target === 'Admin' ? state.currentUser.username : target;
+  loadChatWithSelectedTeacher(false);
 }
 
 function loadChatWithSelectedTeacher(isSilent = false) {
-  const isTeacher = state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู';
-  if (!isTeacher) {
-    currentChatTeacher = document.getElementById('chat_teacher_select').value;
-  }
-  
-  if (!currentChatTeacher) {
-    document.getElementById('chat_messages_container').innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: auto; margin-bottom: auto;">เลือกครูผู้สอนเพื่อเริ่มสนทนา</div>';
-    return;
-  }
+  if (!currentChatTeacher) return;
   
   if (!isSilent) setLoading(true, 'กำลังโหลดข้อความ...');
   window._nextTaskSilent = isSilent;
@@ -22399,7 +22453,6 @@ function loadChatWithSelectedTeacher(isSilent = false) {
       if (res && res.success) {
         renderChatMessages(res.messages);
         
-        // Mark as read if there are unread messages for me
         const isStaff = state.currentUser.role === 'Staff' || state.currentUser.role === 'Admin' || state.currentUser.role === 'พนักงาน' || state.currentUser.role === 'ผู้บริหาร';
         const hasUnreadForMe = res.messages.some(m => {
           if (m.isRead) return false;
