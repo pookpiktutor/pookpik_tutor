@@ -2562,14 +2562,16 @@
           </button>
         </div>
         <style>
-          #profile_modal .form-input { padding: 6px 10px; font-size: 0.85rem; }
-          #profile_modal .form-label { font-size: 0.85rem; margin-bottom: 2px; }
-          #profile_modal .form-grid { gap: 8px 12px; }
+          #profile_modal .form-input { padding: 4px 8px; font-size: 0.8rem; height: 32px; }
+          #profile_modal .form-label { font-size: 0.78rem; margin-bottom: 2px; }
+          #profile_modal .form-grid { gap: 6px 10px; }
+          #profile_modal .modal-body { padding: 10px 16px; }
+          #profile_modal .form-group { margin-bottom: 4px; }
         </style>
-        <div class="modal-body" style="padding: 12px 20px;">
+        <div class="modal-body">
           <form id="profile_form" onsubmit="saveUserProfileData(event)">
             <!-- Profile Image Section -->
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 8px;">
               <div id="profile_pic_preview_container" style="position: relative; width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--color-primary); background: #334155; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
                 <span id="profile_pic_preview_text" style="font-size: 1.5rem; font-weight: bold; color: #fff;"></span>
                 <img id="profile_pic_preview_img" style="width: 100%; height: 100%; object-fit: cover; display: none;">
