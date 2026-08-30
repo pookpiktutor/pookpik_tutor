@@ -22489,7 +22489,7 @@ function renderChatMessages(messages) {
         </div>
       `;
     } else {
-      const senderName = m.sender; // could be formatted better
+      const senderName = m.senderNickname || m.sender; // use nickname if available
       html += `
         <div style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 5px;">
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; margin-left: 5px;">${senderName}</div>
