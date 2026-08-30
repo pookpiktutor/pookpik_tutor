@@ -573,17 +573,15 @@ function checkSession() {
 
               // Load extra details
 
-              document.getElementById('teacher_sidebar_id').innerText = p.username || '-';
-
+              document.getElementById('teacher_sidebar_username').innerText = p.username || '-';
               document.getElementById('teacher_sidebar_fullname').innerText = p.fullName || '-';
-
-              document.getElementById('teacher_sidebar_bank').innerText = p.bank || '-';
-
-              document.getElementById('teacher_sidebar_account').innerText = p.accountNumber || '-';
-
-              document.getElementById('teacher_sidebar_account_type').innerText = p.accountType || '-';
-
+              document.getElementById('teacher_sidebar_nickname').innerText = p.nickname || '-';
               document.getElementById('teacher_sidebar_phone').innerText = formatPhone(p.phone) || '-';
+              document.getElementById('teacher_sidebar_school').innerText = p.school || '-';
+              document.getElementById('teacher_sidebar_subjects').innerText = p.subjects || '-';
+              document.getElementById('teacher_sidebar_account_type').innerText = p.accountType || '-';
+              document.getElementById('teacher_sidebar_bank').innerText = p.bank || '-';
+              document.getElementById('teacher_sidebar_account').innerText = p.accountNumber || '-';
 
             }
 
@@ -18323,8 +18321,13 @@ function openProfileModal() {
         if (fEl) fEl.value = p.fullName || '';
 
         const pEl = document.getElementById('profile_phone');
-
         if (pEl) pEl.value = p.phone || '';
+
+        const schoolEl = document.getElementById('profile_school');
+        if (schoolEl) schoolEl.value = p.school || '';
+
+        const subjectsEl = document.getElementById('profile_subjects');
+        if (subjectsEl) subjectsEl.value = p.subjects || '';
 
         const bEl = document.getElementById('profile_bank');
         if (bEl) {
@@ -18600,6 +18603,12 @@ function saveUserProfileData(e) {
 
   const phone = pEl ? pEl.value.trim() : '';
 
+  const sEl = document.getElementById('profile_school');
+  const school = sEl ? sEl.value.trim() : '';
+
+  const subEl = document.getElementById('profile_subjects');
+  const subjects = subEl ? subEl.value.trim() : '';
+
   const bEl = document.getElementById('profile_bank');
 
   const bank = bEl ? bEl.value.trim() : '';
@@ -18663,6 +18672,8 @@ function saveUserProfileData(e) {
     fullName: fullName,
 
     phone: phone,
+    school: school,
+    subjects: subjects,
     bank: bank,
     accountNumber: accountNo,
     accountType: accountType,
@@ -18798,17 +18809,15 @@ function updateSessionAndSidebar(nickname, profilePic) {
 
             document.getElementById('teacher_user_display').innerText = fullDisplayName;
 
-            document.getElementById('teacher_sidebar_id').innerText = p.username || '-';
-
+            document.getElementById('teacher_sidebar_username').innerText = p.username || '-';
             document.getElementById('teacher_sidebar_fullname').innerText = p.fullName || '-';
-
-            document.getElementById('teacher_sidebar_bank').innerText = p.bank || '-';
-
-            document.getElementById('teacher_sidebar_account').innerText = p.accountNumber || '-';
-
-            document.getElementById('teacher_sidebar_account_type').innerText = p.accountType || '-';
-
+            document.getElementById('teacher_sidebar_nickname').innerText = p.nickname || '-';
             document.getElementById('teacher_sidebar_phone').innerText = formatPhone(p.phone) || '-';
+            document.getElementById('teacher_sidebar_school').innerText = p.school || '-';
+            document.getElementById('teacher_sidebar_subjects').innerText = p.subjects || '-';
+            document.getElementById('teacher_sidebar_account_type').innerText = p.accountType || '-';
+            document.getElementById('teacher_sidebar_bank').innerText = p.bank || '-';
+            document.getElementById('teacher_sidebar_account').innerText = p.accountNumber || '-';
 
           }
 

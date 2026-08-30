@@ -2590,15 +2590,23 @@
               </div>
               <div class="form-group">
                 <label class="form-label">ชื่อจริง - นามสกุล</label>
-                <input type="text" id="profile_fullname" class="form-input" placeholder="ระบุชื่อจริงและนามสกุล">
+                <input type="text" id="profile_fullname" class="form-input" placeholder="ระบุชื่อจริงและนามสกุล" style="width: 90%;">
               </div>
               <div class="form-group">
                 <label class="form-label">เบอร์โทรศัพท์</label>
                 <input type="text" id="profile_phone" class="form-input" placeholder="เบอร์โทรติดต่อ">
               </div>
               <div class="form-group">
+                <label class="form-label">สถานที่ทำงาน</label>
+                <input type="text" id="profile_school" class="form-input" placeholder="โรงเรียนหรือสถานที่ทำงาน">
+              </div>
+              <div class="form-group">
+                <label class="form-label">วิชาที่สอนได้</label>
+                <input type="text" id="profile_subjects" class="form-input" placeholder="วิชาที่สอนได้">
+              </div>
+              <div class="form-group">
                 <label class="form-label">ธนาคาร</label>
-                <select id="profile_bank" class="form-input">
+                <select id="profile_bank" class="form-input" style="width: 90%;">
                   <option value="">-- เลือกธนาคาร --</option>
                   <option value="กรุงเทพ">ธนาคารกรุงเทพ (BBL)</option>
                   <option value="กสิกรไทย">ธนาคารกสิกรไทย (KBANK)</option>
@@ -2630,7 +2638,7 @@
               </div>
               <div class="form-group">
                 <label class="form-label">ประเภทบัญชีรับเงิน</label>
-                <select id="profile_account_type" class="form-input">
+                <select id="profile_account_type" class="form-input" style="width: 90%;">
                   <option value="บัญชีทั่วไป">บัญชีทั่วไป (General)</option>
                   <option value="บัญชีบริษัท">บัญชีบริษัท (Company)</option>
                 </select>
@@ -2867,12 +2875,15 @@
           </div>
           <!-- Teacher info details block -->
           <div id="teacher_details_sidebar" style="font-size: 0.7rem; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; display: flex; flex-direction: column; gap: 4px; border: 1px solid rgba(255,255,255,0.05);">
-            <div><strong>รหัส:</strong> <span id="teacher_sidebar_id" style="color: #fff;">-</span></div>
-            <div><strong>ชื่อจริง:</strong> <span id="teacher_sidebar_fullname" style="color: #fff;">-</span></div>
+            <div><strong>ชื่อเข้าใช้งาน:</strong> <span id="teacher_sidebar_username" style="color: #fff;">-</span></div>
+            <div><strong>ชื่อ-นามสกุล:</strong> <span id="teacher_sidebar_fullname" style="color: #fff;">-</span></div>
+            <div><strong>ชื่อเล่น:</strong> <span id="teacher_sidebar_nickname" style="color: #fff;">-</span></div>
+            <div><strong>เบอร์โทรศัพท์:</strong> <span id="teacher_sidebar_phone" style="color: #fff;">-</span></div>
+            <div><strong>สถานที่ทำงาน:</strong> <span id="teacher_sidebar_school" style="color: #fff;">-</span></div>
+            <div><strong>วิชาที่สอนได้:</strong> <span id="teacher_sidebar_subjects" style="color: #fff;">-</span></div>
+            <div><strong>ประเภทบัญชีรับเงิน:</strong> <span id="teacher_sidebar_account_type" style="color: #fff;">-</span></div>
             <div><strong>ธนาคาร:</strong> <span id="teacher_sidebar_bank" style="color: #fff;">-</span></div>
             <div><strong>เลขบัญชี:</strong> <span id="teacher_sidebar_account" style="color: #fff;">-</span></div>
-            <div><strong>ประเภทบัญชีรับเงิน:</strong> <span id="teacher_sidebar_account_type" style="color: #fff;">-</span></div>
-            <div><strong>ติดต่อ:</strong> <span id="teacher_sidebar_phone" style="color: #fff;">-</span></div>
           </div>
           <button class="btn btn-secondary" onclick="handleLogout()" style="width: 100%; justify-content: center; font-size: 0.78rem; padding: 6px 12px; background: rgba(239, 68, 68, 0.1); border: 1.5px solid rgba(239, 68, 68, 0.2); color: #ef4444;">🚪 ออกจากระบบ</button>
         </div>
