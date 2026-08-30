@@ -22321,4 +22321,208 @@ function submitTeacherAdjustment() {
     .saveTeacherAdjustment(data, state.username);
 }
 
+// --- CHAT SYSTEM ---
+let currentChatTeacher = '';
+let chatInterval = null;
+
+function openChatModal() {
+  const overlay = document.getElementById('chat_modal_overlay');
+  if (overlay) overlay.style.display = 'flex';
+  
+  const isTeacher = state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู';
+  const selectorContainer = document.getElementById('chat_teacher_selector_container');
+  
+  if (isTeacher) {
+    selectorContainer.style.display = 'none';
+    currentChatTeacher = state.currentUser.username;
+    document.getElementById('chat_modal_title').innerText = 'สนทนากับเจ้าหน้าที่';
+    loadChatWithSelectedTeacher();
+  } else {
+    selectorContainer.style.display = 'block';
+    document.getElementById('chat_modal_title').innerText = 'สนทนากับครูผู้สอน';
+    
+    // Load teacher list
+    setLoading(true, 'กำลังโหลดรายชื่อครู...');
+    google.script.run
+      .withSuccessHandler(res => {
+        setLoading(false);
+        if (res && res.success) {
+          const select = document.getElementById('chat_teacher_select');
+          select.innerHTML = '<option value="">-- เลือกครูผู้สอน --</option>';
+          res.data.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.username;
+            opt.innerText = t.nickname ? `${t.nickname} (${t.username})` : t.username;
+            select.appendChild(opt);
+          });
+          if (currentChatTeacher) {
+            select.value = currentChatTeacher;
+            loadChatWithSelectedTeacher();
+          }
+        }
+      })
+      .getTeachersDB(state.currentUser);
+  }
+  
+  if (chatInterval) clearInterval(chatInterval);
+  chatInterval = setInterval(() => {
+    if (document.getElementById('chat_modal_overlay').style.display === 'flex' && currentChatTeacher) {
+      loadChatWithSelectedTeacher(true); // silent load
+    }
+  }, 10000); // 10s auto refresh
+}
+
+function closeChatModal() {
+  document.getElementById('chat_modal_overlay').style.display = 'none';
+  if (chatInterval) clearInterval(chatInterval);
+}
+
+function loadChatWithSelectedTeacher(isSilent = false) {
+  const isTeacher = state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู';
+  if (!isTeacher) {
+    currentChatTeacher = document.getElementById('chat_teacher_select').value;
+  }
+  
+  if (!currentChatTeacher) {
+    document.getElementById('chat_messages_container').innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: auto; margin-bottom: auto;">เลือกครูผู้สอนเพื่อเริ่มสนทนา</div>';
+    return;
+  }
+  
+  if (!isSilent) setLoading(true, 'กำลังโหลดข้อความ...');
+  window._nextTaskSilent = isSilent;
+  google.script.run
+    .withSuccessHandler(res => {
+      if (!isSilent) setLoading(false);
+      if (res && res.success) {
+        renderChatMessages(res.messages);
+        
+        // Mark as read if there are unread messages for me
+        const hasUnreadForMe = res.messages.some(m => !m.isRead && m.receiver.toLowerCase() === state.currentUser.username.toLowerCase());
+        if (hasUnreadForMe) {
+          google.script.run.markMessagesAsRead(currentChatTeacher, state.currentUser.username);
+          checkUnreadBadge();
+        }
+      }
+    })
+    .getChatHistory(currentChatTeacher);
+}
+
+function renderChatMessages(messages) {
+  const container = document.getElementById('chat_messages_container');
+  if (!messages || messages.length === 0) {
+    container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: auto; margin-bottom: auto;">ยังไม่มีข้อความสนทนา เริ่มต้นทักทายเลย!</div>';
+    return;
+  }
+  
+  let html = '';
+  messages.forEach(m => {
+    const isMe = m.sender.toLowerCase() === state.currentUser.username.toLowerCase();
+    const timeStr = new Date(m.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    
+    if (isMe) {
+      html += `
+        <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 5px;">
+          <div style="background: var(--color-primary); color: white; padding: 10px 15px; border-radius: 15px 15px 0 15px; max-width: 85%; word-wrap: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+            ${m.message}
+          </div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
+            ${timeStr} ${m.isRead ? '✓✓ อ่านแล้ว' : '✓ ส่งแล้ว'}
+          </div>
+        </div>
+      `;
+    } else {
+      const senderName = m.sender; // could be formatted better
+      html += `
+        <div style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 5px;">
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; margin-left: 5px;">${senderName}</div>
+          <div style="background: rgba(255,255,255,0.1); color: white; padding: 10px 15px; border-radius: 15px 15px 15px 0; max-width: 85%; word-wrap: break-word; border: 1px solid rgba(255,255,255,0.05);">
+            ${m.message}
+          </div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
+            ${timeStr}
+          </div>
+        </div>
+      `;
+    }
+  });
+  
+  container.innerHTML = html;
+  container.scrollTop = container.scrollHeight;
+}
+
+function submitChatMessage() {
+  const input = document.getElementById('chat_input_msg');
+  const msg = input.value.trim();
+  if (!msg) return;
+  if (!currentChatTeacher) {
+    showToast('กรุณาเลือกผู้ติดต่อก่อนส่งข้อความ', 'error');
+    return;
+  }
+  
+  const isTeacher = state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู';
+  const receiver = isTeacher ? 'Admin' : currentChatTeacher;
+  const sender = state.currentUser.username;
+  
+  input.value = ''; // clear input early
+  
+  window._nextTaskSilent = true; // silent so it doesn't block UI if possible
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res && res.success) {
+        loadChatWithSelectedTeacher(true);
+      } else {
+        showToast('ไม่สามารถส่งข้อความได้', 'error');
+      }
+    })
+    .sendMessage(sender, receiver, msg);
+    
+  // Optimistic UI update
+  const container = document.getElementById('chat_messages_container');
+  const timeStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  
+  // Remove "No messages" text if it exists
+  if (container.innerHTML.includes('ยังไม่มีข้อความสนทนา')) {
+    container.innerHTML = '';
+  }
+  
+  container.innerHTML += `
+    <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 5px; opacity: 0.7;">
+      <div style="background: var(--color-primary); color: white; padding: 10px 15px; border-radius: 15px 15px 0 15px; max-width: 85%; word-wrap: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+        ${msg}
+      </div>
+      <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
+        ${timeStr} กำลังส่ง...
+      </div>
+    </div>
+  `;
+  container.scrollTop = container.scrollHeight;
+}
+
+function checkUnreadBadge() {
+  if (!state.currentUser || !state.currentUser.username) return;
+  
+  window._nextTaskSilent = true;
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res && res.success) {
+        const badge = document.getElementById('chat_unread_badge');
+        if (badge) {
+          if (res.count > 0) {
+            badge.innerText = res.count > 99 ? '99+' : res.count;
+            badge.style.display = 'flex';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      }
+    })
+    .getUnreadMessagesCount(state.currentUser.username);
+}
+
+// Check unread badge periodically
+setInterval(() => {
+  if (state.currentUser && state.currentUser.username) {
+    checkUnreadBadge();
+  }
+}, 30000); // Check every 30 seconds globally
 
