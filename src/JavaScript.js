@@ -883,7 +883,7 @@ function handleLogin(e) {
 
          const count = input.value.length;
 
-         countSpan.innerText = count + '/60';
+         countSpan.innerText = count + '/50';
 
          if (count > 0 && count < 60 && input.placeholder.includes('60')) {
 
@@ -1523,7 +1523,7 @@ function loadTeacherDailySchedule() {
 
          const count = input.value.length;
 
-         countSpan.innerText = count + '/60';
+         countSpan.innerText = count + '/50';
 
          if (count > 0 && count < 60 && input.placeholder.includes('60')) {
 
@@ -21751,7 +21751,7 @@ function initializeApp() {
 
          const count = input.value.length;
 
-         countSpan.innerText = count + '/60';
+         countSpan.innerText = count + '/50';
 
          if (count > 0 && count < 60 && input.placeholder.includes('60')) {
 

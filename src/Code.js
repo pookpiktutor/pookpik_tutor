@@ -5492,6 +5492,9 @@ function getAllStudentsFromSubgroupSheets() {
 function getTeacherCoursesAndStudents(logUser) {
 
   try {
+    const cacheKey = 'teacher_courses_' + (logUser || 'guest');
+    const cached = getCacheObject(cacheKey);
+    if (cached) return cached;
 
     const db = getDb();
 
@@ -5543,7 +5546,12 @@ function getTeacherCoursesAndStudents(logUser) {
 
       classLogs.forEach(c => {
 
-        const isAssigned = c.teacherRegular && c.teacherRegular.toLowerCase().includes(matchedTeacherNick.toLowerCase());
+        const cRegLower = c.teacherRegular ? c.teacherRegular.toLowerCase().trim() : '';
+        const matchNickLower = matchedTeacherNick ? matchedTeacherNick.toLowerCase().trim() : '';
+        let isAssigned = false;
+        if (cRegLower && matchNickLower) {
+          isAssigned = cRegLower.includes(matchNickLower) || matchNickLower.includes(cRegLower);
+        }
 
           
 
