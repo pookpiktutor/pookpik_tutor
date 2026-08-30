@@ -22337,7 +22337,7 @@ function openChatModal() {
   widget.style.display = 'flex';
   document.getElementById('chat_unread_badge').style.display = 'none';
 
-  const isStaff = state.currentUser.role === 'Staff' || state.currentUser.role === 'Admin' || state.currentUser.role === 'พนักงาน' || state.currentUser.role === 'ผู้บริหาร';
+  const isStaff = state.currentUser.role === 'Staff' || state.currentUser.role === 'Admin' || state.currentUser.role === 'Administrator' || state.currentUser.role === 'พนักงาน' || state.currentUser.role === 'ผู้บริหาร';
   
   if (isStaff) {
     if (!currentChatTeacher) {
@@ -22453,7 +22453,7 @@ function loadChatWithSelectedTeacher(isSilent = false) {
       if (res && res.success) {
         renderChatMessages(res.messages);
         
-        const isStaff = state.currentUser.role === 'Staff' || state.currentUser.role === 'Admin' || state.currentUser.role === 'พนักงาน' || state.currentUser.role === 'ผู้บริหาร';
+        const isStaff = state.currentUser.role === 'Staff' || state.currentUser.role === 'Admin' || state.currentUser.role === 'Administrator' || state.currentUser.role === 'พนักงาน' || state.currentUser.role === 'ผู้บริหาร';
         const hasUnreadForMe = res.messages.some(m => {
           if (m.isRead) return false;
           if (m.receiver.toLowerCase() === state.currentUser.username.toLowerCase()) return true;
