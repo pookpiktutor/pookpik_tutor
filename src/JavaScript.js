@@ -812,6 +812,9 @@ function handleLogin(e) {
 
         checkSession();
 
+        // Check for unread messages after login
+        setTimeout(() => { checkUnreadBadge(); }, 2000);
+
       } else {
 
         showToast(res.error || 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง', 'error');
