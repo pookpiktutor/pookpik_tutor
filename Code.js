@@ -2124,15 +2124,11 @@ function saveUserProfile(username, data, logUser) {
           sheet.getRange(i + 1, 7).setValue(data.profilePic || '');
         }
 
-        // Save teacher specific data if role is Teacher
-        const role = rows[i][2] ? rows[i][2].toString().trim() : 'Staff';
-        if (role === 'Teacher') {
-          if (data.bank !== undefined) sheet.getRange(i + 1, 10).setValue(data.bank);
-          if (data.accountNumber !== undefined) sheet.getRange(i + 1, 11).setValue(data.accountNumber);
-          if (data.accountType !== undefined) sheet.getRange(i + 1, 13).setValue(data.accountType);
-          if (data.school !== undefined) sheet.getRange(i + 1, 8).setValue(data.school);
-          if (data.subjects !== undefined) sheet.getRange(i + 1, 9).setValue(data.subjects);
-        }
+        if (data.bank !== undefined) sheet.getRange(i + 1, 10).setValue(data.bank);
+        if (data.accountNumber !== undefined) sheet.getRange(i + 1, 11).setValue(data.accountNumber);
+        if (data.accountType !== undefined) sheet.getRange(i + 1, 13).setValue(data.accountType);
+        if (data.school !== undefined) sheet.getRange(i + 1, 8).setValue(data.school);
+        if (data.subjects !== undefined) sheet.getRange(i + 1, 9).setValue(data.subjects);
 
         logActivity(logUser, 'แก้ไขโปรไฟล์', `ผู้ใช้: ${username} แก้ไขข้อมูลโปรไฟล์ของตนเอง`);
         return { success: true };
