@@ -1,93 +1,59 @@
-function migrateOldDataToNew() {
-  const oldId = '1ljRQexe6VoPtUBaaPvpMPs_CjaflvtKpPoYidH5PwLc';
-  const newId = '1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI';
+function migrateTeachersToUsers() {
+  const db = SpreadsheetApp.getActiveSpreadsheet();
+  const usersSheet = db.getSheetByName('UsersDB');
+  const teachersSheet = db.getSheetByName('TeachersDB');
   
-  const oldDb = SpreadsheetApp.openById(oldId);
-  const newDb = SpreadsheetApp.openById(newId);
+  if (!usersSheet || !teachersSheet) {
+    Logger.log("Error: UsersDB or TeachersDB not found.");
+    return;
+  }
   
-  const oldSheets = oldDb.getSheets();
-  let migratedCount = 0;
-  let logMessages = [];
+  // New headers for UsersDB
+  const newHeaders = ['Username', 'Password', 'Role', 'Nickname', 'FullName', 'Phone', 'ProfilePic', 'School', 'Subjects', 'Bank', 'AccountNumber', 'Compensation', 'AccountType'];
   
-  oldSheets.forEach(oldSheet => {
-    const sheetName = oldSheet.getName();
-    
-    // We only want to migrate actual grade sheets
-    // like ป.1/1, ป.1/2, ม.1/1, เดี่ยว ป.1, etc.
-    if (!sheetName.match(/^(.+)\/([1-3])$/) && !sheetName.match(/^(อนุบาล|ป\.1|ป\.2|ป\.3|ป\.4|ป\.5|ป\.6|ม\.1|ม\.2|ม\.3|ม\.4|ม\.5|ม\.6)$/)) {
-      // It's not a grade sheet, skip
-      return;
-    }
-    
-    let newSheet = newDb.getSheetByName(sheetName);
-    if (!newSheet) {
-      logMessages.push(`⚠️ ข้ามชีต ${sheetName} (ไม่มีชีตนี้ในระบบใหม่)`);
-      return;
-    }
-    
-    const lastRow = oldSheet.getLastRow();
-    const lastCol = oldSheet.getLastColumn();
-    
-    if (lastRow < 6 || lastCol < 20) {
-      logMessages.push(`⚠️ ข้ามชีต ${sheetName} (ข้อมูลว่างหรือรูปแบบไม่ถูกต้อง)`);
-      return; 
-    }
-    
-    // Read the data from row 6 onwards
-    const oldData = oldSheet.getRange(6, 1, lastRow - 5, lastCol).getValues();
-    
-    // We get the new sheet data to avoid duplicates by name (Col B, index 1)
-    const newLastRow = newSheet.getLastRow();
-    let newExistingNames = [];
-    if (newLastRow >= 6) {
-       newExistingNames = newSheet.getRange(6, 2, newLastRow - 5, 1).getValues().map(r => r[0].toString().trim());
-    }
-    
-    let rowsToAppend = [];
-    
-    oldData.forEach(row => {
-       const studentName = row[1] ? row[1].toString().trim() : '';
-       if (!studentName) return; // Skip empty rows
-       
-       if (newExistingNames.includes(studentName)) {
-         // Already exists in new database, skip
-         return;
-       }
-       
-       // Match the columns as closely as possible
-       // The new database expects certain columns
-       // Assuming identical structure for grade sheets
-       rowsToAppend.push(row);
-    });
-    
-    if (rowsToAppend.length > 0) {
-       // Append the rows
-       const startRow = newSheet.getLastRow() + 1;
-       // The new sheet might have more or fewer columns than old sheet
-       const targetColCount = newSheet.getLastColumn();
-       
-       // Adjust row length to match target columns
-       const formattedRows = rowsToAppend.map(r => {
-          let newRow = [];
-          for (let i=0; i<Math.max(r.length, targetColCount); i++) {
-            newRow.push(i < r.length ? r[i] : '');
-          }
-          // Trim to target col count if target has fewer columns
-          return newRow.slice(0, Math.max(targetColCount, r.length));
-       });
-       
-       // Pad target columns if needed
-       if (formattedRows[0].length > targetColCount) {
-           newSheet.insertColumnsAfter(targetColCount, formattedRows[0].length - targetColCount);
-       }
-       
-       newSheet.getRange(startRow, 1, formattedRows.length, formattedRows[0].length).setValues(formattedRows);
-       migratedCount += formattedRows.length;
-       logMessages.push(`✅ ย้ายข้อมูล ${formattedRows.length} รายการ เข้าชีต ${sheetName}`);
-    }
-  });
+  // Set new headers
+  usersSheet.getRange(1, 1, 1, newHeaders.length).setValues([newHeaders]);
+  usersSheet.getRange(1, 1, 1, newHeaders.length).setFontWeight("bold").setBackground("#f3f4f6");
   
-  const finalMsg = `🎉 ทำการย้ายข้อมูลสำเร็จทั้งหมด ${migratedCount} รายการ!\n\nรายละเอียด:\n` + logMessages.join('\n');
-  Logger.log(finalMsg);
-  return finalMsg;
+  const uRows = usersSheet.getDataRange().getValues();
+  const tRows = teachersSheet.getDataRange().getValues();
+  
+  let matchCount = 0;
+  
+  for (let i = 1; i < uRows.length; i++) {
+    const role = uRows[i][2] ? uRows[i][2].toString().trim() : '';
+    if (role === 'Teacher') {
+      const username = uRows[i][0] ? uRows[i][0].toString().trim().toLowerCase() : '';
+      const nickname = uRows[i][3] ? uRows[i][3].toString().replace(/^ครู/, '').trim().toLowerCase() : '';
+      
+      let foundTeacher = null;
+      for (let j = 1; j < tRows.length; j++) {
+        const tNick = tRows[j][0] ? tRows[j][0].toString().replace(/^ครู/, '').trim().toLowerCase() : '';
+        const tId = tRows[j][8] ? tRows[j][8].toString().trim().toLowerCase() : '';
+        
+        if ((tId && tId === username) || (nickname && tNick === nickname)) {
+          foundTeacher = tRows[j];
+          break;
+        }
+      }
+      
+      if (foundTeacher) {
+        // 'Nickname' (0), 'FullName' (1), 'School' (2), 'Phone' (3), 'Subjects' (4), 'Bank' (5), 'AccountNumber' (6), 'Compensation' (7), 'TeacherID' (8), 'AccountType' (9)
+        // Map to: School (8), Subjects (9), Bank (10), AccountNumber (11), Compensation (12), AccountType (13)
+        const updates = [
+          foundTeacher[2] || '', // School
+          foundTeacher[4] || '', // Subjects
+          foundTeacher[5] || '', // Bank
+          foundTeacher[6] || '', // AccountNumber
+          foundTeacher[7] || '', // Compensation
+          foundTeacher[9] || 'บัญชีทั่วไป' // AccountType
+        ];
+        
+        usersSheet.getRange(i + 1, 8, 1, 6).setValues([updates]);
+        matchCount++;
+      }
+    }
+  }
+  
+  Logger.log("Migration complete. Successfully migrated " + matchCount + " teachers.");
 }

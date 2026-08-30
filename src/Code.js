@@ -1,20 +1,4 @@
-        const cRegLower = c.teacherRegular ? c.teacherRegular.toLowerCase().replace(/\s+/g, '') : '';
-        let isAssigned = false;
-        if (cRegLower) {
-          isAssigned = teacherAliases.some(alias => {
-             const aNoSpace = alias.replace(/\s+/g, '');
-             if (!aNoSpace) return false;
-             return cRegLower.includes(aNoSpace) || aNoSpace.includes(cRegLower);
-          });
-        }        const cRegLower = c.teacherRegular ? c.teacherRegular.toLowerCase().replace(/\s+/g, '') : '';
-        let isAssigned = false;
-        if (cRegLower) {
-          isAssigned = teacherAliases.some(alias => {
-             const aNoSpace = alias.replace(/\s+/g, '');
-             if (!aNoSpace) return false;
-             return cRegLower.includes(aNoSpace) || aNoSpace.includes(cRegLower);
-          });
-        }const SPREADSHEET_ID = '1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI';
+const SPREADSHEET_ID = '1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI';
 const COURSE_START_COL = 20;
 
 function computeCumulativePayment(student) {
