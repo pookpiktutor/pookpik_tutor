@@ -1,4 +1,20 @@
-const SPREADSHEET_ID = '1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI';
+        const cRegLower = c.teacherRegular ? c.teacherRegular.toLowerCase().replace(/\s+/g, '') : '';
+        let isAssigned = false;
+        if (cRegLower) {
+          isAssigned = teacherAliases.some(alias => {
+             const aNoSpace = alias.replace(/\s+/g, '');
+             if (!aNoSpace) return false;
+             return cRegLower.includes(aNoSpace) || aNoSpace.includes(cRegLower);
+          });
+        }        const cRegLower = c.teacherRegular ? c.teacherRegular.toLowerCase().replace(/\s+/g, '') : '';
+        let isAssigned = false;
+        if (cRegLower) {
+          isAssigned = teacherAliases.some(alias => {
+             const aNoSpace = alias.replace(/\s+/g, '');
+             if (!aNoSpace) return false;
+             return cRegLower.includes(aNoSpace) || aNoSpace.includes(cRegLower);
+          });
+        }const SPREADSHEET_ID = '1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI';
 const COURSE_START_COL = 20;
 
 function computeCumulativePayment(student) {
@@ -5492,7 +5508,7 @@ function getAllStudentsFromSubgroupSheets() {
 function getTeacherCoursesAndStudents(logUser) {
 
   try {
-    const cacheKey = 'teacher_courses_v2_' + (logUser || 'guest');
+    const cacheKey = 'teacher_courses_v3_' + (logUser || 'guest');
     const cached = getCacheObject(cacheKey);
     if (cached) return cached;
 
@@ -5504,7 +5520,25 @@ function getTeacherCoursesAndStudents(logUser) {
 
     const teachersList = getTeachersDB(null);
 
-    let matchedTeacherNick = (logUser || '').toString().trim();
+    let teacherAliases = [(logUser || '').toString().toLowerCase().trim()];
+    
+    if (logUser) {
+      const cleanLogUser = logUser.toString().toLowerCase().trim();
+      const match = teachersList.find(t => {
+        const tId = (t.teacherId || '').toLowerCase().trim();
+        const tNick = (t.nickname || '').toLowerCase().trim();
+        const tFull = (t.fullName || '').toLowerCase().trim();
+        return tId === cleanLogUser || tNick === cleanLogUser || tFull === cleanLogUser || tNick.includes(cleanLogUser) || tFull.includes(cleanLogUser) || cleanLogUser.includes(tNick);
+      });
+      if (match) {
+        if (match.nickname) teacherAliases.push(match.nickname.toLowerCase().trim());
+        if (match.fullName) teacherAliases.push(match.fullName.toLowerCase().trim());
+        if (match.teacherId) teacherAliases.push(match.teacherId.toLowerCase().trim());
+      }
+    }
+    // Delete the old logic by wiping the next 15 lines
+    for(let j=1; j<=14; j++) lines[i+j] = '';
+
 
     
 
@@ -5546,11 +5580,17 @@ function getTeacherCoursesAndStudents(logUser) {
 
       classLogs.forEach(c => {
 
-        const cRegLower = c.teacherRegular ? c.teacherRegular.toLowerCase().trim() : '';
-        const matchNickLower = matchedTeacherNick ? matchedTeacherNick.toLowerCase().trim() : '';
+        const cRegLower = c.teacherRegular ? c.teacherRegular.toLowerCase().replace(/\s+/g, '') : '';
         let isAssigned = false;
-        if (cRegLower && matchNickLower) {
-          isAssigned = cRegLower.includes(matchNickLower) || matchNickLower.includes(cRegLower);
+        if (cRegLower) {
+          isAssigned = teacherAliases.some(alias => {
+             const aNoSpace = alias.replace(/\s+/g, '');
+             if (!aNoSpace) return false;
+             return cRegLower.includes(aNoSpace) || aNoSpace.includes(cRegLower);
+          });
+        }
+
+
         }
 
           
