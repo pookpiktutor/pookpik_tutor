@@ -17281,7 +17281,7 @@ function getChatContactsWithUnread(reader) {
       const uname = (usersData[i][uColUser] || '').toString();
       const nick = (usersData[i][uColNick] || '').toString() || uname;
       if (uname) {
-        contactsMap[uname.toLowerCase()] = { username: uname, nickname: nick, unreadCount: 0 };
+        contactsMap[uname.toLowerCase()] = { username: uname, nickname: nick, unreadCount: 0, lastMessageTime: 0 };
       }
     }
   }
@@ -17295,6 +17295,8 @@ function getChatContactsWithUnread(reader) {
       const mColReceiver = mHeaders.indexOf('Receiver');
       const mColIsRead = mHeaders.indexOf('IsRead');
       
+      const mColTimestamp = mHeaders.indexOf('Timestamp');
+
       const readerUsername = typeof reader === 'object' ? reader.username : reader;
       const readerLower = readerUsername.toLowerCase();
       const readerRole = typeof reader === 'object' ? (reader.role || '').toString().trim().toLowerCase() : '';
@@ -17304,15 +17306,34 @@ function getChatContactsWithUnread(reader) {
         const s = (msgData[i][mColSender] || '').toString().toLowerCase();
         const r = (msgData[i][mColReceiver] || '').toString().toLowerCase();
         const isRead = msgData[i][mColIsRead] === true;
+        const tsVal = msgData[i][mColTimestamp];
+        const ts = tsVal ? new Date(tsVal).getTime() : 0;
         
-        if (!isRead && (r === readerLower || (isStaff && r === 'admin'))) {
-          if (contactsMap[s]) {
+        if (contactsMap[s] && (r === readerLower || (isStaff && r === 'admin'))) {
+          if (!isRead) {
             contactsMap[s].unreadCount++;
           }
+          if (ts > contactsMap[s].lastMessageTime) {
+            contactsMap[s].lastMessageTime = ts;
+          }
+        }
+        
+        if (contactsMap[r] && (s === readerLower || (isStaff && s === 'admin'))) {
+           if (ts > contactsMap[r].lastMessageTime) {
+             contactsMap[r].lastMessageTime = ts;
+           }
         }
       }
     }
   }
   
-  return { success: true, contacts: Object.values(contactsMap) };
+  const contactsArray = Object.values(contactsMap);
+  contactsArray.sort((a, b) => {
+    if (b.unreadCount !== a.unreadCount) {
+      return b.unreadCount - a.unreadCount;
+    }
+    return b.lastMessageTime - a.lastMessageTime;
+  });
+  
+  return { success: true, contacts: contactsArray };
 }
