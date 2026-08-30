@@ -22400,9 +22400,16 @@ function loadChatWithSelectedTeacher(isSilent = false) {
         renderChatMessages(res.messages);
         
         // Mark as read if there are unread messages for me
-        const hasUnreadForMe = res.messages.some(m => !m.isRead && m.receiver.toLowerCase() === state.currentUser.username.toLowerCase());
+        const isStaff = state.currentUser.role === 'Staff' || state.currentUser.role === 'Admin' || state.currentUser.role === 'พนักงาน' || state.currentUser.role === 'ผู้บริหาร';
+        const hasUnreadForMe = res.messages.some(m => {
+          if (m.isRead) return false;
+          if (m.receiver.toLowerCase() === state.currentUser.username.toLowerCase()) return true;
+          if (isStaff && m.receiver === 'Admin') return true;
+          return false;
+        });
+        
         if (hasUnreadForMe) {
-          google.script.run.markMessagesAsRead(currentChatTeacher, state.currentUser.username);
+          google.script.run.markMessagesAsRead(currentChatTeacher, state.currentUser);
           checkUnreadBadge();
         }
       }
@@ -22519,7 +22526,7 @@ function checkUnreadBadge() {
         }
       }
     })
-    .getUnreadMessagesCount(state.currentUser.username);
+    .getUnreadMessagesCount(state.currentUser);
 }
 
 // Check unread badge periodically
