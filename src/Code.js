@@ -5505,7 +5505,7 @@ function getTeacherCoursesAndStudents(logUser) {
     const teachersList = getTeachersDB(null);
 
     let teacherAliases = [(logUser || '').toString().toLowerCase().trim()];
-    
+
     if (logUser) {
       const cleanLogUser = logUser.toString().toLowerCase().trim();
       const match = teachersList.find(t => {
@@ -5519,35 +5519,8 @@ function getTeacherCoursesAndStudents(logUser) {
         if (match.fullName) teacherAliases.push(match.fullName.toLowerCase().trim());
         if (match.teacherId) teacherAliases.push(match.teacherId.toLowerCase().trim());
       }
-    }
-    // Delete the old logic by wiping the next 15 lines
-    for(let j=1; j<=14; j++) lines[i+j] = '';
-
-
-    
-
-    if (matchedTeacherNick) {
-
-      const cleanLogUser = matchedTeacherNick.toLowerCase();
-
-      const match = teachersList.find(t => {
-
-        const tId = (t.teacherId || '').toLowerCase().trim();
-
-        const tNick = (t.nickname || '').toLowerCase().trim();
-
-        const tFull = (t.fullName || '').toLowerCase().trim();
-
-        return tId === cleanLogUser || tNick === cleanLogUser || tFull === cleanLogUser || tNick.includes(cleanLogUser) || tFull.includes(cleanLogUser) || cleanLogUser.includes(tNick);
-
-      });
-
-      if (match) {
-
-        matchedTeacherNick = match.nickname;
-
-      }
-
+      // Deduplicate
+      teacherAliases = [...new Set(teacherAliases.filter(a => a))];
     }
 
     
@@ -5564,17 +5537,13 @@ function getTeacherCoursesAndStudents(logUser) {
 
       classLogs.forEach(c => {
 
-        const cRegLower = c.teacherRegular ? c.teacherRegular.toLowerCase().replace(/\s+/g, '') : '';
+        const cRegLower = c.teacherRegular ? c.teacherRegular.toLowerCase().trim() : '';
         let isAssigned = false;
-        if (cRegLower) {
+        if (cRegLower && teacherAliases.length > 0) {
           isAssigned = teacherAliases.some(alias => {
-             const aNoSpace = alias.replace(/\s+/g, '');
-             if (!aNoSpace) return false;
-             return cRegLower.includes(aNoSpace) || aNoSpace.includes(cRegLower);
+            if (!alias) return false;
+            return cRegLower.includes(alias) || alias.includes(cRegLower);
           });
-        }
-
-
         }
 
           
