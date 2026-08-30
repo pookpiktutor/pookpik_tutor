@@ -9595,30 +9595,8 @@ function loadDailyGrid(isSilent = false) {
 
 
 function renderDailyAttendanceSummary() {
-
   const container = document.getElementById('daily_attendance_summary_container');
-
-  let dashboardContainer = document.getElementById('dashboard_daily_attendance_summary_container');
-
-  if (!dashboardContainer) {
-
-    const dashGrid = document.querySelector('#dashboard_panel .grid-cols-3');
-
-    if (dashGrid) {
-
-      dashboardContainer = document.createElement('div');
-
-      dashboardContainer.id = 'dashboard_daily_attendance_summary_container';
-
-      dashboardContainer.style.cssText = 'grid-column: 1 / -1; margin-bottom: 20px; background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); overflow-x: auto; padding: 15px;';
-
-      dashGrid.insertBefore(dashboardContainer, dashGrid.firstChild);
-
-    }
-
-  }
-
-  if (!container && !dashboardContainer) return;
+  if (!container) return;
 
   
 
@@ -9639,8 +9617,6 @@ function renderDailyAttendanceSummary() {
     const emptyHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">ไม่มีข้อมูลคลาสเรียนในสาขานี้สำหรับวันนี้</div>`;
 
     if (container) container.innerHTML = emptyHTML;
-
-    if (dashboardContainer) dashboardContainer.innerHTML = emptyHTML;
 
     return;
 
@@ -9964,7 +9940,6 @@ function renderDailyAttendanceSummary() {
   `;
 
   if (container) container.innerHTML = html;
-  if (dashboardContainer) dashboardContainer.innerHTML = html;
 }
 
 
@@ -22339,7 +22314,8 @@ function openChatModal() {
   widget.style.display = 'flex';
   document.getElementById('chat_unread_badge').style.display = 'none';
 
-  const isStaff = state.currentUser.role === 'Staff' || state.currentUser.role === 'Admin' || state.currentUser.role === 'Administrator' || state.currentUser.role === 'พนักงาน' || state.currentUser.role === 'ผู้บริหาร';
+  const role = state.currentUser ? (state.currentUser.role || '').toString().trim().toLowerCase() : '';
+  const isStaff = role === 'staff' || role === 'admin' || role === 'administrator' || role === 'พนักงาน' || role === 'ผู้บริหาร';
   
   if (isStaff) {
     if (!currentChatTeacher) {
@@ -22455,7 +22431,8 @@ function loadChatWithSelectedTeacher(isSilent = false) {
       if (res && res.success) {
         renderChatMessages(res.messages);
         
-        const isStaff = state.currentUser.role === 'Staff' || state.currentUser.role === 'Admin' || state.currentUser.role === 'Administrator' || state.currentUser.role === 'พนักงาน' || state.currentUser.role === 'ผู้บริหาร';
+        const r = state.currentUser ? (state.currentUser.role || '').toString().trim().toLowerCase() : '';
+        const isStaff = r === 'staff' || r === 'admin' || r === 'administrator' || r === 'พนักงาน' || r === 'ผู้บริหาร';
         const hasUnreadForMe = res.messages.some(m => {
           if (m.isRead) return false;
           if (m.receiver.toLowerCase() === state.currentUser.username.toLowerCase()) return true;

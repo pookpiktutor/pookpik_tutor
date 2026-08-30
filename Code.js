@@ -17213,7 +17213,8 @@ function markMessagesAsRead(teacherUsername, reader) {
   const teacherLower = teacherUsername.toLowerCase();
   const readerUsername = typeof reader === 'object' ? reader.username : reader;
   const readerLower = readerUsername.toLowerCase();
-  const isStaff = typeof reader === 'object' && (reader.role === 'Staff' || reader.role === 'Admin' || reader.role === 'Administrator' || reader.role === 'พนักงาน' || reader.role === 'ผู้บริหาร');
+  const readerRole = typeof reader === 'object' ? (reader.role || '').toString().trim().toLowerCase() : '';
+  const isStaff = readerRole === 'staff' || readerRole === 'admin' || readerRole === 'administrator' || readerRole === 'พนักงาน' || readerRole === 'ผู้บริหาร';
   let updated = 0;
   
   for (let i = 1; i < data.length; i++) {
@@ -17246,7 +17247,8 @@ function getUnreadMessagesCount(reader) {
   let count = 0;
   const readerUsername = typeof reader === 'object' ? reader.username : reader;
   const readerLower = readerUsername.toLowerCase();
-  const isStaff = typeof reader === 'object' && (reader.role === 'Staff' || reader.role === 'Admin' || reader.role === 'Administrator' || reader.role === 'พนักงาน' || reader.role === 'ผู้บริหาร');
+  const readerRole = typeof reader === 'object' ? (reader.role || '').toString().trim().toLowerCase() : '';
+  const isStaff = readerRole === 'staff' || readerRole === 'admin' || readerRole === 'administrator' || readerRole === 'พนักงาน' || readerRole === 'ผู้บริหาร';
   
   for (let i = 1; i < data.length; i++) {
     const r = (data[i][colReceiver] || '').toString().toLowerCase();
@@ -17274,7 +17276,8 @@ function getChatContactsWithUnread(reader) {
   
   for (let i = 1; i < usersData.length; i++) {
     const role = (usersData[i][uColRole] || '').toString().trim();
-    if (role !== 'Staff' && role !== 'Admin' && role !== 'Administrator' && role !== 'พนักงาน' && role !== 'ผู้บริหาร') {
+    const r = role.toLowerCase();
+    if (r !== 'staff' && r !== 'admin' && r !== 'administrator' && r !== 'พนักงาน' && r !== 'ผู้บริหาร') {
       const uname = (usersData[i][uColUser] || '').toString();
       const nick = (usersData[i][uColNick] || '').toString() || uname;
       if (uname) {
@@ -17294,7 +17297,8 @@ function getChatContactsWithUnread(reader) {
       
       const readerUsername = typeof reader === 'object' ? reader.username : reader;
       const readerLower = readerUsername.toLowerCase();
-      const isStaff = typeof reader === 'object' && (reader.role === 'Staff' || reader.role === 'Admin' || reader.role === 'Administrator' || reader.role === 'พนักงาน' || reader.role === 'ผู้บริหาร');
+      const readerRole = typeof reader === 'object' ? (reader.role || '').toString().trim().toLowerCase() : '';
+      const isStaff = readerRole === 'staff' || readerRole === 'admin' || readerRole === 'administrator' || readerRole === 'พนักงาน' || readerRole === 'ผู้บริหาร';
       
       for (let i = 1; i < msgData.length; i++) {
         const s = (msgData[i][mColSender] || '').toString().toLowerCase();
