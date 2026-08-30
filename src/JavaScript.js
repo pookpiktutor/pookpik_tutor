@@ -1,4 +1,4 @@
-
+﻿
 // --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
@@ -31,29 +31,29 @@ function updateTaskWidget() {
                       || visibleTasks.find(t => t.status === 'queued')
                       || visibleTasks[0];
                       
-  let currentActionText = 'พร้อมใช้งาน';
+  let currentActionText = 'เธเธฃเนเธญเธกเนเธเนเธเธฒเธ';
   let icon = '<i class="fas fa-check-circle" style="color: #10b981; margin-right: 6px;"></i>';
-  let badgeHTML = '<div style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">พร้อมใช้งาน</div>';
+  let badgeHTML = '<div style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">เธเธฃเนเธญเธกเนเธเนเธเธฒเธ</div>';
   
   if (window._currentLoadingStatus) {
       currentActionText = window._currentLoadingStatus;
       icon = '<i class="fas fa-circle-notch fa-spin" style="color:#3b82f6; margin-right: 6px;"></i>';
-      badgeHTML = `<div style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">กำลังทำงาน</div>`;
+      badgeHTML = `<div style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">เธเธณเธฅเธฑเธเธ—เธณเธเธฒเธ</div>`;
   } else if (displayTask) {
       currentActionText = displayTask.title;
       icon = '<i class="fas fa-circle-notch fa-spin" style="color:#3b82f6; margin-right: 6px;"></i>';
       if (displayTask.status === 'success') {
           icon = '<i class="fas fa-check-circle" style="color: #10b981; margin-right: 6px;"></i>';
-          badgeHTML = `<div style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">สำเร็จ</div>`;
+          badgeHTML = `<div style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">เธชเธณเน€เธฃเนเธ</div>`;
       } else if (displayTask.status === 'error') {
           icon = '<i class="fas fa-times-circle" style="color: #ef4444; margin-right: 6px;"></i>';
-          badgeHTML = `<div style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">ผิดพลาด</div>`;
+          badgeHTML = `<div style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">เธเธดเธ”เธเธฅเธฒเธ”</div>`;
       } else {
-          badgeHTML = `<div style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">กำลังทำเบื้องหลัง</div>`;
+          badgeHTML = `<div style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">เธเธณเธฅเธฑเธเธ—เธณเน€เธเธทเนเธญเธเธซเธฅเธฑเธ</div>`;
       }
   }
 
-  if (currentActionText === 'พร้อมใช้งาน') {
+  if (currentActionText === 'เธเธฃเนเธญเธกเนเธเนเธเธฒเธ') {
       widget.style.display = 'none';
   } else {
       widget.style.display = 'flex';
@@ -226,7 +226,7 @@ window.google.script.run = new Proxy({}, {
 
       
 
-      const title = window._nextTaskTitle || 'ประมวลผลข้อมูล...';
+      const title = window._nextTaskTitle || 'เธเธฃเธฐเธกเธงเธฅเธเธฅเธเนเธญเธกเธนเธฅ...';
 
       window._nextTaskTitle = ''; 
 
@@ -350,7 +350,7 @@ function safeSetText(id, val) {
 
 }
 
-// Version 64.0.0: ปรับตารางคลาสเรียน การตัดชื่อคอร์ส ป้องกันคอร์สล้นขอบ และอัปเดตช่องทางชำระเงิน
+// Version 64.0.0: เธเธฃเธฑเธเธ•เธฒเธฃเธฒเธเธเธฅเธฒเธชเน€เธฃเธตเธขเธ เธเธฒเธฃเธ•เธฑเธ”เธเธทเนเธญเธเธญเธฃเนเธช เธเนเธญเธเธเธฑเธเธเธญเธฃเนเธชเธฅเนเธเธเธญเธ เนเธฅเธฐเธญเธฑเธเน€เธ”เธ•เธเนเธญเธเธ—เธฒเธเธเธณเธฃเธฐเน€เธเธดเธ
 
 // Global State
 
@@ -396,7 +396,7 @@ let state = {
 
   selectedClassLog: null,
 
-  activeBranchFilter: 'สาขา1',
+  activeBranchFilter: 'เธชเธฒเธเธฒ1',
 
   selectedTeacher: '',
 
@@ -478,7 +478,7 @@ function resetIdleTimer() {
 
       showLoginScreen();
 
-      showToast('ออกจากระบบอัตโนมัติเนื่องจากไม่มีการเคลื่อนไหวเกิน 1 ชั่วโมง', 'warning');
+      showToast('เธญเธญเธเธเธฒเธเธฃเธฐเธเธเธญเธฑเธ•เนเธเธกเธฑเธ•เธดเน€เธเธทเนเธญเธเธเธฒเธเนเธกเนเธกเธตเธเธฒเธฃเน€เธเธฅเธทเนเธญเธเนเธซเธงเน€เธเธดเธ 1 เธเธฑเนเธงเนเธกเธ', 'warning');
 
     }
 
@@ -540,7 +540,7 @@ function checkSession() {
 
       
 
-      const isTeacher = (state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู');
+      const isTeacher = (state.currentUser.role === 'Teacher' || state.currentUser.role === 'เธเธฃเธน');
 
       
 
@@ -572,17 +572,15 @@ function checkSession() {
 
               // Load extra details
 
-              document.getElementById('teacher_sidebar_id').innerText = p.username || '-';
-
+              document.getElementById('teacher_sidebar_username').innerText = p.username || '-';
               document.getElementById('teacher_sidebar_fullname').innerText = p.fullName || '-';
-
-              document.getElementById('teacher_sidebar_bank').innerText = p.bank || '-';
-
-              document.getElementById('teacher_sidebar_account').innerText = p.accountNumber || '-';
-
-              document.getElementById('teacher_sidebar_account_type').innerText = p.accountType || '-';
-
+              document.getElementById('teacher_sidebar_nickname').innerText = p.nickname || '-';
               document.getElementById('teacher_sidebar_phone').innerText = formatPhone(p.phone) || '-';
+              document.getElementById('teacher_sidebar_school').innerText = p.school || '-';
+              document.getElementById('teacher_sidebar_subjects').innerText = p.subjects || '-';
+              document.getElementById('teacher_sidebar_account_type').innerText = p.accountType || '-';
+              document.getElementById('teacher_sidebar_bank').innerText = p.bank || '-';
+              document.getElementById('teacher_sidebar_account').innerText = p.accountNumber || '-';
 
             }
 
@@ -602,7 +600,7 @@ function checkSession() {
 
         if (mobNameEl) {
 
-          mobNameEl.innerText = state.currentUser.nickname || state.currentUser.username || 'คุณครู';
+          mobNameEl.innerText = state.currentUser.nickname || state.currentUser.username || 'เธเธธเธ“เธเธฃเธน';
 
         }
 
@@ -692,13 +690,13 @@ function checkSession() {
 
         if (window.showToast) {
 
-          showToast('หน้าจอมีปัญหาบางส่วน: ' + e.message, 'warning');
+          showToast('เธซเธเนเธฒเธเธญเธกเธตเธเธฑเธเธซเธฒเธเธฒเธเธชเนเธงเธ: ' + e.message, 'warning');
 
         }
 
         if (state.currentUser) {
 
-          if (state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู') {
+          if (state.currentUser.role === 'Teacher' || state.currentUser.role === 'เธเธฃเธน') {
 
             if (typeof loadTeacherDailySchedule === 'function') loadTeacherDailySchedule();
 
@@ -748,7 +746,7 @@ function handleLogin(e) {
 
   if (!pass) {
 
-    showToast('กรุณากรอกรหัสผ่าน', 'error');
+    showToast('เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธฃเธซเธฑเธชเธเนเธฒเธ', 'error');
 
     return;
 
@@ -756,7 +754,7 @@ function handleLogin(e) {
 
   
 
-  setLoading(true, 'กำลังเข้าสู่ระบบ...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเน€เธเนเธฒเธชเธนเนเธฃเธฐเธเธ...');
 
   google.script.run
 
@@ -810,13 +808,13 @@ function handleLogin(e) {
 
   }
 
-  showToast('เข้าสู่ระบบสำเร็จ!', 'success');
+  showToast('เน€เธเนเธฒเธชเธนเนเธฃเธฐเธเธเธชเธณเน€เธฃเนเธ!', 'success');
 
         checkSession();
 
       } else {
 
-        showToast(res.error || 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง', 'error');
+        showToast(res.error || 'เธเธทเนเธญเธเธนเนเนเธเนเธเธฒเธเธซเธฃเธทเธญเธฃเธซเธฑเธชเธเนเธฒเธเนเธกเนเธ–เธนเธเธ•เนเธญเธ', 'error');
 
       }
 
@@ -826,7 +824,7 @@ function handleLogin(e) {
 
       setLoading(false);
 
-      showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message, 'error');
+      showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญ: ' + err.message, 'error');
 
     })
 
@@ -912,7 +910,7 @@ function handleLogin(e) {
 
 function handleLogout() {
 
-  if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+  if (confirm('เธเธธเธ“เธ•เนเธญเธเธเธฒเธฃเธญเธญเธเธเธฒเธเธฃเธฐเธเธเนเธเนเธซเธฃเธทเธญเนเธกเน?')) {
 
     if (state.heartbeatInterval) {
 
@@ -928,7 +926,7 @@ function handleLogout() {
 
     showLoginScreen();
 
-    showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
+    showToast('เธญเธญเธเธเธฒเธเธฃเธฐเธเธเน€เธฃเธตเธขเธเธฃเนเธญเธขเนเธฅเนเธง', 'info');
 
   }
 
@@ -982,7 +980,7 @@ function initTeacherFilterDates() {
 
       opt.value = y;
 
-      opt.text = `ปี พ.ศ. ${y + 543} (ค.ศ. ${y})`;
+      opt.text = `เธเธต เธ.เธจ. ${y + 543} (เธ.เธจ. ${y})`;
 
       if (y === year) opt.selected = true;
 
@@ -1004,11 +1002,11 @@ function initTeacherFilterDates() {
 
     const monthNames = [
 
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
+      'เธกเธเธฃเธฒเธเธก', 'เธเธธเธกเธ เธฒเธเธฑเธเธเน', 'เธกเธตเธเธฒเธเธก', 'เน€เธกเธฉเธฒเธขเธ',
 
-      'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
+      'เธเธคเธฉเธ เธฒเธเธก', 'เธกเธดเธ–เธธเธเธฒเธขเธ', 'เธเธฃเธเธเธฒเธเธก', 'เธชเธดเธเธซเธฒเธเธก',
 
-      'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+      'เธเธฑเธเธขเธฒเธขเธ', 'เธ•เธธเธฅเธฒเธเธก', 'เธเธคเธจเธเธดเธเธฒเธขเธ', 'เธเธฑเธเธงเธฒเธเธก'
 
     ];
 
@@ -1106,7 +1104,7 @@ function switchTeacherPanel(panelId) {
 
   if (panelId === 'teacher_daily_schedule') {
 
-    panelTitleText = '📅 ตารางสอนรายวัน';
+    panelTitleText = '๐“… เธ•เธฒเธฃเธฒเธเธชเธญเธเธฃเธฒเธขเธงเธฑเธ';
 
     if (titleEl) titleEl.innerHTML = panelTitleText;
 
@@ -1116,7 +1114,7 @@ function switchTeacherPanel(panelId) {
 
   } else if (panelId === 'teacher_monthly_salary') {
 
-    panelTitleText = '💵 รายการเงินเดือนของฉัน';
+    panelTitleText = '๐’ต เธฃเธฒเธขเธเธฒเธฃเน€เธเธดเธเน€เธ”เธทเธญเธเธเธญเธเธเธฑเธ';
 
     if (titleEl) titleEl.innerHTML = panelTitleText;
 
@@ -1126,7 +1124,7 @@ function switchTeacherPanel(panelId) {
 
   } else if (panelId === 'evaluation_form') {
 
-    panelTitleText = '📝 ใบประเมินผลการเรียน';
+    panelTitleText = '๐“ เนเธเธเธฃเธฐเน€เธกเธดเธเธเธฅเธเธฒเธฃเน€เธฃเธตเธขเธ';
 
     if (titleEl) titleEl.innerHTML = panelTitleText;
 
@@ -1146,7 +1144,7 @@ function switchTeacherPanel(panelId) {
 
     if (mobNameEl) {
 
-      mobNameEl.textContent = state.currentUser.nickname || state.currentUser.username || 'คุณครู';
+      mobNameEl.textContent = state.currentUser.nickname || state.currentUser.username || 'เธเธธเธ“เธเธฃเธน';
 
     }
 
@@ -1174,7 +1172,7 @@ function loadTeacherDailySchedule() {
 
   if (!startVal || !endVal) {
 
-    showToast('กรุณาระบุช่วงวันที่ให้ครบถ้วน', 'warning');
+    showToast('เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธเนเธงเธเธงเธฑเธเธ—เธตเนเนเธซเนเธเธฃเธเธ–เนเธงเธ', 'warning');
 
     return;
 
@@ -1182,7 +1180,7 @@ function loadTeacherDailySchedule() {
 
   
 
-  setLoading(true, 'กำลังโหลดตารางสอน...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธ•เธฒเธฃเธฒเธเธชเธญเธ...');
 
   
 
@@ -1200,7 +1198,7 @@ function loadTeacherDailySchedule() {
 
       if (!logs || logs.error) {
 
-        container.innerHTML = `<div style="text-align: center; color: var(--color-error); padding: 40px; width: 100%;">เกิดข้อผิดพลาด: ${logs ? logs.error : 'ไม่สามารถดึงข้อมูลได้'}</div>`;
+        container.innerHTML = `<div style="text-align: center; color: var(--color-error); padding: 40px; width: 100%;">เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ${logs ? logs.error : 'เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธเนเธญเธกเธนเธฅเนเธ”เน'}</div>`;
 
         return;
 
@@ -1224,7 +1222,7 @@ function loadTeacherDailySchedule() {
 
         let y = parseInt(parts[2]);
 
-        if (y > 2400) y -= 543; // แปลง พ.ศ. → ค.ศ.
+        if (y > 2400) y -= 543; // เนเธเธฅเธ เธ.เธจ. โ’ เธ.เธจ.
 
         const cDate = new Date(y, parseInt(parts[1]) - 1, parseInt(parts[0]));
 
@@ -1258,7 +1256,7 @@ function loadTeacherDailySchedule() {
 
       if (filtered.length === 0) {
 
-        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px; width: 100%;">ไม่มีข้อมูลตารางเรียนในช่วงเวลาที่เลือก</div>';
+        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px; width: 100%;">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเธ•เธฒเธฃเธฒเธเน€เธฃเธตเธขเธเนเธเธเนเธงเธเน€เธงเธฅเธฒเธ—เธตเนเน€เธฅเธทเธญเธ</div>';
 
         return;
 
@@ -1307,7 +1305,7 @@ function loadTeacherDailySchedule() {
       var html = '<div style="width:100%; height:75vh; overflow:auto; border:1px solid var(--border-color); border-radius:8px; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.02); margin-top: 15px;">';
 
       html += '<div style="position:sticky; top:0; z-index:30; display:flex; min-width:' + (ROW_HEADER_WIDTH + TIMELINE_WIDTH) + 'px; background:#f8fafc; border-bottom:2px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">';
-      html += '<div style="position:sticky; left:0; z-index:40; min-width:' + ROW_HEADER_WIDTH + 'px; width:' + ROW_HEADER_WIDTH + 'px; padding:8px 10px; font-weight:700; font-size:0.75rem; color:var(--text-main); border-right:2px solid var(--border-color); background:#f8fafc; display:flex; align-items:center;">วันที่เรียน</div>';
+      html += '<div style="position:sticky; left:0; z-index:40; min-width:' + ROW_HEADER_WIDTH + 'px; width:' + ROW_HEADER_WIDTH + 'px; padding:8px 10px; font-weight:700; font-size:0.75rem; color:var(--text-main); border-right:2px solid var(--border-color); background:#f8fafc; display:flex; align-items:center;">เธงเธฑเธเธ—เธตเนเน€เธฃเธตเธขเธ</div>';
       html += '<div style="position:relative; width:' + TIMELINE_WIDTH + 'px; height:36px;">' + headerCols + '</div>';
       html += '</div>';
 
@@ -1354,7 +1352,7 @@ function loadTeacherDailySchedule() {
         var thDateStr = typeof formatDateTimeToThaiLong === 'function' ? formatDateTimeToThaiLong(dateGroup.dateStr) : dateGroup.dateStr;
         html += '<div style="position:sticky; left:0; z-index:20; min-width:' + ROW_HEADER_WIDTH + 'px; width:' + ROW_HEADER_WIDTH + 'px; padding:10px 8px; border-right:2px solid var(--border-color); background:#fff; box-shadow:2px 0 5px -2px rgba(0,0,0,0.05); display:flex; flex-direction:column; align-items:center; justify-content:center;">';
         html += '<div style="font-size:0.8rem; font-weight:700; color:var(--color-primary-hover); text-align:center; line-height:1.4;">' + thDateStr + '</div>';
-        html += '<div style="font-size:0.65rem; color:var(--text-muted); margin-top:5px; background:rgba(0,0,0,0.04); padding:3px 8px; border-radius:12px; font-weight: 600;">' + cards.length + ' คลาส</div>';
+        html += '<div style="font-size:0.65rem; color:var(--text-muted); margin-top:5px; background:rgba(0,0,0,0.04); padding:3px 8px; border-radius:12px; font-weight: 600;">' + cards.length + ' เธเธฅเธฒเธช</div>';
         html += '</div>';
 
         html += '<div style="position:relative; width:' + TIMELINE_WIDTH + 'px; min-height:' + rowHeight + 'px; background: #fafafa;">';
@@ -1379,18 +1377,18 @@ function loadTeacherDailySchedule() {
 
           const isReg = (c.teacherRegular || '').toLowerCase().trim() === (nickname || '').toLowerCase().trim() || (c.teacherRegular || '').toLowerCase().trim() === (teacherName || '').toLowerCase().trim();
           const roleClass = isReg ? 'regular' : 'sub';
-          const roleLabel = isReg ? 'ครูประจำ' : 'สอนแทน';
+          const roleLabel = isReg ? 'เธเธฃเธนเธเธฃเธฐเธเธณ' : 'เธชเธญเธเนเธ—เธ';
 
           const leaveCount = parseInt(c.leaveCount) || parseInt(c.isLeave) || 0;
           const totalKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
 
           const attendances = [];
-          attendances.push(`สด: ${c.isPresentLive || 0}`);
-          attendances.push(`ออน: ${c.isPresentOnline || 0}`);
-          attendances.push(`ลา: ${c.isLeave || 0}`);
-          attendances.push(`ขาด: ${c.isAbsent || 0}`);
-          attendances.push(`ชด: ${c.isMakeup || 0}`);
-          const attendanceSummaryHtml = attendances.length > 0 ? `<div style="font-size: 0.72rem; margin-top: 4px; color: var(--color-primary-hover); font-weight: 500;">👥 ${attendances.join(' ')}</div>` : '';
+          attendances.push(`เธชเธ”: ${c.isPresentLive || 0}`);
+          attendances.push(`เธญเธญเธ: ${c.isPresentOnline || 0}`);
+          attendances.push(`เธฅเธฒ: ${c.isLeave || 0}`);
+          attendances.push(`เธเธฒเธ”: ${c.isAbsent || 0}`);
+          attendances.push(`เธเธ”: ${c.isMakeup || 0}`);
+          const attendanceSummaryHtml = attendances.length > 0 ? `<div style="font-size: 0.72rem; margin-top: 4px; color: var(--color-primary-hover); font-weight: 500;">๐‘ฅ ${attendances.join(' ')}</div>` : '';
 
           let displayBranch = (c.roomBranch || c.roomBranchInfo || '').toString().trim();
           displayBranch = displayBranch.replace(/Zoom\s*\S*/i, '').replace(/\s+/g, ' ').trim();
@@ -1398,12 +1396,12 @@ function loadTeacherDailySchedule() {
           let noteHtml = '';
           const noteText = (c.note || c.memo || '').toString().trim();
           if (noteText !== '' && noteText !== '-') {
-            noteHtml = `<div class="teacher-card-note" style="font-size: 0.7rem; padding: 4px 6px; margin: 4px 0; background: rgba(0,0,0,0.03); border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">📝 ${noteText}</div>`;
+            noteHtml = `<div class="teacher-card-note" style="font-size: 0.7rem; padding: 4px 6px; margin: 4px 0; background: rgba(0,0,0,0.03); border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">๐“ ${noteText}</div>`;
           }
 
-          const isTeacherLeave = noteText.includes('ครูลา');
+          const isTeacherLeave = noteText.includes('เธเธฃเธนเธฅเธฒ');
           const subjectLower = (c.subject || '').toLowerCase();
-          const isPrivateOrSubGroup = subjectLower.includes('เดี่ยว') || subjectLower.includes('ย่อย');
+          const isPrivateOrSubGroup = subjectLower.includes('เน€เธ”เธตเนเธขเธง') || subjectLower.includes('เธขเนเธญเธข');
           const hasStudentLeave = leaveCount > 0 && isPrivateOrSubGroup;
 
           var bg = '#fff';
@@ -1426,15 +1424,15 @@ function loadTeacherDailySchedule() {
           html += `<div style="position:absolute; left:${startPx}px; top:${topPx}px; width:${widthPx}px; height:${CARD_ROW_HEIGHT - 10}px; padding:6px 10px; box-sizing:border-box; background:${bg}; border:1.5px solid ${border}; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.08); overflow:hidden; z-index: 10; display:flex; flex-direction:column; justify-content:space-between; transition: transform 0.15s ease;">
             <div>
               <div style="padding-bottom: 4px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 4px;">
-                <span style="font-size: 0.7rem; padding: 2px 8px; font-weight: 700; color: #fff; background: ${timeBg}; border-radius: 12px; white-space: nowrap;">⏰ ${cleanTimeStr(c.timeStart)} - ${cleanTimeStr(c.timeEnd)}</span>
+                <span style="font-size: 0.7rem; padding: 2px 8px; font-weight: 700; color: #fff; background: ${timeBg}; border-radius: 12px; white-space: nowrap;">โฐ ${cleanTimeStr(c.timeStart)} - ${cleanTimeStr(c.timeEnd)}</span>
                 <span class="teacher-card-badge ${roleClass}" style="font-size: 0.65rem; padding: 1px 6px;">${roleLabel}</span>
               </div>
               <div style="font-size: 0.8rem; font-weight: 700; margin: 2px 0; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${c.subject}">${c.subject}</div>
               <div style="display: flex; flex-direction: column; gap: 2px;">
                  ${attendanceSummaryHtml}
-                 <div style="font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span style="font-weight:600; color:var(--text-muted);">📍 สาขา/ห้อง:</span> ${displayBranch}</div>
-                 <div style="font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span style="font-weight:600; color:var(--text-muted);">👨‍🏫 ครูประจำ:</span> ${c.teacherRegular || '-'}</div>
-                 ${c.teacherSub ? `<div style="font-size: 0.7rem; color: var(--color-danger); font-weight:600;">🔄 ครูแทน: ${c.teacherSub}</div>` : ''}
+                 <div style="font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span style="font-weight:600; color:var(--text-muted);">๐“ เธชเธฒเธเธฒ/เธซเนเธญเธ:</span> ${displayBranch}</div>
+                 <div style="font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span style="font-weight:600; color:var(--text-muted);">๐‘จโ€๐ซ เธเธฃเธนเธเธฃเธฐเธเธณ:</span> ${c.teacherRegular || '-'}</div>
+                 ${c.teacherSub ? `<div style="font-size: 0.7rem; color: var(--color-danger); font-weight:600;">๐” เธเธฃเธนเนเธ—เธ: ${c.teacherSub}</div>` : ''}
               </div>
             </div>
             <div>
@@ -1442,13 +1440,13 @@ function loadTeacherDailySchedule() {
               <div style="border-top: 1px dashed rgba(0,0,0,0.15); margin-top: 4px; padding-top: 4px; display: flex; align-items: center; justify-content: space-between; gap: 4px;">
                 ${isReg ? `
                 <label style="display: flex; align-items: center; gap: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 700; color: var(--color-danger); margin:0;">
-                  <input type="checkbox" class="teacher-kru-leave-chk" data-row="${c.rowIndex}" ${noteText.includes('ครูลา') ? 'checked' : ''} onchange="handleTeacherLeaveToggle(${c.rowIndex}, this)" style="width: 14px; height: 14px; cursor: pointer; accent-color: var(--color-danger); margin:0;">
-                  ครูลา
+                  <input type="checkbox" class="teacher-kru-leave-chk" data-row="${c.rowIndex}" ${noteText.includes('เธเธฃเธนเธฅเธฒ') ? 'checked' : ''} onchange="handleTeacherLeaveToggle(${c.rowIndex}, this)" style="width: 14px; height: 14px; cursor: pointer; accent-color: var(--color-danger); margin:0;">
+                  เธเธฃเธนเธฅเธฒ
                 </label>
                 ` : `<div></div>`}
                 <label style="display: flex; align-items: center; gap: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 700; color: var(--color-success); margin:0;">
                   <input type="checkbox" class="teacher-daily-confirm-chk" data-row="${c.rowIndex}" ${c.teacherConfirmed ? 'checked' : ''} onchange="toggleDailyScheduleConfirm(${c.rowIndex}, this)" style="width: 14px; height: 14px; cursor: pointer; accent-color: var(--color-success); margin:0;">
-                  ยืนยัน
+                  เธขเธทเธเธขเธฑเธ
                 </label>
               </div>
             </div>
@@ -1466,7 +1464,7 @@ function loadTeacherDailySchedule() {
 
       setLoading(false);
 
-      showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message, 'error');
+      showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญ: ' + err.message, 'error');
 
     })
 
@@ -1552,7 +1550,7 @@ function loadTeacherDailySchedule() {
 
 function handleLogout() {
 
-  if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+  if (confirm('เธเธธเธ“เธ•เนเธญเธเธเธฒเธฃเธญเธญเธเธเธฒเธเธฃเธฐเธเธเนเธเนเธซเธฃเธทเธญเนเธกเน?')) {
 
     if (state.heartbeatInterval) {
 
@@ -1568,7 +1566,7 @@ function handleLogout() {
 
     showLoginScreen();
 
-    showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
+    showToast('เธญเธญเธเธเธฒเธเธฃเธฐเธเธเน€เธฃเธตเธขเธเธฃเนเธญเธขเนเธฅเนเธง', 'info');
 
   }
 
@@ -1622,7 +1620,7 @@ function initTeacherFilterDates() {
 
       opt.value = y;
 
-      opt.text = `ปี พ.ศ. ${y + 543} (ค.ศ. ${y})`;
+      opt.text = `เธเธต เธ.เธจ. ${y + 543} (เธ.เธจ. ${y})`;
 
       if (y === year) opt.selected = true;
 
@@ -1644,11 +1642,11 @@ function initTeacherFilterDates() {
 
     const monthNames = [
 
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
+      'เธกเธเธฃเธฒเธเธก', 'เธเธธเธกเธ เธฒเธเธฑเธเธเน', 'เธกเธตเธเธฒเธเธก', 'เน€เธกเธฉเธฒเธขเธ',
 
-      'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
+      'เธเธคเธฉเธ เธฒเธเธก', 'เธกเธดเธ–เธธเธเธฒเธขเธ', 'เธเธฃเธเธเธฒเธเธก', 'เธชเธดเธเธซเธฒเธเธก',
 
-      'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+      'เธเธฑเธเธขเธฒเธขเธ', 'เธ•เธธเธฅเธฒเธเธก', 'เธเธคเธจเธเธดเธเธฒเธขเธ', 'เธเธฑเธเธงเธฒเธเธก'
 
     ];
 
@@ -1746,7 +1744,7 @@ function switchTeacherPanel(panelId) {
 
   if (panelId === 'teacher_daily_schedule') {
 
-    panelTitleText = '📅 ตารางสอนรายวัน';
+    panelTitleText = '๐“… เธ•เธฒเธฃเธฒเธเธชเธญเธเธฃเธฒเธขเธงเธฑเธ';
 
     if (titleEl) titleEl.innerHTML = panelTitleText;
 
@@ -1756,7 +1754,7 @@ function switchTeacherPanel(panelId) {
 
   } else if (panelId === 'teacher_monthly_salary') {
 
-    panelTitleText = '💵 รายการเงินเดือนของฉัน';
+    panelTitleText = '๐’ต เธฃเธฒเธขเธเธฒเธฃเน€เธเธดเธเน€เธ”เธทเธญเธเธเธญเธเธเธฑเธ';
 
     if (titleEl) titleEl.innerHTML = panelTitleText;
 
@@ -1766,7 +1764,7 @@ function switchTeacherPanel(panelId) {
 
   } else if (panelId === 'evaluation_form') {
 
-    panelTitleText = '📝 ใบประเมินผลการเรียน';
+    panelTitleText = '๐“ เนเธเธเธฃเธฐเน€เธกเธดเธเธเธฅเธเธฒเธฃเน€เธฃเธตเธขเธ';
 
     if (titleEl) titleEl.innerHTML = panelTitleText;
 
@@ -1786,7 +1784,7 @@ function switchTeacherPanel(panelId) {
 
     if (mobNameEl) {
 
-      mobNameEl.textContent = state.currentUser.nickname || state.currentUser.username || 'คุณครู';
+      mobNameEl.textContent = state.currentUser.nickname || state.currentUser.username || 'เธเธธเธ“เธเธฃเธน';
 
     }
 
@@ -1814,7 +1812,7 @@ function loadTeacherDailySchedule() {
 
   if (!startVal || !endVal) {
 
-    showToast('กรุณาระบุช่วงวันที่ให้ครบถ้วน', 'warning');
+    showToast('เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธเนเธงเธเธงเธฑเธเธ—เธตเนเนเธซเนเธเธฃเธเธ–เนเธงเธ', 'warning');
 
     return;
 
@@ -1822,7 +1820,7 @@ function loadTeacherDailySchedule() {
 
   
 
-  setLoading(true, 'กำลังโหลดตารางสอน...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธ•เธฒเธฃเธฒเธเธชเธญเธ...');
 
   
 
@@ -1840,7 +1838,7 @@ function loadTeacherDailySchedule() {
 
       if (!logs || logs.error) {
 
-        container.innerHTML = `<div style="text-align: center; color: var(--color-error); padding: 40px; width: 100%;">เกิดข้อผิดพลาด: ${logs ? logs.error : 'ไม่สามารถดึงข้อมูลได้'}</div>`;
+        container.innerHTML = `<div style="text-align: center; color: var(--color-error); padding: 40px; width: 100%;">เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ${logs ? logs.error : 'เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธเนเธญเธกเธนเธฅเนเธ”เน'}</div>`;
 
         return;
 
@@ -1864,7 +1862,7 @@ function loadTeacherDailySchedule() {
 
         let y = parseInt(parts[2]);
 
-        if (y > 2400) y -= 543; // แปลง พ.ศ. → ค.ศ.
+        if (y > 2400) y -= 543; // เนเธเธฅเธ เธ.เธจ. โ’ เธ.เธจ.
 
         const cDate = new Date(y, parseInt(parts[1]) - 1, parseInt(parts[0]));
 
@@ -1898,7 +1896,7 @@ function loadTeacherDailySchedule() {
 
       if (filtered.length === 0) {
 
-        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px; width: 100%;">ไม่มีข้อมูลตารางเรียนในช่วงเวลาที่เลือก</div>';
+        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px; width: 100%;">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเธ•เธฒเธฃเธฒเธเน€เธฃเธตเธขเธเนเธเธเนเธงเธเน€เธงเธฅเธฒเธ—เธตเนเน€เธฅเธทเธญเธ</div>';
 
         return;
 
@@ -1950,7 +1948,7 @@ function loadTeacherDailySchedule() {
 
         dateHeader.style.cssText = 'grid-column: 1 / -1; margin-top: 16px; margin-bottom: 8px; font-weight: 700; font-size: 0.95rem; color: var(--color-primary-hover); border-bottom: 2px solid var(--color-primary); padding-bottom: 4px; display: flex; align-items: center; gap: 6px;';
 
-        dateHeader.innerHTML = `📅 วันที่เรียน: ${dateStr}`;
+        dateHeader.innerHTML = `๐“… เธงเธฑเธเธ—เธตเนเน€เธฃเธตเธขเธ: ${dateStr}`;
 
         container.appendChild(dateHeader);
 
@@ -1980,24 +1978,24 @@ function loadTeacherDailySchedule() {
 
           const roleClass = isReg ? 'regular' : 'sub';
 
-          const roleLabel = isReg ? 'ครูประจำ' : 'สอนแทน';
+          const roleLabel = isReg ? 'เธเธฃเธนเธเธฃเธฐเธเธณ' : 'เธชเธญเธเนเธ—เธ';
 
           
 
-          // รองรับ field จาก getClassLogsForTeacher (isLeave) และ getTeacherRoomSchedule (leaveCount)
+          // เธฃเธญเธเธฃเธฑเธ field เธเธฒเธ getClassLogsForTeacher (isLeave) เนเธฅเธฐ getTeacherRoomSchedule (leaveCount)
 
           const leaveCount = parseInt(c.leaveCount) || parseInt(c.isLeave) || 0;
 
           const totalKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
           
           const attendances = [];
-          attendances.push(`สด: ${c.isPresentLive || 0}`);
-          attendances.push(`ออน: ${c.isPresentOnline || 0}`);
-          attendances.push(`ลา: ${c.isLeave || 0}`);
-          attendances.push(`ขาด: ${c.isAbsent || 0}`);
-          attendances.push(`ชด: ${c.isMakeup || 0}`);
+          attendances.push(`เธชเธ”: ${c.isPresentLive || 0}`);
+          attendances.push(`เธญเธญเธ: ${c.isPresentOnline || 0}`);
+          attendances.push(`เธฅเธฒ: ${c.isLeave || 0}`);
+          attendances.push(`เธเธฒเธ”: ${c.isAbsent || 0}`);
+          attendances.push(`เธเธ”: ${c.isMakeup || 0}`);
           const attendanceSummaryHtml = attendances.length > 0 
-            ? `<div style="font-size: 0.72rem; margin-top: 4px; color: var(--color-primary-hover); font-weight: 500;">👥 ${attendances.join(' ')}</div>` 
+            ? `<div style="font-size: 0.72rem; margin-top: 4px; color: var(--color-primary-hover); font-weight: 500;">๐‘ฅ ${attendances.join(' ')}</div>` 
             : '';
 
 
@@ -2025,17 +2023,17 @@ function loadTeacherDailySchedule() {
 
           if (noteText !== '' && noteText !== '-') {
 
-            noteHtml = `<div class="teacher-card-note" style="font-size: 0.72rem; padding: 6px 10px;">📝 <b>หมายเหตุ:</b> ${noteText}</div>`;
+            noteHtml = `<div class="teacher-card-note" style="font-size: 0.72rem; padding: 6px 10px;">๐“ <b>เธซเธกเธฒเธขเน€เธซเธ•เธธ:</b> ${noteText}</div>`;
 
           }
 
           
 
-          const isTeacherLeave = noteText.includes('ครูลา');
+          const isTeacherLeave = noteText.includes('เธเธฃเธนเธฅเธฒ');
 
-          // ตรวจสอบว่าเป็นคลาสเดี่ยว/กลุ่มย่อย หรือกลุ่มหลัก
+          // เธ•เธฃเธงเธเธชเธญเธเธงเนเธฒเน€เธเนเธเธเธฅเธฒเธชเน€เธ”เธตเนเธขเธง/เธเธฅเธธเนเธกเธขเนเธญเธข เธซเธฃเธทเธญเธเธฅเธธเนเธกเธซเธฅเธฑเธ
           const subjectLower = (c.subject || '').toLowerCase();
-          const isPrivateOrSubGroup = subjectLower.includes('เดี่ยว') || subjectLower.includes('ย่อย');
+          const isPrivateOrSubGroup = subjectLower.includes('เน€เธ”เธตเนเธขเธง') || subjectLower.includes('เธขเนเธญเธข');
           const hasStudentLeave = leaveCount > 0 && isPrivateOrSubGroup;
 
           
@@ -2068,7 +2066,7 @@ function loadTeacherDailySchedule() {
 
             <div class="teacher-card-header" style="padding-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start;">
 
-              <span class="teacher-card-time" style="font-size: 0.78rem; padding: 3px 10px; font-weight: 700; color: #fff; background: ${hasStudentLeave ? '#ef4444' : (c.teacherConfirmed ? '#15803d' : '#3b82f6')}; border-radius: 20px;">⏰ ${cleanTimeStr(c.timeStart)} - ${cleanTimeStr(c.timeEnd)}</span>
+              <span class="teacher-card-time" style="font-size: 0.78rem; padding: 3px 10px; font-weight: 700; color: #fff; background: ${hasStudentLeave ? '#ef4444' : (c.teacherConfirmed ? '#15803d' : '#3b82f6')}; border-radius: 20px;">โฐ ${cleanTimeStr(c.timeStart)} - ${cleanTimeStr(c.timeEnd)}</span>
 
               <div style="display: flex; gap: 4px;">
                 <span class="teacher-card-badge ${roleClass}" style="font-size: 0.65rem; padding: 2px 6px;">${roleLabel}</span>
@@ -2083,29 +2081,29 @@ function loadTeacherDailySchedule() {
 
               <div class="teacher-card-meta-item" style="font-size: 0.74rem;">
 
-                <span class="label" style="min-width: 65px; font-size: 0.72rem;">📍 สาขา/ห้องเรียน:</span>
+                <span class="label" style="min-width: 65px; font-size: 0.72rem;">๐“ เธชเธฒเธเธฒ/เธซเนเธญเธเน€เธฃเธตเธขเธ:</span>
 
                 <span class="value" style="font-weight: 600;">${displayBranch}</span>
 
               </div>
 
               <div class="teacher-card-meta-item" style="font-size: 0.74rem;">
-                <span class="label" style="min-width: 65px; font-size: 0.72rem;">👨‍🏫 ครูประจำ:</span>
+                <span class="label" style="min-width: 65px; font-size: 0.72rem;">๐‘จโ€๐ซ เธเธฃเธนเธเธฃเธฐเธเธณ:</span>
                 <span class="value">${c.teacherRegular || '-'}</span>
               </div>
 
               ${c.teacherSub ? `<div class="teacher-card-meta-item" style="font-size: 0.74rem;">
-                <span class="label" style="min-width: 65px; font-size: 0.72rem;">🔄 ครูแทน:</span>
+                <span class="label" style="min-width: 65px; font-size: 0.72rem;">๐” เธเธฃเธนเนเธ—เธ:</span>
                 <span class="value" style="color: var(--color-danger);">${c.teacherSub}</span>
               </div>` : ''}
 
               <div class="teacher-card-meta-item" style="gap: 8px; flex-wrap: wrap; margin-top: 2px;">
 
-                <span class="teacher-card-badge hours" style="font-size: 0.7rem; padding: 2px 8px;">⏳ ${formatHoursMinutes(c.hours)}</span>
+                <span class="teacher-card-badge hours" style="font-size: 0.7rem; padding: 2px 8px;">โณ ${formatHoursMinutes(c.hours)}</span>
 
-                <span class="teacher-card-badge students" style="font-size: 0.7rem; padding: 2px 8px;">👥 นักเรียน ${totalKids} คน</span>
+                <span class="teacher-card-badge students" style="font-size: 0.7rem; padding: 2px 8px;">๐‘ฅ เธเธฑเธเน€เธฃเธตเธขเธ ${totalKids} เธเธ</span>
 
-                ${hasStudentLeave ? `<span class="teacher-card-badge" style="font-size: 0.7rem; padding: 2px 8px; background: #ef4444; color: #fff; font-weight: bold; margin-left: 4px;">🚨 น้องลา ${leaveCount} คน</span>` : ''}
+                ${hasStudentLeave ? `<span class="teacher-card-badge" style="font-size: 0.7rem; padding: 2px 8px; background: #ef4444; color: #fff; font-weight: bold; margin-left: 4px;">๐จ เธเนเธญเธเธฅเธฒ ${leaveCount} เธเธ</span>` : ''}
 
               </div>
 
@@ -2118,9 +2116,9 @@ function loadTeacherDailySchedule() {
               ${isReg ? `
               <label style="display: flex; align-items: center; gap: 5px; font-size: 0.74rem; cursor: pointer; font-weight: 600; color: var(--color-danger);">
 
-                <input type="checkbox" class="teacher-kru-leave-chk" data-row="${c.rowIndex}" ${noteText.includes('ครูลา') ? 'checked' : ''} onchange="handleTeacherLeaveToggle(${c.rowIndex}, this)" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--color-danger);">
+                <input type="checkbox" class="teacher-kru-leave-chk" data-row="${c.rowIndex}" ${noteText.includes('เธเธฃเธนเธฅเธฒ') ? 'checked' : ''} onchange="handleTeacherLeaveToggle(${c.rowIndex}, this)" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--color-danger);">
 
-                👨🏫 ครูลา
+                ๐‘จ๐ซ เธเธฃเธนเธฅเธฒ
 
               </label>
               ` : `<div></div>`}
@@ -2129,7 +2127,7 @@ function loadTeacherDailySchedule() {
 
                 <input type="checkbox" class="teacher-daily-confirm-chk" data-row="${c.rowIndex}" ${c.teacherConfirmed ? 'checked' : ''} onchange="toggleDailyScheduleConfirm(${c.rowIndex}, this)" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--color-success);">
 
-                ✅ ยืนยันตรวจสอบ
+                โ… เธขเธทเธเธขเธฑเธเธ•เธฃเธงเธเธชเธญเธ
 
               </label>
 
@@ -2151,9 +2149,9 @@ function loadTeacherDailySchedule() {
 
       const container = document.getElementById('teacher_schedule_container');
 
-      if (container) container.innerHTML = `<div style="text-align:center;color:var(--color-error);padding:40px">ไม่สามารถโหลดตารางสอนได้: ${err ? err.message : 'เกิดข้อผิดพลาด'}</div>`;
+      if (container) container.innerHTML = `<div style="text-align:center;color:var(--color-error);padding:40px">เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เนเธซเธฅเธ”เธ•เธฒเธฃเธฒเธเธชเธญเธเนเธ”เน: ${err ? err.message : 'เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”'}</div>`;
 
-      showToast('ดึงข้อมูลตารางสอนล้มเหลว: ' + (err ? err.message : 'เกิดข้อผิดพลาด'), 'error');
+      showToast('เธ”เธถเธเธเนเธญเธกเธนเธฅเธ•เธฒเธฃเธฒเธเธชเธญเธเธฅเนเธกเน€เธซเธฅเธง: ' + (err ? err.message : 'เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”'), 'error');
 
     })
 
@@ -2181,7 +2179,7 @@ function getCustomMonthRange(year, month) {
 
   switch (month) {
 
-    case 1:  // ม.ค.
+    case 1:  // เธก.เธ.
 
       startStr = `${prevYStr}-12-29`;
 
@@ -2189,7 +2187,7 @@ function getCustomMonthRange(year, month) {
 
       break;
 
-    case 2:  // ก.พ.
+    case 2:  // เธ.เธ.
 
       startStr = `${yStr}-01-29`;
 
@@ -2197,7 +2195,7 @@ function getCustomMonthRange(year, month) {
 
       break;
 
-    case 3:  // มี.ค.
+    case 3:  // เธกเธต.เธ.
 
       startStr = isLeap ? `${yStr}-02-29` : `${yStr}-03-01`;
 
@@ -2205,7 +2203,7 @@ function getCustomMonthRange(year, month) {
 
       break;
 
-    case 4:  // เม.ย.
+    case 4:  // เน€เธก.เธข.
 
       startStr = `${yStr}-03-29`;
 
@@ -2213,7 +2211,7 @@ function getCustomMonthRange(year, month) {
 
       break;
 
-    case 5:  // พ.ค.
+    case 5:  // เธ.เธ.
 
       startStr = `${yStr}-04-29`;
 
@@ -2221,7 +2219,7 @@ function getCustomMonthRange(year, month) {
 
       break;
 
-    case 6:  // มิ.ย.
+    case 6:  // เธกเธด.เธข.
 
       startStr = `${yStr}-05-29`;
 
@@ -2229,7 +2227,7 @@ function getCustomMonthRange(year, month) {
 
       break;
 
-    case 7:  // ก.ค.
+    case 7:  // เธ.เธ.
 
       startStr = `${yStr}-06-29`;
 
@@ -2237,7 +2235,7 @@ function getCustomMonthRange(year, month) {
 
       break;
 
-    case 8:  // ส.ค.
+    case 8:  // เธช.เธ.
 
       startStr = `${yStr}-07-29`;
 
@@ -2245,7 +2243,7 @@ function getCustomMonthRange(year, month) {
 
       break;
 
-    case 9:  // ก.ย.
+    case 9:  // เธ.เธข.
 
       startStr = `${yStr}-08-29`;
 
@@ -2253,7 +2251,7 @@ function getCustomMonthRange(year, month) {
 
       break;
 
-    case 10: // ต.ค.
+    case 10: // เธ•.เธ.
 
       startStr = `${yStr}-09-29`;
 
@@ -2261,7 +2259,7 @@ function getCustomMonthRange(year, month) {
 
       break;
 
-    case 11: // พ.ย.
+    case 11: // เธ.เธข.
 
       startStr = `${yStr}-10-29`;
 
@@ -2269,7 +2267,7 @@ function getCustomMonthRange(year, month) {
 
       break;
 
-    case 12: // ธ.ค.
+    case 12: // เธ.เธ.
 
       startStr = `${yStr}-11-29`;
 
@@ -2315,7 +2313,7 @@ function loadTeacherYearlySalary() {
 
   
 
-  setLoading(true, 'กำลังคำนวณรายได้ทั้งหมด 12 เดือน...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธณเธเธงเธ“เธฃเธฒเธขเนเธ”เนเธ—เธฑเนเธเธซเธกเธ” 12 เน€เธ”เธทเธญเธ...');
 
   
 
@@ -2335,15 +2333,15 @@ function loadTeacherYearlySalary() {
 
   const totalPayEl = document.getElementById('yearly_salary_total_pay');
 
-  if (totalPayEl) totalPayEl.innerText = '฿0';
+  if (totalPayEl) totalPayEl.innerText = 'เธฟ0';
 
   const totalHoursEl = document.getElementById('yearly_salary_total_hours');
 
-  if (totalHoursEl) totalHoursEl.innerText = '0 ชม.';
+  if (totalHoursEl) totalHoursEl.innerText = '0 เธเธก.';
 
   const totalClassesEl = document.getElementById('yearly_salary_total_classes');
 
-  if (totalClassesEl) totalClassesEl.innerText = '0 คลาส';
+  if (totalClassesEl) totalClassesEl.innerText = '0 เธเธฅเธฒเธช';
 
   
 
@@ -2355,7 +2353,7 @@ function loadTeacherYearlySalary() {
 
       if (!res || !res.success || !res.months) {
 
-        showToast('เกิดข้อผิดพลาดในการคำนวณเงินเดือน: ' + (res ? res.error : 'ไม่พบข้อมูล'), 'error');
+        showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเธเธณเธเธงเธ“เน€เธเธดเธเน€เธ”เธทเธญเธ: ' + (res ? res.error : 'เนเธกเนเธเธเธเนเธญเธกเธนเธฅ'), 'error');
 
         return;
 
@@ -2399,11 +2397,11 @@ function loadTeacherYearlySalary() {
 
       // Update yearly banner displays
 
-      if (totalPayEl) totalPayEl.innerText = '฿' + Math.round(yearlyPay).toLocaleString();
+      if (totalPayEl) totalPayEl.innerText = 'เธฟ' + Math.round(yearlyPay).toLocaleString();
 
-      if (totalHoursEl) totalHoursEl.innerText = (Math.round(yearlyHours * 100) / 100).toLocaleString() + ' ชม.';
+      if (totalHoursEl) totalHoursEl.innerText = (Math.round(yearlyHours * 100) / 100).toLocaleString() + ' เธเธก.';
 
-      if (totalClassesEl) totalClassesEl.innerText = yearlyClasses.toLocaleString() + ' คลาส';
+      if (totalClassesEl) totalClassesEl.innerText = yearlyClasses.toLocaleString() + ' เธเธฅเธฒเธช';
 
       
 
@@ -2425,7 +2423,7 @@ function loadTeacherYearlySalary() {
 
       console.error("Yearly calculation failed:", err);
 
-      showToast('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: ' + err.message, 'error');
+      showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เน€เธเธทเนเธญเธกเธ•เนเธญเน€เธเธดเธฃเนเธเน€เธงเธญเธฃเนเนเธ”เน: ' + err.message, 'error');
 
     })
 
@@ -2497,11 +2495,11 @@ function switchMonthTab(m) {
 
     const monthNames = [
 
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
+      'เธกเธเธฃเธฒเธเธก', 'เธเธธเธกเธ เธฒเธเธฑเธเธเน', 'เธกเธตเธเธฒเธเธก', 'เน€เธกเธฉเธฒเธขเธ',
 
-      'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
+      'เธเธคเธฉเธ เธฒเธเธก', 'เธกเธดเธ–เธธเธเธฒเธขเธ', 'เธเธฃเธเธเธฒเธเธก', 'เธชเธดเธเธซเธฒเธเธก',
 
-      'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+      'เธเธฑเธเธขเธฒเธขเธ', 'เธ•เธธเธฅเธฒเธเธก', 'เธเธคเธจเธเธดเธเธฒเธขเธ', 'เธเธฑเธเธงเธฒเธเธก'
 
     ];
 
@@ -2553,7 +2551,7 @@ function renderTeacherSalaryDetail(res) {
 
   const dateRangeStr = (res.startDate && res.endDate) ? ` (${formatIsoDateToThai(res.startDate)} - ${formatIsoDateToThai(res.endDate)})` : '';
 
-  const titleText = res.monthName ? `📊 สรุปรายรับค่าสอนประจำเดือน ${res.monthName}${dateRangeStr}` : '📊 สรุปรายรับค่าสอนประจำเดือน';
+  const titleText = res.monthName ? `๐“ เธชเธฃเธธเธเธฃเธฒเธขเธฃเธฑเธเธเนเธฒเธชเธญเธเธเธฃเธฐเธเธณเน€เธ”เธทเธญเธ ${res.monthName}${dateRangeStr}` : '๐“ เธชเธฃเธธเธเธฃเธฒเธขเธฃเธฑเธเธเนเธฒเธชเธญเธเธเธฃเธฐเธเธณเน€เธ”เธทเธญเธ';
 
   document.getElementById('teacher_salary_result_title').innerText = titleText;
 
@@ -2573,22 +2571,22 @@ function renderTeacherSalaryDetail(res) {
 
   const sumMinPart = sumMinutes % 60;
 
-  const formattedSumHours = `${sumHoursPart} ชม. ${sumMinPart} นาที`;
+  const formattedSumHours = `${sumHoursPart} เธเธก. ${sumMinPart} เธเธฒเธ—เธต`;
 
 
 
-  document.getElementById('teacher_salary_net_pay').innerText = 'รายได้สุทธิ: ฿' + (res.netPay !== undefined ? res.netPay : res.totalPay || 0).toLocaleString();
+  document.getElementById('teacher_salary_net_pay').innerText = 'เธฃเธฒเธขเนเธ”เนเธชเธธเธ—เธเธด: เธฟ' + (res.netPay !== undefined ? res.netPay : res.totalPay || 0).toLocaleString();
   
   if (document.getElementById('ts_adj_bonus')) {
-    document.getElementById('ts_adj_bonus').innerText = '฿' + (res.adjustmentBonus || 0).toLocaleString();
-    document.getElementById('ts_adj_deduction').innerText = '฿' + (res.adjustmentDeduction || 0).toLocaleString();
-    document.getElementById('ts_adj_insurance').innerText = '฿' + (res.insuranceDeduction || 0).toLocaleString();
-    document.getElementById('ts_adj_insurance_progress').innerText = '(สะสม: ' + (res.insuranceRunningTotal || 0).toLocaleString() + ' / 2,000)';
+    document.getElementById('ts_adj_bonus').innerText = 'เธฟ' + (res.adjustmentBonus || 0).toLocaleString();
+    document.getElementById('ts_adj_deduction').innerText = 'เธฟ' + (res.adjustmentDeduction || 0).toLocaleString();
+    document.getElementById('ts_adj_insurance').innerText = 'เธฟ' + (res.insuranceDeduction || 0).toLocaleString();
+    document.getElementById('ts_adj_insurance_progress').innerText = '(เธชเธฐเธชเธก: ' + (res.insuranceRunningTotal || 0).toLocaleString() + ' / 2,000)';
   }
 
   document.getElementById('teacher_salary_total_hours').innerText = formattedSumHours;
 
-  document.getElementById('teacher_salary_total_classes').innerText = (res.totalClasses || 0).toLocaleString() + ' คลาส';
+  document.getElementById('teacher_salary_total_classes').innerText = (res.totalClasses || 0).toLocaleString() + ' เธเธฅเธฒเธช';
 
   
 
@@ -2606,17 +2604,17 @@ function renderTeacherSalaryDetail(res) {
 
     let isSub = false;
 
-    let displayRole = c.role || 'ครูประจำ';
+    let displayRole = c.role || 'เธเธฃเธนเธเธฃเธฐเธเธณ';
 
-    if (displayRole === 'sub' || displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน')) {
+    if (displayRole === 'sub' || displayRole.includes('เธชเธญเธเนเธ—เธ') || displayRole.includes('เธเธฃเธนเนเธ—เธ')) {
 
-      displayRole = 'ครูแทน';
+      displayRole = 'เธเธฃเธนเนเธ—เธ';
 
       isSub = true;
 
     } else {
 
-      displayRole = 'ครูประจำ';
+      displayRole = 'เธเธฃเธนเธเธฃเธฐเธเธณ';
 
     }
 
@@ -2652,13 +2650,13 @@ function renderTeacherSalaryDetail(res) {
 
       <td>${formatHoursMinutes(c.hours)}</td>
 
-      <td style="text-align: center;">${c.numKids} คน<br><span style="font-size: 0.6rem; color: #6c757d;">(สด:${c.isPresentLive || 0}, ออน:${c.isPresentOnline || 0}, ชด:${c.isMakeup || 0})</span></td>
+      <td style="text-align: center;">${c.numKids} เธเธ<br><span style="font-size: 0.6rem; color: #6c757d;">(เธชเธ”:${c.isPresentLive || 0}, เธญเธญเธ:${c.isPresentOnline || 0}, เธเธ”:${c.isMakeup || 0})</span></td>
 
       <td><span class="badge ${isSub ? 'badge-warning' : 'badge-info'}" style="font-size: 0.65rem; padding: 4px 8px; font-weight: 600; border-radius: 6px;">${displayRole}</span></td>
 
-      <td style="text-align: right;">฿${c.rate.toLocaleString()}</td>
+      <td style="text-align: right;">เธฟ${c.rate.toLocaleString()}</td>
 
-      <td style="text-align: right; font-weight:600; color:var(--color-success);">฿${c.pay.toLocaleString()}</td>
+      <td style="text-align: right; font-weight:600; color:var(--color-success);">เธฟ${c.pay.toLocaleString()}</td>
 
       <td style="text-align: center;">
 
@@ -2676,7 +2674,7 @@ function renderTeacherSalaryDetail(res) {
 
   if (res.classes.length === 0) {
 
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบรายการสอนของคุณครูในช่วงเวลาที่ระบุ</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">เนเธกเนเธเธเธฃเธฒเธขเธเธฒเธฃเธชเธญเธเธเธญเธเธเธธเธ“เธเธฃเธนเนเธเธเนเธงเธเน€เธงเธฅเธฒเธ—เธตเนเธฃเธฐเธเธธ</td></tr>`;
 
   }
 
@@ -2718,11 +2716,11 @@ function updateTeacherConfirm(rowIndex, cb, isSub) {
 
       if (res && res.success) {
 
-        showToast('บันทึกการยืนยันตรวจสอบสำเร็จแล้ว!', 'success');
+        showToast('เธเธฑเธเธ—เธถเธเธเธฒเธฃเธขเธทเธเธขเธฑเธเธ•เธฃเธงเธเธชเธญเธเธชเธณเน€เธฃเนเธเนเธฅเนเธง!', 'success');
 
       } else {
 
-        showToast('เกิดข้อผิดพลาดในการบันทึกการยืนยัน: ' + (res ? res.error : 'unknown'), 'error');
+        showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเธเธฑเธเธ—เธถเธเธเธฒเธฃเธขเธทเธเธขเธฑเธ: ' + (res ? res.error : 'unknown'), 'error');
 
         // Revert UI
 
@@ -2736,7 +2734,7 @@ function updateTeacherConfirm(rowIndex, cb, isSub) {
 
     .withFailureHandler(err => {
 
-      showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      showToast('เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
       // Revert UI
 
@@ -2778,11 +2776,11 @@ function toggleDailyScheduleConfirm(rowIndex, cb) {
 
       if (res && res.success) {
 
-        showToast('บันทึกการยืนยันตรวจสอบคลาสสำเร็จ!', 'success');
+        showToast('เธเธฑเธเธ—เธถเธเธเธฒเธฃเธขเธทเธเธขเธฑเธเธ•เธฃเธงเธเธชเธญเธเธเธฅเธฒเธชเธชเธณเน€เธฃเนเธ!', 'success');
 
       } else {
 
-        showToast('การบันทึกยืนยันผิดพลาด: ' + (res ? res.error : 'unknown'), 'error');
+        showToast('เธเธฒเธฃเธเธฑเธเธ—เธถเธเธขเธทเธเธขเธฑเธเธเธดเธ”เธเธฅเธฒเธ”: ' + (res ? res.error : 'unknown'), 'error');
 
         cb.checked = !cb.checked;
 
@@ -2806,7 +2804,7 @@ function toggleDailyScheduleConfirm(rowIndex, cb) {
 
     .withFailureHandler(err => {
 
-      showToast('เชื่อมต่อไม่สำเร็จ: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเนเธกเนเธชเธณเน€เธฃเนเธ: ' + err.message, 'error');
 
       cb.checked = !cb.checked;
 
@@ -2834,7 +2832,7 @@ function toggleDailyScheduleConfirm(rowIndex, cb) {
 
 function toggleDailyGridConfirm(rowIndex, isChecked) {
 
-  setLoading(true, 'กำลังบันทึกสถานะการยืนยัน...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธชเธ–เธฒเธเธฐเธเธฒเธฃเธขเธทเธเธขเธฑเธ...');
 
   google.script.run
 
@@ -2844,7 +2842,7 @@ function toggleDailyGridConfirm(rowIndex, isChecked) {
 
       if (res && res.success) {
 
-        showToast('อัปเดตการยืนยันการสอนสำเร็จ!', 'success');
+        showToast('เธญเธฑเธเน€เธ”เธ•เธเธฒเธฃเธขเธทเธเธขเธฑเธเธเธฒเธฃเธชเธญเธเธชเธณเน€เธฃเนเธ!', 'success');
 
         // Update local classLogs state
 
@@ -2860,7 +2858,7 @@ function toggleDailyGridConfirm(rowIndex, isChecked) {
 
       } else {
 
-        showToast('การบันทึกยืนยันผิดพลาด: ' + (res ? res.error : 'unknown'), 'error');
+        showToast('เธเธฒเธฃเธเธฑเธเธ—เธถเธเธขเธทเธเธขเธฑเธเธเธดเธ”เธเธฅเธฒเธ”: ' + (res ? res.error : 'unknown'), 'error');
 
         renderDailyGrid();
 
@@ -2872,7 +2870,7 @@ function toggleDailyGridConfirm(rowIndex, isChecked) {
 
       setLoading(false);
 
-      showToast('เชื่อมต่อไม่สำเร็จ: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเนเธกเนเธชเธณเน€เธฃเนเธ: ' + err.message, 'error');
 
       renderDailyGrid();
 
@@ -2950,7 +2948,7 @@ function updateOnlineUsers(userList) {
 
   if (userList.length === 0) {
 
-    listDiv.innerHTML = '<span style="color: var(--text-muted); font-size: 0.68rem;">ไม่มีผู้ใช้อื่นออนไลน์</span>';
+    listDiv.innerHTML = '<span style="color: var(--text-muted); font-size: 0.68rem;">เนเธกเนเธกเธตเธเธนเนเนเธเนเธญเธทเนเธเธญเธญเธเนเธฅเธเน</span>';
 
     return;
 
@@ -2996,7 +2994,7 @@ function updateOnlineUsers(userList) {
 
 function bootApp() {
 
-  setLoading(true, 'กำลังโหลดข้อมูลพื้นฐาน...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธทเนเธเธเธฒเธ...');
 
   
 
@@ -3036,7 +3034,7 @@ function bootApp() {
 
         
 
-        if (state.currentUser && (state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู')) {
+        if (state.currentUser && (state.currentUser.role === 'Teacher' || state.currentUser.role === 'เธเธฃเธน')) {
 
           initialPanel = 'teacher_schedule';
 
@@ -3044,7 +3042,7 @@ function bootApp() {
 
       } else {
 
-        showToast('ไม่สามารถโหลดข้อมูลการตั้งค่าได้: ' + (settings ? settings.error : 'unknown'), 'error');
+        showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธฒเธฃเธ•เธฑเนเธเธเนเธฒเนเธ”เน: ' + (settings ? settings.error : 'unknown'), 'error');
 
       }
 
@@ -3070,7 +3068,7 @@ function bootApp() {
 
       setLoading(false);
 
-      showToast('เชื่อมต่อฐานข้อมูลล้มเหลว: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธเธฒเธเธเนเธญเธกเธนเธฅเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
       switchPanel('dashboard');
 
@@ -3288,7 +3286,7 @@ function applyRoleAccessControl() {
 
   const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
 
-  const isTeacher = (role === 'Teacher' || role === 'ครู');
+  const isTeacher = (role === 'Teacher' || role === 'เธเธฃเธน');
 
   
 
@@ -3308,7 +3306,7 @@ function applyRoleAccessControl() {
 
         if (panel === 'teacher_payroll') {
 
-          item.innerHTML = `<span>💵</span> ตารางสอนและรายละเอียดเงินเดือนของฉัน`;
+          item.innerHTML = `<span>๐’ต</span> เธ•เธฒเธฃเธฒเธเธชเธญเธเนเธฅเธฐเธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ”เน€เธเธดเธเน€เธ”เธทเธญเธเธเธญเธเธเธฑเธ`;
 
         }
 
@@ -3328,7 +3326,7 @@ function applyRoleAccessControl() {
 
       if (panel === 'teacher_payroll') {
 
-        item.innerHTML = `<span>💵</span> ค่าสอนครูรายเดือน`;
+        item.innerHTML = `<span>๐’ต</span> เธเนเธฒเธชเธญเธเธเธฃเธนเธฃเธฒเธขเน€เธ”เธทเธญเธ`;
 
       }
 
@@ -3450,7 +3448,7 @@ function cleanTimeForInput(timeStr) {
 
   if (!timeStr) return '';
 
-  let str = timeStr.toString().replace(/น\./gi, '').trim();
+  let str = timeStr.toString().replace(/เธ\./gi, '').trim();
 
   str = str.replace(/\./g, ':');
 
@@ -3502,7 +3500,7 @@ function formatDateTimeToThaiLong(dateStr) {
 
   const dateStrLower = dateStr.toString().toLowerCase();
 
-  if (dateStrLower.includes('1899') || dateStrLower.includes('1900') || dateStrLower.includes('เวลาอินโดจีน')) {
+  if (dateStrLower.includes('1899') || dateStrLower.includes('1900') || dateStrLower.includes('เน€เธงเธฅเธฒเธญเธดเธเนเธ”เธเธตเธ')) {
 
     return '';
 
@@ -3654,9 +3652,9 @@ function formatDateTimeToThaiLong(dateStr) {
 
   
 
-  const thDays = ['วันอาทิตย์', 'วันจันทร์', 'วันอังคาร', 'วันพุธ', 'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์'];
+  const thDays = ['เธงเธฑเธเธญเธฒเธ—เธดเธ•เธขเน', 'เธงเธฑเธเธเธฑเธเธ—เธฃเน', 'เธงเธฑเธเธญเธฑเธเธเธฒเธฃ', 'เธงเธฑเธเธเธธเธ', 'เธงเธฑเธเธเธคเธซเธฑเธชเธเธ”เธต', 'เธงเธฑเธเธจเธธเธเธฃเน', 'เธงเธฑเธเน€เธชเธฒเธฃเน'];
 
-  const thMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+  const thMonths = ['เธก.เธ.', 'เธ.เธ.', 'เธกเธต.เธ.', 'เน€เธก.เธข.', 'เธ.เธ.', 'เธกเธด.เธข.', 'เธ.เธ.', 'เธช.เธ.', 'เธ.เธข.', 'เธ•.เธ.', 'เธ.เธข.', 'เธ.เธ.'];
 
   
 
@@ -3706,7 +3704,7 @@ function formatSubjectName(subject) {
 
 
 
-  const regex = /\b(midterm|final|test|mock|summer|oct|รอบ|เทอม|สอบ)|\b[mf][1-2]\/\d+|\b\d+\/\d{2,4}/i;
+  const regex = /\b(midterm|final|test|mock|summer|oct|เธฃเธญเธ|เน€เธ—เธญเธก|เธชเธญเธ)|\b[mf][1-2]\/\d+|\b\d+\/\d{2,4}/i;
 
   const match = str.match(regex);
 
@@ -3816,7 +3814,7 @@ function cleanTimeStr(timeStr) {
 
   let str = timeStr.toString().trim();
 
-  if (str.includes('GMT') || str.includes('เวลา') || str.includes('1899') || str.includes('1900') || str.length > 15) {
+  if (str.includes('GMT') || str.includes('เน€เธงเธฅเธฒ') || str.includes('1899') || str.includes('1900') || str.length > 15) {
 
     try {
 
@@ -3874,9 +3872,9 @@ function matchRoomAndBranch(roomBranch, roomName, branchName) {
 
   
 
-  if (cleanRN.includes('ออนไลน์') || cleanRN.includes('online')) {
+  if (cleanRN.includes('เธญเธญเธเนเธฅเธเน') || cleanRN.includes('online')) {
 
-    const isOnlineRoom = cleanRB.includes('ออนไลน์') || cleanRB.includes('online');
+    const isOnlineRoom = cleanRB.includes('เธญเธญเธเนเธฅเธเน') || cleanRB.includes('online');
 
     if (!isOnlineRoom) return false;
 
@@ -3970,7 +3968,7 @@ function convertDateTimeFromSheet(dateVal) {
 
   let str = dateVal.toString().trim();
 
-  str = str.replace(/\s*น\.\s*$/, '').trim();
+  str = str.replace(/\s*เธ\.\s*$/, '').trim();
 
   
 
@@ -4056,7 +4054,7 @@ function convertDateTimeToSheet(dateTimeVal) {
 
   
 
-  return `${day}/${month}/${year} ${hours}:${minutes} น.`;
+  return `${day}/${month}/${year} ${hours}:${minutes} เธ.`;
 
 }
 
@@ -4066,11 +4064,11 @@ function getPrivateStudentRate(sheetName, courseName) {
 
   if (!sheetName) return rate;
 
-  if (sheetName.indexOf('เดี่ยว') !== -1) {
+  if (sheetName.indexOf('เน€เธ”เธตเนเธขเธง') !== -1) {
 
     const isEx = courseName.toLowerCase().includes('ex');
 
-    const gradesHigh = ['ม.4', 'ม.5', 'ม.6'];
+    const gradesHigh = ['เธก.4', 'เธก.5', 'เธก.6'];
 
     let isHighGrade = false;
 
@@ -4090,7 +4088,7 @@ function getPrivateStudentRate(sheetName, courseName) {
 
     }
 
-  } else { // กลุ่มย่อย
+  } else { // เธเธฅเธธเนเธกเธขเนเธญเธข
 
     if (sheetName.indexOf('2-3') !== -1) rate = 187.5;
 
@@ -4134,7 +4132,7 @@ function checkLowBalanceStudents() {
 
           return `<span style="display: block; width: 100%; box-sizing: border-box; border: 1px solid #fecaca; background: #fff5f5; border-radius: 4px; padding: 2px 4px; font-size: 0.68rem; cursor: pointer; transition: all 0.2s; text-align: center; line-height: 1.3;" 
 
-            title="คลิกเพื่อลงยอดชำระเงินของ ${s.name} - ${s.courseName}"
+            title="เธเธฅเธดเธเน€เธเธทเนเธญเธฅเธเธขเธญเธ”เธเธณเธฃเธฐเน€เธเธดเธเธเธญเธ ${s.name} - ${s.courseName}"
 
             onmouseover="this.style.background='#fee2e2'; this.style.borderColor='#f87171'; this.style.transform='scale(1.02)';"
 
@@ -4142,7 +4140,7 @@ function checkLowBalanceStudents() {
 
             onclick="navigateToPrivateStudentPayment('${escapedName}', '${escapedCourse}', '${escapedSheet}')">
 
-            <strong>${s.name} ${s.courseName}</strong> ยอดชำระสะสม <span style="color:#ef4444; font-weight:600;">฿${formattedMoney.toLocaleString()}</span>
+            <strong>${s.name} ${s.courseName}</strong> เธขเธญเธ”เธเธณเธฃเธฐเธชเธฐเธชเธก <span style="color:#ef4444; font-weight:600;">เธฟ${formattedMoney.toLocaleString()}</span>
 
           </span>`;
 
@@ -4152,11 +4150,11 @@ function checkLowBalanceStudents() {
 
         const isCollapsed = document.getElementById(toggleId) ? document.getElementById(toggleId).style.display === 'none' : false;
 
-        textEl.innerHTML = `<div style="margin-bottom: 4px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;" onclick="const el=document.getElementById('${toggleId}'); el.style.display = el.style.display==='none' ? 'grid' : 'none'; this.querySelector('.toggle-icon').textContent = el.style.display==='none' ? '▶' : '▼';">
+        textEl.innerHTML = `<div style="margin-bottom: 4px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;" onclick="const el=document.getElementById('${toggleId}'); el.style.display = el.style.display==='none' ? 'grid' : 'none'; this.querySelector('.toggle-icon').textContent = el.style.display==='none' ? 'โ–ถ' : 'โ–ผ';">
 
-          <span class="toggle-icon" style="font-size: 0.7rem;">▼</span>
+          <span class="toggle-icon" style="font-size: 0.7rem;">โ–ผ</span>
 
-          <strong style="font-size: 0.75rem;">คอร์สเรียนชำระสะสมต่ำกว่า 700 บาท: (${res.students.length} รายการ)</strong>
+          <strong style="font-size: 0.75rem;">เธเธญเธฃเนเธชเน€เธฃเธตเธขเธเธเธณเธฃเธฐเธชเธฐเธชเธกเธ•เนเธณเธเธงเนเธฒ 700 เธเธฒเธ—: (${res.students.length} เธฃเธฒเธขเธเธฒเธฃ)</strong>
 
         </div>
 
@@ -4208,7 +4206,7 @@ function checkTeacherLeaves() {
 
           const dateBadge = isToday 
 
-            ? `<span style="background:#f59e0b; color:#fff; padding:0 4px; border-radius:3px; font-size:0.6rem; font-weight:700; margin-right:3px;">📍 วันนี้</span>`
+            ? `<span style="background:#f59e0b; color:#fff; padding:0 4px; border-radius:3px; font-size:0.6rem; font-weight:700; margin-right:3px;">๐“ เธงเธฑเธเธเธตเน</span>`
 
             : `<span style="background:#e5e7eb; color:#6b7280; padding:0 4px; border-radius:3px; font-size:0.6rem;">${l.date || ''}</span>`;
 
@@ -4220,7 +4218,7 @@ function checkTeacherLeaves() {
 
           return `<span onclick="showEditClassLogModal(${l.rowIndex})" class="leave-card-clickable" style="display: block; width: 100%; box-sizing: border-box; border: 1px solid ${borderColor}; background: ${bgColor}; border-radius: 4px; padding: 4px; font-size: 0.68rem; text-align: center; line-height: 1.4; cursor: pointer; transition: all 0.2s;">
 
-            ${dateBadge}👨‍🏫 <strong>ครู ${l.teacher} ลา</strong> — ${formatSubjectName(l.subject)} (${cleanTimeStr(l.timeStart)}-${cleanTimeStr(l.timeEnd)})${l.teacherSub ? ` ครูแทน: ${l.teacherSub}` : ' ⚠️ไม่มีครูแทน'}
+            ${dateBadge}๐‘จโ€๐ซ <strong>เธเธฃเธน ${l.teacher} เธฅเธฒ</strong> โ€” ${formatSubjectName(l.subject)} (${cleanTimeStr(l.timeStart)}-${cleanTimeStr(l.timeEnd)})${l.teacherSub ? ` เธเธฃเธนเนเธ—เธ: ${l.teacherSub}` : ' โ ๏ธเนเธกเนเธกเธตเธเธฃเธนเนเธ—เธ'}
 
           </span>`;
 
@@ -4234,11 +4232,11 @@ function checkTeacherLeaves() {
 
         const isCollapsed = document.getElementById(toggleId) ? document.getElementById(toggleId).style.display === 'none' : false;
 
-        textEl.innerHTML = `<div style="margin-bottom: 4px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;" onclick="const el=document.getElementById('${toggleId}'); el.style.display = el.style.display==='none' ? 'grid' : 'none'; this.querySelector('.toggle-icon').textContent = el.style.display==='none' ? '▶' : '▼';">
+        textEl.innerHTML = `<div style="margin-bottom: 4px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;" onclick="const el=document.getElementById('${toggleId}'); el.style.display = el.style.display==='none' ? 'grid' : 'none'; this.querySelector('.toggle-icon').textContent = el.style.display==='none' ? 'โ–ถ' : 'โ–ผ';">
 
-          <span class="toggle-icon" style="font-size: 0.7rem;">▼</span>
+          <span class="toggle-icon" style="font-size: 0.7rem;">โ–ผ</span>
 
-          <strong style="font-size: 0.75rem; color: #92400e;">ประวัติแจ้งลาของคุณครู: ${totalCount} รายการ${todayCount > 0 ? ` (วันนี้ ${todayCount} รายการ)` : ''}</strong>
+          <strong style="font-size: 0.75rem; color: #92400e;">เธเธฃเธฐเธงเธฑเธ•เธดเนเธเนเธเธฅเธฒเธเธญเธเธเธธเธ“เธเธฃเธน: ${totalCount} เธฃเธฒเธขเธเธฒเธฃ${todayCount > 0 ? ` (เธงเธฑเธเธเธตเน ${todayCount} เธฃเธฒเธขเธเธฒเธฃ)` : ''}</strong>
 
         </div>
 
@@ -4272,7 +4270,7 @@ function navigateToPrivateStudentPayment(studentName, courseName, sheetName) {
 
   
 
-  // ป้องกันการโหลดข้อมูลซ้อนซ้ำจาก switchPanel
+  // เธเนเธญเธเธเธฑเธเธเธฒเธฃเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเนเธญเธเธเนเธณเธเธฒเธ switchPanel
 
   state.navigatingToPayment = true;
 
@@ -4298,13 +4296,13 @@ function navigateToPrivateStudentPayment(studentName, courseName, sheetName) {
 
 function formatHoursMinutes(val) {
 
-  if (val === undefined || val === null) return '0 ชม. 0 นาที';
+  if (val === undefined || val === null) return '0 เธเธก. 0 เธเธฒเธ—เธต';
 
   let str = val.toString().trim();
 
-  if (!str || str === '0') return '0 ชม. 0 นาที';
+  if (!str || str === '0') return '0 เธเธก. 0 เธเธฒเธ—เธต';
 
-  if (str.includes('ชม.') && str.includes('นาที')) {
+  if (str.includes('เธเธก.') && str.includes('เธเธฒเธ—เธต')) {
 
     return str;
 
@@ -4312,7 +4310,7 @@ function formatHoursMinutes(val) {
 
   
 
-  if (str.includes('GMT') || str.includes('เวลา') || str.includes('1899') || str.includes('1900') || str.length > 15) {
+  if (str.includes('GMT') || str.includes('เน€เธงเธฅเธฒ') || str.includes('1899') || str.includes('1900') || str.length > 15) {
 
     try {
 
@@ -4388,7 +4386,7 @@ function formatHoursMinutes(val) {
 
   }
 
-  return (isNegative ? '-' : '') + `${hours} ชม. ${minutes} นาที`;
+  return (isNegative ? '-' : '') + `${hours} เธเธก. ${minutes} เธเธฒเธ—เธต`;
 
 }
 
@@ -4456,7 +4454,7 @@ function convertDateFromSheet(dateVal) {
 
 
 
-function setLoading(show, text = 'กำลังโหลดข้อมูล...') {
+function setLoading(show, text = 'เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅ...') {
 
   if (show) {
 
@@ -4510,7 +4508,7 @@ function setLoading(show, text = 'กำลังโหลดข้อมูล.
       statusDot.style.animation = 'pulse 1s infinite';
     }
     if (statusText) {
-      statusText.textContent = '⏳ ' + text;
+      statusText.textContent = 'โณ ' + text;
     }
 
   } else {
@@ -4530,7 +4528,7 @@ function setLoading(show, text = 'กำลังโหลดข้อมูล.
       statusDot.style.animation = 'none';
     }
     if (statusText) {
-      statusText.textContent = '✅ พร้อมใช้งาน';
+      statusText.textContent = 'โ… เธเธฃเนเธญเธกเนเธเนเธเธฒเธ';
     }
 
   }
@@ -4557,13 +4555,13 @@ function showToast(message, type = 'info') {
 
   
 
-  let icon = 'ℹ️';
+  let icon = 'โน๏ธ';
 
-  if (type === 'success') icon = '✅';
+  if (type === 'success') icon = 'โ…';
 
-  if (type === 'error') icon = '❌';
+  if (type === 'error') icon = 'โ';
 
-  if (type === 'warning') icon = '⚠️';
+  if (type === 'warning') icon = 'โ ๏ธ';
 
   
 
@@ -4611,13 +4609,13 @@ function populateDropdowns() {
 
     populateSelect('class_teacher_reg_' + i, teachers);
 
-    populateSelect('class_teacher_sub_' + i, ['(ไม่มีครูแทน)', ...teachers]);
+    populateSelect('class_teacher_sub_' + i, ['(เนเธกเนเธกเธตเธเธฃเธนเนเธ—เธ)', ...teachers]);
 
   }
 
   
 
-  populateSelect('teacher_schedule_select', ['(เลือกชื่อครู)', ...teachers]);
+  populateSelect('teacher_schedule_select', ['(เน€เธฅเธทเธญเธเธเธทเนเธญเธเธฃเธน)', ...teachers]);
 
   populateDatalist('student_school_list', schools);
 
@@ -4625,9 +4623,9 @@ function populateDropdowns() {
 
   populateSelect('p_payment_channel', channels);
 
-  populateSelect('manager_name', ['ผจก.ป้อม', 'ผจก.กิ๊บ', 'ผจก.พัช', 'ผจก.เพื่อน']);
+  populateSelect('manager_name', ['เธเธเธ.เธเนเธญเธก', 'เธเธเธ.เธเธดเนเธ', 'เธเธเธ.เธเธฑเธ', 'เธเธเธ.เน€เธเธทเนเธญเธ']);
 
-  populateSelect('calc_teacher_select', ['(เลือกครูเพื่อคำนวณ)', ...teachers]);
+  populateSelect('calc_teacher_select', ['(เน€เธฅเธทเธญเธเธเธฃเธนเน€เธเธทเนเธญเธเธณเธเธงเธ“)', ...teachers]);
 
 
 
@@ -4649,7 +4647,7 @@ function populateDropdowns() {
 
       const selected = y === currentYear ? ' selected' : '';
 
-      optionsHtml.push(`<option value="${y}"${selected}>ปี พ.ศ. ${y + 543} (ค.ศ. ${y})</option>`);
+      optionsHtml.push(`<option value="${y}"${selected}>เธเธต เธ.เธจ. ${y + 543} (เธ.เธจ. ${y})</option>`);
 
     }
 
@@ -4673,11 +4671,11 @@ function populateDropdowns() {
 
     const monthNames = [
 
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
+      'เธกเธเธฃเธฒเธเธก', 'เธเธธเธกเธ เธฒเธเธฑเธเธเน', 'เธกเธตเธเธฒเธเธก', 'เน€เธกเธฉเธฒเธขเธ',
 
-      'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
+      'เธเธคเธฉเธ เธฒเธเธก', 'เธกเธดเธ–เธธเธเธฒเธขเธ', 'เธเธฃเธเธเธฒเธเธก', 'เธชเธดเธเธซเธฒเธเธก',
 
-      'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+      'เธเธฑเธเธขเธฒเธขเธ', 'เธ•เธธเธฅเธฒเธเธก', 'เธเธคเธจเธเธดเธเธฒเธขเธ', 'เธเธฑเธเธงเธฒเธเธก'
 
     ];
 
@@ -4757,49 +4755,49 @@ function populateTeacherDatalists() {
 
   const rayongSchools = [
 
-    'ว่างงาน',
+    'เธงเนเธฒเธเธเธฒเธ',
 
-    'พนักงานบริษัท',
+    'เธเธเธฑเธเธเธฒเธเธเธฃเธดเธฉเธฑเธ—',
 
-    'โรงเรียนระยองวิทยาคม',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธฃเธฐเธขเธญเธเธงเธดเธ—เธขเธฒเธเธก',
 
-    'โรงเรียนวัดป่าประดู่',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธงเธฑเธ”เธเนเธฒเธเธฃเธฐเธ”เธนเน',
 
-    'โรงเรียนมัธยมตากสินระยอง',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธกเธฑเธเธขเธกเธ•เธฒเธเธชเธดเธเธฃเธฐเธขเธญเธ',
 
-    'โรงเรียนอัสสัมชัญระยอง',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธญเธฑเธชเธชเธฑเธกเธเธฑเธเธฃเธฐเธขเธญเธ',
 
-    'โรงเรียนเซนต์โยเซฟระยอง',
+    'เนเธฃเธเน€เธฃเธตเธขเธเน€เธเธเธ•เนเนเธขเน€เธเธเธฃเธฐเธขเธญเธ',
 
-    'โรงเรียนระยองวิทยาคม ปากน้ำ',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธฃเธฐเธขเธญเธเธงเธดเธ—เธขเธฒเธเธก เธเธฒเธเธเนเธณ',
 
-    'โรงเรียนแกลง "วิทยสถาวร"',
+    'เนเธฃเธเน€เธฃเธตเธขเธเนเธเธฅเธ "เธงเธดเธ—เธขเธชเธ–เธฒเธงเธฃ"',
 
-    'โรงเรียนบ้านฉางกาญจนกุลวิทยา',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธเนเธฒเธเธเธฒเธเธเธฒเธเธเธเธเธธเธฅเธงเธดเธ—เธขเธฒ',
 
-    'โรงเรียนมาบตาพุดพันพิทยาคาร',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธกเธฒเธเธ•เธฒเธเธธเธ”เธเธฑเธเธเธดเธ—เธขเธฒเธเธฒเธฃ',
 
-    'โรงเรียนอนุบาลระยอง',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธญเธเธธเธเธฒเธฅเธฃเธฐเธขเธญเธ',
 
-    'โรงเรียนกุมุทมาส',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธเธธเธกเธธเธ—เธกเธฒเธช',
 
-    'โรงเรียนสุนทรภู่พิทยา',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธชเธธเธเธ—เธฃเธ เธนเนเธเธดเธ—เธขเธฒ',
 
-    'โรงเรียนเฉลิมพระเกียรติสมเด็จพระศรีนครินทร์ ระยอง',
+    'เนเธฃเธเน€เธฃเธตเธขเธเน€เธเธฅเธดเธกเธเธฃเธฐเน€เธเธตเธขเธฃเธ•เธดเธชเธกเน€เธ”เนเธเธเธฃเธฐเธจเธฃเธตเธเธเธฃเธดเธเธ—เธฃเน เธฃเธฐเธขเธญเธ',
 
-    'โรงเรียนวิบูลวิทยา',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธงเธดเธเธนเธฅเธงเธดเธ—เธขเธฒ',
 
-    'โรงเรียนปลวกแดงพิทยาคม',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธเธฅเธงเธเนเธ”เธเธเธดเธ—เธขเธฒเธเธก',
 
-    'โรงเรียนวังจันทร์วิทยา',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธงเธฑเธเธเธฑเธเธ—เธฃเนเธงเธดเธ—เธขเธฒ',
 
-    'โรงเรียนเขาชะเมาวิทยา',
+    'เนเธฃเธเน€เธฃเธตเธขเธเน€เธเธฒเธเธฐเน€เธกเธฒเธงเธดเธ—เธขเธฒ',
 
-    'โรงเรียนเพรักษมาตาวิทยา',
+    'เนเธฃเธเน€เธฃเธตเธขเธเน€เธเธฃเธฑเธเธฉเธกเธฒเธ•เธฒเธงเธดเธ—เธขเธฒ',
 
-    'โรงเรียนนิคมสร้างตนเองจังหวัดระยอง 1',
+    'เนเธฃเธเน€เธฃเธตเธขเธเธเธดเธเธกเธชเธฃเนเธฒเธเธ•เธเน€เธญเธเธเธฑเธเธซเธงเธฑเธ”เธฃเธฐเธขเธญเธ 1',
 
-    'โรงเรียนประชาราษฎร์อุปถัมภ์'
+    'เนเธฃเธเน€เธฃเธตเธขเธเธเธฃเธฐเธเธฒเธฃเธฒเธฉเธเธฃเนเธญเธธเธเธ–เธฑเธกเธ เน'
 
   ];
 
@@ -4807,35 +4805,35 @@ function populateTeacherDatalists() {
 
   const thaiBanks = [
 
-    'ธนาคารกสิกรไทย',
+    'เธเธเธฒเธเธฒเธฃเธเธชเธดเธเธฃเนเธ—เธข',
 
-    'ธนาคารไทยพาณิชย์',
+    'เธเธเธฒเธเธฒเธฃเนเธ—เธขเธเธฒเธ“เธดเธเธขเน',
 
-    'ธนาคารกรุงเทพ',
+    'เธเธเธฒเธเธฒเธฃเธเธฃเธธเธเน€เธ—เธ',
 
-    'ธนาคารกรุงไทย',
+    'เธเธเธฒเธเธฒเธฃเธเธฃเธธเธเนเธ—เธข',
 
-    'ธนาคารทหารไทยธนชาต (ttb)',
+    'เธเธเธฒเธเธฒเธฃเธ—เธซเธฒเธฃเนเธ—เธขเธเธเธเธฒเธ• (ttb)',
 
-    'ธนาคารกรุงศรีอยุธยา',
+    'เธเธเธฒเธเธฒเธฃเธเธฃเธธเธเธจเธฃเธตเธญเธขเธธเธเธขเธฒ',
 
-    'ธนาคารออมสิน',
+    'เธเธเธฒเธเธฒเธฃเธญเธญเธกเธชเธดเธ',
 
-    'ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร (ธ.ก.ส.)',
+    'เธเธเธฒเธเธฒเธฃเน€เธเธทเนเธญเธเธฒเธฃเน€เธเธฉเธ•เธฃเนเธฅเธฐเธชเธซเธเธฃเธ“เนเธเธฒเธฃเน€เธเธฉเธ•เธฃ (เธ.เธ.เธช.)',
 
-    'ธนาคารอาคารสงเคราะห์ (ธอส.)',
+    'เธเธเธฒเธเธฒเธฃเธญเธฒเธเธฒเธฃเธชเธเน€เธเธฃเธฒเธฐเธซเน (เธเธญเธช.)',
 
-    'ธนาคารยูโอบี',
+    'เธเธเธฒเธเธฒเธฃเธขเธนเนเธญเธเธต',
 
-    'ธนาคารเกียรตินาคินภัทร',
+    'เธเธเธฒเธเธฒเธฃเน€เธเธตเธขเธฃเธ•เธดเธเธฒเธเธดเธเธ เธฑเธ—เธฃ',
 
-    'ธนาคารซีไอเอ็มบีไทย',
+    'เธเธเธฒเธเธฒเธฃเธเธตเนเธญเน€เธญเนเธกเธเธตเนเธ—เธข',
 
-    'ธนาคารทิสโก้',
+    'เธเธเธฒเธเธฒเธฃเธ—เธดเธชเนเธเน',
 
-    'ธนาคารแลนด์ แอนด์ เฮ้าส์',
+    'เธเธเธฒเธเธฒเธฃเนเธฅเธเธ”เน เนเธญเธเธ”เน เน€เธฎเนเธฒเธชเน',
 
-    'ธนาคารอิสลามแห่งประเทศไทย'
+    'เธเธเธฒเธเธฒเธฃเธญเธดเธชเธฅเธฒเธกเนเธซเนเธเธเธฃเธฐเน€เธ—เธจเนเธ—เธข'
 
   ];
 
@@ -4889,7 +4887,7 @@ function populateSelect(elemId, list) {
 
     const opt = document.createElement('option');
 
-    opt.value = item === '(ไม่มีครูแทน)' || item === '(เลือกชื่อครู)' || item === '(เลือกครูเพื่อคำนวณ)' ? '' : item;
+    opt.value = item === '(เนเธกเนเธกเธตเธเธฃเธนเนเธ—เธ)' || item === '(เน€เธฅเธทเธญเธเธเธทเนเธญเธเธฃเธน)' || item === '(เน€เธฅเธทเธญเธเธเธฃเธนเน€เธเธทเนเธญเธเธณเธเธงเธ“)' ? '' : item;
 
     opt.innerText = item;
 
@@ -4971,13 +4969,13 @@ function makeSelectSearchable(selectId) {
 
   
 
-  let placeholderText = 'พิมพ์เพื่อค้นหาชื่อครู...';
+  let placeholderText = 'เธเธดเธกเธเนเน€เธเธทเนเธญเธเนเธเธซเธฒเธเธทเนเธญเธเธฃเธน...';
 
-  if (selectId === 'class_teacher_sub') placeholderText = 'พิมพ์ชื่อครูแทน...';
+  if (selectId === 'class_teacher_sub') placeholderText = 'เธเธดเธกเธเนเธเธทเนเธญเธเธฃเธนเนเธ—เธ...';
 
-  else if (selectId === 'teacher_schedule_select') placeholderText = 'พิมพ์ชื่อครูเพื่อดูตาราง...';
+  else if (selectId === 'teacher_schedule_select') placeholderText = 'เธเธดเธกเธเนเธเธทเนเธญเธเธฃเธนเน€เธเธทเนเธญเธ”เธนเธ•เธฒเธฃเธฒเธ...';
 
-  else if (selectId === 'calc_teacher_select') placeholderText = 'พิมพ์ชื่อครูเพื่อคำนวณเงิน...';
+  else if (selectId === 'calc_teacher_select') placeholderText = 'เธเธดเธกเธเนเธเธทเนเธญเธเธฃเธนเน€เธเธทเนเธญเธเธณเธเธงเธ“เน€เธเธดเธ...';
 
   
 
@@ -5091,7 +5089,7 @@ function makeSelectSearchable(selectId) {
 
       noResults.className = 'searchable-select-item no-results';
 
-      noResults.textContent = 'ไม่พบรายชื่อครู';
+      noResults.textContent = 'เนเธกเนเธเธเธฃเธฒเธขเธเธทเนเธญเธเธฃเธน';
 
       dropdown.appendChild(noResults);
 
@@ -5323,7 +5321,7 @@ function switchPanel(panelName) {
 
   const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
 
-  const isTeacher = (role === 'Teacher' || role === 'ครู');
+  const isTeacher = (role === 'Teacher' || role === 'เธเธฃเธน');
 
   if (isTeacher && panelName !== 'teacher_schedule' && panelName !== 'teacher_payroll' && panelName !== 'evaluation_form') {
 
@@ -5379,43 +5377,43 @@ function switchPanel(panelName) {
 
   const titles = {
 
-    'dashboard': 'แดชบอร์ดสรุปผลปฏิบัติงาน',
+    'dashboard': 'เนเธ”เธเธเธญเธฃเนเธ”เธชเธฃเธธเธเธเธฅเธเธเธดเธเธฑเธ•เธดเธเธฒเธ',
 
-    'students': 'ทะเบียนนักเรียน',
+    'students': 'เธ—เธฐเน€เธเธตเธขเธเธเธฑเธเน€เธฃเธตเธขเธ',
 
-    'grade_sheets': 'คอร์สเรียน',
+    'grade_sheets': 'เธเธญเธฃเนเธชเน€เธฃเธตเธขเธ',
 
-    'daily_grid': 'ตารางเรียนรายห้องเรียนรายวัน',
+    'daily_grid': 'เธ•เธฒเธฃเธฒเธเน€เธฃเธตเธขเธเธฃเธฒเธขเธซเนเธญเธเน€เธฃเธตเธขเธเธฃเธฒเธขเธงเธฑเธ',
 
-    'private_students': 'เด็กเรียนเดี่ยว & กลุ่มย่อย',
+    'private_students': 'เน€เธ”เนเธเน€เธฃเธตเธขเธเน€เธ”เธตเนเธขเธง & เธเธฅเธธเนเธกเธขเนเธญเธข',
 
-    'class_logs': 'บันทึกรายรับ รายเดือน',
+    'class_logs': 'เธเธฑเธเธ—เธถเธเธฃเธฒเธขเธฃเธฑเธ เธฃเธฒเธขเน€เธ”เธทเธญเธ',
 
-    'teacher_schedule': 'ตารางสอนส่วนตัวคุณครู',
+    'teacher_schedule': 'เธ•เธฒเธฃเธฒเธเธชเธญเธเธชเนเธงเธเธ•เธฑเธงเธเธธเธ“เธเธฃเธน',
 
-    'teacher_payroll': state.currentUser && (state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู') ? 'ตารางสอนและรายละเอียดเงินเดือนของฉัน' : 'ค่าสอนครูรายเดือน',
+    'teacher_payroll': state.currentUser && (state.currentUser.role === 'Teacher' || state.currentUser.role === 'เธเธฃเธน') ? 'เธ•เธฒเธฃเธฒเธเธชเธญเธเนเธฅเธฐเธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ”เน€เธเธดเธเน€เธ”เธทเธญเธเธเธญเธเธเธฑเธ' : 'เธเนเธฒเธชเธญเธเธเธฃเธนเธฃเธฒเธขเน€เธ”เธทเธญเธ',
 
-    'teacher_profiles': 'จัดการประวัติคุณครู',
+    'teacher_profiles': 'เธเธฑเธ”เธเธฒเธฃเธเธฃเธฐเธงเธฑเธ•เธดเธเธธเธ“เธเธฃเธน',
 
-    'employee_management': 'จัดการพนักงานในระบบ',
+    'employee_management': 'เธเธฑเธ”เธเธฒเธฃเธเธเธฑเธเธเธฒเธเนเธเธฃเธฐเธเธ',
 
-    'manager_logs': 'ลงเวลาทำงานผู้จัดการสาขา',
+    'manager_logs': 'เธฅเธเน€เธงเธฅเธฒเธ—เธณเธเธฒเธเธเธนเนเธเธฑเธ”เธเธฒเธฃเธชเธฒเธเธฒ',
 
-    'activity_logs': 'รายงานการทำธุรกรรมของระบบ (Audit Trail)',
+    'activity_logs': 'เธฃเธฒเธขเธเธฒเธเธเธฒเธฃเธ—เธณเธเธธเธฃเธเธฃเธฃเธกเธเธญเธเธฃเธฐเธเธ (Audit Trail)',
 
-    'debtors': 'ตรวจสอบและบันทึกค้างชำระเงินค่าเรียน',
+    'debtors': 'เธ•เธฃเธงเธเธชเธญเธเนเธฅเธฐเธเธฑเธเธ—เธถเธเธเนเธฒเธเธเธณเธฃเธฐเน€เธเธดเธเธเนเธฒเน€เธฃเธตเธขเธ',
 
-    'print_receipts': 'ออกใบเสร็จรับเงินค่าเรียน',
+    'print_receipts': 'เธญเธญเธเนเธเน€เธชเธฃเนเธเธฃเธฑเธเน€เธเธดเธเธเนเธฒเน€เธฃเธตเธขเธ',
 
-    'evaluation_form': 'ใบประเมินผลการเรียนนักเรียน',
+    'evaluation_form': 'เนเธเธเธฃเธฐเน€เธกเธดเธเธเธฅเธเธฒเธฃเน€เธฃเธตเธขเธเธเธฑเธเน€เธฃเธตเธขเธ',
 
-    'admin_evaluation_form': 'รายการประเมินผลการเรียน (เจ้าหน้าที่)',
+    'admin_evaluation_form': 'เธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธเธเธฅเธเธฒเธฃเน€เธฃเธตเธขเธ (เน€เธเนเธฒเธซเธเนเธฒเธ—เธตเน)',
 
-    'staff_salary_summary': 'สรุปรายได้ครูทั้งหมด'
+    'staff_salary_summary': 'เธชเธฃเธธเธเธฃเธฒเธขเนเธ”เนเธเธฃเธนเธ—เธฑเนเธเธซเธกเธ”'
 
   };
 
-  document.getElementById('page_title').innerText = titles[panelName] || 'ระบบดูแลโรงเรียนกวดวิชา';
+  document.getElementById('page_title').innerText = titles[panelName] || 'เธฃเธฐเธเธเธ”เธนเนเธฅเนเธฃเธเน€เธฃเธตเธขเธเธเธงเธ”เธงเธดเธเธฒ';
 
   
 
@@ -5439,7 +5437,7 @@ function switchPanel(panelName) {
 
     // Reset grade sheet display
 
-    document.getElementById('grade_sheet_grid_table').innerHTML = `<tr><td style="padding: 40px; text-align: center; color: var(--text-muted);">กรุณาเลือกตารางระดับชั้นด้านบน</td></tr>`;
+    document.getElementById('grade_sheet_grid_table').innerHTML = `<tr><td style="padding: 40px; text-align: center; color: var(--text-muted);">เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธ•เธฒเธฃเธฒเธเธฃเธฐเธ”เธฑเธเธเธฑเนเธเธ”เนเธฒเธเธเธ</td></tr>`;
 
     document.getElementById('save_grade_sheet_btn').disabled = true;
 
@@ -5475,7 +5473,7 @@ function switchPanel(panelName) {
 
     const role = state.currentUser ? (state.currentUser.role || 'Staff').toString().trim() : 'Staff';
 
-    if (role === 'Teacher' || role === 'ครู') {
+    if (role === 'Teacher' || role === 'เธเธฃเธน') {
 
       setTimeout(() => {
 
@@ -5534,7 +5532,7 @@ function switchPanel(panelName) {
 // ----------------------------------------------------
 
 function loadDashboard(isSilent = false) {
-  if (!isSilent) setLoading(true, 'กำลังดึงสถิติจำนวนเงินสะสม...');
+  if (!isSilent) setLoading(true, 'เธเธณเธฅเธฑเธเธ”เธถเธเธชเธ–เธดเธ•เธดเธเธณเธเธงเธเน€เธเธดเธเธชเธฐเธชเธก...');
   const yearSelect = document.getElementById('dashboardYearSelect');
   const selectedYear = yearSelect ? yearSelect.value : null;
 
@@ -5547,38 +5545,38 @@ function loadDashboard(isSilent = false) {
           loadDailyGrid(true);
         }
       } else if (!isSilent) {
-        showToast('ไม่สามารถโหลดข้อมูลหน้าหลักได้: ' + (data ? data.error : 'unknown'), 'error');
+        showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธซเธเนเธฒเธซเธฅเธฑเธเนเธ”เน: ' + (data ? data.error : 'unknown'), 'error');
       }
     })
     .withFailureHandler(err => {
       if (!isSilent) {
         setLoading(false);
-        showToast('ไม่สามารถดึงข้อมูลแดชบอร์ดได้: ' + err.message, 'error');
+        showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธเนเธญเธกเธนเธฅเนเธ”เธเธเธญเธฃเนเธ”เนเธ”เน: ' + err.message, 'error');
       }
     })
     .getDashboardData(null, selectedYear);
 }
 
 function renderDashboardData(data) {
-  const fin1 = data.branchFin['สาขา1'] || { full: 0, paid: 0, debt: 0 };
-  const fin2 = data.branchFin['สาขา2'] || { full: 0, paid: 0, debt: 0 };
-  const fin3 = data.branchFin['สาขา3'] || { full: 0, paid: 0, debt: 0 };
+  const fin1 = data.branchFin['เธชเธฒเธเธฒ1'] || { full: 0, paid: 0, debt: 0 };
+  const fin2 = data.branchFin['เธชเธฒเธเธฒ2'] || { full: 0, paid: 0, debt: 0 };
+  const fin3 = data.branchFin['เธชเธฒเธเธฒ3'] || { full: 0, paid: 0, debt: 0 };
 
-  document.getElementById('dash_s1_full').innerText = '฿' + fin1.full.toLocaleString();
-  document.getElementById('dash_s1_paid').innerText = '฿' + fin1.paid.toLocaleString();
-  document.getElementById('dash_s1_debt').innerText = '฿' + fin1.debt.toLocaleString();
+  document.getElementById('dash_s1_full').innerText = 'เธฟ' + fin1.full.toLocaleString();
+  document.getElementById('dash_s1_paid').innerText = 'เธฟ' + fin1.paid.toLocaleString();
+  document.getElementById('dash_s1_debt').innerText = 'เธฟ' + fin1.debt.toLocaleString();
   
-  document.getElementById('dash_s2_full').innerText = '฿' + fin2.full.toLocaleString();
-  document.getElementById('dash_s2_paid').innerText = '฿' + fin2.paid.toLocaleString();
-  document.getElementById('dash_s2_debt').innerText = '฿' + fin2.debt.toLocaleString();
+  document.getElementById('dash_s2_full').innerText = 'เธฟ' + fin2.full.toLocaleString();
+  document.getElementById('dash_s2_paid').innerText = 'เธฟ' + fin2.paid.toLocaleString();
+  document.getElementById('dash_s2_debt').innerText = 'เธฟ' + fin2.debt.toLocaleString();
   
-  document.getElementById('dash_s3_full').innerText = '฿' + fin3.full.toLocaleString();
-  document.getElementById('dash_s3_paid').innerText = '฿' + fin3.paid.toLocaleString();
-  document.getElementById('dash_s3_debt').innerText = '฿' + fin3.debt.toLocaleString();
+  document.getElementById('dash_s3_full').innerText = 'เธฟ' + fin3.full.toLocaleString();
+  document.getElementById('dash_s3_paid').innerText = 'เธฟ' + fin3.paid.toLocaleString();
+  document.getElementById('dash_s3_debt').innerText = 'เธฟ' + fin3.debt.toLocaleString();
 
   const monthsTH = [
-    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+    'เธกเธเธฃเธฒเธเธก', 'เธเธธเธกเธ เธฒเธเธฑเธเธเน', 'เธกเธตเธเธฒเธเธก', 'เน€เธกเธฉเธฒเธขเธ', 'เธเธคเธฉเธ เธฒเธเธก', 'เธกเธดเธ–เธธเธเธฒเธขเธ',
+    'เธเธฃเธเธเธฒเธเธก', 'เธชเธดเธเธซเธฒเธเธก', 'เธเธฑเธเธขเธฒเธขเธ', 'เธ•เธธเธฅเธฒเธเธก', 'เธเธคเธจเธเธดเธเธฒเธขเธ', 'เธเธฑเธเธงเธฒเธเธก'
   ];
   
   const monthlyTbody = document.getElementById('dash_monthly_tbody');
@@ -5593,10 +5591,10 @@ function renderDashboardData(data) {
     let grandTotal = 0;
     
     data.monthlySummary.forEach((monthData, idx) => {
-      const s1 = monthData['สาขา1'] || 0;
-      const s2 = monthData['สาขา2'] || 0;
-      const s3 = monthData['สาขา3'] || 0;
-      const others = monthData['อื่นๆ'] || 0;
+      const s1 = monthData['เธชเธฒเธเธฒ1'] || 0;
+      const s2 = monthData['เธชเธฒเธเธฒ2'] || 0;
+      const s3 = monthData['เธชเธฒเธเธฒ3'] || 0;
+      const others = monthData['เธญเธทเนเธเน'] || 0;
       const total = monthData['total'] || 0;
       
       totalS1 += s1;
@@ -5608,11 +5606,11 @@ function renderDashboardData(data) {
       tbodyHtml += `
         <tr>
           <td style="font-weight: 500;">${monthsTH[idx]}</td>
-          <td style="text-align: right;">฿${s1.toLocaleString()}</td>
-          <td style="text-align: right;">฿${s2.toLocaleString()}</td>
-          <td style="text-align: right;">฿${s3.toLocaleString()}</td>
-          <td style="text-align: right;">฿${others.toLocaleString()}</td>
-          <td style="text-align: right; font-weight: 600; background: rgba(15,23,42,0.01);">฿${total.toLocaleString()}</td>
+          <td style="text-align: right;">เธฟ${s1.toLocaleString()}</td>
+          <td style="text-align: right;">เธฟ${s2.toLocaleString()}</td>
+          <td style="text-align: right;">เธฟ${s3.toLocaleString()}</td>
+          <td style="text-align: right;">เธฟ${others.toLocaleString()}</td>
+          <td style="text-align: right; font-weight: 600; background: rgba(15,23,42,0.01);">เธฟ${total.toLocaleString()}</td>
         </tr>
       `;
     });
@@ -5621,12 +5619,12 @@ function renderDashboardData(data) {
     
     if (monthlyTfoot) {
       monthlyTfoot.innerHTML = `
-        <td>รวมทั้งหมด</td>
-        <td style="text-align: right;">฿${totalS1.toLocaleString()}</td>
-        <td style="text-align: right;">฿${totalS2.toLocaleString()}</td>
-        <td style="text-align: right;">฿${totalS3.toLocaleString()}</td>
-        <td style="text-align: right;">฿${totalOthers.toLocaleString()}</td>
-        <td style="text-align: right; font-weight: 700; background: rgba(15,23,42,0.02);">฿${grandTotal.toLocaleString()}</td>
+        <td>เธฃเธงเธกเธ—เธฑเนเธเธซเธกเธ”</td>
+        <td style="text-align: right;">เธฟ${totalS1.toLocaleString()}</td>
+        <td style="text-align: right;">เธฟ${totalS2.toLocaleString()}</td>
+        <td style="text-align: right;">เธฟ${totalS3.toLocaleString()}</td>
+        <td style="text-align: right;">เธฟ${totalOthers.toLocaleString()}</td>
+        <td style="text-align: right; font-weight: 700; background: rgba(15,23,42,0.02);">เธฟ${grandTotal.toLocaleString()}</td>
       `;
     }
   }
@@ -5639,13 +5637,13 @@ function renderDashboardData(data) {
       data.coursesOver5.forEach(c => {
         html += `<li style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px solid var(--border-color);">
                    <span style="font-weight: 600; color: var(--color-primary);">\${c.course}</span>
-                   <span style="font-weight: bold; background: var(--color-primary); color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">\${c.count} คน</span>
+                   <span style="font-weight: bold; background: var(--color-primary); color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">\${c.count} เธเธ</span>
                  </li>`;
       });
       html += `</ul>`;
       courseContainer.innerHTML = html;
     } else {
-      courseContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 20px;">ไม่มีคอร์สที่เข้าเงื่อนไข</div>`;
+      courseContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 20px;">เนเธกเนเธกเธตเธเธญเธฃเนเธชเธ—เธตเนเน€เธเนเธฒเน€เธเธทเนเธญเธเนเธ</div>`;
     }
   }
 
@@ -5656,11 +5654,11 @@ function renderDashboardData(data) {
       let html = `<div style="display: flex; flex-direction: column; gap: 16px;">`;
       for (const [round, branchData] of Object.entries(data.mainGroupStats)) {
         html += `<div style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
-                   <div style="background: var(--color-primary); color: #fff; padding: 8px 12px; font-weight: 600;">รอบ: \${round}</div>
+                   <div style="background: var(--color-primary); color: #fff; padding: 8px 12px; font-weight: 600;">เธฃเธญเธ: \${round}</div>
                    <div style="padding: 12px; display: flex; flex-direction: column; gap: 12px; background: #fff;">`;
         for (const [branch, gradeData] of Object.entries(branchData)) {
           html += `<div>
-                     <div style="font-weight: 600; color: var(--text-main); margin-bottom: 6px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">🏢 \${branch}</div>
+                     <div style="font-weight: 600; color: var(--text-main); margin-bottom: 6px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">๐ข \${branch}</div>
                      <div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
           for (const [grade, count] of Object.entries(gradeData)) {
             html += `<span style="background: rgba(0,0,0,0.04); padding: 4px 10px; border-radius: 16px; font-size: 0.85em;">\${grade}: <b>\${count}</b></span>`;
@@ -5674,7 +5672,7 @@ function renderDashboardData(data) {
       html += `</div>`;
       mainGroupContainer.innerHTML = html;
     } else {
-      mainGroupContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 20px;">ไม่มีข้อมูลเด็กกลุ่มหลัก</div>`;
+      mainGroupContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 20px;">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเน€เธ”เนเธเธเธฅเธธเนเธกเธซเธฅเธฑเธ</div>`;
     }
   }
 
@@ -5684,21 +5682,21 @@ function renderDashboardData(data) {
     if (data.privateGroupStats && Object.keys(data.privateGroupStats).length > 0) {
       let html = `<table class="custom-table" style="width: 100%;">
                     <thead>
-                      <tr><th style="text-align:left;">เดือนที่ชำระเงิน</th><th style="text-align:right;">จำนวนนักเรียน</th></tr>
+                      <tr><th style="text-align:left;">เน€เธ”เธทเธญเธเธ—เธตเนเธเธณเธฃเธฐเน€เธเธดเธ</th><th style="text-align:right;">เธเธณเธเธงเธเธเธฑเธเน€เธฃเธตเธขเธ</th></tr>
                     </thead>
                     <tbody>`;
       for (let m = 1; m <= 12; m++) {
         if (data.privateGroupStats[m]) {
           html += `<tr>
                      <td>\${monthsTH[m-1]}</td>
-                     <td style="text-align:right; font-weight: bold; color: var(--color-primary);">\${data.privateGroupStats[m]} คน</td>
+                     <td style="text-align:right; font-weight: bold; color: var(--color-primary);">\${data.privateGroupStats[m]} เธเธ</td>
                    </tr>`;
         }
       }
       html += `</tbody></table>`;
       privateGroupContainer.innerHTML = html;
     } else {
-      privateGroupContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 20px;">ไม่มีข้อมูลเด็กเดี่ยว/ย่อย</div>`;
+      privateGroupContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding: 20px;">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเน€เธ”เนเธเน€เธ”เธตเนเธขเธง/เธขเนเธญเธข</div>`;
     }
   }
 }
@@ -5729,11 +5727,11 @@ function loadRoundSummary(isSilent = false) {
 
   const round = document.getElementById('summary_round_filter').value;
 
-  const branch = ''; // ดึงข้อมูลทั้งหมดจากฐานข้อมูล ไม่แยกสาขา
+  const branch = ''; // เธ”เธถเธเธเนเธญเธกเธนเธฅเธ—เธฑเนเธเธซเธกเธ”เธเธฒเธเธเธฒเธเธเนเธญเธกเธนเธฅ เนเธกเนเนเธขเธเธชเธฒเธเธฒ
 
   
 
-  if (!isSilent) setLoading(true, 'กำลังประมวลผลสรุปข้อมูลตามรอบ ' + round + '...');
+  if (!isSilent) setLoading(true, 'เธเธณเธฅเธฑเธเธเธฃเธฐเธกเธงเธฅเธเธฅเธชเธฃเธธเธเธเนเธญเธกเธนเธฅเธ•เธฒเธกเธฃเธญเธ ' + round + '...');
 
   google.script.run
 
@@ -5751,7 +5749,7 @@ function loadRoundSummary(isSilent = false) {
 
       } else if (!isSilent) {
 
-        showToast('การประมวลผลล้มเหลว: ' + res.error, 'error');
+        showToast('เธเธฒเธฃเธเธฃเธฐเธกเธงเธฅเธเธฅเธฅเนเธกเน€เธซเธฅเธง: ' + res.error, 'error');
 
       }
 
@@ -5763,7 +5761,7 @@ function loadRoundSummary(isSilent = false) {
 
         setLoading(false);
 
-        showToast('การติดต่อล้มเหลว: ' + err.message, 'error');
+        showToast('เธเธฒเธฃเธ•เธดเธ”เธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
       }
 
@@ -5837,7 +5835,7 @@ function renderRoundSummaryTable(summary, categories) {
 
   if (branchList.length === 0) {
 
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 30px; color: var(--text-muted); font-size: 0.9rem;">ไม่พบข้อมูลตามสาขาที่เลือก</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 30px; color: var(--text-muted); font-size: 0.9rem;">เนเธกเนเธเธเธเนเธญเธกเธนเธฅเธ•เธฒเธกเธชเธฒเธเธฒเธ—เธตเนเน€เธฅเธทเธญเธ</td></tr>';
 
     tfoot.innerHTML = '';
 
@@ -5863,18 +5861,18 @@ function renderRoundSummaryTable(summary, categories) {
 
     let branchDisplayName = branchName;
 
-    if (branchName === 'สาขา1') branchDisplayName = 'สาขา 1 แยกPMY';
+    if (branchName === 'เธชเธฒเธเธฒ1') branchDisplayName = 'เธชเธฒเธเธฒ 1 เนเธขเธPMY';
 
-    else if (branchName === 'สาขา2') branchDisplayName = 'สาขา 2 ข้างโรงเรียนระยองวิทยาคม';
+    else if (branchName === 'เธชเธฒเธเธฒ2') branchDisplayName = 'เธชเธฒเธเธฒ 2 เธเนเธฒเธเนเธฃเธเน€เธฃเธตเธขเธเธฃเธฐเธขเธญเธเธงเธดเธ—เธขเธฒเธเธก';
 
-    else if (branchName === 'สาขา3') branchDisplayName = 'สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ';
+    else if (branchName === 'เธชเธฒเธเธฒ3') branchDisplayName = 'เธชเธฒเธเธฒ 3 เธ•เธฃเธเธเนเธฒเธกเนเธฃเธเน€เธฃเธตเธขเธเธญเธฑเธชเธชเธฑเธกเธเธฑเธ เน€เธเธเธ•เนเนเธขเน€เธเธ';
 
     
 
     headerTr.innerHTML = `
 
       <td colspan="10" style="text-align: left; padding: 10px 15px; font-size: 0.88rem; border-left: 4px solid #0084ff; background-color: rgba(0, 132, 255, 0.04);">
-        📍 ${branchDisplayName}
+        ๐“ ${branchDisplayName}
       </td>
     `;
 
@@ -5918,12 +5916,12 @@ function renderRoundSummaryTable(summary, categories) {
       tr.innerHTML = `
         <td style="font-weight: 600; padding-left: 25px;">${catObj.grade}</td>
         <td style="font-weight: 500; color: #64748b;">${catObj.branch}</td>
-        <td style="text-align: right; font-weight:600; color:#16a34a;">${row.singlePaidAmount > 0 ? '฿' + row.singlePaidAmount.toLocaleString() : '-'}</td>
-        <td style="text-align: right; font-weight:600; color:${row.singleDebtAmount > 0 ? '#ef4444' : 'inherit'};">${row.singleDebtAmount > 0 ? '฿' + row.singleDebtAmount.toLocaleString() : '-'}</td>
+        <td style="text-align: right; font-weight:600; color:#16a34a;">${row.singlePaidAmount > 0 ? 'เธฟ' + row.singlePaidAmount.toLocaleString() : '-'}</td>
+        <td style="text-align: right; font-weight:600; color:${row.singleDebtAmount > 0 ? '#ef4444' : 'inherit'};">${row.singleDebtAmount > 0 ? 'เธฟ' + row.singleDebtAmount.toLocaleString() : '-'}</td>
         <td style="text-align: center;">${row.singleAndSubgroupCount || '-'}</td>
-        <td style="text-align: right; font-weight:600; color: #64748b;">${row.groupFullAmount > 0 ? '฿' + row.groupFullAmount.toLocaleString() : '-'}</td>
-        <td style="text-align: right; font-weight:600; color:#16a34a;">${row.groupPaidAmount > 0 ? '฿' + row.groupPaidAmount.toLocaleString() : '-'}</td>
-        <td style="text-align: right; font-weight:600; color:${row.groupDebtAmount > 0 ? '#ef4444' : 'inherit'};">${row.groupDebtAmount > 0 ? '฿' + row.groupDebtAmount.toLocaleString() : '-'}</td>
+        <td style="text-align: right; font-weight:600; color: #64748b;">${row.groupFullAmount > 0 ? 'เธฟ' + row.groupFullAmount.toLocaleString() : '-'}</td>
+        <td style="text-align: right; font-weight:600; color:#16a34a;">${row.groupPaidAmount > 0 ? 'เธฟ' + row.groupPaidAmount.toLocaleString() : '-'}</td>
+        <td style="text-align: right; font-weight:600; color:${row.groupDebtAmount > 0 ? '#ef4444' : 'inherit'};">${row.groupDebtAmount > 0 ? 'เธฟ' + row.groupDebtAmount.toLocaleString() : '-'}</td>
         <td style="text-align: center;">${row.regularGroupCount || '-'}</td>
         <td style="text-align: center; font-weight: 600; color: #1e3a8a;">${row.overFiveCount || '-'}</td>
       `;
@@ -5937,13 +5935,13 @@ function renderRoundSummaryTable(summary, categories) {
 
   tfoot.innerHTML = `
 
-    <td colspan="2" style="font-weight: 700;">ยอดรวมทั้งหมด${selectedBranch ? ' (' + selectedBranch + ')' : ''}</td>
-    <td style="text-align: right; color:#16a34a; font-weight:700;">฿${totalSinglePaid.toLocaleString()}</td>
-    <td style="text-align: right; color:#ef4444; font-weight:700;">฿${totalSingleDebt.toLocaleString()}</td>
+    <td colspan="2" style="font-weight: 700;">เธขเธญเธ”เธฃเธงเธกเธ—เธฑเนเธเธซเธกเธ”${selectedBranch ? ' (' + selectedBranch + ')' : ''}</td>
+    <td style="text-align: right; color:#16a34a; font-weight:700;">เธฟ${totalSinglePaid.toLocaleString()}</td>
+    <td style="text-align: right; color:#ef4444; font-weight:700;">เธฟ${totalSingleDebt.toLocaleString()}</td>
     <td style="text-align: center; font-weight:700;">${totalSingleAndSubgroup}</td>
-    <td style="text-align: right; font-weight:700;">฿${sumGroupFull.toLocaleString()}</td>
-    <td style="text-align: right; color:#16a34a; font-weight:700;">฿${sumGroupPaid.toLocaleString()}</td>
-    <td style="text-align: right; color:#ef4444; font-weight:700;">฿${sumGroupDebt.toLocaleString()}</td>
+    <td style="text-align: right; font-weight:700;">เธฟ${sumGroupFull.toLocaleString()}</td>
+    <td style="text-align: right; color:#16a34a; font-weight:700;">เธฟ${sumGroupPaid.toLocaleString()}</td>
+    <td style="text-align: right; color:#ef4444; font-weight:700;">เธฟ${sumGroupDebt.toLocaleString()}</td>
     <td style="text-align: center; font-weight:700;">${totalRegularGroup}</td>
     <td style="text-align: center; color: #1e3a8a; font-weight:700;">${totalOverFive}</td>
   `;
@@ -6040,31 +6038,31 @@ function renderStudentsTable() {
 
     const statusBadge = s.outstanding <= 0 ? 
 
-      '<span class="badge badge-success">ชำระครบแล้ว</span>' : 
+      '<span class="badge badge-success">เธเธณเธฃเธฐเธเธฃเธเนเธฅเนเธง</span>' : 
 
-      `<span class="badge badge-danger">ค้าง ฿${s.outstanding.toLocaleString()}</span>`;
+      `<span class="badge badge-danger">เธเนเธฒเธ เธฟ${s.outstanding.toLocaleString()}</span>`;
 
       
 
     let hoursDisplay = '';
 
-    const classType = s.classType || 'เดี่ยว';
+    const classType = s.classType || 'เน€เธ”เธตเนเธขเธง';
 
     const courseName = s.round ? s.round.split(', ').map(c => c.trim()).join('<br>') : '-';
 
-    if (classType === 'เดี่ยว' || classType.includes('ย่อย')) {
+    if (classType === 'เน€เธ”เธตเนเธขเธง' || classType.includes('เธขเนเธญเธข')) {
 
       const h = formatHoursMinutes(s.classHours);
 
       const hl = formatHoursMinutes(s.classHoursLeft);
 
-      hoursDisplay = `<div style="font-size: 0.68rem; color: var(--color-primary-hover); font-weight: 500; white-space: nowrap;">📘 ${courseName}</div>`;
+      hoursDisplay = `<div style="font-size: 0.68rem; color: var(--color-primary-hover); font-weight: 500; white-space: nowrap;">๐“ ${courseName}</div>`;
 
-      hoursDisplay += `<div style="font-size: 0.62rem; color: var(--text-muted); white-space: nowrap;">⏱ ${h} (เหลือ: ${hl})</div>`;
+      hoursDisplay += `<div style="font-size: 0.62rem; color: var(--text-muted); white-space: nowrap;">โฑ ${h} (เน€เธซเธฅเธทเธญ: ${hl})</div>`;
 
     } else {
 
-      hoursDisplay = `<div style="font-size: 0.68rem; color: var(--color-primary-hover); font-weight: 500; white-space: nowrap;">📘 ${courseName}</div>`;
+      hoursDisplay = `<div style="font-size: 0.68rem; color: var(--color-primary-hover); font-weight: 500; white-space: nowrap;">๐“ ${courseName}</div>`;
 
     }
 
@@ -6074,7 +6072,7 @@ function renderStudentsTable() {
 
       <td>
 
-        <div style="font-weight: 600; color: var(--color-primary-hover); cursor: pointer; white-space: nowrap;" onclick="showStudentHistoryModal('${s.name}', '${s.nickname}')">🧒 ${s.name}</div>
+        <div style="font-weight: 600; color: var(--color-primary-hover); cursor: pointer; white-space: nowrap;" onclick="showStudentHistoryModal('${s.name}', '${s.nickname}')">๐ง’ ${s.name}</div>
 
         <div style="font-size: 0.7rem; color: var(--text-muted); white-space: nowrap;">${s.classType} ${s.grade || ''} | Line: ${s.lineName || '-'}</div>
 
@@ -6094,7 +6092,7 @@ function renderStudentsTable() {
 
       <td>
 
-        <div style="font-weight: 600; white-space: nowrap;">฿${s.full.toLocaleString()}</div>
+        <div style="font-weight: 600; white-space: nowrap;">เธฟ${s.full.toLocaleString()}</div>
 
         ${hoursDisplay}
 
@@ -6108,9 +6106,9 @@ function renderStudentsTable() {
 
         <div style="display: flex; gap: 6px;">
 
-          <button class="btn btn-secondary btn-icon" onclick="showEditStudentModal('${s.id}', '${(s.name || '').replace(/'/g, "\\'")}')" title="แก้ไข">✏️</button>
+          <button class="btn btn-secondary btn-icon" onclick="showEditStudentModal('${s.id}', '${(s.name || '').replace(/'/g, "\\'")}')" title="เนเธเนเนเธ">โ๏ธ</button>
 
-          <button class="btn btn-danger btn-icon" onclick="deleteStudent('${s.id}')" title="ลบ">🗑️</button>
+          <button class="btn btn-danger btn-icon" onclick="deleteStudent('${s.id}')" title="เธฅเธ">๐—‘๏ธ</button>
 
         </div>
 
@@ -6126,7 +6124,7 @@ function renderStudentsTable() {
 
   if (filtered.length === 0) {
 
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบรายชื่อนักเรียน</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px;">เนเธกเนเธเธเธฃเธฒเธขเธเธทเนเธญเธเธฑเธเน€เธฃเธตเธขเธ</td></tr>`;
 
   }
 
@@ -6142,7 +6140,7 @@ function isMainGroup(classType) {
 
   const cleanVal = classType.toString().trim();
 
-  return cleanVal.includes('หลัก') || cleanVal.includes('ѡ') || ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'].some(g => cleanVal.includes(g));
+  return cleanVal.includes('เธซเธฅเธฑเธ') || cleanVal.includes('ัก') || ['เธญเธเธธเธเธฒเธฅ','เธ.1','เธ.2','เธ.3','เธ.4','เธ.5','เธ.6','เธก.1','เธก.2','เธก.3','เธก.4','เธก.5','เธก.6'].some(g => cleanVal.includes(g));
 
 }
 
@@ -6274,7 +6272,7 @@ function calculateMainGroupFee() {
 
   } else {
 
-    // Single (เดี่ยว) or Small Group (กลุ่มย่อย)
+    // Single (เน€เธ”เธตเนเธขเธง) or Small Group (เธเธฅเธธเนเธกเธขเนเธญเธข)
 
     let price = 2000;
 
@@ -6282,13 +6280,13 @@ function calculateMainGroupFee() {
 
     
 
-    if (classType === 'เดี่ยว') {
+    if (classType === 'เน€เธ”เธตเนเธขเธง') {
 
       const roundText = document.getElementById('student_round_text').value.toLowerCase().trim();
 
       const isEx = roundText.endsWith('ex') || roundText.includes('ex');
 
-      if (['ม.4', 'ม.5', 'ม.6'].includes(grade) || isEx) {
+      if (['เธก.4', 'เธก.5', 'เธก.6'].includes(grade) || isEx) {
 
         price = 2500;
 
@@ -6298,7 +6296,7 @@ function calculateMainGroupFee() {
 
       }
 
-    } else if (classType === 'กลุ่มย่อย') {
+    } else if (classType === 'เธเธฅเธธเนเธกเธขเนเธญเธข') {
 
       const subSize = document.getElementById('student_subgroup_size').value;
 
@@ -6324,7 +6322,7 @@ function calculateMainGroupFee() {
 
   
 
-  // Check if "รูดบัตร" payment mode is checked
+  // Check if "เธฃเธนเธ”เธเธฑเธ•เธฃ" payment mode is checked
 
   const payModeCard = document.getElementById('pay_mode_card_0') || document.getElementById('pay_mode_card');
 
@@ -6336,7 +6334,7 @@ function calculateMainGroupFee() {
 
   
 
-  // Check if Unpaid ("ยังไม่ชำระ") payment mode is checked
+  // Check if Unpaid ("เธขเธฑเธเนเธกเนเธเธณเธฃเธฐ") payment mode is checked
 
   const payModeUnpaid = document.getElementById('pay_mode_unpaid_0') || document.getElementById('pay_mode_unpaid');
 
@@ -6418,7 +6416,7 @@ function handleGradeBranchChange() {
 
   const courseGradeEl = document.getElementById('student_course_grade');
 
-  if (classType !== 'กลุ่มหลัก' && courseGradeEl) {
+  if (classType !== 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ' && courseGradeEl) {
 
     grade = courseGradeEl.value;
 
@@ -6428,9 +6426,9 @@ function handleGradeBranchChange() {
 
   
 
-  if (classType !== 'กลุ่มหลัก') {
+  if (classType !== 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ') {
 
-    if (classType === 'เดี่ยว') {
+    if (classType === 'เน€เธ”เธตเนเธขเธง') {
 
       const courseNameEl = document.getElementById('student_round_text');
 
@@ -6440,7 +6438,7 @@ function handleGradeBranchChange() {
 
       let price = 2000;
 
-      if (['ม.4', 'ม.5', 'ม.6'].includes(grade) || isEx) {
+      if (['เธก.4', 'เธก.5', 'เธก.6'].includes(grade) || isEx) {
 
         price = 2500;
 
@@ -6488,7 +6486,7 @@ function handleGradeBranchChange() {
 
   if (container) {
 
-    container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">กำลังโหลดวิชาเรียน...</span>';
+    container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธงเธดเธเธฒเน€เธฃเธตเธขเธ...</span>';
 
   }
 
@@ -6504,25 +6502,25 @@ function handleGradeBranchChange() {
 
         // Extract unique rounds
         const roundSet = new Set();
-        const roundRegex = /(MIDTERM|FINAL|SUMMER|ตุลาคม|ตุลา|มีนาคม|มีนา|เทอม)\s*[a-zA-Z0-9\/]+/i;
+        const roundRegex = /(MIDTERM|FINAL|SUMMER|เธ•เธธเธฅเธฒเธเธก|เธ•เธธเธฅเธฒ|เธกเธตเธเธฒเธเธก|เธกเธตเธเธฒ|เน€เธ—เธญเธก)\s*[a-zA-Z0-9\/]+/i;
 
         let html = '';
         courses.forEach(c => {
           let roundMatch = (c.courseName || '').match(roundRegex);
-          let roundValue = roundMatch ? roundMatch[0].trim() : 'อื่นๆ';
+          let roundValue = roundMatch ? roundMatch[0].trim() : 'เธญเธทเนเธเน';
           roundSet.add(roundValue);
 
           html += `
             <div class="course-item-row" data-round="${roundValue}" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px; background: #fff; border-radius: 6px; border: 1px solid rgba(74, 93, 85, 0.2);">
               <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; margin: 0;">
                 <input type="checkbox" class="course-checkbox" value="${c.courseName}" data-price="${c.price}" data-total-sessions="${c.totalSessions || 10}" onchange="calculateMainGroupFee(); toggleSessionInput(this)">
-                <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-main);">${c.courseName} ${c.dayTime ? '(' + c.dayTime + ')' : ''} (฿${c.price})</span>
+                <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-main);">${c.courseName} ${c.dayTime ? '(' + c.dayTime + ')' : ''} (เธฟ${c.price})</span>
               </label>
               <div class="session-input-wrapper" style="display: flex; align-items: center; gap: 4px;">
                 <input type="number" class="course-sessions-input" style="width: 50px; padding: 2px 4px; font-size: 0.8rem; border: 1px solid var(--border-color); border-radius: 4px; text-align: center;" 
                        min="1" max="100" value="${c.totalSessions || 10}" data-total="${c.totalSessions || 10}" 
                        oninput="autoCheckCourse(this); calculateMainGroupFee()" onchange="calculateMainGroupFee()">
-                <span style="font-size: 0.75rem; color: var(--text-muted);">ครั้ง</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">เธเธฃเธฑเนเธ</span>
               </div>
             </div>
           `;
@@ -6532,13 +6530,13 @@ function handleGradeBranchChange() {
         const roundSelect = document.getElementById('course_round_filter');
         const roundGroup = document.getElementById('course_round_filter_group');
         if (roundSelect && roundGroup) {
-          let optionsHtml = '<option value="">แสดงทั้งหมด (All)</option>';
+          let optionsHtml = '<option value="">เนเธชเธ”เธเธ—เธฑเนเธเธซเธกเธ” (All)</option>';
           const sortedRounds = Array.from(roundSet).sort();
           sortedRounds.forEach(r => {
             optionsHtml += `<option value="${r}">${r}</option>`;
           });
           roundSelect.innerHTML = optionsHtml;
-          roundGroup.style.display = roundSet.size > 1 ? 'block' : 'none'; // Only show if more than one round (or "อื่นๆ" and another)
+          roundGroup.style.display = roundSet.size > 1 ? 'block' : 'none'; // Only show if more than one round (or "เธญเธทเนเธเน" and another)
         }
 
         container.innerHTML = html;
@@ -6578,7 +6576,7 @@ function handleGradeBranchChange() {
           
           if (state.selectedStudent.isCard) {
             if (cardRadio) cardRadio.checked = true;
-          } else if (pChannel === 'เงินสด' || pChannel === 'สด') {
+          } else if (pChannel === 'เน€เธเธดเธเธชเธ”' || pChannel === 'เธชเธ”') {
             if (cashRadio) cashRadio.checked = true;
           } else {
             if (transferRadio) transferRadio.checked = true;
@@ -6591,7 +6589,7 @@ function handleGradeBranchChange() {
 
       } else {
 
-        container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">ไม่พบข้อมูลวิชาเรียนในระดับชั้นนี้</span>';
+        container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">เนเธกเนเธเธเธเนเธญเธกเธนเธฅเธงเธดเธเธฒเน€เธฃเธตเธขเธเนเธเธฃเธฐเธ”เธฑเธเธเธฑเนเธเธเธตเน</span>';
 
         const displayEl = document.getElementById('calculated_fee_display');
 
@@ -6690,7 +6688,7 @@ function loadStudentRegisteredCourses(studentName, grade, branch) {
 
             if(document.getElementById('pay_mode_card')) document.getElementById('pay_mode_card').checked = true;
 
-          } else if (state.selectedStudent && (state.selectedStudent.paymentChannel === 'เงินสด' || state.selectedStudent.paymentChannel === 'สด')) {
+          } else if (state.selectedStudent && (state.selectedStudent.paymentChannel === 'เน€เธเธดเธเธชเธ”' || state.selectedStudent.paymentChannel === 'เธชเธ”')) {
 
             if(document.getElementById('pay_mode_cash')) document.getElementById('pay_mode_cash').checked = true;
 
@@ -6792,7 +6790,7 @@ function clearSubgroupCourses() {
 
     <div class="subgroup-course-item" style="display: flex; gap: 8px; align-items: center; width: 100%;">
 
-      <input type="text" id="student_round_text" class="form-input subgroup-course-input" placeholder="ตัวอย่าง: ณดา(ลินลดา) อ.2 เดี่ยวคณิต 1" style="flex: 1;" oninput="updateCombinedRound()">
+      <input type="text" id="student_round_text" class="form-input subgroup-course-input" placeholder="เธ•เธฑเธงเธญเธขเนเธฒเธ: เธ“เธ”เธฒ(เธฅเธดเธเธฅเธ”เธฒ) เธญ.2 เน€เธ”เธตเนเธขเธงเธเธ“เธดเธ• 1" style="flex: 1;" oninput="updateCombinedRound()">
 
     </div>
 
@@ -6824,9 +6822,9 @@ function addSubgroupCourseRow(value = '') {
 
   div.innerHTML = `
 
-    <input type="text" class="form-input subgroup-course-input" placeholder="ตัวอย่าง: ณดา(ลินลดา) อ.2 เดี่ยวคณิต 1" style="flex: 1;" value="${value}" oninput="updateCombinedRound()">
+    <input type="text" class="form-input subgroup-course-input" placeholder="เธ•เธฑเธงเธญเธขเนเธฒเธ: เธ“เธ”เธฒ(เธฅเธดเธเธฅเธ”เธฒ) เธญ.2 เน€เธ”เธตเนเธขเธงเธเธ“เธดเธ• 1" style="flex: 1;" value="${value}" oninput="updateCombinedRound()">
 
-    <button type="button" class="btn btn-danger" onclick="this.parentElement.remove(); updateCombinedRound();" style="padding: 4px 8px; font-size: 0.72rem; height: auto;">ลบ</button>
+    <button type="button" class="btn btn-danger" onclick="this.parentElement.remove(); updateCombinedRound();" style="padding: 4px 8px; font-size: 0.72rem; height: auto;">เธฅเธ</button>
 
   `;
 
@@ -6900,9 +6898,9 @@ function saveStudent(e) {
 
 function deleteStudent(id) {
 
-  if (confirm('ยืนยันลบการลงทะเบียนนี้? ข้อมูลในชีตระดับชั้นจะไม่ถูกลบเพื่อป้องกันประวัติสูญหาย แต่ข้อมูลการชำระเงินใน StatusDB จะลบถาวร')) {
+  if (confirm('เธขเธทเธเธขเธฑเธเธฅเธเธเธฒเธฃเธฅเธเธ—เธฐเน€เธเธตเธขเธเธเธตเน? เธเนเธญเธกเธนเธฅเนเธเธเธตเธ•เธฃเธฐเธ”เธฑเธเธเธฑเนเธเธเธฐเนเธกเนเธ–เธนเธเธฅเธเน€เธเธทเนเธญเธเนเธญเธเธเธฑเธเธเธฃเธฐเธงเธฑเธ•เธดเธชเธนเธเธซเธฒเธข เนเธ•เนเธเนเธญเธกเธนเธฅเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธเนเธ StatusDB เธเธฐเธฅเธเธ–เธฒเธงเธฃ')) {
 
-    setLoading(true, 'กำลังดำเนินการลบข้อมูล...');
+    setLoading(true, 'เธเธณเธฅเธฑเธเธ”เธณเน€เธเธดเธเธเธฒเธฃเธฅเธเธเนเธญเธกเธนเธฅ...');
 
     const user = state.currentUser ? state.currentUser.username : 'Unknown';
 
@@ -6914,13 +6912,13 @@ function deleteStudent(id) {
 
         if (res && res.success) {
 
-          showToast('ลบรายการสำเร็จแล้ว', 'success');
+          showToast('เธฅเธเธฃเธฒเธขเธเธฒเธฃเธชเธณเน€เธฃเนเธเนเธฅเนเธง', 'success');
 
           loadStudents();
 
         } else {
 
-          showToast('การลบล้มเหลว: ' + res.error, 'error');
+          showToast('เธเธฒเธฃเธฅเธเธฅเนเธกเน€เธซเธฅเธง: ' + res.error, 'error');
 
         }
 
@@ -6930,7 +6928,7 @@ function deleteStudent(id) {
 
         setLoading(false);
 
-        showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
+        showToast('เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
       })
 
@@ -6944,7 +6942,7 @@ function deleteStudent(id) {
 
 // ----------------------------------------------------
 
-// 3. Grade Sheet Editor Grid Logic (จัดการคอร์สเรียนแยกห้อง)
+// 3. Grade Sheet Editor Grid Logic (เธเธฑเธ”เธเธฒเธฃเธเธญเธฃเนเธชเน€เธฃเธตเธขเธเนเธขเธเธซเนเธญเธ)
 
 // ----------------------------------------------------
 
@@ -6952,7 +6950,7 @@ function getCourseRound(courseName) {
 
   if (!courseName) return 'None';
 
-  const match = courseName.match(/(MIDTERM\s*1|MIDTERM\s*2|FINAL\s*1|FINAL\s*2|ปิดเทอม\s*ต\.ค\.|Summer)(?:\/\d+)?/i);
+  const match = courseName.match(/(MIDTERM\s*1|MIDTERM\s*2|FINAL\s*1|FINAL\s*2|เธเธดเธ”เน€เธ—เธญเธก\s*เธ•\.เธ\.|Summer)(?:\/\d+)?/i);
 
   return match ? match[0] : 'None';
 
@@ -6980,7 +6978,7 @@ function updateRoundFilterDropdown() {
 
   optAll.value = 'ALL';
 
-  optAll.innerText = '-- แสดงทั้งหมด --';
+  optAll.innerText = '-- เนเธชเธ”เธเธ—เธฑเนเธเธซเธกเธ” --';
 
   filterSelect.appendChild(optAll);
 
@@ -6988,7 +6986,7 @@ function updateRoundFilterDropdown() {
 
   // 2. Add static base round options
 
-  const staticRounds = ['MIDTERM 1', 'MIDTERM 2', 'FINAL 1', 'FINAL 2', 'ปิดเทอม ต.ค.', 'Summer'];
+  const staticRounds = ['MIDTERM 1', 'MIDTERM 2', 'FINAL 1', 'FINAL 2', 'เธเธดเธ”เน€เธ—เธญเธก เธ•.เธ.', 'Summer'];
 
   staticRounds.forEach(r => {
 
@@ -7060,9 +7058,9 @@ function updateRoundFilterDropdown() {
 
     const optNone = document.createElement('option');
 
-    optNone.value = 'ไม่ระบุรอบเรียน';
+    optNone.value = 'เนเธกเนเธฃเธฐเธเธธเธฃเธญเธเน€เธฃเธตเธขเธ';
 
-    optNone.innerText = 'ไม่ระบุรอบเรียน';
+    optNone.innerText = 'เนเธกเนเธฃเธฐเธเธธเธฃเธญเธเน€เธฃเธตเธขเธ';
 
     filterSelect.appendChild(optNone);
 
@@ -7072,7 +7070,7 @@ function updateRoundFilterDropdown() {
 
   // Restore previously selected filter value if still valid
 
-  const allAvailableValues = ['ALL', ...staticRounds, ...yearSpecificRounds, 'ไม่ระบุรอบเรียน'];
+  const allAvailableValues = ['ALL', ...staticRounds, ...yearSpecificRounds, 'เนเธกเนเธฃเธฐเธเธธเธฃเธญเธเน€เธฃเธตเธขเธ'];
 
   if (allAvailableValues.includes(curVal)) {
 
@@ -7105,31 +7103,31 @@ function filterGradeSheetGrid() {
 
 function syncAllFinancials() {
   const btn = document.getElementById('btn_sync_all_financials');
-  if (!confirm('ต้องการซิงค์ข้อมูลการเงินทั้งหมดจาก StatusDB ลงตารางกลุ่มหลักหรือไม่? การดำเนินการนี้อาจใช้เวลาสักครู่')) return;
+  if (!confirm('เธ•เนเธญเธเธเธฒเธฃเธเธดเธเธเนเธเนเธญเธกเธนเธฅเธเธฒเธฃเน€เธเธดเธเธ—เธฑเนเธเธซเธกเธ”เธเธฒเธ StatusDB เธฅเธเธ•เธฒเธฃเธฒเธเธเธฅเธธเนเธกเธซเธฅเธฑเธเธซเธฃเธทเธญเนเธกเน? เธเธฒเธฃเธ”เธณเน€เธเธดเธเธเธฒเธฃเธเธตเนเธญเธฒเธเนเธเนเน€เธงเธฅเธฒเธชเธฑเธเธเธฃเธนเน')) return;
   
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '🔄 กำลังซิงค์...';
+    btn.innerHTML = '๐” เธเธณเธฅเธฑเธเธเธดเธเธเน...';
   }
-  setLoading(true, 'กำลังซิงค์ข้อมูลการเงินทั้งหมด...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธดเธเธเนเธเนเธญเธกเธนเธฅเธเธฒเธฃเน€เธเธดเธเธ—เธฑเนเธเธซเธกเธ”...');
   
   google.script.run
     .withSuccessHandler(res => {
       setLoading(false);
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = '🔄 ซิงค์ยอดเงินทั้งหมด';
+        btn.innerHTML = '๐” เธเธดเธเธเนเธขเธญเธ”เน€เธเธดเธเธ—เธฑเนเธเธซเธกเธ”';
       }
-      showToast('ซิงค์ข้อมูลสำเร็จ: ' + res, 'success');
+      showToast('เธเธดเธเธเนเธเนเธญเธกเธนเธฅเธชเธณเน€เธฃเนเธ: ' + res, 'success');
       loadGradeSheetGrid(true); // reload current view silently
     })
     .withFailureHandler(err => {
       setLoading(false);
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = '🔄 ซิงค์ยอดเงินทั้งหมด';
+        btn.innerHTML = '๐” เธเธดเธเธเนเธขเธญเธ”เน€เธเธดเธเธ—เธฑเนเธเธซเธกเธ”';
       }
-      showToast('เกิดข้อผิดพลาดในการซิงค์ข้อมูล: ' + err.message, 'error');
+      showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเธเธดเธเธเนเธเนเธญเธกเธนเธฅ: ' + err.message, 'error');
     })
     .migrateGradeSheetsFinancials();
 }
@@ -7144,7 +7142,7 @@ function loadGradeSheetGrid(isSilent = false) {
 
   
 
-  if (!isSilent) setLoading(true, 'กำลังโหลดสเปรดชีตจัดห้องเรียน ' + grade + ' ของ ' + branch + '...');
+  if (!isSilent) setLoading(true, 'เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธชเน€เธเธฃเธ”เธเธตเธ•เธเธฑเธ”เธซเนเธญเธเน€เธฃเธตเธขเธ ' + grade + ' เธเธญเธ ' + branch + '...');
 
   google.script.run
 
@@ -7162,7 +7160,7 @@ function loadGradeSheetGrid(isSilent = false) {
 
       } else if (!isSilent) {
 
-        showToast('ไม่สามารถโหลดวิชาและโครงสร้างคอร์สของห้องนี้ได้: ' + (res ? res.error : 'unknown'), 'error');
+        showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เนเธซเธฅเธ”เธงเธดเธเธฒเนเธฅเธฐเนเธเธฃเธเธชเธฃเนเธฒเธเธเธญเธฃเนเธชเธเธญเธเธซเนเธญเธเธเธตเนเนเธ”เน: ' + (res ? res.error : 'unknown'), 'error');
 
       }
 
@@ -7174,7 +7172,7 @@ function loadGradeSheetGrid(isSilent = false) {
 
         setLoading(false);
 
-        showToast('การเชื่อมต่อนอกสถานที่ล้มเหลว: ' + err.message, 'error');
+        showToast('เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธเธญเธเธชเธ–เธฒเธเธ—เธตเนเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
       }
 
@@ -7188,7 +7186,7 @@ function searchGlobalBackend() {
   if (!input) return;
   const term = input.value.trim();
   if (!term) {
-    showToast('กรุณาพิมพ์ชื่อหรือชื่อเล่นที่ต้องการค้นหา', 'warning');
+    showToast('เธเธฃเธธเธ“เธฒเธเธดเธกเธเนเธเธทเนเธญเธซเธฃเธทเธญเธเธทเนเธญเน€เธฅเนเธเธ—เธตเนเธ•เนเธญเธเธเธฒเธฃเธเนเธเธซเธฒ', 'warning');
     return;
   }
   
@@ -7198,7 +7196,7 @@ function searchGlobalBackend() {
   if (gradeSelect) gradeSelect.value = 'all';
   if (branchSelect) branchSelect.value = 'all';
   
-  setLoading(true, 'กำลังค้นหานักเรียนทั่วทั้งระบบ...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเนเธเธซเธฒเธเธฑเธเน€เธฃเธตเธขเธเธ—เธฑเนเธงเธ—เธฑเนเธเธฃเธฐเธเธ...');
   google.script.run
     .withSuccessHandler(res => {
       setLoading(false);
@@ -7207,12 +7205,12 @@ function searchGlobalBackend() {
         updateRoundFilterDropdown();
         renderGradeSheetTable();
       } else {
-        showToast('ค้นหาล้มเหลว: ' + (res ? res.error : 'unknown'), 'error');
+        showToast('เธเนเธเธซเธฒเธฅเนเธกเน€เธซเธฅเธง: ' + (res ? res.error : 'unknown'), 'error');
       }
     })
     .withFailureHandler(err => {
       setLoading(false);
-      showToast('การเชื่อมต่อนอกสถานที่ล้มเหลว: ' + err.message, 'error');
+      showToast('เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธเธญเธเธชเธ–เธฒเธเธ—เธตเนเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
     })
     .getGradeSheetData('all', 'all', getLogUser(), term);
 }
@@ -7286,7 +7284,7 @@ function openEditModalByName(studentName) {
         grade: gsMatch.grade,
         branchLearn: gsMatch.branch || gsMatch.branchLearn || '',
         branchPay: gsMatch.branchPay || '',
-        classType: 'กลุ่มหลัก'
+        classType: 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ'
       };
     }
   }
@@ -7335,7 +7333,7 @@ function renderGradeSheetTable() {
     if (filterRound === 'ALL') {
       return true;
     } else {
-      if (filterRound === 'ไม่ระบุรอบเรียน') {
+      if (filterRound === 'เนเธกเนเธฃเธฐเธเธธเธฃเธญเธเน€เธฃเธตเธขเธ') {
         return getCourseRound(c.courseName) === 'None';
       }
       return c.courseName.toUpperCase().includes(filterRound.toUpperCase());
@@ -7356,7 +7354,7 @@ function renderGradeSheetTable() {
 
   if (displayedCourses.length === 0 && displayedStudents.length === 0) {
 
-    table.innerHTML = `<tr><td style="padding: 40px; text-align: center; color: var(--text-muted);">ไม่พบประวัติคอร์สและเด็กของห้องนี้ กรุณาเพิ่มคอร์สวิชาใหม่เพื่อเริ่มต้น</td></tr>`;
+    table.innerHTML = `<tr><td style="padding: 40px; text-align: center; color: var(--text-muted);">เนเธกเนเธเธเธเธฃเธฐเธงเธฑเธ•เธดเธเธญเธฃเนเธชเนเธฅเธฐเน€เธ”เนเธเธเธญเธเธซเนเธญเธเธเธตเน เธเธฃเธธเธ“เธฒเน€เธเธดเนเธกเธเธญเธฃเนเธชเธงเธดเธเธฒเนเธซเธกเนเน€เธเธทเนเธญเน€เธฃเธดเนเธกเธ•เนเธ</td></tr>`;
 
     document.getElementById('save_grade_sheet_btn').disabled = true;
 
@@ -7372,19 +7370,19 @@ function renderGradeSheetTable() {
 
     <tr style="background: rgba(15,23,42,0.03);">
 
-      <th rowspan="2" style="min-width: 180px; vertical-align: middle;">ชื่อ-นามสกุลนักเรียน</th>
+      <th rowspan="2" style="min-width: 180px; vertical-align: middle;">เธเธทเนเธญ-เธเธฒเธกเธชเธเธธเธฅเธเธฑเธเน€เธฃเธตเธขเธ</th>
 
-      <th rowspan="2" style="min-width: 80px; vertical-align: middle;">ชื่อเล่น</th>
+      <th rowspan="2" style="min-width: 80px; vertical-align: middle;">เธเธทเนเธญเน€เธฅเนเธ</th>
 
-      <th rowspan="2" style="min-width: 80px; vertical-align: middle;">ส่วนลด</th>
+      <th rowspan="2" style="min-width: 80px; vertical-align: middle;">เธชเนเธงเธเธฅเธ”</th>
 
-      <th rowspan="2" style="min-width: 80px; vertical-align: middle;">จ่ายมา</th>
+      <th rowspan="2" style="min-width: 80px; vertical-align: middle;">เธเนเธฒเธขเธกเธฒ</th>
 
-      <th rowspan="2" style="min-width: 60px; vertical-align: middle; text-align:center;">รูดบัตร</th>
+      <th rowspan="2" style="min-width: 60px; vertical-align: middle; text-align:center;">เธฃเธนเธ”เธเธฑเธ•เธฃ</th>
 
-      <th rowspan="2" style="min-width: 90px; vertical-align: middle; text-align:right;">ยอดรวม</th>
+      <th rowspan="2" style="min-width: 90px; vertical-align: middle; text-align:right;">เธขเธญเธ”เธฃเธงเธก</th>
 
-      <th rowspan="2" style="min-width: 90px; vertical-align: middle; text-align:right;">คงเหลือ</th>
+      <th rowspan="2" style="min-width: 90px; vertical-align: middle; text-align:right;">เธเธเน€เธซเธฅเธทเธญ</th>
 
   `;
 
@@ -7418,9 +7416,9 @@ function renderGradeSheetTable() {
 
           <input type="text" value="${c.courseName}" class="form-input grid-header-input" style="width:110px; display:inline-block; font-weight:600; font-size:0.75rem; text-align:center; padding:2px;" onchange="handleCourseHeaderNameChange(${c.colIndex}, '${c.sheetName}', this)">
 
-          <button class="btn btn-sm btn-icon" style="padding: 2px 6px; background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer;" title="ลบวิชานี้" onclick="handleDeleteCourse(${c.colIndex}, '${c.sheetName}', '${c.courseName}')">
+          <button class="btn btn-sm btn-icon" style="padding: 2px 6px; background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer;" title="เธฅเธเธงเธดเธเธฒเธเธตเน" onclick="handleDeleteCourse(${c.colIndex}, '${c.sheetName}', '${c.courseName}')">
 
-            🗑️
+            ๐—‘๏ธ
 
           </button>
 
@@ -7428,31 +7426,31 @@ function renderGradeSheetTable() {
 
         <div style="font-size:0.75rem; color:#f59e0b; font-weight:600; margin-top:2px;">
 
-          [${c.branch === 'สาขา1' ? 'สาขา 1' : c.branch === 'สาขา2' ? 'สาขา 2' : 'สาขา 3'}]
+          [${c.branch === 'เธชเธฒเธเธฒ1' ? 'เธชเธฒเธเธฒ 1' : c.branch === 'เธชเธฒเธเธฒ2' ? 'เธชเธฒเธเธฒ 2' : 'เธชเธฒเธเธฒ 3'}]
 
         </div>
 
         <div style="font-size:0.75rem; color:var(--color-primary); margin-top:2px; font-weight:600;">
 
-          นร. ลงทะเบียน: ${registeredCount} คน
+          เธเธฃ. เธฅเธเธ—เธฐเน€เธเธตเธขเธ: ${registeredCount} เธเธ
 
         </div>
 
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
 
-          วัน/เวลา: <input type="text" value="${c.dayTime || ''}" class="form-input grid-header-input" style="width:100px; display:inline-block; padding:2px;" onchange="handleCourseHeaderDayTimeChange(${c.colIndex}, '${c.sheetName}', this)">
+          เธงเธฑเธ/เน€เธงเธฅเธฒ: <input type="text" value="${c.dayTime || ''}" class="form-input grid-header-input" style="width:100px; display:inline-block; padding:2px;" onchange="handleCourseHeaderDayTimeChange(${c.colIndex}, '${c.sheetName}', this)">
 
         </div>
 
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
 
-          ราคา: ฿<input type="number" value="${c.price}" class="form-input grid-header-input" style="width:70px; display:inline-block; padding:2px;" onchange="handleCourseHeaderPriceChange(${c.colIndex}, '${c.sheetName}', this)">
+          เธฃเธฒเธเธฒ: เธฟ<input type="number" value="${c.price}" class="form-input grid-header-input" style="width:70px; display:inline-block; padding:2px;" onchange="handleCourseHeaderPriceChange(${c.colIndex}, '${c.sheetName}', this)">
 
         </div>
 
         <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
 
-          ครั้ง: <input type="number" value="${c.totalSessions}" class="form-input grid-header-input" style="width:40px; display:inline-block; padding:2px;" onchange="handleCourseHeaderSessionsChange(${c.colIndex}, '${c.sheetName}', this)">
+          เธเธฃเธฑเนเธ: <input type="number" value="${c.totalSessions}" class="form-input grid-header-input" style="width:40px; display:inline-block; padding:2px;" onchange="handleCourseHeaderSessionsChange(${c.colIndex}, '${c.sheetName}', this)">
 
         </div>
 
@@ -7496,13 +7494,13 @@ function renderGradeSheetTable() {
 
         <div style="font-size:0.75rem; color:var(--color-primary); margin-top:2px; font-weight:600;">
 
-          [${s.branch === 'สาขา1' ? 'สาขา 1' : s.branch === 'สาขา2' ? 'สาขา 2' : 'สาขา 3'}]
+          [${s.branch === 'เธชเธฒเธเธฒ1' ? 'เธชเธฒเธเธฒ 1' : s.branch === 'เธชเธฒเธเธฒ2' ? 'เธชเธฒเธเธฒ 2' : 'เธชเธฒเธเธฒ 3'}]
 
         </div>
 
         <div style="margin-top: 4px;">
 
-          <a href="#" onclick="editStudentFromGradeSheet('${s.studentId || s.name}'); return false;" style="font-size: 0.72rem; color: var(--color-primary); text-decoration: underline; font-weight: 600;">✏️ แก้ไขการลงทะเบียนเรียน</a>
+          <a href="#" onclick="editStudentFromGradeSheet('${s.studentId || s.name}'); return false;" style="font-size: 0.72rem; color: var(--color-primary); text-decoration: underline; font-weight: 600;">โ๏ธ เนเธเนเนเธเธเธฒเธฃเธฅเธเธ—เธฐเน€เธเธตเธขเธเน€เธฃเธตเธขเธ</a>
 
         </div>
 
@@ -7512,13 +7510,13 @@ function renderGradeSheetTable() {
 
       <td><div style="text-align:center;"><input type="number" value="${s.discount}" class="form-input grid-cell-input" style="width:70px; text-align:center; padding:2px;" onchange="handleGridDiscountChange(${stdIdx}, this.value)"></div></td>
 
-      <td><div style="font-size:0.85rem; color:var(--text-main); font-weight:600; text-align:center;">฿${s.paid.toLocaleString()}</div></td>
+      <td><div style="font-size:0.85rem; color:var(--text-main); font-weight:600; text-align:center;">เธฟ${s.paid.toLocaleString()}</div></td>
 
-      <td style="text-align:center; font-size:0.85rem; color:var(--text-muted);">${s.isCard ? 'รูดบัตร (3%)' : '-'}</td>
+      <td style="text-align:center; font-size:0.85rem; color:var(--text-muted);">${s.isCard ? 'เธฃเธนเธ”เธเธฑเธ•เธฃ (3%)' : '-'}</td>
 
-      <td style="text-align:right; font-weight:700; font-size:0.9rem;" id="grid_student_full_${stdIdx}">฿${s.full.toLocaleString()}</td>
+      <td style="text-align:right; font-weight:700; font-size:0.9rem;" id="grid_student_full_${stdIdx}">เธฟ${s.full.toLocaleString()}</td>
 
-      <td style="text-align:right; font-weight:700; font-size:0.9rem; color:${s.outstanding > 0 ? '#ef4444' : '#466352'};" id="grid_student_outstanding_${stdIdx}">฿${s.outstanding.toLocaleString()}</td>
+      <td style="text-align:right; font-weight:700; font-size:0.9rem; color:${s.outstanding > 0 ? '#ef4444' : '#466352'};" id="grid_student_outstanding_${stdIdx}">เธฟ${s.outstanding.toLocaleString()}</td>
 
     `;
 
@@ -7534,7 +7532,7 @@ function renderGradeSheetTable() {
 
           <td style="text-align: center;">
 
-            <input type="number" value="${val !== undefined && val !== null ? val : ''}" class="form-input grid-cell-input" style="width:70px; text-align:center;" placeholder="ครั้ง/ลด%" onchange="handleGridCellValueChange(${stdIdx}, ${c.colIndex}, this.value)">
+            <input type="number" value="${val !== undefined && val !== null ? val : ''}" class="form-input grid-cell-input" style="width:70px; text-align:center;" placeholder="เธเธฃเธฑเนเธ/เธฅเธ”%" onchange="handleGridCellValueChange(${stdIdx}, ${c.colIndex}, this.value)">
 
           </td>
 
@@ -7576,7 +7574,7 @@ function handleCourseHeaderNameChange(colIndex, sheetName, input) {
 
   if (!val) {
 
-    showToast('ชื่อคอร์สเรียนไม่สามารถเว้นว่างได้', 'error');
+    showToast('เธเธทเนเธญเธเธญเธฃเนเธชเน€เธฃเธตเธขเธเนเธกเนเธชเธฒเธกเธฒเธฃเธ–เน€เธงเนเธเธงเนเธฒเธเนเธ”เน', 'error');
 
     input.value = input.defaultValue || '';
 
@@ -7604,9 +7602,9 @@ function handleDeleteCourse(colIndex, sheetName, courseName) {
 
   
 
-  if (confirm(`⚠️ ยืนยันการลบวิชา "${courseName}"?\n\nการลบคอลัมน์วิชานี้จะทำให้ข้อมูลครั้งเรียนและยอดชำระเงินของเด็กที่บันทึกไว้ในวิชานี้หายไป และไม่สามารถเรียกคืนได้!`)) {
+  if (confirm(`โ ๏ธ เธขเธทเธเธขเธฑเธเธเธฒเธฃเธฅเธเธงเธดเธเธฒ "${courseName}"?\n\nเธเธฒเธฃเธฅเธเธเธญเธฅเธฑเธกเธเนเธงเธดเธเธฒเธเธตเนเธเธฐเธ—เธณเนเธซเนเธเนเธญเธกเธนเธฅเธเธฃเธฑเนเธเน€เธฃเธตเธขเธเนเธฅเธฐเธขเธญเธ”เธเธณเธฃเธฐเน€เธเธดเธเธเธญเธเน€เธ”เนเธเธ—เธตเนเธเธฑเธเธ—เธถเธเนเธงเนเนเธเธงเธดเธเธฒเธเธตเนเธซเธฒเธขเนเธ เนเธฅเธฐเนเธกเนเธชเธฒเธกเธฒเธฃเธ–เน€เธฃเธตเธขเธเธเธทเธเนเธ”เน!`)) {
 
-    setLoading(true, 'กำลังลบคอลัมน์วิชาเรียนออกจากสเปรดชีต...');
+    setLoading(true, 'เธเธณเธฅเธฑเธเธฅเธเธเธญเธฅเธฑเธกเธเนเธงเธดเธเธฒเน€เธฃเธตเธขเธเธญเธญเธเธเธฒเธเธชเน€เธเธฃเธ”เธเธตเธ•...');
 
     const user = getLogUser();
 
@@ -7620,13 +7618,13 @@ function handleDeleteCourse(colIndex, sheetName, courseName) {
 
         if (res && res.success) {
 
-          showToast(`ลบวิชา "${courseName}" เรียบร้อยแล้ว`, 'success');
+          showToast(`เธฅเธเธงเธดเธเธฒ "${courseName}" เน€เธฃเธตเธขเธเธฃเนเธญเธขเนเธฅเนเธง`, 'success');
 
           loadGradeSheetGrid(); // reload table
 
         } else {
 
-          showToast('ลบไม่สำเร็จ: ' + res.error, 'error');
+          showToast('เธฅเธเนเธกเนเธชเธณเน€เธฃเนเธ: ' + res.error, 'error');
 
         }
 
@@ -7636,7 +7634,7 @@ function handleDeleteCourse(colIndex, sheetName, courseName) {
 
         setLoading(false);
 
-        showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
+        showToast('เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
       })
 
@@ -7719,7 +7717,7 @@ function handleGridDiscountChange(stdIdx, val) {
   
   const outEl = document.getElementById(`grid_student_outstanding_${stdIdx}`);
   if (outEl) {
-    outEl.textContent = `฿${s.outstanding.toLocaleString()}`;
+    outEl.textContent = `เธฟ${s.outstanding.toLocaleString()}`;
     outEl.style.color = s.outstanding > 0 ? '#ef4444' : '#466352';
   }
   
@@ -7819,7 +7817,7 @@ function recalculateGridTotals() {
     // Auto discount = gross - net (from promotions)
     const autoDiscount = Math.round((grossTotal - netTotal) * 100) / 100;
     
-    // full = ค่าเรียนทั้งหมด (gross), discount = ส่วนลดโปรโมชัน, outstanding = ยอดค้าง
+    // full = เธเนเธฒเน€เธฃเธตเธขเธเธ—เธฑเนเธเธซเธกเธ” (gross), discount = เธชเนเธงเธเธฅเธ”เนเธเธฃเนเธกเธเธฑเธ, outstanding = เธขเธญเธ”เธเนเธฒเธ
     s.full = Math.round(grossTotal * 100) / 100;
     s.discount = autoDiscount;
     s.outstanding = Math.round(Math.max(0, grossTotal - autoDiscount - s.paid) * 100) / 100;
@@ -7828,7 +7826,7 @@ function recalculateGridTotals() {
 
     const fullEl = document.getElementById(`grid_student_full_${idx}`);
 
-    if (fullEl) fullEl.innerText = '฿' + s.full.toLocaleString();
+    if (fullEl) fullEl.innerText = 'เธฟ' + s.full.toLocaleString();
 
     // Update discount display
     const discEl = document.querySelector(`#grade_grid_tbody tr:nth-child(${idx + 1}) .grid-cell-input`);
@@ -7838,7 +7836,7 @@ function recalculateGridTotals() {
 
     if (outEl) {
 
-      outEl.innerText = '฿' + s.outstanding.toLocaleString();
+      outEl.innerText = 'เธฟ' + s.outstanding.toLocaleString();
 
       outEl.style.color = s.outstanding > 0 ? '#ef4444' : '#466352';
 
@@ -7858,7 +7856,7 @@ function saveGradeSheetGrid() {
 
   
 
-  setLoading(true, 'กำลังบันทึกค่าเรียน คอร์ส และผลการจัดชั้นเรียนลงชีตสเปรดชีต...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธเนเธฒเน€เธฃเธตเธขเธ เธเธญเธฃเนเธช เนเธฅเธฐเธเธฅเธเธฒเธฃเธเธฑเธ”เธเธฑเนเธเน€เธฃเธตเธขเธเธฅเธเธเธตเธ•เธชเน€เธเธฃเธ”เธเธตเธ•...');
 
   const user = getLogUser();
 
@@ -7872,13 +7870,13 @@ function saveGradeSheetGrid() {
 
       if (res && res.success) {
 
-        showToast('บันทึกการจัดห้องและคำนวณเงินคอร์สกลุ่มหลักเรียบร้อย!', 'success');
+        showToast('เธเธฑเธเธ—เธถเธเธเธฒเธฃเธเธฑเธ”เธซเนเธญเธเนเธฅเธฐเธเธณเธเธงเธ“เน€เธเธดเธเธเธญเธฃเนเธชเธเธฅเธธเนเธกเธซเธฅเธฑเธเน€เธฃเธตเธขเธเธฃเนเธญเธข!', 'success');
 
         loadGradeSheetGrid();
 
       } else {
 
-        showToast('การบันทึกขัดข้อง: ' + res.error, 'error');
+        showToast('เธเธฒเธฃเธเธฑเธเธ—เธถเธเธเธฑเธ”เธเนเธญเธ: ' + res.error, 'error');
 
       }
 
@@ -7888,7 +7886,7 @@ function saveGradeSheetGrid() {
 
       setLoading(false);
 
-      showToast('การเชื่อมต่อผิดพลาด: ' + err.message, 'error');
+      showToast('เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
     })
 
@@ -7922,7 +7920,7 @@ function initAddCourseRows() {
 
       <td style="padding: 6px;">
 
-        <input type="text" class="form-input course-name-input" list="main_courses_list" placeholder="พิมพ์ชื่อคอร์ส..." style="width: 100%; font-size: 0.82rem; padding: 6px 10px;">
+        <input type="text" class="form-input course-name-input" list="main_courses_list" placeholder="เธเธดเธกเธเนเธเธทเนเธญเธเธญเธฃเนเธช..." style="width: 100%; font-size: 0.82rem; padding: 6px 10px;">
 
       </td>
 
@@ -7968,9 +7966,9 @@ function showAddCourseColumnModal() {
 
     
 
-    const grade = gradeSelect ? gradeSelect.value : 'ม.1';
+    const grade = gradeSelect ? gradeSelect.value : 'เธก.1';
 
-    const branch = branchSelect ? branchSelect.value : 'สาขา1';
+    const branch = branchSelect ? branchSelect.value : 'เธชเธฒเธเธฒ1';
 
     
 
@@ -7992,7 +7990,7 @@ function showAddCourseColumnModal() {
 
     const addGrade = document.getElementById('add_course_grade_select');
 
-    if (addGrade) addGrade.value = (grade === 'อนุบาล' || !grade) ? 'ป.1' : grade;
+    if (addGrade) addGrade.value = (grade === 'เธญเธเธธเธเธฒเธฅ' || !grade) ? 'เธ.1' : grade;
 
     
 
@@ -8116,7 +8114,7 @@ function handleAddCourseColumn(e) {
 
   if (courseList.length === 0) {
 
-    showToast('กรุณาระบุชื่อคอร์สอย่างน้อย 1 คอร์ส', 'warning');
+    showToast('เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธเธทเนเธญเธเธญเธฃเนเธชเธญเธขเนเธฒเธเธเนเธญเธข 1 เธเธญเธฃเนเธช', 'warning');
 
     return;
 
@@ -8124,7 +8122,7 @@ function handleAddCourseColumn(e) {
 
   
 
-  setLoading(true, 'กำลังแทรกหัวคอลัมน์คอร์สรายวิชาใหม่ ' + courseList.length + ' รายการลงสเปรดชีต...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเนเธ—เธฃเธเธซเธฑเธงเธเธญเธฅเธฑเธกเธเนเธเธญเธฃเนเธชเธฃเธฒเธขเธงเธดเธเธฒเนเธซเธกเน ' + courseList.length + ' เธฃเธฒเธขเธเธฒเธฃเธฅเธเธชเน€เธเธฃเธ”เธเธตเธ•...');
 
   const user = getLogUser();
 
@@ -8138,7 +8136,7 @@ function handleAddCourseColumn(e) {
 
       if (res && res.success) {
 
-        showToast('เพิ่มวิชาลงสเปรดชีตย่อยสำเร็จ!', 'success');
+        showToast('เน€เธเธดเนเธกเธงเธดเธเธฒเธฅเธเธชเน€เธเธฃเธ”เธเธตเธ•เธขเนเธญเธขเธชเธณเน€เธฃเนเธ!', 'success');
 
         closeAddCourseModal();
 
@@ -8158,7 +8156,7 @@ function handleAddCourseColumn(e) {
 
       } else {
 
-        showToast('เพิ่มไม่สำเร็จ: ' + res.error, 'error');
+        showToast('เน€เธเธดเนเธกเนเธกเนเธชเธณเน€เธฃเนเธ: ' + res.error, 'error');
 
       }
 
@@ -8168,7 +8166,7 @@ function handleAddCourseColumn(e) {
 
       setLoading(false);
 
-      showToast('การติดต่อผิดพลาด: ' + err.message, 'error');
+      showToast('เธเธฒเธฃเธ•เธดเธ”เธ•เนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
     })
 
@@ -8180,7 +8178,7 @@ function handleAddCourseColumn(e) {
 
 // ----------------------------------------------------
 
-// 4. Private Students Editor Logic (เดี่ยว / กลุ่มย่อย)
+// 4. Private Students Editor Logic (เน€เธ”เธตเนเธขเธง / เธเธฅเธธเนเธกเธขเนเธญเธข)
 
 // ----------------------------------------------------
 
@@ -8190,7 +8188,7 @@ function loadPrivateStudents(isSilent = false) {
 
   
 
-  if (!isSilent) setLoading(true, 'กำลังดึงสมุดประวัติเด็กเรียนเดี่ยวกลุ่มย่อย ' + sheetName + '...');
+  if (!isSilent) setLoading(true, 'เธเธณเธฅเธฑเธเธ”เธถเธเธชเธกเธธเธ”เธเธฃเธฐเธงเธฑเธ•เธดเน€เธ”เนเธเน€เธฃเธตเธขเธเน€เธ”เธตเนเธขเธงเธเธฅเธธเนเธกเธขเนเธญเธข ' + sheetName + '...');
 
   google.script.run
 
@@ -8228,7 +8226,7 @@ function loadPrivateStudents(isSilent = false) {
 
       } else if (!isSilent) {
 
-        showToast('ไม่สามารถดึงข้อมูลเด็กเรียนเดี่ยวได้: ' + (res ? res.error : 'unknown'), 'error');
+        showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธเนเธญเธกเธนเธฅเน€เธ”เนเธเน€เธฃเธตเธขเธเน€เธ”เธตเนเธขเธงเนเธ”เน: ' + (res ? res.error : 'unknown'), 'error');
 
       }
 
@@ -8240,7 +8238,7 @@ function loadPrivateStudents(isSilent = false) {
 
         setLoading(false);
 
-        showToast('เชื่อมต่อฐานข้อมูลชีตล้มเหลว: ' + err.message, 'error');
+        showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธเธฒเธเธเนเธญเธกเธนเธฅเธเธตเธ•เธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
       }
 
@@ -8270,7 +8268,7 @@ function renderPrivateStudentsTable(sheetName) {
 
     
 
-    // Normalizing branch values (e.g. "สาขา2" vs "สาขา 2")
+    // Normalizing branch values (e.g. "เธชเธฒเธเธฒ2" vs "เธชเธฒเธเธฒ 2")
 
     const sBranch = (s.branchLearn || s.branchPay || '').replace(/\s+/g, '');
 
@@ -8294,17 +8292,17 @@ function renderPrivateStudentsTable(sheetName) {
 
     
 
-    // Balance: Positive outstanding means debt (ค้าง), negative outstanding means credit/overpaid
+    // Balance: Positive outstanding means debt (เธเนเธฒเธ), negative outstanding means credit/overpaid
 
     let balanceText = '';
 
     if (s.outstanding > 0) {
 
-      balanceText = `<span style="color:#ef4444; font-weight:600;">ค้าง ฿${Math.round(s.outstanding).toLocaleString()}</span>`;
+      balanceText = `<span style="color:#ef4444; font-weight:600;">เธเนเธฒเธ เธฟ${Math.round(s.outstanding).toLocaleString()}</span>`;
 
     } else {
 
-      balanceText = `<span style="color:#466352; font-weight:600;">฿${Math.round(Math.abs(s.outstanding)).toLocaleString()}</span>`;
+      balanceText = `<span style="color:#466352; font-weight:600;">เธฟ${Math.round(Math.abs(s.outstanding)).toLocaleString()}</span>`;
 
     }
 
@@ -8314,7 +8312,7 @@ function renderPrivateStudentsTable(sheetName) {
 
       <td>
 
-        <div style="font-weight:600; color: var(--color-primary-hover); cursor: pointer; white-space:nowrap;" onclick="showStudentHistoryModal('${s.name}', '${s.nickname}')">🧒 ${s.name}</div>
+        <div style="font-weight:600; color: var(--color-primary-hover); cursor: pointer; white-space:nowrap;" onclick="showStudentHistoryModal('${s.name}', '${s.nickname}')">๐ง’ ${s.name}</div>
 
         <div style="font-size:0.68rem; color:var(--text-muted); white-space:nowrap;">${s.branchPay} | Line: ${s.lineName || '-'}</div>
 
@@ -8324,17 +8322,17 @@ function renderPrivateStudentsTable(sheetName) {
 
       <td>
 
-        <div style="font-weight:500; font-size:0.75rem; color: var(--color-primary-hover); cursor: pointer; white-space:nowrap;" onclick="showStudentHistoryModal('${s.name}', '${s.nickname}')">📚 ${s.courseName}</div>
+        <div style="font-weight:500; font-size:0.75rem; color: var(--color-primary-hover); cursor: pointer; white-space:nowrap;" onclick="showStudentHistoryModal('${s.name}', '${s.nickname}')">๐“ ${s.courseName}</div>
 
-        <div style="font-size:0.68rem; color:var(--text-muted); white-space:nowrap;">${(s.note && !s.note.includes('1899') && !s.note.includes('1900') && !s.note.includes('เวลาอินโดจีน')) ? s.note : '-'}</div>
+        <div style="font-size:0.68rem; color:var(--text-muted); white-space:nowrap;">${(s.note && !s.note.includes('1899') && !s.note.includes('1900') && !s.note.includes('เน€เธงเธฅเธฒเธญเธดเธเนเธ”เธเธตเธ')) ? s.note : '-'}</div>
 
       </td>
 
-      <td style="text-align:right; white-space:nowrap;">฿${s.carriedForward.toLocaleString()}</td>
+      <td style="text-align:right; white-space:nowrap;">เธฟ${s.carriedForward.toLocaleString()}</td>
 
-      <td style="text-align:right; white-space:nowrap;">฿${s.full.toLocaleString()}</td>
+      <td style="text-align:right; white-space:nowrap;">เธฟ${s.full.toLocaleString()}</td>
 
-      <td style="text-align:right; color:#466352; font-weight:600; white-space:nowrap;">฿${s.paid.toLocaleString()}</td>
+      <td style="text-align:right; color:#466352; font-weight:600; white-space:nowrap;">เธฟ${s.paid.toLocaleString()}</td>
 
       <td style="text-align:right; white-space:nowrap;">${balanceText}</td>
 
@@ -8354,9 +8352,9 @@ function renderPrivateStudentsTable(sheetName) {
 
         <div style="display: flex; gap: 4px; justify-content: center;">
 
-          <button class="btn btn-primary btn-icon" onclick="showPrivatePaymentModal(${originalIdx})" title="ลงยอดเงินชำระ">🪙</button>
+          <button class="btn btn-primary btn-icon" onclick="showPrivatePaymentModal(${originalIdx})" title="เธฅเธเธขเธญเธ”เน€เธเธดเธเธเธณเธฃเธฐ">๐ช</button>
 
-          <button class="btn btn-secondary btn-icon" onclick="editPrivateStudent(${originalIdx})" title="แก้ไขข้อมูลนักเรียน">✏️</button>
+          <button class="btn btn-secondary btn-icon" onclick="editPrivateStudent(${originalIdx})" title="เนเธเนเนเธเธเนเธญเธกเธนเธฅเธเธฑเธเน€เธฃเธตเธขเธ">โ๏ธ</button>
 
         </div>
 
@@ -8372,7 +8370,7 @@ function renderPrivateStudentsTable(sheetName) {
 
   if (filteredStudents.length === 0) {
 
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบประวัติเด็กเรียนเดี่ยวในกลุ่มหรือสาขานี้</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">เนเธกเนเธเธเธเธฃเธฐเธงเธฑเธ•เธดเน€เธ”เนเธเน€เธฃเธตเธขเธเน€เธ”เธตเนเธขเธงเนเธเธเธฅเธธเนเธกเธซเธฃเธทเธญเธชเธฒเธเธฒเธเธตเน</td></tr>`;
 
   }
 
@@ -8408,9 +8406,9 @@ function showPrivatePaymentModal(idx) {
 
   document.getElementById('p_course_name').value = std.courseName;
 
-  document.getElementById('p_student_display_name').innerText = 'นักเรียน: ' + std.name + ' (' + std.nickname + ')';
+  document.getElementById('p_student_display_name').innerText = 'เธเธฑเธเน€เธฃเธตเธขเธ: ' + std.name + ' (' + std.nickname + ')';
 
-  document.getElementById('p_course_display_name').innerText = 'คอร์ส: ' + std.courseName;
+  document.getElementById('p_course_display_name').innerText = 'เธเธญเธฃเนเธช: ' + std.courseName;
 
   
 
@@ -8514,13 +8512,13 @@ function savePrivateStudentPayment(e) {
 
   
 
-  const formattedHrs = Math.floor(Math.abs(totalHrs)) + ' ชม. ' + Math.round(Math.abs(totalHrs) % 1 * 60) + ' นาที';
+  const formattedHrs = Math.floor(Math.abs(totalHrs)) + ' เธเธก. ' + Math.round(Math.abs(totalHrs) % 1 * 60) + ' เธเธฒเธ—เธต';
 
   paymentData.hoursLeft = (outstanding < 0 ? '-' : '') + formattedHrs;
 
   
 
-  setLoading(true, 'กำลังบันทึกยอดเงินเข้าชีตย่อยเด็กเดี่ยวและฐานข้อมูลกลาง...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธขเธญเธ”เน€เธเธดเธเน€เธเนเธฒเธเธตเธ•เธขเนเธญเธขเน€เธ”เนเธเน€เธ”เธตเนเธขเธงเนเธฅเธฐเธเธฒเธเธเนเธญเธกเธนเธฅเธเธฅเธฒเธ...');
 
   const user = getLogUser();
 
@@ -8534,7 +8532,7 @@ function savePrivateStudentPayment(e) {
 
       if (res && res.success) {
 
-        showToast('บันทึกเงินลงชีตประวัติตารางเด็กสำเร็จ!', 'success');
+        showToast('เธเธฑเธเธ—เธถเธเน€เธเธดเธเธฅเธเธเธตเธ•เธเธฃเธฐเธงเธฑเธ•เธดเธ•เธฒเธฃเธฒเธเน€เธ”เนเธเธชเธณเน€เธฃเนเธ!', 'success');
 
         closePrivatePaymentModal();
 
@@ -8544,7 +8542,7 @@ function savePrivateStudentPayment(e) {
 
       } else {
 
-        showToast('การบันทึกยอดขัดข้อง: ' + res.error, 'error');
+        showToast('เธเธฒเธฃเธเธฑเธเธ—เธถเธเธขเธญเธ”เธเธฑเธ”เธเนเธญเธ: ' + res.error, 'error');
 
       }
 
@@ -8554,7 +8552,7 @@ function savePrivateStudentPayment(e) {
 
       setLoading(false);
 
-      showToast('การเชื่อมต่อผิดพลาด: ' + err.message, 'error');
+      showToast('เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
     })
 
@@ -8630,9 +8628,9 @@ let monthlyViewState = {
 
 
 
-const thaiDayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+const thaiDayNames = ['เธญเธฒเธ—เธดเธ•เธขเน', 'เธเธฑเธเธ—เธฃเน', 'เธญเธฑเธเธเธฒเธฃ', 'เธเธธเธ', 'เธเธคเธซเธฑเธชเธเธ”เธต', 'เธจเธธเธเธฃเน', 'เน€เธชเธฒเธฃเน'];
 
-const thaiMonthNames = ['', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+const thaiMonthNames = ['', 'เธกเธเธฃเธฒเธเธก', 'เธเธธเธกเธ เธฒเธเธฑเธเธเน', 'เธกเธตเธเธฒเธเธก', 'เน€เธกเธฉเธฒเธขเธ', 'เธเธคเธฉเธ เธฒเธเธก', 'เธกเธดเธ–เธธเธเธฒเธขเธ', 'เธเธฃเธเธเธฒเธเธก', 'เธชเธดเธเธซเธฒเธเธก', 'เธเธฑเธเธขเธฒเธขเธ', 'เธ•เธธเธฅเธฒเธเธก', 'เธเธคเธจเธเธดเธเธฒเธขเธ', 'เธเธฑเธเธงเธฒเธเธก'];
 
 
 
@@ -8830,7 +8828,7 @@ function loadMonthlyGrid(isSilent = false) {
 
   if (!isSilent) {
 
-    setLoading(true, 'กำลังดึงตารางเรียนรายเดือน วัน' + thaiDayNames[monthlyViewState.selectedDow] + '...');
+    setLoading(true, 'เธเธณเธฅเธฑเธเธ”เธถเธเธ•เธฒเธฃเธฒเธเน€เธฃเธตเธขเธเธฃเธฒเธขเน€เธ”เธทเธญเธ เธงเธฑเธ' + thaiDayNames[monthlyViewState.selectedDow] + '...');
 
   }
 
@@ -8868,7 +8866,7 @@ function loadMonthlyGrid(isSilent = false) {
 
       } else {
 
-        showToast('ดึงข้อมูลรายเดือนล้มเหลว: ' + (data ? data.error : 'unknown'), 'error');
+        showToast('เธ”เธถเธเธเนเธญเธกเธนเธฅเธฃเธฒเธขเน€เธ”เธทเธญเธเธฅเนเธกเน€เธซเธฅเธง: ' + (data ? data.error : 'unknown'), 'error');
 
       }
 
@@ -8878,7 +8876,7 @@ function loadMonthlyGrid(isSilent = false) {
 
       if (!isSilent) setLoading(false);
 
-      showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
     })
 
@@ -8892,7 +8890,7 @@ function renderMonthlyGrid(data) {
 
   const container = document.getElementById('monthly_grid_content');
 
-  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  const branchFilter = (state.activeBranchFilter || 'เธชเธฒเธเธฒ1').replace(/\s+/g, '');
 
   const filteredRooms = (data.rooms || []).filter(room => {
 
@@ -8912,7 +8910,7 @@ function renderMonthlyGrid(data) {
 
   
 
-  // Prepare week date labels: e.g., "จันทร์ที่ 1 มิ.ย."
+  // Prepare week date labels: e.g., "เธเธฑเธเธ—เธฃเนเธ—เธตเน 1 เธกเธด.เธข."
 
   const weekLabels = data.weeks.map(w => {
 
@@ -8920,7 +8918,7 @@ function renderMonthlyGrid(data) {
 
     const dayNum = parseInt(parts[0]);
 
-    const label = `${dowName}ที่ ${dayNum} ${thaiMonthShort}`;
+    const label = `${dowName}เธ—เธตเน ${dayNum} ${thaiMonthShort}`;
 
     return { ...w, label, dayNum };
 
@@ -8934,11 +8932,11 @@ function renderMonthlyGrid(data) {
 
       <h3 style="margin: 0; font-size: 1rem; color: var(--color-primary-hover); font-weight: 700;">
 
-        📆 ตารางเรียนวัน${dowName} รายเดือน — ${thaiMonthNames[monthlyViewState.selectedMonth]} ${thaiYear} (${branchFilter})
+        ๐“ เธ•เธฒเธฃเธฒเธเน€เธฃเธตเธขเธเธงเธฑเธ${dowName} เธฃเธฒเธขเน€เธ”เธทเธญเธ โ€” ${thaiMonthNames[monthlyViewState.selectedMonth]} ${thaiYear} (${branchFilter})
 
       </h3>
 
-      <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">พบทั้งหมด ${weekLabels.length} สัปดาห์</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">เธเธเธ—เธฑเนเธเธซเธกเธ” ${weekLabels.length} เธชเธฑเธเธ”เธฒเธซเน</div>
 
     </div>
 
@@ -8948,7 +8946,7 @@ function renderMonthlyGrid(data) {
 
   if (weekLabels.length === 0) {
 
-    html += '<div style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีวัน' + dowName + 'ในเดือนนี้</div>';
+    html += '<div style="text-align: center; color: var(--text-muted); padding: 40px;">เนเธกเนเธกเธตเธงเธฑเธ' + dowName + 'เนเธเน€เธ”เธทเธญเธเธเธตเน</div>';
 
     container.innerHTML = html;
 
@@ -8998,11 +8996,11 @@ function renderMonthlyGrid(data) {
 
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
 
-        <h4 style="margin: 0; font-size: 0.9rem; color: var(--color-primary-hover); font-weight: 700;">🏫 สรุปจำนวนนักเรียนแยกรายสัปดาห์ (วัน${dowName}) - ${branchFilter}</h4>
+        <h4 style="margin: 0; font-size: 0.9rem; color: var(--color-primary-hover); font-weight: 700;">๐ซ เธชเธฃเธธเธเธเธณเธเธงเธเธเธฑเธเน€เธฃเธตเธขเธเนเธขเธเธฃเธฒเธขเธชเธฑเธเธ”เธฒเธซเน (เธงเธฑเธ${dowName}) - ${branchFilter}</h4>
 
         <div style="font-size: 0.6rem; color: var(--text-muted); display: flex; gap: 6px;">
 
-          <span>🟢สด</span><span>🔵ออน</span><span>🟡ลา</span><span>🔴ขาด</span><span>🟣ชด</span><span>⭐รวม</span>
+          <span>๐ขเธชเธ”</span><span>๐”ตเธญเธญเธ</span><span>๐กเธฅเธฒ</span><span>๐”ดเธเธฒเธ”</span><span>๐ฃเธเธ”</span><span>โญเธฃเธงเธก</span>
 
         </div>
 
@@ -9016,7 +9014,7 @@ function renderMonthlyGrid(data) {
 
             <tr style="background: rgba(0,132,255,0.05); border-bottom: 1px solid var(--border-color);">
 
-              <th style="padding: 6px 8px; text-align: left; font-weight: 700; border-right: 1px solid var(--border-color); color: var(--color-primary-hover); white-space: nowrap; width: 110px;">ช่วงเวลา</th>
+              <th style="padding: 6px 8px; text-align: left; font-weight: 700; border-right: 1px solid var(--border-color); color: var(--color-primary-hover); white-space: nowrap; width: 110px;">เธเนเธงเธเน€เธงเธฅเธฒ</th>
 
   `;
 
@@ -9096,23 +9094,23 @@ function renderMonthlyGrid(data) {
 
       if (total > 0 || absent > 0 || makeup > 0 || enrolled > 0) {
 
-        html += `<td style="padding: 4px 3px; border-right: 1px solid var(--border-color); vertical-align: middle;" title="${w.label} ${slot.label}\nนร.: ${enrolled}\nสด: ${live} | ออน: ${online} | ลา: ${leave} | ขาด: ${absent} | ชด: ${makeup} | รวม: ${total}">
+        html += `<td style="padding: 4px 3px; border-right: 1px solid var(--border-color); vertical-align: middle;" title="${w.label} ${slot.label}\nเธเธฃ.: ${enrolled}\nเธชเธ”: ${live} | เธญเธญเธ: ${online} | เธฅเธฒ: ${leave} | เธเธฒเธ”: ${absent} | เธเธ”: ${makeup} | เธฃเธงเธก: ${total}">
 
           <div style="display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; align-items: center;">
 
-            <span style="background:#e0f7fa; color:#00838f; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.6rem;">นร.${enrolled}</span>
+            <span style="background:#e0f7fa; color:#00838f; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.6rem;">เธเธฃ.${enrolled}</span>
 
-            ${live > 0 ? `<span style="background:#e8f5e9; color:#2e7d32; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">สด ${live}</span>` : ''}
+            ${live > 0 ? `<span style="background:#e8f5e9; color:#2e7d32; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">เธชเธ” ${live}</span>` : ''}
 
-            ${online > 0 ? `<span style="background:#e3f2fd; color:#1565c0; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ออน ${online}</span>` : ''}
+            ${online > 0 ? `<span style="background:#e3f2fd; color:#1565c0; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">เธญเธญเธ ${online}</span>` : ''}
 
-            ${leave > 0 ? `<span style="background:#fff3e0; color:#ef6c00; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ลา ${leave}</span>` : ''}
+            ${leave > 0 ? `<span style="background:#fff3e0; color:#ef6c00; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">เธฅเธฒ ${leave}</span>` : ''}
 
-            ${absent > 0 ? `<span style="background:#ffebee; color:#c62828; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ขาด ${absent}</span>` : ''}
+            ${absent > 0 ? `<span style="background:#ffebee; color:#c62828; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">เธเธฒเธ” ${absent}</span>` : ''}
 
-            ${makeup > 0 ? `<span style="background:#f3e5f5; color:#6a1b9a; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ชด ${makeup}</span>` : ''}
+            ${makeup > 0 ? `<span style="background:#f3e5f5; color:#6a1b9a; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">เธเธ” ${makeup}</span>` : ''}
 
-            <span style="font-weight:800; color:#0f172a; font-size:0.62rem; border-left:1px solid #e2e8f0; padding-left:3px; margin-left:1px;">⭐${total}</span>
+            <span style="font-weight:800; color:#0f172a; font-size:0.62rem; border-left:1px solid #e2e8f0; padding-left:3px; margin-left:1px;">โญ${total}</span>
 
           </div>
 
@@ -9140,7 +9138,7 @@ function renderMonthlyGrid(data) {
 
     <tr style="border-top: 2px solid var(--border-color); background: rgba(0,131,143,0.04); font-weight: 700;">
 
-      <td style="padding: 8px; text-align: left; font-weight: 800; border-right: 1px solid var(--border-color); color: #00838f; white-space: nowrap; font-size: 0.75rem;">รวม นร. ที่ลงทะเบียน</td>
+      <td style="padding: 8px; text-align: left; font-weight: 800; border-right: 1px solid var(--border-color); color: #00838f; white-space: nowrap; font-size: 0.75rem;">เธฃเธงเธก เธเธฃ. เธ—เธตเนเธฅเธเธ—เธฐเน€เธเธตเธขเธ</td>
 
   `;
 
@@ -9178,7 +9176,7 @@ function renderMonthlyGrid(data) {
 
     });
 
-    html += `<td style="padding: 8px 4px; border-right: 1px solid var(--border-color); font-weight: 800; font-size: 0.72rem; color: #00838f;">📋 ${totalEnrolledWeek} นร.</td>`;
+    html += `<td style="padding: 8px 4px; border-right: 1px solid var(--border-color); font-weight: 800; font-size: 0.72rem; color: #00838f;">๐“ ${totalEnrolledWeek} เธเธฃ.</td>`;
 
   });
 
@@ -9228,19 +9226,19 @@ function renderMonthlyGrid(data) {
 
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
 
-            <span onclick="showEditRoomModal('${room.branch}', '${room.roomName}', '${room.ipad || ''}', '${room.zoom || ''}')" style="font-weight: 700; font-size: 1rem; color: var(--color-primary-hover); cursor: pointer; display: flex; align-items: center; gap: 4px;" title="แก้ไขการตั้งค่าห้องเรียน">
+            <span onclick="showEditRoomModal('${room.branch}', '${room.roomName}', '${room.ipad || ''}', '${room.zoom || ''}')" style="font-weight: 700; font-size: 1rem; color: var(--color-primary-hover); cursor: pointer; display: flex; align-items: center; gap: 4px;" title="เนเธเนเนเธเธเธฒเธฃเธ•เธฑเนเธเธเนเธฒเธซเนเธญเธเน€เธฃเธตเธขเธ">
 
-              🏫 ${room.roomName} ⚙️
+              ๐ซ ${room.roomName} โ๏ธ
 
             </span>
 
-            ${room.ipad ? `<span style="background: rgba(3, 105, 161, 0.08); color: #0369a1; padding: 1px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; cursor: pointer;" onclick="showEditRoomModal('${room.branch}', '${room.roomName}', '${room.ipad || ''}', '${room.zoom || ''}')">📱 iPad: ${room.ipad}</span>` : ''}
+            ${room.ipad ? `<span style="background: rgba(3, 105, 161, 0.08); color: #0369a1; padding: 1px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; cursor: pointer;" onclick="showEditRoomModal('${room.branch}', '${room.roomName}', '${room.ipad || ''}', '${room.zoom || ''}')">๐“ฑ iPad: ${room.ipad}</span>` : ''}
 
-            ${room.zoom ? `<span style="background: rgba(0, 96, 100, 0.08); color: #006064; padding: 1px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; cursor: pointer;" onclick="showEditRoomModal('${room.branch}', '${room.roomName}', '${room.ipad || ''}', '${room.zoom || ''}')">🎥 Zoom: ${room.zoom}</span>` : ''}
+            ${room.zoom ? `<span style="background: rgba(0, 96, 100, 0.08); color: #006064; padding: 1px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; cursor: pointer;" onclick="showEditRoomModal('${room.branch}', '${room.roomName}', '${room.ipad || ''}', '${room.zoom || ''}')">๐ฅ Zoom: ${room.zoom}</span>` : ''}
 
           </div>
 
-          <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">คลาสทั้งหมดในเดือนนี้: ${totalClasses} คลาส</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">เธเธฅเธฒเธชเธ—เธฑเนเธเธซเธกเธ”เนเธเน€เธ”เธทเธญเธเธเธตเน: ${totalClasses} เธเธฅเธฒเธช</div>
 
         </div>
 
@@ -9254,7 +9252,7 @@ function renderMonthlyGrid(data) {
 
       const parts = w.dateStr.split('/');
 
-      const fullThaiDateLabel = `${dowName}ที่ ${parseInt(parts[0])} ${thaiMonthNames[parseInt(parts[1])]} ${parseInt(parts[2]) + 543}`;
+      const fullThaiDateLabel = `${dowName}เธ—เธตเน ${parseInt(parts[0])} ${thaiMonthNames[parseInt(parts[1])]} ${parseInt(parts[2]) + 543}`;
 
       
 
@@ -9264,19 +9262,19 @@ function renderMonthlyGrid(data) {
 
           <div style="font-weight: 700; font-size: 0.8rem; color: var(--text-main); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px dashed rgba(0,132,255,0.15); padding-bottom: 6px;">
 
-            <span style="color: var(--color-primary-hover);">📅 ${fullThaiDateLabel}</span>
+            <span style="color: var(--color-primary-hover);">๐“… ${fullThaiDateLabel}</span>
 
             <div style="display: flex; align-items: center; gap: 8px;">
 
               <button onclick="quickAddClassLogMonthly('${room.roomName} (${room.branch})', '${w.dateStr}')" style="border: none; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 2px 8px; border-radius: 4px; font-size: 0.68rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 2px; transition: all 0.2s;" onmouseover="this.style.background='#10b981'; this.style.color='#fff';" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'; this.style.color='#10b981';">
 
-                ➕ เพิ่มคลาส
+                โ• เน€เธเธดเนเธกเธเธฅเธฒเธช
 
               </button>
 
               <span class="badge ${w.roomClasses.length > 0 ? 'badge-primary' : 'badge-secondary'}" style="font-size: 0.68rem; padding: 2px 8px;">
 
-                ${w.roomClasses.length > 0 ? w.roomClasses.length + ' คลาส' : 'ห้องว่าง'}
+                ${w.roomClasses.length > 0 ? w.roomClasses.length + ' เธเธฅเธฒเธช' : 'เธซเนเธญเธเธงเนเธฒเธ'}
 
               </span>
 
@@ -9290,7 +9288,7 @@ function renderMonthlyGrid(data) {
 
       if (w.roomClasses.length === 0) {
 
-        html += '<div style="text-align: center; color: #cbd5e1; padding: 10px; font-style: italic; font-size: 0.75rem;">ไม่มีรายการสอนในวันนี้</div>';
+        html += '<div style="text-align: center; color: #cbd5e1; padding: 10px; font-style: italic; font-size: 0.75rem;">เนเธกเนเธกเธตเธฃเธฒเธขเธเธฒเธฃเธชเธญเธเนเธเธงเธฑเธเธเธตเน</div>';
 
       } else {
 
@@ -9304,7 +9302,7 @@ function renderMonthlyGrid(data) {
 
           const isStudentLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.studentLeave) || (c.isLeave > 0);
 
-        const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && String(c.note).includes('ครูลา'));
+        const isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex]?.teacherLeave) || (c.note && String(c.note).includes('เธเธฃเธนเธฅเธฒ'));
 
           
 
@@ -9324,15 +9322,15 @@ function renderMonthlyGrid(data) {
 
           const attendances = [];
 
-          attendances.push(`สด: ${c.isPresentLive || 0}`);
+          attendances.push(`เธชเธ”: ${c.isPresentLive || 0}`);
 
-          attendances.push(`ออน: ${c.isPresentOnline || 0}`);
+          attendances.push(`เธญเธญเธ: ${c.isPresentOnline || 0}`);
 
-          attendances.push(`ลา: ${c.isLeave || 0}`);
+          attendances.push(`เธฅเธฒ: ${c.isLeave || 0}`);
 
-          attendances.push(`ชด: ${c.isMakeup || 0}`);
+          attendances.push(`เธเธ”: ${c.isMakeup || 0}`);
 
-          attendances.push(`ขาด: ${c.isAbsent || 0}`);
+          attendances.push(`เธเธฒเธ”: ${c.isAbsent || 0}`);
 
           // isOrange display removed
 
@@ -9340,7 +9338,7 @@ function renderMonthlyGrid(data) {
 
           const attendanceSummary = attendances.length > 0 
 
-            ? `<span class="scheduled-students" style="font-size:0.75rem; color:var(--color-primary-hover); font-weight:500; display:block; margin-top:2px;">👥 ${attendances.join('  ')}</span>`
+            ? `<span class="scheduled-students" style="font-size:0.75rem; color:var(--color-primary-hover); font-weight:500; display:block; margin-top:2px;">๐‘ฅ ${attendances.join('  ')}</span>`
 
             : '';
 
@@ -9348,7 +9346,7 @@ function renderMonthlyGrid(data) {
 
           const ipadMatch = (c.roomBranch || '').match(/IPAD\s*\S*/i);
 
-          const ipadText = ipadMatch ? `📱 ${ipadMatch[0].toUpperCase()}` : '';
+          const ipadText = ipadMatch ? `๐“ฑ ${ipadMatch[0].toUpperCase()}` : '';
 
           
 
@@ -9390,13 +9388,13 @@ function renderMonthlyGrid(data) {
 
               <div style="font-weight:700; color:var(--color-primary-hover); font-size:0.75rem; display: flex; justify-content: space-between; align-items: center; gap: 4px;">
 
-                <span>⏰ ${cleanTimeStr(c.timeStart)}-${cleanTimeStr(c.timeEnd)}</span>
+                <span>โฐ ${cleanTimeStr(c.timeStart)}-${cleanTimeStr(c.timeEnd)}</span>
 
                 <div style="display: flex; gap: 2px;">
 
-                  ${isTeacherConfirmed ? `<span style="background:#15803d; color:#fff; font-size:0.6rem; padding:1px 4px; border-radius:3px; font-weight:bold;">ยืนยัน</span>` : ''}
+                  ${isTeacherConfirmed ? `<span style="background:#15803d; color:#fff; font-size:0.6rem; padding:1px 4px; border-radius:3px; font-weight:bold;">เธขเธทเธเธขเธฑเธ</span>` : ''}
 
-                  ${isTeacherLeaveChecked ? `<span style="background:var(--color-danger); color:#fff; font-size:0.6rem; padding:1px 4px; border-radius:3px; font-weight:bold;">ครูลา</span>` : ''}
+                  ${isTeacherLeaveChecked ? `<span style="background:var(--color-danger); color:#fff; font-size:0.6rem; padding:1px 4px; border-radius:3px; font-weight:bold;">เธเธฃเธนเธฅเธฒ</span>` : ''}
 
                 </div>
 
@@ -9404,13 +9402,13 @@ function renderMonthlyGrid(data) {
 
               ${ipadText ? `<div class="scheduled-ipad" style="font-size: 0.72rem; font-weight: 600; color: #4b6355; margin-top: 2px;">${ipadText}</div>` : ''}
 
-              <div style="font-weight:700; color:var(--text-main); margin:3px 0 1px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.subject.replace(/\s*\([^)]*สัปดาห์[^)]*\)/g, '')}</div>
+              <div style="font-weight:700; color:var(--text-main); margin:3px 0 1px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.subject.replace(/\s*\([^)]*เธชเธฑเธเธ”เธฒเธซเน[^)]*\)/g, '')}</div>
 
               <div style="font-size:0.7rem; color:var(--text-muted); display:flex; justify-content:space-between; flex-direction: column; gap: 1px;">
 
-                <span>ครูประจำ: ${c.teacherRegular}${c.teacherSub ? ' (แทน:' + c.teacherSub + ')' : ''}</span>
+                <span>เธเธฃเธนเธเธฃเธฐเธเธณ: ${c.teacherRegular}${c.teacherSub ? ' (เนเธ—เธ:' + c.teacherSub + ')' : ''}</span>
 
-                ${isTeacherConfirmed ? `<span style="color:#15803d; font-weight:bold;">✅ ครูยืนยันแล้ว</span>` : ''}
+                ${isTeacherConfirmed ? `<span style="color:#15803d; font-weight:bold;">โ… เธเธฃเธนเธขเธทเธเธขเธฑเธเนเธฅเนเธง</span>` : ''}
 
               </div>
 
@@ -9424,13 +9422,13 @@ function renderMonthlyGrid(data) {
 
                 <label style="display: flex; align-items: center; gap: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 600; color: var(--color-danger);">
 
-                  <input type="checkbox" class="student-leave-chk" data-row="${c.rowIndex}" ${isStudentLeaveChecked ? 'checked' : ''} onchange="toggleClassAbsence(${c.rowIndex}, 'studentLeave', this)"> 🎒 น้องลา
+                  <input type="checkbox" class="student-leave-chk" data-row="${c.rowIndex}" ${isStudentLeaveChecked ? 'checked' : ''} onchange="toggleClassAbsence(${c.rowIndex}, 'studentLeave', this)"> ๐’ เธเนเธญเธเธฅเธฒ
 
                 </label>
 
                 <label style="display: flex; align-items: center; gap: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 600; color: var(--color-danger);">
 
-                  <input type="checkbox" class="teacher-leave-chk" data-row="${c.rowIndex}" ${isTeacherLeaveChecked ? 'checked' : ''} onchange="toggleClassAbsence(${c.rowIndex}, 'teacherLeave', this)"> 👨‍🏫 ครูลา
+                  <input type="checkbox" class="teacher-leave-chk" data-row="${c.rowIndex}" ${isTeacherLeaveChecked ? 'checked' : ''} onchange="toggleClassAbsence(${c.rowIndex}, 'teacherLeave', this)"> ๐‘จโ€๐ซ เธเธฃเธนเธฅเธฒ
 
                 </label>
 
@@ -9438,7 +9436,7 @@ function renderMonthlyGrid(data) {
 
               
 
-              <button type="button" class="btn-delete-class" onclick="event.stopPropagation(); deleteClassLog(${c.rowIndex})" style="position: absolute; top: 8px; right: 8px; border: none; background: rgba(239, 68, 68, 0.1); color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#ef4444'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="ลบคลาสเรียน">🗑️</button>
+              <button type="button" class="btn-delete-class" onclick="event.stopPropagation(); deleteClassLog(${c.rowIndex})" style="position: absolute; top: 8px; right: 8px; border: none; background: rgba(239, 68, 68, 0.1); color: #ef4444; cursor: pointer; font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#ef4444'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="เธฅเธเธเธฅเธฒเธชเน€เธฃเธตเธขเธ">๐—‘๏ธ</button>
 
             </div>
 
@@ -9474,7 +9472,7 @@ function renderMonthlyGrid(data) {
 
   if (filteredRooms.length === 0) {
 
-    html += '<div style="text-align: center; color: var(--text-muted); padding: 30px;">ไม่มีห้องเรียนในสาขานี้</div>';
+    html += '<div style="text-align: center; color: var(--text-muted); padding: 30px;">เนเธกเนเธกเธตเธซเนเธญเธเน€เธฃเธตเธขเธเนเธเธชเธฒเธเธฒเธเธตเน</div>';
 
   }
 
@@ -9519,7 +9517,7 @@ function loadDailyGrid(isSilent = false) {
   
 
   if (!isSilent) {
-    setLoading(true, 'กำลังดึงตารางสอนรายห้องเรียนประจำวันที่ ' + formatDateToThai(sheetDate) + '...');
+    setLoading(true, 'เธเธณเธฅเธฑเธเธ”เธถเธเธ•เธฒเธฃเธฒเธเธชเธญเธเธฃเธฒเธขเธซเนเธญเธเน€เธฃเธตเธขเธเธเธฃเธฐเธเธณเธงเธฑเธเธ—เธตเน ' + formatDateToThai(sheetDate) + '...');
   }
   
   if (state.dailyGridCache[sheetDate] && !isSilent && window._forceDailyGridRefresh !== true) {
@@ -9571,7 +9569,7 @@ function loadDailyGrid(isSilent = false) {
 
       } else if (!isSilent) {
 
-        showToast('ไม่สามารถดึงตารางห้องเรียนได้: ' + (data ? data.error : 'unknown'), 'error');
+        showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธ•เธฒเธฃเธฒเธเธซเนเธญเธเน€เธฃเธตเธขเธเนเธ”เน: ' + (data ? data.error : 'unknown'), 'error');
 
       }
 
@@ -9581,7 +9579,7 @@ function loadDailyGrid(isSilent = false) {
 
       if (!isSilent) setLoading(false);
 
-      if (!isSilent) showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      if (!isSilent) showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
     })
 
@@ -9619,7 +9617,7 @@ function renderDailyAttendanceSummary() {
 
   
 
-  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  const branchFilter = (state.activeBranchFilter || 'เธชเธฒเธเธฒ1').replace(/\s+/g, '');
 
   const filteredLogs = (state.classLogs || []).filter(log => {
 
@@ -9633,7 +9631,7 @@ function renderDailyAttendanceSummary() {
 
   if (filteredLogs.length === 0) {
 
-    const emptyHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">ไม่มีข้อมูลคลาสเรียนในสาขานี้สำหรับวันนี้</div>`;
+    const emptyHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเธเธฅเธฒเธชเน€เธฃเธตเธขเธเนเธเธชเธฒเธเธฒเธเธตเนเธชเธณเธซเธฃเธฑเธเธงเธฑเธเธเธตเน</div>`;
 
     if (container) container.innerHTML = emptyHTML;
 
@@ -9701,7 +9699,7 @@ function renderDailyAttendanceSummary() {
 
     const cleanVal = subject.toString().trim();
 
-    return cleanVal.includes('หลัก') || cleanVal.includes('ѡ') || ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'].some(g => cleanVal.includes(g));
+    return cleanVal.includes('เธซเธฅเธฑเธ') || cleanVal.includes('ัก') || ['เธญเธเธธเธเธฒเธฅ','เธ.1','เธ.2','เธ.3','เธ.4','เธ.5','เธ.6','เธก.1','เธก.2','เธก.3','เธก.4','เธก.5','เธก.6'].some(g => cleanVal.includes(g));
 
   };
 
@@ -9769,13 +9767,13 @@ function renderDailyAttendanceSummary() {
 
       <h3 style="margin: 0; font-size: 0.95rem; color: var(--color-primary-hover); font-weight: 700; display: flex; align-items: center; gap: 8px;">
 
-        🏫 สรุปจำนวนนักเรียนแยกช่วงเวลา
+        ๐ซ เธชเธฃเธธเธเธเธณเธเธงเธเธเธฑเธเน€เธฃเธตเธขเธเนเธขเธเธเนเธงเธเน€เธงเธฅเธฒ
 
       </h3>
 
       <div style="font-size: 0.65rem; color: var(--text-muted); display: flex; gap: 8px; flex-wrap: wrap;">
 
-        <span><span>🟦นร.</span><span>🟢สด</span><span>🔵ออน</span><span>🟡ลา</span><span>🔴ขาด</span><span>🟣ชด</span><span>⭐รวม</span></span>
+        <span><span>๐ฆเธเธฃ.</span><span>๐ขเธชเธ”</span><span>๐”ตเธญเธญเธ</span><span>๐กเธฅเธฒ</span><span>๐”ดเธเธฒเธ”</span><span>๐ฃเธเธ”</span><span>โญเธฃเธงเธก</span></span>
 
       </div>
 
@@ -9791,7 +9789,7 @@ function renderDailyAttendanceSummary() {
 
           <tr style="background: rgba(0,132,255,0.05); border-bottom: 1px solid var(--border-color);">
 
-            <th style="padding: 6px 10px; text-align: left; font-weight: 700; border-right: 1px solid var(--border-color); color: var(--color-primary-hover); white-space: nowrap; font-size: 0.68rem;">รูปแบบกลุ่มเรียน</th>
+            <th style="padding: 6px 10px; text-align: left; font-weight: 700; border-right: 1px solid var(--border-color); color: var(--color-primary-hover); white-space: nowrap; font-size: 0.68rem;">เธฃเธนเธเนเธเธเธเธฅเธธเนเธกเน€เธฃเธตเธขเธ</th>
 
   `;
 
@@ -9853,7 +9851,7 @@ function renderDailyAttendanceSummary() {
 
   categories.forEach(cat => {
 
-    const catLabel = cat === 'main' ? 'แบบกลุ่มหลัก' : 'แบบเดี่ยวและกลุ่มย่อย';
+    const catLabel = cat === 'main' ? 'เนเธเธเธเธฅเธธเนเธกเธซเธฅเธฑเธ' : 'เนเธเธเน€เธ”เธตเนเธขเธงเนเธฅเธฐเธเธฅเธธเนเธกเธขเนเธญเธข';
 
     html += `
 
@@ -9892,18 +9890,18 @@ function renderDailyAttendanceSummary() {
       if (hasData) {
 
         const displayEnrolled = cat === 'main' ? s.studentNames.length : totalAttended;
-        const tooltip = `นร.ลงทะเบียน:${displayEnrolled} สด:${s.live} ออนไลน์:${s.online} ลา:${s.leave} ขาด:${s.absent} ชดเชย:${s.makeup} รวมมาเรียน:${totalAttended}`;
+        const tooltip = `เธเธฃ.เธฅเธเธ—เธฐเน€เธเธตเธขเธ:${displayEnrolled} เธชเธ”:${s.live} เธญเธญเธเนเธฅเธเน:${s.online} เธฅเธฒ:${s.leave} เธเธฒเธ”:${s.absent} เธเธ”เน€เธเธข:${s.makeup} เธฃเธงเธกเธกเธฒเน€เธฃเธตเธขเธ:${totalAttended}`;
 
         html += `
           <td style="padding: 4px 3px; border-right: 1px solid var(--border-color); vertical-align: middle;" title="${tooltip}">
             <div style="display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; align-items: center;">
-              ${displayEnrolled > 0 ? `<span style="background:#e0f7fa; color:#00838f; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.6rem;">นร.${displayEnrolled}</span>` : ''}
-              ${s.live > 0 ? `<span style="background:#e8f5e9; color:#2e7d32; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">สด ${s.live}</span>` : ''}
-              ${s.online > 0 ? `<span style="background:#e3f2fd; color:#1565c0; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ออน ${s.online}</span>` : ''}
-              ${s.leave > 0 ? `<span style="background:#fff3e0; color:#ef6c00; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ลา ${s.leave}</span>` : ''}
-              ${s.absent > 0 ? `<span style="background:#ffebee; color:#c62828; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ขาด ${s.absent}</span>` : ''}
-              ${s.makeup > 0 ? `<span style="background:#f3e5f5; color:#6a1b9a; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">ชด ${s.makeup}</span>` : ''}
-              ${totalAttended > 0 ? `<span style="font-weight:800; color:#0f172a; font-size:0.62rem; border-left:1px solid #e2e8f0; padding-left:3px; margin-left:1px;">⭐${totalAttended}</span>` : ''}
+              ${displayEnrolled > 0 ? `<span style="background:#e0f7fa; color:#00838f; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.6rem;">เธเธฃ.${displayEnrolled}</span>` : ''}
+              ${s.live > 0 ? `<span style="background:#e8f5e9; color:#2e7d32; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">เธชเธ” ${s.live}</span>` : ''}
+              ${s.online > 0 ? `<span style="background:#e3f2fd; color:#1565c0; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">เธญเธญเธ ${s.online}</span>` : ''}
+              ${s.leave > 0 ? `<span style="background:#fff3e0; color:#ef6c00; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">เธฅเธฒ ${s.leave}</span>` : ''}
+              ${s.absent > 0 ? `<span style="background:#ffebee; color:#c62828; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">เธเธฒเธ” ${s.absent}</span>` : ''}
+              ${s.makeup > 0 ? `<span style="background:#f3e5f5; color:#6a1b9a; padding:1px 4px; border-radius:3px; font-weight:700; font-size:0.6rem;">เธเธ” ${s.makeup}</span>` : ''}
+              ${totalAttended > 0 ? `<span style="font-weight:800; color:#0f172a; font-size:0.62rem; border-left:1px solid #e2e8f0; padding-left:3px; margin-left:1px;">โญ${totalAttended}</span>` : ''}
             </div>
           </td>
 
@@ -9935,23 +9933,23 @@ function renderDailyAttendanceSummary() {
     
     <div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 10px;">
       <div style="flex: 1; min-width: 200px; background: rgba(0, 132, 255, 0.05); border-radius: 8px; padding: 10px; border: 1px solid rgba(0, 132, 255, 0.1);">
-        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;">ยอดรวมนักเรียนที่มาเรียนสดและออนไลน์</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;">เธขเธญเธ”เธฃเธงเธกเธเธฑเธเน€เธฃเธตเธขเธเธ—เธตเนเธกเธฒเน€เธฃเธตเธขเธเธชเธ”เนเธฅเธฐเธญเธญเธเนเธฅเธเน</div>
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
-            <span style="color: #00838f;">1. ยอดรวมกลุ่มหลัก</span>
-            <span style="color: #00838f;">${totalMainLiveOnline} คน</span>
+            <span style="color: #00838f;">1. เธขเธญเธ”เธฃเธงเธกเธเธฅเธธเนเธกเธซเธฅเธฑเธ</span>
+            <span style="color: #00838f;">${totalMainLiveOnline} เธเธ</span>
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
-            <span style="color: #ef6c00;">2. ยอดรวมเดี่ยว-กลุ่มย่อย</span>
-            <span style="color: #ef6c00;">${totalPrivateLiveOnline} คน</span>
+            <span style="color: #ef6c00;">2. เธขเธญเธ”เธฃเธงเธกเน€เธ”เธตเนเธขเธง-เธเธฅเธธเนเธกเธขเนเธญเธข</span>
+            <span style="color: #ef6c00;">${totalPrivateLiveOnline} เธเธ</span>
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
-            <span style="color: #2e7d32;">3. รวมทั้งหมด</span>
-            <span style="color: #2e7d32;">${grandTotal} คน</span>
+            <span style="color: #2e7d32;">3. เธฃเธงเธกเธ—เธฑเนเธเธซเธกเธ”</span>
+            <span style="color: #2e7d32;">${grandTotal} เธเธ</span>
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700;">
-            <span style="color: #6a1b9a;">4. รวมแบบไม่ซ้ำชื่อ</span>
-            <span style="color: #6a1b9a;">${totalUnique} คน</span>
+            <span style="color: #6a1b9a;">4. เธฃเธงเธกเนเธเธเนเธกเนเธเนเธณเธเธทเนเธญ</span>
+            <span style="color: #6a1b9a;">${totalUnique} เธเธ</span>
           </div>
         </div>
       </div>
@@ -9976,7 +9974,7 @@ function renderDailyGrid() {
 
   renderDailyAttendanceSummary();
   
-  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  const branchFilter = (state.activeBranchFilter || 'เธชเธฒเธเธฒ1').replace(/\s+/g, '');
   const filteredRooms = (state.rooms || []).filter(room => {
     const roomBranchClean = (room.branch || '').replace(/\s+/g, '');
     return roomBranchClean.includes(branchFilter);
@@ -9985,7 +9983,7 @@ function renderDailyGrid() {
   if (filteredRooms.length === 0) {
     const emptyMsg = document.createElement('div');
     emptyMsg.className = 'empty-state-message';
-    emptyMsg.textContent = 'ไม่พบข้อมูลห้องสำหรับสาขา: ' + branchFilter;
+    emptyMsg.textContent = 'เนเธกเนเธเธเธเนเธญเธกเธนเธฅเธซเนเธญเธเธชเธณเธซเธฃเธฑเธเธชเธฒเธเธฒ: ' + branchFilter;
     emptyMsg.style.padding = '20px';
     emptyMsg.style.textAlign = 'center';
     emptyMsg.style.color = 'var(--text-muted)';
@@ -10024,7 +10022,7 @@ function renderDailyGrid() {
   
   // Sticky header
   html += '<div style="position:sticky; top:0; z-index:20; display:flex; width:100%; background:#f8fafc; border-bottom:2px solid var(--border-color);">';
-  html += '<div style="position:sticky; left:0; z-index:30; min-width:' + ROOM_COL_WIDTH + 'px; width:' + ROOM_COL_WIDTH + 'px; padding:8px 10px; font-weight:700; font-size:0.72rem; color:var(--text-main); border-right:2px solid var(--border-color); background:#f8fafc; display:flex; align-items:center;">ห้องเรียน / อุปกรณ์</div>';
+  html += '<div style="position:sticky; left:0; z-index:30; min-width:' + ROOM_COL_WIDTH + 'px; width:' + ROOM_COL_WIDTH + 'px; padding:8px 10px; font-weight:700; font-size:0.72rem; color:var(--text-main); border-right:2px solid var(--border-color); background:#f8fafc; display:flex; align-items:center;">เธซเนเธญเธเน€เธฃเธตเธขเธ / เธญเธธเธเธเธฃเธ“เน</div>';
   html += '<div style="position:relative; width:' + TIMELINE_WIDTH + 'px; height:36px;">' + headerCols + '</div>';
   html += '</div></div>';
 
@@ -10075,8 +10073,8 @@ function renderDailyGrid() {
 
     // Room details
     var detailsArr = [];
-    if (room.ipad) detailsArr.push('📱 ' + room.ipad);
-    if (room.zoom) detailsArr.push('💻 ' + room.zoom);
+    if (room.ipad) detailsArr.push('๐“ฑ ' + room.ipad);
+    if (room.zoom) detailsArr.push('๐’ป ' + room.zoom);
     var detailsStr = detailsArr.length > 0 ? detailsArr.map(function(d){ return '<div style="font-size:0.65rem; color:var(--text-muted);">' + d + '</div>'; }).join('') : '';
     var fullRoomLabel = (room.roomName + ' ' + room.branch + ' ' + (room.ipad||'') + ' ' + (room.zoom||'')).replace(/\s+/g, ' ').trim();
 
@@ -10088,10 +10086,10 @@ function renderDailyGrid() {
     html += '<div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:2px;">' + (room.branch||'') + '</div>';
     html += detailsStr;
     html += '<div style="display:flex; gap:4px; margin-top:4px;">';
-    html += '<button onclick="showEditRoomModal(\'' + room.branch + '\', \'' + room.roomName + '\', \'' + (room.ipad||'') + '\', \'' + (room.zoom||'') + '\')" style="font-size:0.62rem; padding:2px 4px; border:1px solid var(--border-color); border-radius:3px; background:#f8fafc; cursor:pointer;" title="แก้ไข">✏️ แก้ไข</button>';
-    html += '<button onclick="deleteRoomFrontend(\'' + room.branch + '\', \'' + room.roomName + '\')" style="font-size:0.62rem; padding:2px 4px; border:1px solid var(--border-color); border-radius:3px; background:#fff5f5; color:var(--color-danger); cursor:pointer;" title="ลบ">🗑️ ลบ</button>';
+    html += '<button onclick="showEditRoomModal(\'' + room.branch + '\', \'' + room.roomName + '\', \'' + (room.ipad||'') + '\', \'' + (room.zoom||'') + '\')" style="font-size:0.62rem; padding:2px 4px; border:1px solid var(--border-color); border-radius:3px; background:#f8fafc; cursor:pointer;" title="เนเธเนเนเธ">โ๏ธ เนเธเนเนเธ</button>';
+    html += '<button onclick="deleteRoomFrontend(\'' + room.branch + '\', \'' + room.roomName + '\')" style="font-size:0.62rem; padding:2px 4px; border:1px solid var(--border-color); border-radius:3px; background:#fff5f5; color:var(--color-danger); cursor:pointer;" title="เธฅเธ">๐—‘๏ธ เธฅเธ</button>';
     html += '</div>';
-    html += '<button onclick="quickAddClassLog(\'' + fullRoomLabel + '\')" style="margin-top:6px; width:100%; display:flex; align-items:center; justify-content:center; gap:3px; padding:4px; font-size:0.65rem; border-radius:var(--radius-sm); border:1px dashed var(--color-primary); background:rgba(70,99,82,0.03); color:var(--color-primary); font-weight:600; cursor:pointer;">➕ เพิ่มคลาส</button>';
+    html += '<button onclick="quickAddClassLog(\'' + fullRoomLabel + '\')" style="margin-top:6px; width:100%; display:flex; align-items:center; justify-content:center; gap:3px; padding:4px; font-size:0.65rem; border-radius:var(--radius-sm); border:1px dashed var(--color-primary); background:rgba(70,99,82,0.03); color:var(--color-primary); font-weight:600; cursor:pointer;">โ• เน€เธเธดเนเธกเธเธฅเธฒเธช</button>';
     html += '</div>';
 
     // Timeline area
@@ -10112,7 +10110,7 @@ function renderDailyGrid() {
       // Status / color logic
       var isTeacherConfirmed = c.teacherConfirmed > 0;
       var isStudentLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex] && state.classAbsences[c.rowIndex].studentLeave) || (c.isLeave > 0);
-      var isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex] && state.classAbsences[c.rowIndex].teacherLeave) || (c.note && String(c.note).includes('ครูลา'));
+      var isTeacherLeaveChecked = (state.classAbsences && state.classAbsences[c.rowIndex] && state.classAbsences[c.rowIndex].teacherLeave) || (c.note && String(c.note).includes('เธเธฃเธนเธฅเธฒ'));
 
       var cardBg = 'background:#fff;';
       var cardBorder = 'border:1px solid var(--border-color);';
@@ -10127,7 +10125,7 @@ function renderDailyGrid() {
         cardBorder = 'border:1px solid rgba(245,158,11,0.45);';
       } else {
         var subjStr = String(c.subject || '');
-        var isPrivate = subjStr.includes('เดี่ยว') || subjStr.includes('ย่อย');
+        var isPrivate = subjStr.includes('เน€เธ”เธตเนเธขเธง') || subjStr.includes('เธขเนเธญเธข');
         if (!isPrivate) {
           cardBg = 'background:rgba(56,189,248,0.08);';
           cardBorder = 'border:1.5px solid rgba(56,189,248,0.4);';
@@ -10136,18 +10134,18 @@ function renderDailyGrid() {
 
       // Attendance
       var attArr = [];
-      attArr.push('สด:' + (c.isPresentLive||0));
-      attArr.push('ออน:' + (c.isPresentOnline||0));
-      attArr.push('ลา:' + (c.isLeave||0));
-      attArr.push('ชด:' + (c.isMakeup||0));
-      attArr.push('ขาด:' + (c.isAbsent||0));
+      attArr.push('เธชเธ”:' + (c.isPresentLive||0));
+      attArr.push('เธญเธญเธ:' + (c.isPresentOnline||0));
+      attArr.push('เธฅเธฒ:' + (c.isLeave||0));
+      attArr.push('เธเธ”:' + (c.isMakeup||0));
+      attArr.push('เธเธฒเธ”:' + (c.isAbsent||0));
 
       // Confirm button
       var confirmBtn = isTeacherConfirmed
-        ? '<button type="button" onclick="toggleDailyGridConfirm(' + c.rowIndex + ',false)" style="font-size:0.58rem; padding:1px 5px; background:#15803d; color:white; font-weight:700; border-radius:10px; border:none; cursor:pointer;">✓ ยืนยัน</button>'
-        : '<button type="button" onclick="toggleDailyGridConfirm(' + c.rowIndex + ',true)" style="font-size:0.58rem; padding:1px 5px; background:#e2e8f0; color:#475569; font-weight:700; border-radius:10px; border:none; cursor:pointer;">รอยืนยัน</button>';
+        ? '<button type="button" onclick="toggleDailyGridConfirm(' + c.rowIndex + ',false)" style="font-size:0.58rem; padding:1px 5px; background:#15803d; color:white; font-weight:700; border-radius:10px; border:none; cursor:pointer;">โ“ เธขเธทเธเธขเธฑเธ</button>'
+        : '<button type="button" onclick="toggleDailyGridConfirm(' + c.rowIndex + ',true)" style="font-size:0.58rem; padding:1px 5px; background:#e2e8f0; color:#475569; font-weight:700; border-radius:10px; border:none; cursor:pointer;">เธฃเธญเธขเธทเธเธขเธฑเธ</button>';
 
-      var confirmedBadge = isTeacherConfirmed ? '<div style="font-weight:bold; color:#2e7d32; font-size:0.58rem;">✅ ยืนยันแล้ว</div>' : '';
+      var confirmedBadge = isTeacherConfirmed ? '<div style="font-weight:bold; color:#2e7d32; font-size:0.58rem;">โ… เธขเธทเธเธขเธฑเธเนเธฅเนเธง</div>' : '';
 
       // Room/device text
       var displayRoomText = c.roomBranch || '-';
@@ -10168,24 +10166,24 @@ function renderDailyGrid() {
       
       // Middle: details
       html += '<div style="font-size:0.58rem; color:var(--text-muted); line-height:1.25; border-top:1px dashed var(--border-color); padding-top:2px; margin-top:2px; overflow:hidden;">';
-      html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">🏢 ' + displayRoomText + '</div>';
-      if (displayDeviceText) html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--color-primary-hover);">💻 ' + displayDeviceText + '</div>';
-      html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><b>ครูประจำ:</b> ' + (c.teacherRegular||'-') + '</div>';
-      html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><b>ครูแทน:</b> ' + (c.teacherSub ? '<b>' + c.teacherSub + '</b>' : '-') + '</div>';
+      html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">๐ข ' + displayRoomText + '</div>';
+      if (displayDeviceText) html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--color-primary-hover);">๐’ป ' + displayDeviceText + '</div>';
+      html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><b>เธเธฃเธนเธเธฃเธฐเธเธณ:</b> ' + (c.teacherRegular||'-') + '</div>';
+      html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><b>เธเธฃเธนเนเธ—เธ:</b> ' + (c.teacherSub ? '<b>' + c.teacherSub + '</b>' : '-') + '</div>';
       html += confirmedBadge;
-      html += '<div style="color:var(--color-primary-hover); font-size:0.55rem;">👥 ' + attArr.join(' ') + '</div>';
+      html += '<div style="color:var(--color-primary-hover); font-size:0.55rem;">๐‘ฅ ' + attArr.join(' ') + '</div>';
       html += '</div>';
       
       // Bottom: combined row - checkboxes + confirm + edit/delete
       html += '<div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed rgba(0,0,0,0.06); padding-top:2px; margin-top:2px; gap:2px;" onclick="event.stopPropagation();">';
       html += '<div style="display:flex; gap:4px; align-items:center; flex-shrink:0;">';
-      html += '<label style="display:flex; align-items:center; gap:1px; font-size:0.55rem; color:var(--color-danger); font-weight:bold; cursor:pointer; white-space:nowrap;"><input type="checkbox" class="student-leave-chk" data-row="' + c.rowIndex + '" ' + (isStudentLeaveChecked ? 'checked' : '') + ' onchange="toggleClassAbsence(' + c.rowIndex + ',\'studentLeave\',this)" style="transform:scale(0.75); margin:0;"> น้องลา</label>';
-      html += '<label style="display:flex; align-items:center; gap:1px; font-size:0.55rem; color:var(--color-danger); font-weight:bold; cursor:pointer; white-space:nowrap;"><input type="checkbox" class="teacher-leave-chk" data-row="' + c.rowIndex + '" ' + (isTeacherLeaveChecked ? 'checked' : '') + ' onchange="toggleClassAbsence(' + c.rowIndex + ',\'teacherLeave\',this)" style="transform:scale(0.75); margin:0;"> ครูลา</label>';
+      html += '<label style="display:flex; align-items:center; gap:1px; font-size:0.55rem; color:var(--color-danger); font-weight:bold; cursor:pointer; white-space:nowrap;"><input type="checkbox" class="student-leave-chk" data-row="' + c.rowIndex + '" ' + (isStudentLeaveChecked ? 'checked' : '') + ' onchange="toggleClassAbsence(' + c.rowIndex + ',\'studentLeave\',this)" style="transform:scale(0.75); margin:0;"> เธเนเธญเธเธฅเธฒ</label>';
+      html += '<label style="display:flex; align-items:center; gap:1px; font-size:0.55rem; color:var(--color-danger); font-weight:bold; cursor:pointer; white-space:nowrap;"><input type="checkbox" class="teacher-leave-chk" data-row="' + c.rowIndex + '" ' + (isTeacherLeaveChecked ? 'checked' : '') + ' onchange="toggleClassAbsence(' + c.rowIndex + ',\'teacherLeave\',this)" style="transform:scale(0.75); margin:0;"> เธเธฃเธนเธฅเธฒ</label>';
       html += '</div>';
       html += '<div style="display:flex; gap:2px; align-items:center; flex-shrink:0;">';
       html += confirmBtn;
-      html += '<button type="button" onclick="showEditClassLogModal(' + c.rowIndex + ')" style="padding:1px 3px; font-size:0.58rem; border:1px solid var(--border-color); background:#f8fafc; border-radius:3px; cursor:pointer; height:auto;" title="แก้ไข">✏️</button>';
-      html += '<button type="button" onclick="deleteClassLog(' + c.rowIndex + ')" style="padding:1px 3px; font-size:0.58rem; border:1px solid #fecaca; background:#fef2f2; color:var(--color-danger); border-radius:3px; cursor:pointer; height:auto;" title="ลบ">🗑️</button>';
+      html += '<button type="button" onclick="showEditClassLogModal(' + c.rowIndex + ')" style="padding:1px 3px; font-size:0.58rem; border:1px solid var(--border-color); background:#f8fafc; border-radius:3px; cursor:pointer; height:auto;" title="เนเธเนเนเธ">โ๏ธ</button>';
+      html += '<button type="button" onclick="deleteClassLog(' + c.rowIndex + ')" style="padding:1px 3px; font-size:0.58rem; border:1px solid #fecaca; background:#fef2f2; color:var(--color-danger); border-radius:3px; cursor:pointer; height:auto;" title="เธฅเธ">๐—‘๏ธ</button>';
       html += '</div>';
       html += '</div>';
       
@@ -10248,15 +10246,15 @@ function showAddRoomModal() {
 
   closeAllModals();
 
-  document.getElementById('room_modal_title').innerText = 'เพิ่มห้องเรียนใหม่';
+  document.getElementById('room_modal_title').innerText = 'เน€เธเธดเนเธกเธซเนเธญเธเน€เธฃเธตเธขเธเนเธซเธกเน';
 
   if(document.getElementById('room_add_fields')) document.getElementById('room_add_fields').style.display = 'block';
 
   
 
-  // Pre-select current active branch tab filter (or default to สาขา1)
+  // Pre-select current active branch tab filter (or default to เธชเธฒเธเธฒ1)
 
-  const currentBranch = state.activeBranchFilter || 'สาขา1';
+  const currentBranch = state.activeBranchFilter || 'เธชเธฒเธเธฒ1';
 
   document.getElementById('room_add_branch').value = currentBranch;
 
@@ -10302,7 +10300,7 @@ window.createClassTab = function(i) {
 
   newBtn.style.cssText = 'padding: 6px 16px; font-size: 0.82rem; border-radius: 8px 8px 0 0;';
 
-  newBtn.innerHTML = `📚 คลาส ${i + 1}`;
+  newBtn.innerHTML = `๐“ เธเธฅเธฒเธช ${i + 1}`;
 
   
 
@@ -10419,11 +10417,11 @@ function showEditClassLogModal(rowIndex) {
 
   const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
 
-  const isTeacher = (role === 'Teacher' || role === 'ครู');
+  const isTeacher = (role === 'Teacher' || role === 'เธเธฃเธน');
 
   if (isTeacher) {
 
-    showToast('คุณไม่มีสิทธิ์ในการแก้ไขคลาสเรียน', 'error');
+    showToast('เธเธธเธ“เนเธกเนเธกเธตเธชเธดเธ—เธเธดเนเนเธเธเธฒเธฃเนเธเนเนเธเธเธฅเธฒเธชเน€เธฃเธตเธขเธ', 'error');
 
     return;
 
@@ -10445,9 +10443,9 @@ function showEditClassLogModal(rowIndex) {
 
     clearClassForm();
 
-    document.getElementById('class_modal_title').innerText = 'แก้ไขคลาสเรียน';
+    document.getElementById('class_modal_title').innerText = 'เนเธเนเนเธเธเธฅเธฒเธชเน€เธฃเธตเธขเธ';
 
-    document.getElementById('class_submit_btn').innerText = '✓ อัปเดตคลาสเรียน';
+    document.getElementById('class_submit_btn').innerText = 'โ“ เธญเธฑเธเน€เธ”เธ•เธเธฅเธฒเธชเน€เธฃเธตเธขเธ';
 
     if(document.getElementById('class_submit_btn')) document.getElementById('class_submit_btn').style.background = '#3b82f6';
 
@@ -10545,7 +10543,7 @@ function showEditClassLogModal(rowIndex) {
 
     // Fetch fallback from server
 
-    setLoading(true, 'กำลังดึงข้อมูลคลาสเรียนจากเซิร์ฟเวอร์...');
+    setLoading(true, 'เธเธณเธฅเธฑเธเธ”เธถเธเธเนเธญเธกเธนเธฅเธเธฅเธฒเธชเน€เธฃเธตเธขเธเธเธฒเธเน€เธเธดเธฃเนเธเน€เธงเธญเธฃเน...');
 
     google.script.run
 
@@ -10559,7 +10557,7 @@ function showEditClassLogModal(rowIndex) {
 
         } else {
 
-          showToast('ไม่พบข้อมูลคลาสเรียน: ' + (res ? res.error : 'unknown'), 'error');
+          showToast('เนเธกเนเธเธเธเนเธญเธกเธนเธฅเธเธฅเธฒเธชเน€เธฃเธตเธขเธ: ' + (res ? res.error : 'unknown'), 'error');
 
         }
 
@@ -10569,7 +10567,7 @@ function showEditClassLogModal(rowIndex) {
 
         setLoading(false);
 
-        showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+        showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
       })
 
@@ -10585,7 +10583,7 @@ function showEditRoomModal(branch, roomName, ipad, zoom) {
 
   closeAllModals();
 
-  document.getElementById('room_modal_title').innerText = 'ตั้งค่าห้องเรียน (IPAD & Zoom)';
+  document.getElementById('room_modal_title').innerText = 'เธ•เธฑเนเธเธเนเธฒเธซเนเธญเธเน€เธฃเธตเธขเธ (IPAD & Zoom)';
 
   if(document.getElementById('room_add_fields')) document.getElementById('room_add_fields').style.display = 'none';
 
@@ -10635,7 +10633,7 @@ function saveRoomSettings(e) {
 
     if (!roomName) {
 
-      showToast('กรุณากรอกชื่อห้องเรียน', 'error');
+      showToast('เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเธซเนเธญเธเน€เธฃเธตเธขเธ', 'error');
 
       return;
 
@@ -10657,7 +10655,7 @@ function saveRoomSettings(e) {
 
   
 
-  setLoading(true, 'กำลังบันทึกตั้งค่าห้องเรียน...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธ•เธฑเนเธเธเนเธฒเธซเนเธญเธเน€เธฃเธตเธขเธ...');
 
   const user = getLogUser();
 
@@ -10671,7 +10669,7 @@ function saveRoomSettings(e) {
 
       if (res && res.success) {
 
-        showToast('บันทึกการตั้งค่าห้องสำเร็จ!', 'success');
+        showToast('เธเธฑเธเธ—เธถเธเธเธฒเธฃเธ•เธฑเนเธเธเนเธฒเธซเนเธญเธเธชเธณเน€เธฃเนเธ!', 'success');
 
         closeRoomModal();
 
@@ -10679,7 +10677,7 @@ function saveRoomSettings(e) {
 
       } else {
 
-        showToast('บันทึกผิดพลาด: ' + res.error, 'error');
+        showToast('เธเธฑเธเธ—เธถเธเธเธดเธ”เธเธฅเธฒเธ”: ' + res.error, 'error');
 
       }
 
@@ -10689,7 +10687,7 @@ function saveRoomSettings(e) {
 
       setLoading(false);
 
-      showToast('เชื่อมต่อผิดพลาด: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
     })
 
@@ -10701,9 +10699,9 @@ function saveRoomSettings(e) {
 
 function deleteRoomFrontend(branch, roomName) {
 
-  if (confirm(`คุณแน่ใจหรือไม่ที่จะลบห้องเรียน "${roomName}" ของ "${branch}" ?\n(ข้อมูลคาบเรียนจะไม่หายไป แต่ห้องเรียนนี้จะถูกลบออกจากตารางเรียนรายห้อง)`)) {
+  if (confirm(`เธเธธเธ“เนเธเนเนเธเธซเธฃเธทเธญเนเธกเนเธ—เธตเนเธเธฐเธฅเธเธซเนเธญเธเน€เธฃเธตเธขเธ "${roomName}" เธเธญเธ "${branch}" ?\n(เธเนเธญเธกเธนเธฅเธเธฒเธเน€เธฃเธตเธขเธเธเธฐเนเธกเนเธซเธฒเธขเนเธ เนเธ•เนเธซเนเธญเธเน€เธฃเธตเธขเธเธเธตเนเธเธฐเธ–เธนเธเธฅเธเธญเธญเธเธเธฒเธเธ•เธฒเธฃเธฒเธเน€เธฃเธตเธขเธเธฃเธฒเธขเธซเนเธญเธ)`)) {
 
-    setLoading(true, 'กำลังลบห้องเรียน...');
+    setLoading(true, 'เธเธณเธฅเธฑเธเธฅเธเธซเนเธญเธเน€เธฃเธตเธขเธ...');
 
     const user = getLogUser();
 
@@ -10717,13 +10715,13 @@ function deleteRoomFrontend(branch, roomName) {
 
         if (res && res.success) {
 
-          showToast('ลบห้องเรียนสำเร็จ!', 'success');
+          showToast('เธฅเธเธซเนเธญเธเน€เธฃเธตเธขเธเธชเธณเน€เธฃเนเธ!', 'success');
 
           loadDailyGrid();
 
         } else {
 
-          showToast('ลบห้องเรียนล้มเหลว: ' + res.error, 'error');
+          showToast('เธฅเธเธซเนเธญเธเน€เธฃเธตเธขเธเธฅเนเธกเน€เธซเธฅเธง: ' + res.error, 'error');
 
         }
 
@@ -10733,7 +10731,7 @@ function deleteRoomFrontend(branch, roomName) {
 
         setLoading(false);
 
-        showToast('เชื่อมต่อผิดพลาด: ' + err.message, 'error');
+        showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
       })
 
@@ -10747,7 +10745,7 @@ function deleteRoomFrontend(branch, roomName) {
 
 // ----------------------------------------------------
 
-// 6. Class Logs Panel (บันทึกชั่วโมงสอน)
+// 6. Class Logs Panel (เธเธฑเธเธ—เธถเธเธเธฑเนเธงเนเธกเธเธชเธญเธ)
 
 // ----------------------------------------------------
 
@@ -10901,7 +10899,7 @@ function renderRevenueLogs() {
 
   if (!startDate || !endDate) {
 
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">กรุณาเลือกช่วงวันที่</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธเนเธงเธเธงเธฑเธเธ—เธตเน</td></tr>`;
 
     return;
 
@@ -10915,7 +10913,7 @@ function renderRevenueLogs() {
 
   if (filteredStudents.length === 0) {
 
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลรายรับในช่วงวันที่เลือก</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเธฃเธฒเธขเธฃเธฑเธเนเธเธเนเธงเธเธงเธฑเธเธ—เธตเนเน€เธฅเธทเธญเธ</td></tr>`;
 
     return;
 
@@ -11017,7 +11015,7 @@ function saveRevenueLogs() {
 
   if (rows.length === 0) {
 
-    showToast('ไม่มีข้อมูลการเงินให้บันทึกในวันนี้', 'info');
+    showToast('เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเธเธฒเธฃเน€เธเธดเธเนเธซเนเธเธฑเธเธ—เธถเธเนเธเธงเธฑเธเธเธตเน', 'info');
 
     return;
 
@@ -11061,7 +11059,7 @@ function saveRevenueLogs() {
 
   
 
-  setLoading(true, 'กำลังบันทึกสถานะการเงินและการชำระเงิน...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธชเธ–เธฒเธเธฐเธเธฒเธฃเน€เธเธดเธเนเธฅเธฐเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธ...');
 
   const user = getLogUser();
 
@@ -11075,13 +11073,13 @@ function saveRevenueLogs() {
 
       if (res && res.success) {
 
-        showToast('บันทึกการตรวจสอบและสถานะการชำระเงินสำเร็จ!', 'success');
+        showToast('เธเธฑเธเธ—เธถเธเธเธฒเธฃเธ•เธฃเธงเธเธชเธญเธเนเธฅเธฐเธชเธ–เธฒเธเธฐเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธเธชเธณเน€เธฃเนเธ!', 'success');
 
         loadRevenueLogs(true);
 
       } else {
 
-        showToast('บันทึกผิดพลาด: ' + res.error, 'error');
+        showToast('เธเธฑเธเธ—เธถเธเธเธดเธ”เธเธฅเธฒเธ”: ' + res.error, 'error');
 
       }
 
@@ -11091,7 +11089,7 @@ function saveRevenueLogs() {
 
       setLoading(false);
 
-      showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
     })
 
@@ -11117,7 +11115,7 @@ function loadModalClasses(callback) {
 
   if (!dateVal || !roomVal) {
 
-    if (listContainer) listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.85rem;">กรุณาเลือกวันที่เรียนและห้องเรียน</div>';
+    if (listContainer) listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.85rem;">เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธงเธฑเธเธ—เธตเนเน€เธฃเธตเธขเธเนเธฅเธฐเธซเนเธญเธเน€เธฃเธตเธขเธ</div>';
 
     if (countSpan) countSpan.innerText = '0';
 
@@ -11173,7 +11171,7 @@ function loadModalClasses(callback) {
 
   
 
-  listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.85rem;">กำลังโหลดคลาสเรียน...</div>';
+  listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.85rem;">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเธฅเธฒเธชเน€เธฃเธตเธขเธ...</div>';
 
   
 
@@ -11201,7 +11199,7 @@ function loadModalClasses(callback) {
 
       } else {
 
-        listContainer.innerHTML = '<div style="text-align: center; color: var(--color-danger); padding: 20px; font-size: 0.85rem;">ดึงข้อมูลล้มเหลว</div>';
+        listContainer.innerHTML = '<div style="text-align: center; color: var(--color-danger); padding: 20px; font-size: 0.85rem;">เธ”เธถเธเธเนเธญเธกเธนเธฅเธฅเนเธกเน€เธซเธฅเธง</div>';
 
       }
 
@@ -11217,11 +11215,11 @@ function showAddClassLogModal() {
 
   const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
 
-  const isTeacher = (role === 'Teacher' || role === 'ครู');
+  const isTeacher = (role === 'Teacher' || role === 'เธเธฃเธน');
 
   if (isTeacher) {
 
-    showToast('คุณไม่มีสิทธิ์ในการเพิ่มคลาสเรียน', 'error');
+    showToast('เธเธธเธ“เนเธกเนเธกเธตเธชเธดเธ—เธเธดเนเนเธเธเธฒเธฃเน€เธเธดเนเธกเธเธฅเธฒเธชเน€เธฃเธตเธขเธ', 'error');
 
     return;
 
@@ -11265,9 +11263,9 @@ function showAddClassLogModal() {
 
   
 
-  document.getElementById('class_modal_title').innerText = 'บันทึกชั่วโมงสอนคลาสใหม่';
+  document.getElementById('class_modal_title').innerText = 'เธเธฑเธเธ—เธถเธเธเธฑเนเธงเนเธกเธเธชเธญเธเธเธฅเธฒเธชเนเธซเธกเน';
 
-  document.getElementById('class_submit_btn').innerText = '💾 บันทึกข้อมูลคลาสเรียน';
+  document.getElementById('class_submit_btn').innerText = '๐’พ เธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเธเธฅเธฒเธชเน€เธฃเธตเธขเธ';
 
   if(document.getElementById('class_submit_btn')) document.getElementById('class_submit_btn').style.background = '#10b981';
 
@@ -11311,7 +11309,7 @@ function renderModalClassesList() {
 
   if (modalState.classes.length === 0) {
 
-    if (listContainer) listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.85rem;">ไม่มีคลาสเรียนในวันนี้</div>';
+    if (listContainer) listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.85rem;">เนเธกเนเธกเธตเธเธฅเธฒเธชเน€เธฃเธตเธขเธเนเธเธงเธฑเธเธเธตเน</div>';
 
     return;
 
@@ -11343,7 +11341,7 @@ function renderModalClassesList() {
 
     const isStudentLeaveChecked = log.isLeave > 0;
 
-    const isTeacherLeaveChecked = log.note && String(log.note).includes('ครูลา');
+    const isTeacherLeaveChecked = log.note && String(log.note).includes('เธเธฃเธนเธฅเธฒ');
 
     
 
@@ -11377,7 +11375,7 @@ function renderModalClassesList() {
 
     if (!log.rowIndex) {
 
-      statusLabel = '<span style="background: #10b981; color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; margin-left: 6px;">เพิ่มใหม่</span>';
+      statusLabel = '<span style="background: #10b981; color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; margin-left: 6px;">เน€เธเธดเนเธกเนเธซเธกเน</span>';
 
     } else {
 
@@ -11385,7 +11383,7 @@ function renderModalClassesList() {
 
       if (isUpdated) {
 
-        statusLabel = '<span style="background: #3b82f6; color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; margin-left: 6px;">แก้ไขชั่วคราว</span>';
+        statusLabel = '<span style="background: #3b82f6; color: white; font-size: 0.6rem; padding: 2px 4px; border-radius: 3px; font-weight: 700; margin-left: 6px;">เนเธเนเนเธเธเธฑเนเธงเธเธฃเธฒเธง</span>';
 
       }
 
@@ -11413,21 +11411,21 @@ function renderModalClassesList() {
 
     let badges = [];
 
-    if (isTeacherConfirmed) badges.push(`<span class="badge" style="font-size: 0.65rem; padding: 2px 4px; background-color: #15803d; color: white; font-weight: 700;">✓ ยืนยัน</span>`);
+    if (isTeacherConfirmed) badges.push(`<span class="badge" style="font-size: 0.65rem; padding: 2px 4px; background-color: #15803d; color: white; font-weight: 700;">โ“ เธขเธทเธเธขเธฑเธ</span>`);
 
-    if (log.isPresentLive > 0) badges.push(`<span class="badge badge-success" style="font-size: 0.65rem; padding: 2px 4px;">สด: ${log.isPresentLive}</span>`);
+    if (log.isPresentLive > 0) badges.push(`<span class="badge badge-success" style="font-size: 0.65rem; padding: 2px 4px;">เธชเธ”: ${log.isPresentLive}</span>`);
 
-    if (log.isPresentOnline > 0) badges.push(`<span class="badge badge-info" style="font-size: 0.65rem; padding: 2px 4px;">ออน: ${log.isPresentOnline}</span>`);
+    if (log.isPresentOnline > 0) badges.push(`<span class="badge badge-info" style="font-size: 0.65rem; padding: 2px 4px;">เธญเธญเธ: ${log.isPresentOnline}</span>`);
 
-    if (log.isLeave > 0) badges.push(`<span class="badge badge-warning" style="font-size: 0.65rem; padding: 2px 4px;">ลา: ${log.isLeave}</span>`);
+    if (log.isLeave > 0) badges.push(`<span class="badge badge-warning" style="font-size: 0.65rem; padding: 2px 4px;">เธฅเธฒ: ${log.isLeave}</span>`);
 
-    if (log.isAbsent > 0) badges.push(`<span class="badge badge-danger" style="font-size: 0.65rem; padding: 2px 4px;">ขาด: ${log.isAbsent}</span>`);
+    if (log.isAbsent > 0) badges.push(`<span class="badge badge-danger" style="font-size: 0.65rem; padding: 2px 4px;">เธเธฒเธ”: ${log.isAbsent}</span>`);
 
-    if (log.isMakeup > 0) badges.push(`<span class="badge" style="font-size: 0.65rem; padding: 2px 4px; background-color: #c095e7; color: white;">ชด: ${log.isMakeup}</span>`);
+    if (log.isMakeup > 0) badges.push(`<span class="badge" style="font-size: 0.65rem; padding: 2px 4px; background-color: #c095e7; color: white;">เธเธ”: ${log.isMakeup}</span>`);
 
     
 
-    const badgesHTML = badges.length > 0 ? `<div style="display:flex; gap:4px; flex-wrap:wrap;">${badges.join('')}</div>` : '<span style="font-size:0.7rem; color:var(--text-muted);">ไม่มีเช็คอิน</span>';
+    const badgesHTML = badges.length > 0 ? `<div style="display:flex; gap:4px; flex-wrap:wrap;">${badges.join('')}</div>` : '<span style="font-size:0.7rem; color:var(--text-muted);">เนเธกเนเธกเธตเน€เธเนเธเธญเธดเธ</span>';
 
     
 
@@ -11451,11 +11449,11 @@ function renderModalClassesList() {
 
       <div style="font-size: 0.65rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; border-top: 1px dashed var(--border-color); padding-top: 4px; margin-top: 2px;">
 
-        <div>🏢 ห้อง/สาขา: ${log.roomBranch || '-'}</div>
+        <div>๐ข เธซเนเธญเธ/เธชเธฒเธเธฒ: ${log.roomBranch || '-'}</div>
 
-        <div>👨‍🏫 ครูประจำ: ${log.teacherRegular}<br>🔄 ครูแทน: ${log.teacherSub ? log.teacherSub : '-'}</div>
+        <div>๐‘จโ€๐ซ เธเธฃเธนเธเธฃเธฐเธเธณ: ${log.teacherRegular}<br>๐” เธเธฃเธนเนเธ—เธ: ${log.teacherSub ? log.teacherSub : '-'}</div>
 
-        ${log.note ? `<div style="font-style: italic; color: #64748b; margin-top: 2px;">📝 หมายเหตุ: ${log.note}</div>` : ''}
+        ${log.note ? `<div style="font-style: italic; color: #64748b; margin-top: 2px;">๐“ เธซเธกเธฒเธขเน€เธซเธ•เธธ: ${log.note}</div>` : ''}
 
       </div>
 
@@ -11463,13 +11461,13 @@ function renderModalClassesList() {
 
         <label style="display: flex; align-items: center; gap: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 600; color: var(--color-danger);">
 
-          <input type="checkbox" class="student-leave-chk" ${isStudentLeaveChecked ? 'checked' : ''} onchange="toggleLocalLeave(${originalIndex}, 'leave', this)"> 🎒 น้องลา
+          <input type="checkbox" class="student-leave-chk" ${isStudentLeaveChecked ? 'checked' : ''} onchange="toggleLocalLeave(${originalIndex}, 'leave', this)"> ๐’ เธเนเธญเธเธฅเธฒ
 
         </label>
 
         <label style="display: flex; align-items: center; gap: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 600; color: var(--color-danger);">
 
-          <input type="checkbox" class="teacher-leave-chk" ${isTeacherLeaveChecked ? 'checked' : ''} onchange="toggleLocalLeave(${originalIndex}, 'teacher', this)"> 👨‍🏫 ครูลา
+          <input type="checkbox" class="teacher-leave-chk" ${isTeacherLeaveChecked ? 'checked' : ''} onchange="toggleLocalLeave(${originalIndex}, 'teacher', this)"> ๐‘จโ€๐ซ เธเธฃเธนเธฅเธฒ
 
         </label>
 
@@ -11481,9 +11479,9 @@ function renderModalClassesList() {
 
         <div style="display: flex; gap: 4px;">
 
-          <button type="button" class="btn btn-secondary btn-icon" onclick="editLocalClass(${originalIndex})" style="padding: 2px 6px; font-size: 0.7rem; height: auto;" title="แก้ไข">✏️</button>
+          <button type="button" class="btn btn-secondary btn-icon" onclick="editLocalClass(${originalIndex})" style="padding: 2px 6px; font-size: 0.7rem; height: auto;" title="เนเธเนเนเธ">โ๏ธ</button>
 
-          <button type="button" class="btn btn-danger btn-icon" onclick="deleteLocalClass(${originalIndex})" style="padding: 2px 6px; font-size: 0.7rem; height: auto;" title="ลบ">🗑️</button>
+          <button type="button" class="btn btn-danger btn-icon" onclick="deleteLocalClass(${originalIndex})" style="padding: 2px 6px; font-size: 0.7rem; height: auto;" title="เธฅเธ">๐—‘๏ธ</button>
 
         </div>
 
@@ -11523,15 +11521,15 @@ function toggleLocalLeave(index, type, checkbox) {
 
     if (checkbox.checked) {
 
-      if (!log.note.includes('ครูลา')) {
+      if (!log.note.includes('เธเธฃเธนเธฅเธฒ')) {
 
-        log.note = (log.note + ' ครูลา').trim();
+        log.note = (log.note + ' เธเธฃเธนเธฅเธฒ').trim();
 
       }
 
     } else {
 
-      log.note = log.note.replace('ครูลา', '').trim();
+      log.note = log.note.replace('เธเธฃเธนเธฅเธฒ', '').trim();
 
     }
 
@@ -11579,9 +11577,9 @@ function editLocalClass(index) {
 
   modalState.editingIndex = index;
 
-  document.getElementById('class_modal_title').innerText = 'แก้ไขคลาสเรียน (ชั่วคราว)';
+  document.getElementById('class_modal_title').innerText = 'เนเธเนเนเธเธเธฅเธฒเธชเน€เธฃเธตเธขเธ (เธเธฑเนเธงเธเธฃเธฒเธง)';
 
-  document.getElementById('class_submit_btn').innerText = '✓ อัปเดตคลาสในรายการ';
+  document.getElementById('class_submit_btn').innerText = 'โ“ เธญเธฑเธเน€เธ”เธ•เธเธฅเธฒเธชเนเธเธฃเธฒเธขเธเธฒเธฃ';
 
   if(document.getElementById('class_submit_btn')) document.getElementById('class_submit_btn').style.background = '#3b82f6';
 
@@ -11645,7 +11643,7 @@ function deleteLocalClass(index) {
 
   
 
-  if (confirm(`คุณต้องการลบคลาส "${log.subject}" ใช่หรือไม่?`)) {
+  if (confirm(`เธเธธเธ“เธ•เนเธญเธเธเธฒเธฃเธฅเธเธเธฅเธฒเธช "${log.subject}" เนเธเนเธซเธฃเธทเธญเนเธกเน?`)) {
 
     if (log.rowIndex) {
 
@@ -11679,7 +11677,7 @@ function deleteLocalClass(index) {
 
     renderModalClassesList();
 
-    showToast('ลบคลาสเรียนออกจากรายการชั่วคราวแล้ว', 'success');
+    showToast('เธฅเธเธเธฅเธฒเธชเน€เธฃเธตเธขเธเธญเธญเธเธเธฒเธเธฃเธฒเธขเธเธฒเธฃเธเธฑเนเธงเธเธฃเธฒเธงเนเธฅเนเธง', 'success');
 
   }
 
@@ -11695,9 +11693,9 @@ function clearClassForm() {
 
   modalState.editingIndexes = Array(numTabs).fill(-1);
 
-  document.getElementById('class_modal_title').innerText = 'บันทึกชั่วโมงสอนคลาสใหม่';
+  document.getElementById('class_modal_title').innerText = 'เธเธฑเธเธ—เธถเธเธเธฑเนเธงเนเธกเธเธชเธญเธเธเธฅเธฒเธชเนเธซเธกเน';
 
-  document.getElementById('class_submit_btn').innerText = '💾 บันทึกข้อมูลคลาสเรียน';
+  document.getElementById('class_submit_btn').innerText = '๐’พ เธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเธเธฅเธฒเธชเน€เธฃเธตเธขเธ';
 
   if(document.getElementById('class_submit_btn')) document.getElementById('class_submit_btn').style.background = '#10b981';
 
@@ -11873,7 +11871,7 @@ function copyClassLogFromFirst() {
 
   }
 
-  showToast('คัดลอกข้อมูลจากคลาส 1 ไปยังคลาส 2-4 แล้ว', 'success');
+  showToast('เธเธฑเธ”เธฅเธญเธเธเนเธญเธกเธนเธฅเธเธฒเธเธเธฅเธฒเธช 1 เนเธเธขเธฑเธเธเธฅเธฒเธช 2-4 เนเธฅเนเธง', 'success');
 
 }
 
@@ -12011,7 +12009,7 @@ function toggleClassAbsence(rowIndex, type, checkbox) {
 
         if (res && res.success) {
 
-          showToast('อัปเดตสถานะการลาและสถิตินักเรียนสำเร็จ!', 'success');
+          showToast('เธญเธฑเธเน€เธ”เธ•เธชเธ–เธฒเธเธฐเธเธฒเธฃเธฅเธฒเนเธฅเธฐเธชเธ–เธดเธ•เธดเธเธฑเธเน€เธฃเธตเธขเธเธชเธณเน€เธฃเนเธ!', 'success');
 
           if (log) {
 
@@ -12051,7 +12049,7 @@ function toggleClassAbsence(rowIndex, type, checkbox) {
 
         } else {
 
-          showToast('อัปเดตบน Google Sheet ล้มเหลว: ' + res.error, 'error');
+          showToast('เธญเธฑเธเน€เธ”เธ•เธเธ Google Sheet เธฅเนเธกเน€เธซเธฅเธง: ' + res.error, 'error');
 
         }
 
@@ -12059,7 +12057,7 @@ function toggleClassAbsence(rowIndex, type, checkbox) {
 
       .withFailureHandler(err => {
 
-        showToast('เชื่อมต่อผิดพลาด: ' + err.message, 'error');
+        showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
       })
 
@@ -12075,7 +12073,7 @@ function toggleClassAbsence(rowIndex, type, checkbox) {
 
         if (res && res.success) {
 
-          showToast('บันทึกสถานะครูลาสำเร็จ!', 'success');
+          showToast('เธเธฑเธเธ—เธถเธเธชเธ–เธฒเธเธฐเธเธฃเธนเธฅเธฒเธชเธณเน€เธฃเนเธ!', 'success');
 
           // Update local classLogs note if available
 
@@ -12085,9 +12083,9 @@ function toggleClassAbsence(rowIndex, type, checkbox) {
 
             if (checkbox.checked) {
 
-              if (!log.note || !log.note.includes('ครูลา')) {
+              if (!log.note || !log.note.includes('เธเธฃเธนเธฅเธฒ')) {
 
-                log.note = (log.note ? log.note + ' ' : '') + 'ครูลา';
+                log.note = (log.note ? log.note + ' ' : '') + 'เธเธฃเธนเธฅเธฒ';
 
               }
 
@@ -12095,7 +12093,7 @@ function toggleClassAbsence(rowIndex, type, checkbox) {
 
               if (log.note) {
 
-                log.note = log.note.replace(/ครูลา/g, '').trim();
+                log.note = log.note.replace(/เธเธฃเธนเธฅเธฒ/g, '').trim();
 
               }
 
@@ -12115,7 +12113,7 @@ function toggleClassAbsence(rowIndex, type, checkbox) {
 
         } else {
 
-          showToast('บันทึกครูลาบน Google Sheet ล้มเหลว: ' + (res ? res.error : 'unknown'), 'error');
+          showToast('เธเธฑเธเธ—เธถเธเธเธฃเธนเธฅเธฒเธเธ Google Sheet เธฅเนเธกเน€เธซเธฅเธง: ' + (res ? res.error : 'unknown'), 'error');
 
           checkbox.checked = !checkbox.checked;
 
@@ -12151,7 +12149,7 @@ function toggleClassAbsence(rowIndex, type, checkbox) {
 
       .withFailureHandler(err => {
 
-        showToast('เชื่อมต่อผิดพลาด: ' + err.message, 'error');
+        showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
         checkbox.checked = !checkbox.checked;
 
@@ -12205,11 +12203,11 @@ function handleTeacherLeaveToggle(rowIndex, checkbox) {
 
       if (res && res.success) {
 
-        showToast('บันทึกสถานะครูลาสำเร็จ!', 'success');
+        showToast('เธเธฑเธเธ—เธถเธเธชเธ–เธฒเธเธฐเธเธฃเธนเธฅเธฒเธชเธณเน€เธฃเนเธ!', 'success');
 
       } else {
 
-        showToast('บันทึกผิดพลาด: ' + (res ? res.error : 'unknown'), 'error');
+        showToast('เธเธฑเธเธ—เธถเธเธเธดเธ”เธเธฅเธฒเธ”: ' + (res ? res.error : 'unknown'), 'error');
 
         checkbox.checked = !checkbox.checked;
 
@@ -12223,7 +12221,7 @@ function handleTeacherLeaveToggle(rowIndex, checkbox) {
 
     .withFailureHandler(err => {
 
-      showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
       checkbox.checked = !checkbox.checked;
 
@@ -12249,11 +12247,11 @@ function saveClassLog(e) {
 
     const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
 
-    const isTeacher = (role === 'Teacher' || role === 'ครู');
+    const isTeacher = (role === 'Teacher' || role === 'เธเธฃเธน');
 
     if (isTeacher) {
 
-      showToast('คุณไม่มีสิทธิ์ในการบันทึกหรือแก้ไขคลาสเรียน', 'error');
+      showToast('เธเธธเธ“เนเธกเนเธกเธตเธชเธดเธ—เธเธดเนเนเธเธเธฒเธฃเธเธฑเธเธ—เธถเธเธซเธฃเธทเธญเนเธเนเนเธเธเธฅเธฒเธชเน€เธฃเธตเธขเธ', 'error');
 
       return;
 
@@ -12288,8 +12286,8 @@ function saveClassLog(e) {
         const datalist = document.getElementById(listId);
         if (datalist) {
           const options = Array.from(datalist.options).map(opt => opt.value);
-          if (subject.includes('เดี่ยว') && !options.includes(subject)) {
-             showToast(`คลาส ${i+1}: ชื่อคอร์สเด็กเดี่ยว ห้ามพิมพ์ข้อความต่อท้าย (กรุณาเลือกจากรายการเท่านั้น)`, 'error');
+          if (subject.includes('เน€เธ”เธตเนเธขเธง') && !options.includes(subject)) {
+             showToast(`เธเธฅเธฒเธช ${i+1}: เธเธทเนเธญเธเธญเธฃเนเธชเน€เธ”เนเธเน€เธ”เธตเนเธขเธง เธซเนเธฒเธกเธเธดเธกเธเนเธเนเธญเธเธงเธฒเธกเธ•เนเธญเธ—เนเธฒเธข (เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธเธฒเธเธฃเธฒเธขเธเธฒเธฃเน€เธ—เนเธฒเธเธฑเนเธ)`, 'error');
              return; // Stop saving
           }
         }
@@ -12361,7 +12359,7 @@ function saveClassLog(e) {
 
     if (logsToAdd.length === 0 && logsToUpdate.length === 0) {
 
-      showToast('กรุณากรอกวิชาเรียนอย่างน้อย 1 คลาส', 'error');
+      showToast('เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธงเธดเธเธฒเน€เธฃเธตเธขเธเธญเธขเนเธฒเธเธเนเธญเธข 1 เธเธฅเธฒเธช', 'error');
 
       return;
 
@@ -12381,7 +12379,7 @@ function saveClassLog(e) {
 
       if (!r.log.date || !r.endDate) {
 
-        showToast('กรุณาระบุวันที่เริ่มต้นและสิ้นสุดของคอร์สสำหรับการบันทึกซ้ำ', 'error');
+        showToast('เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธงเธฑเธเธ—เธตเนเน€เธฃเธดเนเธกเธ•เนเธเนเธฅเธฐเธชเธดเนเธเธชเธธเธ”เธเธญเธเธเธญเธฃเนเธชเธชเธณเธซเธฃเธฑเธเธเธฒเธฃเธเธฑเธเธ—เธถเธเธเนเธณ', 'error');
 
         hasRecurringError = true;
 
@@ -12403,7 +12401,7 @@ function saveClassLog(e) {
 
       if (isNaN(current.getTime()) || isNaN(end.getTime())) {
 
-        showToast('รูปแบบวันที่ไม่ถูกต้อง', 'error');
+        showToast('เธฃเธนเธเนเธเธเธงเธฑเธเธ—เธตเนเนเธกเนเธ–เธนเธเธ•เนเธญเธ', 'error');
 
         hasRecurringError = true;
 
@@ -12415,7 +12413,7 @@ function saveClassLog(e) {
 
       if (end < current) {
 
-        showToast('วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่มต้น', 'error');
+        showToast('เธงเธฑเธเธ—เธตเนเธชเธดเนเธเธชเธธเธ”เธ•เนเธญเธเนเธกเนเธเนเธญเธขเธเธงเนเธฒเธงเธฑเธเธ—เธตเนเน€เธฃเธดเนเธกเธ•เนเธ', 'error');
 
         hasRecurringError = true;
 
@@ -12433,19 +12431,19 @@ function saveClassLog(e) {
 
       
 
-      if (subject.includes('เดี่ยว')) {
+      if (subject.includes('เน€เธ”เธตเนเธขเธง')) {
 
         maxWeeks = 4;
 
-        typeName = 'เดี่ยว';
+        typeName = 'เน€เธ”เธตเนเธขเธง';
 
-      } else if (subject.includes('ย่อย')) {
+      } else if (subject.includes('เธขเนเธญเธข')) {
 
         maxWeeks = 8;
 
-        typeName = 'ย่อย';
+        typeName = 'เธขเนเธญเธข';
 
-      } else if (subject.includes('หลัก')) {
+      } else if (subject.includes('เธซเธฅเธฑเธ')) {
 
         maxWeeks = -1;
 
@@ -12465,7 +12463,7 @@ function saveClassLog(e) {
 
       if (maxWeeks !== -1 && diffWeeks >= maxWeeks) {
 
-        showToast(`วิชาเรียนที่มีคำว่า "${typeName}" สามารถบันทึกซ้ำได้ไม่เกิน ${maxWeeks} สัปดาห์ (รวมสัปดาห์แรก)`, 'error');
+        showToast(`เธงเธดเธเธฒเน€เธฃเธตเธขเธเธ—เธตเนเธกเธตเธเธณเธงเนเธฒ "${typeName}" เธชเธฒเธกเธฒเธฃเธ–เธเธฑเธเธ—เธถเธเธเนเธณเนเธ”เนเนเธกเนเน€เธเธดเธ ${maxWeeks} เธชเธฑเธเธ”เธฒเธซเน (เธฃเธงเธกเธชเธฑเธเธ”เธฒเธซเนเนเธฃเธ)`, 'error');
 
         hasRecurringError = true;
 
@@ -12517,7 +12515,7 @@ function saveClassLog(e) {
 
     closeClassLogModal();
 
-    showToast('กำลังบันทึกข้อมูลคลาสเรียนในเบื้องหลัง...', 'info');
+    showToast('เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเธเธฅเธฒเธชเน€เธฃเธตเธขเธเนเธเน€เธเธทเนเธญเธเธซเธฅเธฑเธ...', 'info');
 
 
 
@@ -12529,11 +12527,11 @@ function saveClassLog(e) {
 
           if (additionalRecurringLogs.length > 0) {
 
-            showToast('บันทึกคลาสเรียนซ้ำสำเร็จจำนวน ' + logsToAdd.length + ' คาบ!', 'success');
+            showToast('เธเธฑเธเธ—เธถเธเธเธฅเธฒเธชเน€เธฃเธตเธขเธเธเนเธณเธชเธณเน€เธฃเนเธเธเธณเธเธงเธ ' + logsToAdd.length + ' เธเธฒเธ!', 'success');
 
           } else {
 
-            showToast('บันทึก/แก้ไขข้อมูลคลาสเรียนสำเร็จแล้ว!', 'success');
+            showToast('เธเธฑเธเธ—เธถเธ/เนเธเนเนเธเธเนเธญเธกเธนเธฅเธเธฅเธฒเธชเน€เธฃเธตเธขเธเธชเธณเน€เธฃเนเธเนเธฅเนเธง!', 'success');
 
           }
 
@@ -12550,7 +12548,7 @@ function saveClassLog(e) {
 
         } else {
 
-          showToast('บันทึกล้มเหลว: ' + (res?.error || ''), 'error');
+          showToast('เธเธฑเธเธ—เธถเธเธฅเนเธกเน€เธซเธฅเธง: ' + (res?.error || ''), 'error');
 
         }
 
@@ -12558,7 +12556,7 @@ function saveClassLog(e) {
 
       .withFailureHandler(err => {
 
-        showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+        showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
       })
 
@@ -12568,7 +12566,7 @@ function saveClassLog(e) {
 
     console.error('Error in saveClassLog:', err);
 
-    showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
   }
 
@@ -12580,11 +12578,11 @@ function submitBatchClassLogs() {
 
   const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
 
-  const isTeacher = (role === 'Teacher' || role === 'ครู');
+  const isTeacher = (role === 'Teacher' || role === 'เธเธฃเธน');
 
   if (isTeacher) {
 
-    showToast('คุณไม่มีสิทธิ์ในการบันทึกข้อมูลคลาสเรียน', 'error');
+    showToast('เธเธธเธ“เนเธกเนเธกเธตเธชเธดเธ—เธเธดเนเนเธเธเธฒเธฃเธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเธเธฅเธฒเธชเน€เธฃเธตเธขเธ', 'error');
 
     return;
 
@@ -12594,7 +12592,7 @@ function submitBatchClassLogs() {
 
   if (modalState.newLogs.length === 0 && modalState.updatedLogs.length === 0 && modalState.deletedRows.length === 0) {
 
-    showToast('ไม่มีการเปลี่ยนแปลงใดๆ ที่ยังไม่ได้บันทึก', 'info');
+    showToast('เนเธกเนเธกเธตเธเธฒเธฃเน€เธเธฅเธตเนเธขเธเนเธเธฅเธเนเธ”เน เธ—เธตเนเธขเธฑเธเนเธกเนเนเธ”เนเธเธฑเธเธ—เธถเธ', 'info');
 
     closeClassLogModal();
 
@@ -12608,7 +12606,7 @@ function submitBatchClassLogs() {
 
   closeClassLogModal();
 
-  showToast('กำลังบันทึกการเปลี่ยนแปลงทั้งหมดในเบื้องหลัง...', 'info');
+  showToast('เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธเธฒเธฃเน€เธเธฅเธตเนเธขเธเนเธเธฅเธเธ—เธฑเนเธเธซเธกเธ”เนเธเน€เธเธทเนเธญเธเธซเธฅเธฑเธ...', 'info');
 
   const user = getLogUser();
 
@@ -12620,7 +12618,7 @@ function submitBatchClassLogs() {
 
       if (res && res.success) {
 
-        showToast('บันทึกการเปลี่ยนแปลงทั้งหมดสำเร็จ!', 'success');
+        showToast('เธเธฑเธเธ—เธถเธเธเธฒเธฃเน€เธเธฅเธตเนเธขเธเนเธเธฅเธเธ—เธฑเนเธเธซเธกเธ”เธชเธณเน€เธฃเนเธ!', 'success');
 
         const activePanel = document.querySelector('.nav-item.active')?.getAttribute('data-panel');
 
@@ -12632,7 +12630,7 @@ function submitBatchClassLogs() {
 
       } else {
 
-        showToast('บันทึกล้มเหลว: ' + res.error, 'error');
+        showToast('เธเธฑเธเธ—เธถเธเธฅเนเธกเน€เธซเธฅเธง: ' + res.error, 'error');
 
       }
 
@@ -12640,7 +12638,7 @@ function submitBatchClassLogs() {
 
     .withFailureHandler(err => {
 
-      showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
     })
 
@@ -12654,19 +12652,19 @@ function deleteClassLog(rowIndex) {
 
   const role = state.currentUser ? (state.currentUser.role || '').toString().trim() : '';
 
-  const isTeacher = (role === 'Teacher' || role === 'ครู');
+  const isTeacher = (role === 'Teacher' || role === 'เธเธฃเธน');
 
   if (isTeacher) {
 
-    showToast('คุณไม่มีสิทธิ์ในการลบคลาสเรียน', 'error');
+    showToast('เธเธธเธ“เนเธกเนเธกเธตเธชเธดเธ—เธเธดเนเนเธเธเธฒเธฃเธฅเธเธเธฅเธฒเธชเน€เธฃเธตเธขเธ', 'error');
 
     return;
 
   }
 
-  if (confirm('คุณต้องการลบบันทึกชั่วโมงสอนคลาสนี้ใช่หรือไม่?')) {
+  if (confirm('เธเธธเธ“เธ•เนเธญเธเธเธฒเธฃเธฅเธเธเธฑเธเธ—เธถเธเธเธฑเนเธงเนเธกเธเธชเธญเธเธเธฅเธฒเธชเธเธตเนเนเธเนเธซเธฃเธทเธญเนเธกเน?')) {
 
-    setLoading(true, 'กำลังลบบันทึกชั่วโมงสอน...');
+    setLoading(true, 'เธเธณเธฅเธฑเธเธฅเธเธเธฑเธเธ—เธถเธเธเธฑเนเธงเนเธกเธเธชเธญเธ...');
 
     const user = getLogUser();
 
@@ -12678,7 +12676,7 @@ function deleteClassLog(rowIndex) {
 
         if (res && res.success) {
 
-          showToast('ลบรายการสำเร็จแล้ว', 'success');
+          showToast('เธฅเธเธฃเธฒเธขเธเธฒเธฃเธชเธณเน€เธฃเนเธเนเธฅเนเธง', 'success');
 
           
 
@@ -12707,7 +12705,7 @@ function deleteClassLog(rowIndex) {
 
         } else {
 
-          showToast('ลบรายการไม่สำเร็จ: ' + res.error, 'error');
+          showToast('เธฅเธเธฃเธฒเธขเธเธฒเธฃเนเธกเนเธชเธณเน€เธฃเนเธ: ' + res.error, 'error');
 
         }
 
@@ -12717,7 +12715,7 @@ function deleteClassLog(rowIndex) {
 
         setLoading(false);
 
-        showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+        showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
       })
 
@@ -12741,7 +12739,7 @@ function loadTeacherSchedule(isSilent = false) {
 
     if (!isSilent) {
 
-      container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">กรุณาเลือกชื่อคุณครูผู้สอนด้านบน</div>`;
+      container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธเธทเนเธญเธเธธเธ“เธเธฃเธนเธเธนเนเธชเธญเธเธ”เนเธฒเธเธเธ</div>`;
 
     }
 
@@ -12752,7 +12750,7 @@ function loadTeacherSchedule(isSilent = false) {
   
 
   if (!isSilent) {
-    setLoading(true, 'กำลังดึงตารางสอนคุณครู ' + teacher + '...');
+    setLoading(true, 'เธเธณเธฅเธฑเธเธ”เธถเธเธ•เธฒเธฃเธฒเธเธชเธญเธเธเธธเธ“เธเธฃเธน ' + teacher + '...');
   }
   
   if (state.allClassLogsCache && !isSilent && window._forceTeacherGridRefresh !== true) {
@@ -12796,7 +12794,7 @@ function loadTeacherSchedule(isSilent = false) {
 
       } else {
 
-        if (!isSilent) showToast('ไม่สามารถดึงข้อมูลตารางเรียนครูได้: ' + (data ? data.error : 'unknown'), 'error');
+        if (!isSilent) showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธเนเธญเธกเธนเธฅเธ•เธฒเธฃเธฒเธเน€เธฃเธตเธขเธเธเธฃเธนเนเธ”เน: ' + (data ? data.error : 'unknown'), 'error');
 
       }
 
@@ -12806,7 +12804,7 @@ function loadTeacherSchedule(isSilent = false) {
 
       if (!isSilent) setLoading(false);
 
-      if (!isSilent) showToast('เชื่อมต่อผิดพลาด: ' + err.message, 'error');
+      if (!isSilent) showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
     })
 
@@ -12824,7 +12822,7 @@ function renderTeacherScheduleGrid(teacher) {
   container.className = '';
 
   if (!state.teacherClasses || state.teacherClasses.length === 0) {
-    container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลตารางสอนของคุณครูท่านนี้</div>';
+    container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px;">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเธ•เธฒเธฃเธฒเธเธชเธญเธเธเธญเธเธเธธเธ“เธเธฃเธนเธ—เนเธฒเธเธเธตเน</div>';
     return;
   }
 
@@ -12884,7 +12882,7 @@ function renderTeacherScheduleGrid(teacher) {
 
   // Sticky header row
   html += '<div style="position:sticky; top:0; z-index:20; display:flex; min-width:' + (ROW_HEADER_WIDTH + TIMELINE_WIDTH) + 'px; background:#f8fafc; border-bottom:2px solid var(--border-color);">';
-  html += '<div style="position:sticky; left:0; z-index:30; min-width:' + ROW_HEADER_WIDTH + 'px; width:' + ROW_HEADER_WIDTH + 'px; padding:8px 10px; font-weight:700; font-size:0.72rem; color:var(--text-main); border-right:2px solid var(--border-color); background:#f8fafc; display:flex; align-items:center;">วันที่สอน</div>';
+  html += '<div style="position:sticky; left:0; z-index:30; min-width:' + ROW_HEADER_WIDTH + 'px; width:' + ROW_HEADER_WIDTH + 'px; padding:8px 10px; font-weight:700; font-size:0.72rem; color:var(--text-main); border-right:2px solid var(--border-color); background:#f8fafc; display:flex; align-items:center;">เธงเธฑเธเธ—เธตเนเธชเธญเธ</div>';
   html += '<div style="position:relative; width:' + TIMELINE_WIDTH + 'px; height:36px;">' + headerCols + '</div>';
   html += '</div>';
 
@@ -12934,7 +12932,7 @@ function renderTeacherScheduleGrid(teacher) {
     var thDateStr = typeof formatDateTimeToThaiLong === 'function' ? formatDateTimeToThaiLong(dateGroup.dateStr) : dateGroup.dateStr;
     html += '<div style="position:sticky; left:0; z-index:10; min-width:' + ROW_HEADER_WIDTH + 'px; width:' + ROW_HEADER_WIDTH + 'px; padding:10px 8px; border-right:2px solid var(--border-color); background:#fff; box-shadow:2px 0 5px -2px rgba(0,0,0,0.05); display:flex; flex-direction:column; align-items:center; justify-content:center;">';
     html += '<div style="font-size:0.78rem; font-weight:700; color:var(--color-primary-hover); text-align:center; line-height:1.3;">' + thDateStr + '</div>';
-    html += '<div style="font-size:0.6rem; color:var(--text-muted); margin-top:3px; background:rgba(0,0,0,0.04); padding:1px 5px; border-radius:4px;">' + cards.length + ' คลาส</div>';
+    html += '<div style="font-size:0.6rem; color:var(--text-muted); margin-top:3px; background:rgba(0,0,0,0.04); padding:1px 5px; border-radius:4px;">' + cards.length + ' เธเธฅเธฒเธช</div>';
     html += '</div>';
 
     // Timeline area
@@ -12961,7 +12959,7 @@ function renderTeacherScheduleGrid(teacher) {
         cardBorder = 'border:1.5px solid rgba(25,135,84,0.4);';
       } else {
         var subjStr = String(c.subject || '');
-        var isPrivate = subjStr.includes('เดี่ยว') || subjStr.includes('ย่อย');
+        var isPrivate = subjStr.includes('เน€เธ”เธตเนเธขเธง') || subjStr.includes('เธขเนเธญเธข');
         if (!isPrivate) {
           cardBg = 'background:rgba(56,189,248,0.08);';
           cardBorder = 'border:1.5px solid rgba(56,189,248,0.4);';
@@ -12971,30 +12969,30 @@ function renderTeacherScheduleGrid(teacher) {
       // Branch color for left border
       var cleanRoom = (c.roomBranch || '').toLowerCase();
       var borderLeftColor = 'var(--border-color)';
-      if (cleanRoom.includes('สาขา 1') || cleanRoom.includes('สาขา1')) {
+      if (cleanRoom.includes('เธชเธฒเธเธฒ 1') || cleanRoom.includes('เธชเธฒเธเธฒ1')) {
         borderLeftColor = 'var(--color-success)';
-      } else if (cleanRoom.includes('สาขา 2') || cleanRoom.includes('สาขา2')) {
+      } else if (cleanRoom.includes('เธชเธฒเธเธฒ 2') || cleanRoom.includes('เธชเธฒเธเธฒ2')) {
         borderLeftColor = '#3b82f6';
-      } else if (cleanRoom.includes('สาขา 3') || cleanRoom.includes('สาขา3')) {
+      } else if (cleanRoom.includes('เธชเธฒเธเธฒ 3') || cleanRoom.includes('เธชเธฒเธเธฒ3')) {
         borderLeftColor = '#f59e0b';
-      } else if (cleanRoom.includes('ออนไลน์') || cleanRoom.includes('online')) {
+      } else if (cleanRoom.includes('เธญเธญเธเนเธฅเธเน') || cleanRoom.includes('online')) {
         borderLeftColor = '#8b5cf6';
       }
       if (isTeacherConfirmed) borderLeftColor = '#15803d';
 
       // Attendance
       var attArr = [];
-      attArr.push('สด:' + (c.isPresentLive||0));
-      attArr.push('ออน:' + (c.isPresentOnline||0));
-      attArr.push('ลา:' + (c.isLeave||0));
-      attArr.push('ชด:' + (c.isMakeup||0));
-      attArr.push('ขาด:' + (c.isAbsent||0));
+      attArr.push('เธชเธ”:' + (c.isPresentLive||0));
+      attArr.push('เธญเธญเธ:' + (c.isPresentOnline||0));
+      attArr.push('เธฅเธฒ:' + (c.isLeave||0));
+      attArr.push('เธเธ”:' + (c.isMakeup||0));
+      attArr.push('เธเธฒเธ”:' + (c.isAbsent||0));
 
-      var confirmedBadge = isTeacherConfirmed ? '<div style="font-weight:bold; color:#2e7d32; font-size:0.58rem;">✅ ยืนยันแล้ว</div>' : '';
+      var confirmedBadge = isTeacherConfirmed ? '<div style="font-weight:bold; color:#2e7d32; font-size:0.58rem;">โ… เธขเธทเธเธขเธฑเธเนเธฅเนเธง</div>' : '';
 
       // Sub teacher check
       var isSub = c.teacherSub && c.teacherSub.toLowerCase().includes(teacher.toLowerCase().trim());
-      var roleLabel = isSub ? '<span style="color:var(--color-danger); font-weight:bold;">[สอนแทน]</span>' : '';
+      var roleLabel = isSub ? '<span style="color:var(--color-danger); font-weight:bold;">[เธชเธญเธเนเธ—เธ]</span>' : '';
 
       // Room/device text
       var displayRoomText = c.roomBranch || '-';
@@ -13015,23 +13013,23 @@ function renderTeacherScheduleGrid(teacher) {
 
       // Middle: details
       html += '<div style="font-size:0.58rem; color:var(--text-muted); line-height:1.25; border-top:1px dashed var(--border-color); padding-top:2px; margin-top:2px; overflow:hidden;">';
-      html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">🏢 ' + displayRoomText + '</div>';
-      if (displayDeviceText) html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--color-primary-hover);">💻 ' + displayDeviceText + '</div>';
-      html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><b>ครูประจำ:</b> ' + (c.teacherRegular||'-') + '</div>';
-      html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><b>ครูแทน:</b> ' + (c.teacherSub ? '<b>' + c.teacherSub + '</b>' : '-') + '</div>';
+      html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">๐ข ' + displayRoomText + '</div>';
+      if (displayDeviceText) html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--color-primary-hover);">๐’ป ' + displayDeviceText + '</div>';
+      html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><b>เธเธฃเธนเธเธฃเธฐเธเธณ:</b> ' + (c.teacherRegular||'-') + '</div>';
+      html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><b>เธเธฃเธนเนเธ—เธ:</b> ' + (c.teacherSub ? '<b>' + c.teacherSub + '</b>' : '-') + '</div>';
       html += confirmedBadge;
-      html += '<div style="color:var(--color-primary-hover); font-size:0.55rem;">👥 ' + attArr.join(' ') + '</div>';
-      if (c.note) html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-style:italic; color:#64748b;">📝 ' + c.note + '</div>';
+      html += '<div style="color:var(--color-primary-hover); font-size:0.55rem;">๐‘ฅ ' + attArr.join(' ') + '</div>';
+      if (c.note) html += '<div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-style:italic; color:#64748b;">๐“ ' + c.note + '</div>';
       html += '</div>';
 
       // Bottom: confirm + edit
       html += '<div style="display:flex; justify-content:flex-end; align-items:center; border-top:1px dashed rgba(0,0,0,0.06); padding-top:2px; margin-top:2px; gap:2px;" onclick="event.stopPropagation();">';
       if (isTeacherConfirmed) {
-        html += '<button type="button" onclick="toggleDailyGridConfirm(' + c.rowIndex + ',false)" style="font-size:0.58rem; padding:1px 5px; background:#15803d; color:white; font-weight:700; border-radius:10px; border:none; cursor:pointer;">✓ ยืนยัน</button>';
+        html += '<button type="button" onclick="toggleDailyGridConfirm(' + c.rowIndex + ',false)" style="font-size:0.58rem; padding:1px 5px; background:#15803d; color:white; font-weight:700; border-radius:10px; border:none; cursor:pointer;">โ“ เธขเธทเธเธขเธฑเธ</button>';
       } else {
-        html += '<button type="button" onclick="toggleDailyGridConfirm(' + c.rowIndex + ',true)" style="font-size:0.58rem; padding:1px 5px; background:#e2e8f0; color:#475569; font-weight:700; border-radius:10px; border:none; cursor:pointer;">รอยืนยัน</button>';
+        html += '<button type="button" onclick="toggleDailyGridConfirm(' + c.rowIndex + ',true)" style="font-size:0.58rem; padding:1px 5px; background:#e2e8f0; color:#475569; font-weight:700; border-radius:10px; border:none; cursor:pointer;">เธฃเธญเธขเธทเธเธขเธฑเธ</button>';
       }
-      html += '<button type="button" onclick="showEditClassLogModal(' + c.rowIndex + ')" style="padding:1px 3px; font-size:0.58rem; border:1px solid var(--border-color); background:#f8fafc; border-radius:3px; cursor:pointer; height:auto;" title="แก้ไข">✏️</button>';
+      html += '<button type="button" onclick="showEditClassLogModal(' + c.rowIndex + ')" style="padding:1px 3px; font-size:0.58rem; border:1px solid var(--border-color); background:#f8fafc; border-radius:3px; cursor:pointer; height:auto;" title="เนเธเนเนเธ">โ๏ธ</button>';
       html += '</div>';
 
       html += '</div>'; // end card
@@ -13049,7 +13047,7 @@ function renderTeacherScheduleGrid(teacher) {
 
 function loadTeacherProfiles() {
 
-  setLoading(true, 'กำลังโหลดข้อมูลคุณครูทั้งหมด...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธธเธ“เธเธฃเธนเธ—เธฑเนเธเธซเธกเธ”...');
 
   google.script.run
 
@@ -13063,7 +13061,7 @@ function loadTeacherProfiles() {
 
       } else {
 
-        showToast('ไม่สามารถดึงประวัติอาจารย์ได้: ' + (data ? data.error : 'unknown'), 'error');
+        showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธเธฃเธฐเธงเธฑเธ•เธดเธญเธฒเธเธฒเธฃเธขเนเนเธ”เน: ' + (data ? data.error : 'unknown'), 'error');
 
       }
 
@@ -13073,7 +13071,7 @@ function loadTeacherProfiles() {
 
       setLoading(false);
 
-      showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      showToast('เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
     })
 
@@ -13113,11 +13111,11 @@ function renderTeacherProfilesTable(teachers) {
 
       <td>${t.accountNumber || '-'}</td>
 
-      <td style="text-align: right; font-weight: 600; color: var(--color-primary-hover);">฿${parseFloat(compVal).toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 600; color: var(--color-primary-hover);">เธฟ${parseFloat(compVal).toLocaleString()}</td>
 
       <td>
 
-        <button class="btn btn-secondary btn-icon" onclick="showEditTeacherModal('${t.nickname}', '${t.fullName}', '${t.school}', '${formatPhone(t.phone)}', '${t.subjects}', '${t.bank}', '${t.accountNumber}', '${compVal}')">✏️</button>
+        <button class="btn btn-secondary btn-icon" onclick="showEditTeacherModal('${t.nickname}', '${t.fullName}', '${t.school}', '${formatPhone(t.phone)}', '${t.subjects}', '${t.bank}', '${t.accountNumber}', '${compVal}')">โ๏ธ</button>
 
       </td>
 
@@ -13131,7 +13129,7 @@ function renderTeacherProfilesTable(teachers) {
 
   if (teachers.length === 0) {
 
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบประวัติอาจารย์ในระบบ</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">เนเธกเนเธเธเธเธฃเธฐเธงเธฑเธ•เธดเธญเธฒเธเธฒเธฃเธขเนเนเธเธฃเธฐเธเธ</td></tr>`;
 
   }
 
@@ -13225,13 +13223,13 @@ function submitAddEmployee(e) {
 
   if (!data.username || !data.password) {
 
-    showToast('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน', 'error');
+    showToast('เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเธเธนเนเนเธเนเนเธฅเธฐเธฃเธซเธฑเธชเธเนเธฒเธ', 'error');
 
     return;
 
   }
 
-  setLoading(true, 'กำลังเพิ่มพนักงาน...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเน€เธเธดเนเธกเธเธเธฑเธเธเธฒเธ...');
 
   google.script.run
 
@@ -13241,7 +13239,7 @@ function submitAddEmployee(e) {
 
       if (res && res.success) {
 
-        showToast('เพิ่มพนักงานสำเร็จ!', 'success');
+        showToast('เน€เธเธดเนเธกเธเธเธฑเธเธเธฒเธเธชเธณเน€เธฃเนเธ!', 'success');
 
         closeAllModals();
 
@@ -13249,7 +13247,7 @@ function submitAddEmployee(e) {
 
       } else {
 
-        showToast('เกิดข้อผิดพลาด: ' + (res ? res.error : 'unknown'), 'error');
+        showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + (res ? res.error : 'unknown'), 'error');
 
       }
 
@@ -13259,7 +13257,7 @@ function submitAddEmployee(e) {
 
       setLoading(false);
 
-      showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
     })
 
@@ -13301,7 +13299,7 @@ function loadEmployeeList() {
 
             <td style="text-align: center;">
 
-              <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="showEditEmployeePasswordModal('${u.username}')">🔑 แก้ไขรหัส</button>
+              <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="showEditEmployeePasswordModal('${u.username}')">๐”‘ เนเธเนเนเธเธฃเธซเธฑเธช</button>
 
             </td>
 
@@ -13313,7 +13311,7 @@ function loadEmployeeList() {
 
         if (res.length === 0) {
 
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">ไม่พบข้อมูลพนักงาน</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">เนเธกเนเธเธเธเนเธญเธกเธนเธฅเธเธเธฑเธเธเธฒเธ</td></tr>';
 
         }
 
@@ -13359,7 +13357,7 @@ function submitEditEmployeePassword(e) {
 
   if (!newPassword) {
 
-    showToast('กรุณากรอกรหัสผ่านใหม่', 'error');
+    showToast('เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธฃเธซเธฑเธชเธเนเธฒเธเนเธซเธกเน', 'error');
 
     return;
 
@@ -13367,7 +13365,7 @@ function submitEditEmployeePassword(e) {
 
   
 
-  setLoading(true, 'กำลังเปลี่ยนรหัสผ่านพนักงาน...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเน€เธเธฅเธตเนเธขเธเธฃเธซเธฑเธชเธเนเธฒเธเธเธเธฑเธเธเธฒเธ...');
 
   google.script.run
 
@@ -13377,13 +13375,13 @@ function submitEditEmployeePassword(e) {
 
       if (res && res.success) {
 
-        showToast('เปลี่ยนรหัสผ่านของพนักงานเรียบร้อย!', 'success');
+        showToast('เน€เธเธฅเธตเนเธขเธเธฃเธซเธฑเธชเธเนเธฒเธเธเธญเธเธเธเธฑเธเธเธฒเธเน€เธฃเธตเธขเธเธฃเนเธญเธข!', 'success');
 
         closeAllModals();
 
       } else {
 
-        showToast('เกิดข้อผิดพลาด: ' + (res ? res.error : 'unknown'), 'error');
+        showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + (res ? res.error : 'unknown'), 'error');
 
       }
 
@@ -13393,7 +13391,7 @@ function submitEditEmployeePassword(e) {
 
       setLoading(false);
 
-      showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
     })
 
@@ -13409,7 +13407,7 @@ function showAddTeacherModal() {
 
   document.getElementById('t_compensation').value = '150';
 
-  document.getElementById('teacher_modal_title').innerText = 'เพิ่มประวัติคุณครูใหม่';
+  document.getElementById('teacher_modal_title').innerText = 'เน€เธเธดเนเธกเธเธฃเธฐเธงเธฑเธ•เธดเธเธธเธ“เธเธฃเธนเนเธซเธกเน';
 
   document.getElementById('t_nickname').readOnly = false;
 
@@ -13423,7 +13421,7 @@ function showEditTeacherModal(nickname, fullName, school, phone, subjects, bank,
 
   document.getElementById('teacher_form').reset();
 
-  document.getElementById('teacher_modal_title').innerText = 'แก้ไขประวัติคุณครู';
+  document.getElementById('teacher_modal_title').innerText = 'เนเธเนเนเธเธเธฃเธฐเธงเธฑเธ•เธดเธเธธเธ“เธเธฃเธน';
 
   document.getElementById('t_nickname').value = nickname;
 
@@ -13485,7 +13483,7 @@ function saveTeacherProfile(e) {
 
   
 
-  setLoading(true, 'กำลังจัดเก็บประวัติอาจารย์...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธ”เน€เธเนเธเธเธฃเธฐเธงเธฑเธ•เธดเธญเธฒเธเธฒเธฃเธขเน...');
 
   const user = getLogUser();
 
@@ -13499,7 +13497,7 @@ function saveTeacherProfile(e) {
 
       if (res && res.success) {
 
-        showToast('บันทึกประวัติคุณครูสำเร็จ!', 'success');
+        showToast('เธเธฑเธเธ—เธถเธเธเธฃเธฐเธงเธฑเธ•เธดเธเธธเธ“เธเธฃเธนเธชเธณเน€เธฃเนเธ!', 'success');
 
         closeTeacherModal();
 
@@ -13507,7 +13505,7 @@ function saveTeacherProfile(e) {
 
       } else {
 
-        showToast('การบันทึกขัดข้อง: ' + res.error, 'error');
+        showToast('เธเธฒเธฃเธเธฑเธเธ—เธถเธเธเธฑเธ”เธเนเธญเธ: ' + res.error, 'error');
 
       }
 
@@ -13517,7 +13515,7 @@ function saveTeacherProfile(e) {
 
       setLoading(false);
 
-      showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      showToast('เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
     })
 
@@ -13549,7 +13547,7 @@ function loadStaffSalarySummary() {
 
   if (tbody) {
 
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">กำลังดึงข้อมูล...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">เธเธณเธฅเธฑเธเธ”เธถเธเธเนเธญเธกเธนเธฅ...</td></tr>`;
 
   }
 
@@ -13563,11 +13561,11 @@ function loadStaffSalarySummary() {
 
       if (!res || !res.success) {
 
-        showToast('ดึงข้อมูลสรุปรายได้ล้มเหลว: ' + (res ? res.error : 'ไม่พบข้อมูล'), 'error');
+        showToast('เธ”เธถเธเธเนเธญเธกเธนเธฅเธชเธฃเธธเธเธฃเธฒเธขเนเธ”เนเธฅเนเธกเน€เธซเธฅเธง: ' + (res ? res.error : 'เนเธกเนเธเธเธเนเธญเธกเธนเธฅ'), 'error');
 
         if (tbody) {
 
-          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-danger); padding: 30px;">ดึงข้อมูลล้มเหลว</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-danger); padding: 30px;">เธ”เธถเธเธเนเธญเธกเธนเธฅเธฅเนเธกเน€เธซเธฅเธง</td></tr>`;
 
         }
 
@@ -13611,7 +13609,7 @@ function loadStaffSalarySummary() {
 
       if (filteredData.length === 0) {
 
-        html = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</td></tr>`;
+        html = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">เนเธกเนเธเธเธเนเธญเธกเธนเธฅเธ•เธฒเธกเน€เธเธทเนเธญเธเนเธเธ—เธตเนเน€เธฅเธทเธญเธ</td></tr>`;
 
       } else {
 
@@ -13625,11 +13623,11 @@ function loadStaffSalarySummary() {
 
           let deduction = parseFloat(match.guaranteeDeduction || 0);
 
-          let deductionText = deduction > 0 ? '-฿' + Math.round(deduction).toLocaleString() : '฿0';
+          let deductionText = deduction > 0 ? '-เธฟ' + Math.round(deduction).toLocaleString() : 'เธฟ0';
 
           let timeText = '-';
 
-          let statusHtml = '<span style="color: var(--text-muted); font-weight: 500;">⏳ รอยืนยัน</span>';
+          let statusHtml = '<span style="color: var(--text-muted); font-weight: 500;">โณ เธฃเธญเธขเธทเธเธขเธฑเธ</span>';
 
           
 
@@ -13639,7 +13637,7 @@ function loadStaffSalarySummary() {
 
             totalConfirmedPay += parseFloat(match.totalPay || 0);
 
-            payText = '฿' + Math.round(parseFloat(match.totalPay)).toLocaleString();
+            payText = 'เธฟ' + Math.round(parseFloat(match.totalPay)).toLocaleString();
 
             
 
@@ -13667,7 +13665,7 @@ function loadStaffSalarySummary() {
 
             }
 
-            statusHtml = '<span style="color: var(--color-success); font-weight: 700;">✔️ ยืนยันแล้ว</span>';
+            statusHtml = '<span style="color: var(--color-success); font-weight: 700;">โ”๏ธ เธขเธทเธเธขเธฑเธเนเธฅเนเธง</span>';
 
           }
 
@@ -13715,7 +13713,7 @@ function loadStaffSalarySummary() {
 
       if (totalPayEl) {
 
-        totalPayEl.innerText = '฿' + Math.round(totalConfirmedPay).toLocaleString();
+        totalPayEl.innerText = 'เธฟ' + Math.round(totalConfirmedPay).toLocaleString();
 
       }
 
@@ -13725,7 +13723,7 @@ function loadStaffSalarySummary() {
 
       if (countEl) {
 
-        countEl.innerText = `${confirmedCount} / ${filteredData.length} คน`;
+        countEl.innerText = `${confirmedCount} / ${filteredData.length} เธเธ`;
 
       }
 
@@ -13733,11 +13731,11 @@ function loadStaffSalarySummary() {
 
     .withFailureHandler(err => {
 
-      showToast('การเชื่อมต่อฐานข้อมูลล้มเหลว: ' + err.message, 'error');
+      showToast('เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธเธฒเธเธเนเธญเธกเธนเธฅเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
       if (tbody) {
 
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-danger); padding: 30px;">การเชื่อมต่อล้มเหลว</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-danger); padding: 30px;">เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง</td></tr>`;
 
       }
 
@@ -13759,7 +13757,7 @@ function printStaffSalarySummary() {
 
   const typeEl = document.getElementById('staff_summary_account_type');
 
-  const filterType = typeEl ? typeEl.options[typeEl.selectedIndex].text : 'ทั้งหมด';
+  const filterType = typeEl ? typeEl.options[typeEl.selectedIndex].text : 'เธ—เธฑเนเธเธซเธกเธ”';
 
   const monthEl = document.getElementById('staff_summary_month');
 
@@ -13781,7 +13779,7 @@ function printStaffSalarySummary() {
 
   if (!tableResponsive) {
 
-    showToast('ไม่พบข้อมูลตารางสำหรับพิมพ์', 'error');
+    showToast('เนเธกเนเธเธเธเนเธญเธกเธนเธฅเธ•เธฒเธฃเธฒเธเธชเธณเธซเธฃเธฑเธเธเธดเธกเธเน', 'error');
 
     return;
 
@@ -13827,15 +13825,15 @@ function printStaffSalarySummary() {
 
   
 
-  printWindow.document.write('<html><head><title>สรุปรายได้ครู</title>' + css + '</head><body>');
+  printWindow.document.write('<html><head><title>เธชเธฃเธธเธเธฃเธฒเธขเนเธ”เนเธเธฃเธน</title>' + css + '</head><body>');
 
-  printWindow.document.write('<h2>รายงานสรุปรายได้ครู - ' + filterType + '</h2>');
+  printWindow.document.write('<h2>เธฃเธฒเธขเธเธฒเธเธชเธฃเธธเธเธฃเธฒเธขเนเธ”เนเธเธฃเธน - ' + filterType + '</h2>');
 
-  printWindow.document.write('<h3>ประจำเดือน ' + monthText + ' ปี ' + yearText + '</h3>');
+  printWindow.document.write('<h3>เธเธฃเธฐเธเธณเน€เธ”เธทเธญเธ ' + monthText + ' เธเธต ' + yearText + '</h3>');
 
   printWindow.document.write(tableHtml);
 
-  printWindow.document.write('<div class="print-footer">พิมพ์เมื่อ: ' + new Date().toLocaleString('th-TH') + '</div>');
+  printWindow.document.write('<div class="print-footer">เธเธดเธกเธเนเน€เธกเธทเนเธญ: ' + new Date().toLocaleString('th-TH') + '</div>');
 
   printWindow.document.write('</body></html>');
 
@@ -13861,11 +13859,11 @@ function getMonthName(m) {
 
   const monthNames = [
 
-    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
+    'เธกเธเธฃเธฒเธเธก', 'เธเธธเธกเธ เธฒเธเธฑเธเธเน', 'เธกเธตเธเธฒเธเธก', 'เน€เธกเธฉเธฒเธขเธ',
 
-    'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
+    'เธเธคเธฉเธ เธฒเธเธก', 'เธกเธดเธ–เธธเธเธฒเธขเธ', 'เธเธฃเธเธเธฒเธเธก', 'เธชเธดเธเธซเธฒเธเธก',
 
-    'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+    'เธเธฑเธเธขเธฒเธขเธ', 'เธ•เธธเธฅเธฒเธเธก', 'เธเธคเธจเธเธดเธเธฒเธขเธ', 'เธเธฑเธเธงเธฒเธเธก'
 
   ];
 
@@ -13893,13 +13891,13 @@ function handleStaffPayrollFilterChange() {
 
   
 
-  if (!teacher || teacher.includes('เลือกครู')) {
+  if (!teacher || teacher.includes('เน€เธฅเธทเธญเธเธเธฃเธน')) {
 
     if(document.getElementById('staff_yearly_summary_banner')) document.getElementById('staff_yearly_summary_banner').style.display = 'none';
 
     if(document.getElementById('calc_result_card')) document.getElementById('calc_result_card').style.display = 'none';
 
-    showToast('กรุณาระบุชื่อครูเพื่อประมวลผล', 'warning');
+    showToast('เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธเธทเนเธญเธเธฃเธนเน€เธเธทเนเธญเธเธฃเธฐเธกเธงเธฅเธเธฅ', 'warning');
 
     return;
 
@@ -13921,7 +13919,7 @@ function handleStaffPayrollFilterChange() {
 
   
 
-  setLoading(true, 'กำลังคำนวณรายได้คุณครูทั้งหมด 12 เดือน...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธณเธเธงเธ“เธฃเธฒเธขเนเธ”เนเธเธธเธ“เธเธฃเธนเธ—เธฑเนเธเธซเธกเธ” 12 เน€เธ”เธทเธญเธ...');
 
   
 
@@ -13933,11 +13931,11 @@ function handleStaffPayrollFilterChange() {
 
   // Reset yearly values
 
-  document.getElementById('staff_yearly_total_pay').innerText = '฿0';
+  document.getElementById('staff_yearly_total_pay').innerText = 'เธฟ0';
 
-  document.getElementById('staff_yearly_total_hours').innerText = '0 ชม.';
+  document.getElementById('staff_yearly_total_hours').innerText = '0 เธเธก.';
 
-  document.getElementById('staff_yearly_total_classes').innerText = '0 คลาส';
+  document.getElementById('staff_yearly_total_classes').innerText = '0 เธเธฅเธฒเธช';
 
   
 
@@ -13949,7 +13947,7 @@ function handleStaffPayrollFilterChange() {
 
       if (!res || !res.success || !res.months) {
 
-        showToast('เกิดข้อผิดพลาดในการคำนวณเงินเดือน: ' + (res ? res.error : 'ไม่พบข้อมูล'), 'error');
+        showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเธเธณเธเธงเธ“เน€เธเธดเธเน€เธ”เธทเธญเธ: ' + (res ? res.error : 'เนเธกเนเธเธเธเนเธญเธกเธนเธฅ'), 'error');
 
         return;
 
@@ -13993,11 +13991,11 @@ function handleStaffPayrollFilterChange() {
 
       // Update yearly banner displays
 
-      document.getElementById('staff_yearly_total_pay').innerText = '฿' + Math.round(yearlyPay).toLocaleString();
+      document.getElementById('staff_yearly_total_pay').innerText = 'เธฟ' + Math.round(yearlyPay).toLocaleString();
 
-      document.getElementById('staff_yearly_total_hours').innerText = (Math.round(yearlyHours * 100) / 100).toLocaleString() + ' ชม.';
+      document.getElementById('staff_yearly_total_hours').innerText = (Math.round(yearlyHours * 100) / 100).toLocaleString() + ' เธเธก.';
 
-      document.getElementById('staff_yearly_total_classes').innerText = yearlyClasses.toLocaleString() + ' คลาส';
+      document.getElementById('staff_yearly_total_classes').innerText = yearlyClasses.toLocaleString() + ' เธเธฅเธฒเธช';
 
       
 
@@ -14017,7 +14015,7 @@ function handleStaffPayrollFilterChange() {
 
       console.error("Staff yearly calculation failed:", err);
 
-      showToast('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: ' + err.message, 'error');
+      showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เน€เธเธทเนเธญเธกเธ•เนเธญเน€เธเธดเธฃเนเธเน€เธงเธญเธฃเนเนเธ”เน: ' + err.message, 'error');
 
     })
 
@@ -14047,11 +14045,11 @@ function handleStaffPayrollMonthChange() {
 
     const monthNames = [
 
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
+      'เธกเธเธฃเธฒเธเธก', 'เธเธธเธกเธ เธฒเธเธฑเธเธเน', 'เธกเธตเธเธฒเธเธก', 'เน€เธกเธฉเธฒเธขเธ',
 
-      'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
+      'เธเธคเธฉเธ เธฒเธเธก', 'เธกเธดเธ–เธธเธเธฒเธขเธ', 'เธเธฃเธเธเธฒเธเธก', 'เธชเธดเธเธซเธฒเธเธก',
 
-      'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+      'เธเธฑเธเธขเธฒเธขเธ', 'เธ•เธธเธฅเธฒเธเธก', 'เธเธคเธจเธเธดเธเธฒเธขเธ', 'เธเธฑเธเธงเธฒเธเธก'
 
     ];
 
@@ -14077,7 +14075,7 @@ function handleStaffPayrollMonthChange() {
 
     const sumMinPart = sumMinutes % 60;
 
-    const formattedSumHours = `${sumHoursPart} ชม. ${sumMinPart} นาที`;
+    const formattedSumHours = `${sumHoursPart} เธเธก. ${sumMinPart} เธเธฒเธ—เธต`;
 
 
 
@@ -14109,17 +14107,17 @@ function handleStaffPayrollMonthChange() {
 
     const dateRangeStr = (monthRes.startDate && monthRes.endDate) ? ` (${formatIsoDateToThai(monthRes.startDate)} - ${formatIsoDateToThai(monthRes.endDate)})` : '';
 
-    const titleText = monthRes.monthName ? `📊 สรุปรายรับค่าสอนประจำเดือน ${monthRes.monthName}${dateRangeStr}` : '📊 สรุปรายรับค่าสอนประจำเดือน';
+    const titleText = monthRes.monthName ? `๐“ เธชเธฃเธธเธเธฃเธฒเธขเธฃเธฑเธเธเนเธฒเธชเธญเธเธเธฃเธฐเธเธณเน€เธ”เธทเธญเธ ${monthRes.monthName}${dateRangeStr}` : '๐“ เธชเธฃเธธเธเธฃเธฒเธขเธฃเธฑเธเธเนเธฒเธชเธญเธเธเธฃเธฐเธเธณเน€เธ”เธทเธญเธ';
 
     document.getElementById('calc_result_title').innerText = titleText;
 
     
 
-    document.getElementById('calc_result_total_pay').innerText = 'รายได้สุทธิ: ฿' + (monthRes.totalPay || 0).toLocaleString();
+    document.getElementById('calc_result_total_pay').innerText = 'เธฃเธฒเธขเนเธ”เนเธชเธธเธ—เธเธด: เธฟ' + (monthRes.totalPay || 0).toLocaleString();
 
     document.getElementById('calc_result_total_hours').innerText = formattedSumHours;
 
-    document.getElementById('calc_result_total_classes').innerText = (monthRes.totalClasses || 0).toLocaleString() + ' คลาส';
+    document.getElementById('calc_result_total_classes').innerText = (monthRes.totalClasses || 0).toLocaleString() + ' เธเธฅเธฒเธช';
 
     
 
@@ -14131,15 +14129,15 @@ function handleStaffPayrollMonthChange() {
 
     monthRes.classes.forEach(c => {
 
-      let displayRole = c.role || 'ครูประจำ';
+      let displayRole = c.role || 'เธเธฃเธนเธเธฃเธฐเธเธณ';
 
-      if (displayRole === 'sub' || displayRole.includes('สอนแทน') || displayRole.includes('ครูแทน')) {
+      if (displayRole === 'sub' || displayRole.includes('เธชเธญเธเนเธ—เธ') || displayRole.includes('เธเธฃเธนเนเธ—เธ')) {
 
-        displayRole = 'ครูแทน';
+        displayRole = 'เธเธฃเธนเนเธ—เธ';
 
       } else {
 
-        displayRole = 'ครูประจำ';
+        displayRole = 'เธเธฃเธนเธเธฃเธฐเธเธณ';
 
       }
 
@@ -14149,7 +14147,7 @@ function handleStaffPayrollMonthChange() {
 
       tr.style.fontSize = '0.70rem';
 
-      if (displayRole === 'ครูแทน') {
+      if (displayRole === 'เธเธฃเธนเนเธ—เธ') {
 
         tr.style.backgroundColor = '#fff9cc';
 
@@ -14165,13 +14163,13 @@ function handleStaffPayrollMonthChange() {
 
         <td style="white-space: nowrap; font-weight: 600; color: var(--color-primary-hover);">${formatHoursMinutes(c.hours)}</td>
 
-        <td style="text-align: center; white-space: nowrap;">${c.numKids} คน<br><span style="font-size: 0.6rem; color: #6c757d;">(สด:${c.isPresentLive || 0}, ออน:${c.isPresentOnline || 0}, ชด:${c.isMakeup || 0})</span></td>
+        <td style="text-align: center; white-space: nowrap;">${c.numKids} เธเธ<br><span style="font-size: 0.6rem; color: #6c757d;">(เธชเธ”:${c.isPresentLive || 0}, เธญเธญเธ:${c.isPresentOnline || 0}, เธเธ”:${c.isMakeup || 0})</span></td>
 
-        <td style="text-align: right; white-space: nowrap;">฿${c.rate.toLocaleString()}</td>
+        <td style="text-align: right; white-space: nowrap;">เธฟ${c.rate.toLocaleString()}</td>
 
-        <td style="text-align: right; font-weight:600; color:var(--color-success); white-space: nowrap;">฿${c.pay.toLocaleString()}</td>
+        <td style="text-align: right; font-weight:600; color:var(--color-success); white-space: nowrap;">เธฟ${c.pay.toLocaleString()}</td>
 
-        <td style="white-space: nowrap;"><span class="badge ${displayRole === 'ครูแทน' ? 'badge-warning' : 'badge-info'}" style="font-size: 0.65rem; padding: 4px 8px; font-weight: 600; border-radius: 6px;">${displayRole}</span></td>
+        <td style="white-space: nowrap;"><span class="badge ${displayRole === 'เธเธฃเธนเนเธ—เธ' ? 'badge-warning' : 'badge-info'}" style="font-size: 0.65rem; padding: 4px 8px; font-weight: 600; border-radius: 6px;">${displayRole}</span></td>
 
       `;
 
@@ -14183,7 +14181,7 @@ function handleStaffPayrollMonthChange() {
 
     if (monthRes.classes.length === 0) {
 
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px; font-size: 0.70rem;">ไม่พบรายการสอนของคุณครูในช่วงเวลาที่ระบุ</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px; font-size: 0.70rem;">เนเธกเนเธเธเธฃเธฒเธขเธเธฒเธฃเธชเธญเธเธเธญเธเธเธธเธ“เธเธฃเธนเนเธเธเนเธงเธเน€เธงเธฅเธฒเธ—เธตเนเธฃเธฐเธเธธ</td></tr>`;
 
     }
 
@@ -14257,11 +14255,11 @@ let _managerListCache = null;
 
 const ALLOWED_LOCATIONS = [
 
-  { lat: 12.68475883090192, lng: 101.23382864474371, name: 'สถานที่ที่ 1' },
+  { lat: 12.68475883090192, lng: 101.23382864474371, name: 'เธชเธ–เธฒเธเธ—เธตเนเธ—เธตเน 1' },
 
-  { lat: 12.680386312883275, lng: 101.24089287612749, name: 'สถานที่ที่ 2' },
+  { lat: 12.680386312883275, lng: 101.24089287612749, name: 'เธชเธ–เธฒเธเธ—เธตเนเธ—เธตเน 2' },
 
-  { lat: 12.66513789018523, lng: 101.27400671795978, name: 'สถานที่ที่ 3' }
+  { lat: 12.66513789018523, lng: 101.27400671795978, name: 'เธชเธ–เธฒเธเธ—เธตเนเธ—เธตเน 3' }
 
 ];
 
@@ -14349,7 +14347,7 @@ function saveManagerCheckin(e) {
 
   if (!navigator.geolocation) {
 
-    showToast('เบราว์เซอร์ไม่รองรับ Geolocation', 'error');
+    showToast('เน€เธเธฃเธฒเธงเนเน€เธเธญเธฃเนเนเธกเนเธฃเธญเธเธฃเธฑเธ Geolocation', 'error');
 
     return;
 
@@ -14357,7 +14355,7 @@ function saveManagerCheckin(e) {
 
   
 
-  setLoading(true, 'กำลังดึงพิกัดตำแหน่งของคุณ...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธ”เธถเธเธเธดเธเธฑเธ”เธ•เธณเนเธซเธเนเธเธเธญเธเธเธธเธ“...');
 
   
 
@@ -14379,7 +14377,7 @@ function saveManagerCheckin(e) {
 
         setLoading(false);
 
-        showToast(`คุณอยู่นอกระยะพื้นที่ปฏิบัติงาน (ห่างจากจุดเช็คอินที่ใกล้ที่สุดประมาณ ${Math.round(locCheck.distance)} เมตร / จำกัดรัศมีไม่เกิน 100 เมตร)`, 'error');
+        showToast(`เธเธธเธ“เธญเธขเธนเนเธเธญเธเธฃเธฐเธขเธฐเธเธทเนเธเธ—เธตเนเธเธเธดเธเธฑเธ•เธดเธเธฒเธ (เธซเนเธฒเธเธเธฒเธเธเธธเธ”เน€เธเนเธเธญเธดเธเธ—เธตเนเนเธเธฅเนเธ—เธตเนเธชเธธเธ”เธเธฃเธฐเธกเธฒเธ“ ${Math.round(locCheck.distance)} เน€เธกเธ•เธฃ / เธเธณเธเธฑเธ”เธฃเธฑเธจเธกเธตเนเธกเนเน€เธเธดเธ 100 เน€เธกเธ•เธฃ)`, 'error');
 
         return;
 
@@ -14395,7 +14393,7 @@ function saveManagerCheckin(e) {
 
       setLoading(false);
 
-      showToast('ไม่สามารถดึงตำแหน่งได้ กรุณาอนุญาต Location', 'error');
+      showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธ•เธณเนเธซเธเนเธเนเธ”เน เธเธฃเธธเธ“เธฒเธญเธเธธเธเธฒเธ• Location', 'error');
 
     },
 
@@ -14409,7 +14407,7 @@ function saveManagerCheckin(e) {
 
 async function proceedSaveManagerCheckin(lat, lng) {
 
-  setLoading(true, 'กำลังประมวลผลรูปภาพ...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฃเธฐเธกเธงเธฅเธเธฅเธฃเธนเธเธ เธฒเธ...');
 
   
 
@@ -14457,7 +14455,7 @@ async function proceedSaveManagerCheckin(lat, lng) {
 
       if (res && res.success) {
 
-        showToast('เช็คอินสำเร็จเรียบร้อย ✓', 'success');
+        showToast('เน€เธเนเธเธญเธดเธเธชเธณเน€เธฃเนเธเน€เธฃเธตเธขเธเธฃเนเธญเธข โ“', 'success');
 
         closeManagerCheckinModal();
 
@@ -14465,7 +14463,7 @@ async function proceedSaveManagerCheckin(lat, lng) {
 
       } else {
 
-        showToast('บันทึกเช็คอินไม่สำเร็จ: ' + (res.error || 'ไม่ทราบสาเหตุ'), 'error');
+        showToast('เธเธฑเธเธ—เธถเธเน€เธเนเธเธญเธดเธเนเธกเนเธชเธณเน€เธฃเนเธ: ' + (res.error || 'เนเธกเนเธ—เธฃเธฒเธเธชเธฒเน€เธซเธ•เธธ'), 'error');
 
       }
 
@@ -14475,7 +14473,7 @@ async function proceedSaveManagerCheckin(lat, lng) {
 
       setLoading(false);
 
-      showToast('เชื่อมต่อฝั่งเซิร์ฟเวอร์ผิดพลาด: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธเธฑเนเธเน€เธเธดเธฃเนเธเน€เธงเธญเธฃเนเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
     })
 
@@ -14523,7 +14521,7 @@ function saveManagerCheckout(e) {
 
   if (!navigator.geolocation) {
 
-    showToast('เบราว์เซอร์ไม่รองรับ Geolocation', 'error');
+    showToast('เน€เธเธฃเธฒเธงเนเน€เธเธญเธฃเนเนเธกเนเธฃเธญเธเธฃเธฑเธ Geolocation', 'error');
 
     return;
 
@@ -14531,7 +14529,7 @@ function saveManagerCheckout(e) {
 
   
 
-  setLoading(true, 'กำลังดึงพิกัดตำแหน่งของคุณ...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธ”เธถเธเธเธดเธเธฑเธ”เธ•เธณเนเธซเธเนเธเธเธญเธเธเธธเธ“...');
 
   
 
@@ -14553,7 +14551,7 @@ function saveManagerCheckout(e) {
 
         setLoading(false);
 
-        showToast(`คุณอยู่นอกระยะพื้นที่ปฏิบัติงาน (ห่างจากจุดเช็คอินที่ใกล้ที่สุดประมาณ ${Math.round(locCheck.distance)} เมตร / จำกัดรัศมีไม่เกิน 100 เมตร)`, 'error');
+        showToast(`เธเธธเธ“เธญเธขเธนเนเธเธญเธเธฃเธฐเธขเธฐเธเธทเนเธเธ—เธตเนเธเธเธดเธเธฑเธ•เธดเธเธฒเธ (เธซเนเธฒเธเธเธฒเธเธเธธเธ”เน€เธเนเธเธญเธดเธเธ—เธตเนเนเธเธฅเนเธ—เธตเนเธชเธธเธ”เธเธฃเธฐเธกเธฒเธ“ ${Math.round(locCheck.distance)} เน€เธกเธ•เธฃ / เธเธณเธเธฑเธ”เธฃเธฑเธจเธกเธตเนเธกเนเน€เธเธดเธ 100 เน€เธกเธ•เธฃ)`, 'error');
 
         return;
 
@@ -14569,7 +14567,7 @@ function saveManagerCheckout(e) {
 
       setLoading(false);
 
-      showToast('ไม่สามารถดึงตำแหน่งได้ กรุณาอนุญาต Location', 'error');
+      showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธ•เธณเนเธซเธเนเธเนเธ”เน เธเธฃเธธเธ“เธฒเธญเธเธธเธเธฒเธ• Location', 'error');
 
     },
 
@@ -14583,13 +14581,13 @@ function saveManagerCheckout(e) {
 
 // ----------------------------------------------------
 
-// 9. Manager Work Hour Logs (เวลาผู้จัดการ)
+// 9. Manager Work Hour Logs (เน€เธงเธฅเธฒเธเธนเนเธเธฑเธ”เธเธฒเธฃ)
 
 // ----------------------------------------------------
 
 function loadManagerLogs() {
 
-  setLoading(true, 'กำลังดึงประวัติการทำงานของผู้จัดการ...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธ”เธถเธเธเธฃเธฐเธงเธฑเธ•เธดเธเธฒเธฃเธ—เธณเธเธฒเธเธเธญเธเธเธนเนเธเธฑเธ”เธเธฒเธฃ...');
 
   google.script.run
 
@@ -14611,7 +14609,7 @@ function loadManagerLogs() {
 
           const currentVal = filterSelect.value;
 
-          filterSelect.innerHTML = '<option value="">-- แสดงทุกคน --</option>';
+          filterSelect.innerHTML = '<option value="">-- เนเธชเธ”เธเธ—เธธเธเธเธ --</option>';
 
           const uniqueManagers = [...new Set(data.map(log => log.managerName).filter(Boolean))].sort();
 
@@ -14641,7 +14639,7 @@ function loadManagerLogs() {
 
           const currentYearVal = yearSelect.value;
 
-          yearSelect.innerHTML = '<option value="">-- ทุกปี --</option>';
+          yearSelect.innerHTML = '<option value="">-- เธ—เธธเธเธเธต --</option>';
 
           const uniqueYears = [...new Set(data.map(log => {
 
@@ -14709,7 +14707,7 @@ function loadManagerLogs() {
 
       } else {
 
-        showToast('ไม่สามารถโหลดข้อมูลผู้จัดการ: ' + (data ? data.error : 'unknown'), 'error');
+        showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธนเนเธเธฑเธ”เธเธฒเธฃ: ' + (data ? data.error : 'unknown'), 'error');
 
       }
 
@@ -14719,7 +14717,7 @@ function loadManagerLogs() {
 
       setLoading(false);
 
-      showToast('การดึงข้อมูลผิดพลาด: ' + err.message, 'error');
+      showToast('เธเธฒเธฃเธ”เธถเธเธเนเธญเธกเธนเธฅเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
     })
 
@@ -14787,9 +14785,9 @@ function renderManagerLogsTable() {
 
   const formatMinsToHHMM = (mins) => {
 
-    if (mins <= 0) return '0 ชม. 0 นาที';
+    if (mins <= 0) return '0 เธเธก. 0 เธเธฒเธ—เธต';
 
-    return Math.floor(mins / 60) + ' ชม. ' + (mins % 60) + ' นาที';
+    return Math.floor(mins / 60) + ' เธเธก. ' + (mins % 60) + ' เธเธฒเธ—เธต';
 
   };
 
@@ -14841,7 +14839,7 @@ function renderManagerLogsTable() {
 
   filteredLogs.forEach(log => {
 
-    const name = log.managerName || 'ไม่ระบุชื่อ';
+    const name = log.managerName || 'เนเธกเนเธฃเธฐเธเธธเธเธทเนเธญ';
 
     if (!groupedByPerson[name]) groupedByPerson[name] = [];
 
@@ -14897,19 +14895,19 @@ function renderManagerLogsTable() {
 
   if (summaryDiv) {
 
-    const monthLabel = selectedMonth ? ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'][parseInt(selectedMonth)] : 'ทุกเดือน';
+    const monthLabel = selectedMonth ? ['','เธกเธเธฃเธฒเธเธก','เธเธธเธกเธ เธฒเธเธฑเธเธเน','เธกเธตเธเธฒเธเธก','เน€เธกเธฉเธฒเธขเธ','เธเธคเธฉเธ เธฒเธเธก','เธกเธดเธ–เธธเธเธฒเธขเธ','เธเธฃเธเธเธฒเธเธก','เธชเธดเธเธซเธฒเธเธก','เธเธฑเธเธขเธฒเธขเธ','เธ•เธธเธฅเธฒเธเธก','เธเธคเธจเธเธดเธเธฒเธขเธ','เธเธฑเธเธงเธฒเธเธก'][parseInt(selectedMonth)] : 'เธ—เธธเธเน€เธ”เธทเธญเธ';
 
     const periodLabel = monthLabel + (selectedYear ? ' ' + selectedYear : '');
 
     
 
-    summaryDiv.innerHTML = '<div style="flex: 1; min-width: 180px; background: linear-gradient(135deg, #e0f2fe, #bae6fd); padding: 16px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid #7dd3fc;"><div style="font-size: 0.8rem; color: #0369a1; font-weight: 600; margin-bottom: 4px;">📊 รวมชม.ทำงาน (' + periodLabel + ')</div><div style="font-size: 1.3rem; font-weight: 700; color: #0c4a6e;">' + formatMinsToHHMM(grandWorkMins) + '</div></div>'
+    summaryDiv.innerHTML = '<div style="flex: 1; min-width: 180px; background: linear-gradient(135deg, #e0f2fe, #bae6fd); padding: 16px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid #7dd3fc;"><div style="font-size: 0.8rem; color: #0369a1; font-weight: 600; margin-bottom: 4px;">๐“ เธฃเธงเธกเธเธก.เธ—เธณเธเธฒเธ (' + periodLabel + ')</div><div style="font-size: 1.3rem; font-weight: 700; color: #0c4a6e;">' + formatMinsToHHMM(grandWorkMins) + '</div></div>'
 
-      + '<div style="flex: 1; min-width: 180px; background: linear-gradient(135deg, #ffedd5, #fed7aa); padding: 16px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid #fdba74;"><div style="font-size: 0.8rem; color: #c2410c; font-weight: 600; margin-bottom: 4px;">⏰ รวมชม.OT (' + periodLabel + ')</div><div style="font-size: 1.3rem; font-weight: 700; color: #7c2d12;">' + formatMinsToHHMM(grandOTMins) + '</div></div>'
+      + '<div style="flex: 1; min-width: 180px; background: linear-gradient(135deg, #ffedd5, #fed7aa); padding: 16px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid #fdba74;"><div style="font-size: 0.8rem; color: #c2410c; font-weight: 600; margin-bottom: 4px;">โฐ เธฃเธงเธกเธเธก.OT (' + periodLabel + ')</div><div style="font-size: 1.3rem; font-weight: 700; color: #7c2d12;">' + formatMinsToHHMM(grandOTMins) + '</div></div>'
 
-      + '<div style="flex: 1; min-width: 180px; background: linear-gradient(135deg, #dcfce7, #bbf7d0); padding: 16px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid #86efac;"><div style="font-size: 0.8rem; color: #15803d; font-weight: 600; margin-bottom: 4px;">👥 จำนวนคน</div><div style="font-size: 1.3rem; font-weight: 700; color: #14532d;">' + personNames.length + ' คน</div></div>'
+      + '<div style="flex: 1; min-width: 180px; background: linear-gradient(135deg, #dcfce7, #bbf7d0); padding: 16px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid #86efac;"><div style="font-size: 0.8rem; color: #15803d; font-weight: 600; margin-bottom: 4px;">๐‘ฅ เธเธณเธเธงเธเธเธ</div><div style="font-size: 1.3rem; font-weight: 700; color: #14532d;">' + personNames.length + ' เธเธ</div></div>'
 
-      + '<div style="flex: 1; min-width: 180px; background: linear-gradient(135deg, #fce7f3, #fbcfe8); padding: 16px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid #f9a8d4;"><div style="font-size: 0.8rem; color: #be185d; font-weight: 600; margin-bottom: 4px;">✅ มาปฏิบัติงาน / ❌ หยุด</div><div style="font-size: 1.3rem; font-weight: 700; color: #831843;">' + grandPresent + ' / ' + grandAbsent + ' วัน</div></div>';
+      + '<div style="flex: 1; min-width: 180px; background: linear-gradient(135deg, #fce7f3, #fbcfe8); padding: 16px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid #f9a8d4;"><div style="font-size: 0.8rem; color: #be185d; font-weight: 600; margin-bottom: 4px;">โ… เธกเธฒเธเธเธดเธเธฑเธ•เธดเธเธฒเธ / โ เธซเธขเธธเธ”</div><div style="font-size: 1.3rem; font-weight: 700; color: #831843;">' + grandPresent + ' / ' + grandAbsent + ' เธงเธฑเธ</div></div>';
 
   }
 
@@ -14919,7 +14917,7 @@ function renderManagerLogsTable() {
 
   if (personNames.length === 0) {
 
-    cardsContainer.innerHTML = '<div class="glass-panel" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีประวัติการบันทึกเวลาของผู้จัดการ ในช่วงเวลาที่เลือก</div>';
+    cardsContainer.innerHTML = '<div class="glass-panel" style="text-align: center; color: var(--text-muted); padding: 40px;">เนเธกเนเธกเธตเธเธฃเธฐเธงเธฑเธ•เธดเธเธฒเธฃเธเธฑเธเธ—เธถเธเน€เธงเธฅเธฒเธเธญเธเธเธนเนเธเธฑเธ”เธเธฒเธฃ เนเธเธเนเธงเธเน€เธงเธฅเธฒเธ—เธตเนเน€เธฅเธทเธญเธ</div>';
 
     return;
 
@@ -14999,13 +14997,13 @@ function renderManagerLogsTable() {
 
     let headerHtml = '<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; padding: 16px 20px; background: linear-gradient(135deg, ' + color + '10, ' + color + '05); border-bottom: 1px solid var(--border-color);">';
 
-    headerHtml += '<div style="display: flex; align-items: center; gap: 12px;"><div style="width: 40px; height: 40px; border-radius: 50%; background: ' + color + '; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.1rem;">' + name.charAt(0) + '</div><div><div style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary);">' + name + '</div><div style="font-size: 0.8rem; color: var(--text-muted);">' + sortedLogs.length + ' รายการ | มาทำงาน ' + personPresent + ' วัน | หยุด ' + personAbsent + ' วัน</div></div></div>';
+    headerHtml += '<div style="display: flex; align-items: center; gap: 12px;"><div style="width: 40px; height: 40px; border-radius: 50%; background: ' + color + '; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.1rem;">' + name.charAt(0) + '</div><div><div style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary);">' + name + '</div><div style="font-size: 0.8rem; color: var(--text-muted);">' + sortedLogs.length + ' เธฃเธฒเธขเธเธฒเธฃ | เธกเธฒเธ—เธณเธเธฒเธ ' + personPresent + ' เธงเธฑเธ | เธซเธขเธธเธ” ' + personAbsent + ' เธงเธฑเธ</div></div></div>';
 
     headerHtml += '<div style="display: flex; gap: 16px; flex-wrap: wrap;">';
 
-    headerHtml += '<div style="text-align: center; padding: 8px 16px; background: rgba(59,130,246,0.08); border-radius: 8px;"><div style="font-size: 0.7rem; color: #3b82f6; font-weight: 600;">รวม ชม.ทำงาน</div><div style="font-size: 1.1rem; font-weight: 700; color: #1e40af;">' + formatMinsToHHMM(personWorkMins) + '</div></div>';
+    headerHtml += '<div style="text-align: center; padding: 8px 16px; background: rgba(59,130,246,0.08); border-radius: 8px;"><div style="font-size: 0.7rem; color: #3b82f6; font-weight: 600;">เธฃเธงเธก เธเธก.เธ—เธณเธเธฒเธ</div><div style="font-size: 1.1rem; font-weight: 700; color: #1e40af;">' + formatMinsToHHMM(personWorkMins) + '</div></div>';
 
-    headerHtml += '<div style="text-align: center; padding: 8px 16px; background: rgba(245,158,11,0.08); border-radius: 8px;"><div style="font-size: 0.7rem; color: #f59e0b; font-weight: 600;">รวม ชม.OT</div><div style="font-size: 1.1rem; font-weight: 700; color: #92400e;">' + formatMinsToHHMM(personOTMins) + '</div></div>';
+    headerHtml += '<div style="text-align: center; padding: 8px 16px; background: rgba(245,158,11,0.08); border-radius: 8px;"><div style="font-size: 0.7rem; color: #f59e0b; font-weight: 600;">เธฃเธงเธก เธเธก.OT</div><div style="font-size: 1.1rem; font-weight: 700; color: #92400e;">' + formatMinsToHHMM(personOTMins) + '</div></div>';
 
     headerHtml += '</div></div>';
 
@@ -15015,27 +15013,27 @@ function renderManagerLogsTable() {
 
     let tableHtml = '<div class="table-responsive" style="margin: 0;"><table class="custom-table" style="margin: 0; border-radius: 0;"><thead><tr>'
 
-      + '<th style="width: 130px;">วันที่</th>'
+      + '<th style="width: 130px;">เธงเธฑเธเธ—เธตเน</th>'
 
-      + '<th style="width: 90px;">เข้างาน</th>'
+      + '<th style="width: 90px;">เน€เธเนเธฒเธเธฒเธ</th>'
 
-      + '<th style="width: 55px;">รูปเข้า</th>'
+      + '<th style="width: 55px;">เธฃเธนเธเน€เธเนเธฒ</th>'
 
-      + '<th style="width: 90px;">ออกงาน</th>'
+      + '<th style="width: 90px;">เธญเธญเธเธเธฒเธ</th>'
 
-      + '<th style="width: 55px;">รูปออก</th>'
+      + '<th style="width: 55px;">เธฃเธนเธเธญเธญเธ</th>'
 
-      + '<th style="width: 100px;">ชม.ทำงาน</th>'
+      + '<th style="width: 100px;">เธเธก.เธ—เธณเธเธฒเธ</th>'
 
-      + '<th style="width: 90px;">เข้า OT</th>'
+      + '<th style="width: 90px;">เน€เธเนเธฒ OT</th>'
 
-      + '<th style="width: 90px;">ออก OT</th>'
+      + '<th style="width: 90px;">เธญเธญเธ OT</th>'
 
-      + '<th style="width: 100px;">ชม.OT</th>'
+      + '<th style="width: 100px;">เธเธก.OT</th>'
 
-      + '<th>รายละเอียด / หมายเหตุ</th>'
+      + '<th>เธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ” / เธซเธกเธฒเธขเน€เธซเธ•เธธ</th>'
 
-      + '<th style="width: 100px;">สถานะ</th>'
+      + '<th style="width: 100px;">เธชเธ–เธฒเธเธฐ</th>'
 
       + '</tr></thead><tbody>';
 
@@ -15049,7 +15047,7 @@ function renderManagerLogsTable() {
 
       if (log.lat && log.lng) {
 
-        locHtml = ' <a href="https://maps.google.com/?q=' + log.lat + ',' + log.lng + '" target="_blank" style="font-size: 0.65rem; color: #0284c7; text-decoration: none;">📍</a>';
+        locHtml = ' <a href="https://maps.google.com/?q=' + log.lat + ',' + log.lng + '" target="_blank" style="font-size: 0.65rem; color: #0284c7; text-decoration: none;">๐“</a>';
 
       }
 
@@ -15077,7 +15075,7 @@ function renderManagerLogsTable() {
 
         const m = mins % 60;
 
-        return '<span style="font-weight: 600;">' + hrs + ' ชม. ' + (m > 0 ? m + ' น.' : '') + '</span>';
+        return '<span style="font-weight: 600;">' + hrs + ' เธเธก. ' + (m > 0 ? m + ' เธ.' : '') + '</span>';
 
       };
 
@@ -15089,7 +15087,7 @@ function renderManagerLogsTable() {
 
         if (!url) return '<span style="color: var(--text-muted);">-</span>';
 
-        return '<a href="' + url + '" target="_blank"><img src="' + url + '" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-color); cursor: pointer;" onerror="this.parentElement.innerHTML=&#39;❌&#39;"></a>';
+        return '<a href="' + url + '" target="_blank"><img src="' + url + '" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-color); cursor: pointer;" onerror="this.parentElement.innerHTML=&#39;โ&#39;"></a>';
 
       };
 
@@ -15097,9 +15095,9 @@ function renderManagerLogsTable() {
 
       const statusBadge = log.isPresent 
 
-        ? '<span class="badge badge-success" style="font-size: 0.75rem;">มาทำงาน</span>' 
+        ? '<span class="badge badge-success" style="font-size: 0.75rem;">เธกเธฒเธ—เธณเธเธฒเธ</span>' 
 
-        : '<span class="badge badge-danger" style="font-size: 0.75rem;">หยุดงาน</span>';
+        : '<span class="badge badge-danger" style="font-size: 0.75rem;">เธซเธขเธธเธ”เธเธฒเธ</span>';
 
       
 
@@ -15267,7 +15265,7 @@ function populateManagerSelect(selectId) {
 
   
 
-  managerSelect.innerHTML = '<option value="">-- กำลังโหลด --</option>';
+  managerSelect.innerHTML = '<option value="">-- เธเธณเธฅเธฑเธเนเธซเธฅเธ” --</option>';
 
   google.script.run
 
@@ -15281,7 +15279,7 @@ function populateManagerSelect(selectId) {
 
     .withFailureHandler(() => {
 
-      managerSelect.innerHTML = '<option value="">ไม่สามารถโหลดรายชื่อได้</option>';
+      managerSelect.innerHTML = '<option value="">เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เนเธซเธฅเธ”เธฃเธฒเธขเธเธทเนเธญเนเธ”เน</option>';
 
     })
 
@@ -15307,7 +15305,7 @@ function fillManagerOptions(selectEl) {
 
     const role = (u[5] || '').toString();
 
-    return fullName.includes('ผจก') || nickname.includes('ผจก') || role.toLowerCase() === 'manager';
+    return fullName.includes('เธเธเธ') || nickname.includes('เธเธเธ') || role.toLowerCase() === 'manager';
 
   });
 
@@ -15315,7 +15313,7 @@ function fillManagerOptions(selectEl) {
 
   if (managers.length === 0) {
 
-    selectEl.innerHTML = '<option value="">-- ไม่พบรายชื่อ ผจก. --</option>';
+    selectEl.innerHTML = '<option value="">-- เนเธกเนเธเธเธฃเธฒเธขเธเธทเนเธญ เธเธเธ. --</option>';
 
     return;
 
@@ -15391,7 +15389,7 @@ function closeManagerCheckinModal() {
 
 async function proceedSaveManagerCheckout(lat, lng) {
 
-  setLoading(true, 'กำลังประมวลผลรูปภาพ...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฃเธฐเธกเธงเธฅเธเธฅเธฃเธนเธเธ เธฒเธ...');
 
   
 
@@ -15465,7 +15463,7 @@ async function proceedSaveManagerCheckout(lat, lng) {
 
     setLoading(false);
 
-    showToast('กรุณาเลือกชื่อผู้จัดการ', 'warning');
+    showToast('เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธเธทเนเธญเธเธนเนเธเธฑเธ”เธเธฒเธฃ', 'warning');
 
     return;
 
@@ -15473,7 +15471,7 @@ async function proceedSaveManagerCheckout(lat, lng) {
 
   
 
-  setLoading(true, 'กำลังบันทึกเวลาออกงานและพิกัด...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเน€เธงเธฅเธฒเธญเธญเธเธเธฒเธเนเธฅเธฐเธเธดเธเธฑเธ”...');
 
   const user = getLogUser();
 
@@ -15487,7 +15485,7 @@ async function proceedSaveManagerCheckout(lat, lng) {
 
       if (res && res.success) {
 
-        showToast('✅ บันทึกเวลาออกงานสำเร็จ!', 'success');
+        showToast('โ… เธเธฑเธเธ—เธถเธเน€เธงเธฅเธฒเธญเธญเธเธเธฒเธเธชเธณเน€เธฃเนเธ!', 'success');
 
         closeManagerCheckoutModal();
 
@@ -15495,7 +15493,7 @@ async function proceedSaveManagerCheckout(lat, lng) {
 
       } else {
 
-        showToast('บันทึกล้มเหลว: ' + (res ? res.error : 'unknown'), 'error');
+        showToast('เธเธฑเธเธ—เธถเธเธฅเนเธกเน€เธซเธฅเธง: ' + (res ? res.error : 'unknown'), 'error');
 
       }
 
@@ -15505,7 +15503,7 @@ async function proceedSaveManagerCheckout(lat, lng) {
 
       setLoading(false);
 
-      showToast('เชื่อมต่อผิดพลาด: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
     })
 
@@ -15517,13 +15515,13 @@ async function proceedSaveManagerCheckout(lat, lng) {
 
 // ----------------------------------------------------
 
-// 10. Audit Log Panel logic (รายงานการใช้ระบบ)
+// 10. Audit Log Panel logic (เธฃเธฒเธขเธเธฒเธเธเธฒเธฃเนเธเนเธฃเธฐเธเธ)
 
 // ----------------------------------------------------
 
 function loadActivityLogs() {
 
-  setLoading(true, 'กำลังดึงรายงานประวัติการเข้าใช้งานระบบ...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธ”เธถเธเธฃเธฒเธขเธเธฒเธเธเธฃเธฐเธงเธฑเธ•เธดเธเธฒเธฃเน€เธเนเธฒเนเธเนเธเธฒเธเธฃเธฐเธเธ...');
 
   google.script.run
 
@@ -15537,7 +15535,7 @@ function loadActivityLogs() {
 
       } else {
 
-        showToast('ไม่สามารถดึงรายงาน Audit Log ได้: ' + (data ? data.error : 'unknown'), 'error');
+        showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธฃเธฒเธขเธเธฒเธ Audit Log เนเธ”เน: ' + (data ? data.error : 'unknown'), 'error');
 
       }
 
@@ -15547,7 +15545,7 @@ function loadActivityLogs() {
 
       setLoading(false);
 
-      showToast('เชื่อมต่อดึงข้อมูลล้มเหลว: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธ”เธถเธเธเนเธญเธกเธนเธฅเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
 
     })
 
@@ -15591,7 +15589,7 @@ function renderActivityLogsTable(logs) {
 
   if (logs.length === 0) {
 
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลประวัติการทำธุรกรรมในระบบ</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเธเธฃเธฐเธงเธฑเธ•เธดเธเธฒเธฃเธ—เธณเธเธธเธฃเธเธฃเธฃเธกเนเธเธฃเธฐเธเธ</td></tr>`;
 
   }
 
@@ -15673,7 +15671,7 @@ function renderDebtorsTable() {
 
   if (debtors.length === 0) {
 
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">🎉 ไม่มีนักเรียนค้างชำระเงินค่าเรียนในระบบ</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">๐ เนเธกเนเธกเธตเธเธฑเธเน€เธฃเธตเธขเธเธเนเธฒเธเธเธณเธฃเธฐเน€เธเธดเธเธเนเธฒเน€เธฃเธตเธขเธเนเธเธฃเธฐเธเธ</td></tr>`;
 
     return;
 
@@ -15691,13 +15689,13 @@ function renderDebtorsTable() {
 
       <div style="font-weight:600; color:var(--text-main); cursor:pointer;" onclick="showStudentHistoryModal('${s.name}', '${s.nickname}')">
 
-        👤 ${s.name} (${s.nickname})
+        ๐‘ค ${s.name} (${s.nickname})
 
       </div>
 
       <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
 
-        สาขาเรียน: ${s.branchLearn || '-'} | ไลน์: ${s.lineName || '-'}
+        เธชเธฒเธเธฒเน€เธฃเธตเธขเธ: ${s.branchLearn || '-'} | เนเธฅเธเน: ${s.lineName || '-'}
 
       </div>
 
@@ -15711,7 +15709,7 @@ function renderDebtorsTable() {
 
       <div style="font-weight:500; font-size:0.65rem; white-space:nowrap;">${roundList}</div>
 
-      <div style="font-size:0.6rem; color:var(--text-muted); margin-top:2px; white-space:nowrap;">ชั้น: ${s.grade || '-'} ${s.classSection || ''}</div>
+      <div style="font-size:0.6rem; color:var(--text-muted); margin-top:2px; white-space:nowrap;">เธเธฑเนเธ: ${s.grade || '-'} ${s.classSection || ''}</div>
 
     `;
 
@@ -15723,23 +15721,23 @@ function renderDebtorsTable() {
 
       <td>${courseText}</td>
 
-      <td style="text-align: right; font-weight: 500; white-space: nowrap;">฿${s.full.toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 500; white-space: nowrap;">เธฟ${s.full.toLocaleString()}</td>
 
-      <td style="text-align: right; font-weight: 500; color: var(--color-warning); white-space: nowrap;">฿${(s.discount || 0).toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 500; color: var(--color-warning); white-space: nowrap;">เธฟ${(s.discount || 0).toLocaleString()}</td>
 
-      <td style="text-align: right; font-weight: 500; color: var(--color-success); white-space: nowrap;">฿${s.paid.toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 500; color: var(--color-success); white-space: nowrap;">เธฟ${s.paid.toLocaleString()}</td>
 
-      <td style="text-align: right; font-weight: 700; color: var(--color-danger); white-space: nowrap;">฿${s.outstanding.toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 700; color: var(--color-danger); white-space: nowrap;">เธฟ${s.outstanding.toLocaleString()}</td>
 
-      <td style="white-space: nowrap;"><span class="badge badge-info">${s.classType || 'เดี่ยว'}</span></td>
+      <td style="white-space: nowrap;"><span class="badge badge-info">${s.classType || 'เน€เธ”เธตเนเธขเธง'}</span></td>
 
       <td style="white-space: nowrap;">${formatDateTimeToThaiLong(s.paymentDate) || '-'}</td>
 
       <td>
 
-        <button class="btn btn-primary btn-icon" onclick="showDebtorPaymentModal('${s.id}')" title="บันทึกชำระเงิน">
+        <button class="btn btn-primary btn-icon" onclick="showDebtorPaymentModal('${s.id}')" title="เธเธฑเธเธ—เธถเธเธเธณเธฃเธฐเน€เธเธดเธ">
 
-          🪙 จ่ายเงิน
+          ๐ช เธเนเธฒเธขเน€เธเธดเธ
 
         </button>
 
@@ -15767,11 +15765,11 @@ function showDebtorPaymentModal(id) {
 
   document.getElementById('dp_student_id').value = s.id;
 
-  document.getElementById('dp_student_display_name').innerText = `นักเรียน: ${s.name}`;
+  document.getElementById('dp_student_display_name').innerText = `เธเธฑเธเน€เธฃเธตเธขเธ: ${s.name}`;
 
-  document.getElementById('dp_course_display_name').innerText = `คอร์ส: ${s.round}`;
+  document.getElementById('dp_course_display_name').innerText = `เธเธญเธฃเนเธช: ${s.round}`;
 
-  document.getElementById('dp_balance_display').innerText = `ยอดค้างจ่ายเดิม: ฿${s.outstanding.toLocaleString()}`;
+  document.getElementById('dp_balance_display').innerText = `เธขเธญเธ”เธเนเธฒเธเธเนเธฒเธขเน€เธ”เธดเธก: เธฟ${s.outstanding.toLocaleString()}`;
 
   document.getElementById('dp_paid').value = s.outstanding;
 
@@ -15795,7 +15793,7 @@ function showDebtorPaymentModal(id) {
 
   } else {
 
-    const channels = ['กรุงไทย พีปิ๊ก', 'กรุงเทพ พีปิ๊ก', 'SCB พี่ปิ๊ก', 'กรุงศรี พี่ปิ๊ก', 'TTB', 'กสิกร พี่ปิ๊ก', 'SCB คุณยาย', 'กรุงศรี คุณตา', 'กรุงศรี บัญชีบริษัท', 'กสิกร บัญชีบริษัท(กด)', 'กสิกร บัญชีบริษัท(สแกน)', 'TTB บัญชีบริษัท(กด)', 'TTB บัญชีบริษัท(สแกน)', 'เงินสด', 'พี่ปิ๊ก โอน', 'พี่ต้น โอน'];
+    const channels = ['เธเธฃเธธเธเนเธ—เธข เธเธตเธเธดเนเธ', 'เธเธฃเธธเธเน€เธ—เธ เธเธตเธเธดเนเธ', 'SCB เธเธตเนเธเธดเนเธ', 'เธเธฃเธธเธเธจเธฃเธต เธเธตเนเธเธดเนเธ', 'TTB', 'เธเธชเธดเธเธฃ เธเธตเนเธเธดเนเธ', 'SCB เธเธธเธ“เธขเธฒเธข', 'เธเธฃเธธเธเธจเธฃเธต เธเธธเธ“เธ•เธฒ', 'เธเธฃเธธเธเธจเธฃเธต เธเธฑเธเธเธตเธเธฃเธดเธฉเธฑเธ—', 'เธเธชเธดเธเธฃ เธเธฑเธเธเธตเธเธฃเธดเธฉเธฑเธ—(เธเธ”)', 'เธเธชเธดเธเธฃ เธเธฑเธเธเธตเธเธฃเธดเธฉเธฑเธ—(เธชเนเธเธ)', 'TTB เธเธฑเธเธเธตเธเธฃเธดเธฉเธฑเธ—(เธเธ”)', 'TTB เธเธฑเธเธเธตเธเธฃเธดเธฉเธฑเธ—(เธชเนเธเธ)', 'เน€เธเธดเธเธชเธ”', 'เธเธตเนเธเธดเนเธ เนเธญเธ', 'เธเธตเนเธ•เนเธ เนเธญเธ'];
 
     channels.forEach(ch => {
 
@@ -15855,7 +15853,7 @@ function saveDebtorPayment(e) {
 
   if (paid <= 0) {
 
-    showToast('กรุณาระบุจำนวนเงินที่ชำระที่ถูกต้อง', 'error');
+    showToast('เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธเธณเธเธงเธเน€เธเธดเธเธ—เธตเนเธเธณเธฃเธฐเธ—เธตเนเธ–เธนเธเธ•เนเธญเธ', 'error');
 
     return;
 
@@ -15877,7 +15875,7 @@ function saveDebtorPayment(e) {
 
   
 
-  setLoading(true, 'กำลังบันทึกการชำระเงิน...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธ...');
 
   const user = getLogUser();
 
@@ -15889,7 +15887,7 @@ function saveDebtorPayment(e) {
 
       if (res && res.success) {
 
-        showToast('บันทึกการชำระเงินค้างจ่ายสำเร็จแล้ว!', 'success');
+        showToast('เธเธฑเธเธ—เธถเธเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธเธเนเธฒเธเธเนเธฒเธขเธชเธณเน€เธฃเนเธเนเธฅเนเธง!', 'success');
 
         closeDebtorPaymentModal();
 
@@ -15899,7 +15897,7 @@ function saveDebtorPayment(e) {
 
       } else {
 
-        showToast('บันทึกไม่สำเร็จ: ' + (res ? res.error : 'unknown'), 'error');
+        showToast('เธเธฑเธเธ—เธถเธเนเธกเนเธชเธณเน€เธฃเนเธ: ' + (res ? res.error : 'unknown'), 'error');
 
       }
 
@@ -15909,7 +15907,7 @@ function saveDebtorPayment(e) {
 
       setLoading(false);
 
-      showToast('เชื่อมต่อผิดพลาด: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
     })
 
@@ -15923,11 +15921,11 @@ function showStudentHistoryModal(name, nickname) {
 
   if (!name) return;
 
-  document.getElementById('history_student_info').innerHTML = `<strong>กำลังโหลดประวัติของ:</strong> ${name} ${nickname ? '('+nickname+')' : ''}...`;
+  document.getElementById('history_student_info').innerHTML = `<strong>เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเธฃเธฐเธงเธฑเธ•เธดเธเธญเธ:</strong> ${name} ${nickname ? '('+nickname+')' : ''}...`;
 
-  document.getElementById('history_courses_tbody').innerHTML = `<tr><td colspan="8" style="text-align: center;">กำลังโหลดข้อมูลคอร์ส...</td></tr>`;
+  document.getElementById('history_courses_tbody').innerHTML = `<tr><td colspan="8" style="text-align: center;">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธญเธฃเนเธช...</td></tr>`;
 
-  document.getElementById('history_lessons_tbody').innerHTML = `<tr><td colspan="6" style="text-align: center;">กำลังโหลดประวัติเข้าเรียน...</td></tr>`;
+  document.getElementById('history_lessons_tbody').innerHTML = `<tr><td colspan="6" style="text-align: center;">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเธฃเธฐเธงเธฑเธ•เธดเน€เธเนเธฒเน€เธฃเธตเธขเธ...</td></tr>`;
 
   
 
@@ -15945,7 +15943,7 @@ function showStudentHistoryModal(name, nickname) {
 
       } else {
 
-        document.getElementById('history_student_info').innerText = 'ไม่สามารถดึงข้อมูลประวัติได้: ' + (res ? res.error : 'unknown');
+        document.getElementById('history_student_info').innerText = 'เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธเนเธญเธกเธนเธฅเธเธฃเธฐเธงเธฑเธ•เธดเนเธ”เน: ' + (res ? res.error : 'unknown');
 
       }
 
@@ -15953,7 +15951,7 @@ function showStudentHistoryModal(name, nickname) {
 
     .withFailureHandler(err => {
 
-      document.getElementById('history_student_info').innerText = 'เชื่อมต่อล้มเหลว: ' + err.message;
+      document.getElementById('history_student_info').innerText = 'เน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message;
 
     })
 
@@ -16001,7 +15999,7 @@ function renderStudentHistory(name, nickname, courses, classes) {
 
     let s = str.toString().trim();
 
-    if (s.includes('GMT') || s.includes('เวลา') || s.includes('1899') || s.includes('1900') || s.length > 15) {
+    if (s.includes('GMT') || s.includes('เน€เธงเธฅเธฒ') || s.includes('1899') || s.includes('1900') || s.length > 15) {
 
       try {
 
@@ -16025,9 +16023,9 @@ function renderStudentHistory(name, nickname, courses, classes) {
 
     }
 
-    if (s.includes('ชม.') && s.includes('นาที')) {
+    if (s.includes('เธเธก.') && s.includes('เธเธฒเธ—เธต')) {
 
-      const m = s.match(/(\d+)\s*ชม\.\s*(\d+)\s*นาที/);
+      const m = s.match(/(\d+)\s*เธเธก\.\s*(\d+)\s*เธเธฒเธ—เธต/);
 
       if (m) {
 
@@ -16065,11 +16063,11 @@ function renderStudentHistory(name, nickname, courses, classes) {
 
     let rem = Math.round(absMins % 60);
 
-    let str = hrs + ' ชม.';
+    let str = hrs + ' เธเธก.';
 
     if (rem > 0 || hrs === 0) {
 
-      str += ' ' + rem + ' นาที';
+      str += ' ' + rem + ' เธเธฒเธ—เธต';
 
     }
 
@@ -16113,13 +16111,13 @@ function renderStudentHistory(name, nickname, courses, classes) {
 
   infoPanel.innerHTML = `
 
-    <div style="font-weight: 700; font-size: 1.1rem; color: var(--color-primary-hover);">👤 ${name} ${nickname ? '(' + nickname + ')' : ''}</div>
+    <div style="font-weight: 700; font-size: 1.1rem; color: var(--color-primary-hover);">๐‘ค ${name} ${nickname ? '(' + nickname + ')' : ''}</div>
 
     <div style="margin-top: 6px; display: flex; gap: 15px; flex-wrap: wrap;">
 
-      <span><strong>คอร์สทั้งหมด:</strong> ${courses.length} คอร์ส</span>
+      <span><strong>เธเธญเธฃเนเธชเธ—เธฑเนเธเธซเธกเธ”:</strong> ${courses.length} เธเธญเธฃเนเธช</span>
 
-      <span><strong>เข้าเรียนทั้งหมด:</strong> ${classes.length} คลาส</span>
+      <span><strong>เน€เธเนเธฒเน€เธฃเธตเธขเธเธ—เธฑเนเธเธซเธกเธ”:</strong> ${classes.length} เธเธฅเธฒเธช</span>
 
     </div>
 
@@ -16135,7 +16133,7 @@ function renderStudentHistory(name, nickname, courses, classes) {
 
   if (courses.length === 0) {
 
-    coursesTbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">ไม่พบประวัติคอร์สเรียน</td></tr>`;
+    coursesTbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">เนเธกเนเธเธเธเธฃเธฐเธงเธฑเธ•เธดเธเธญเธฃเนเธชเน€เธฃเธตเธขเธ</td></tr>`;
 
   } else {
 
@@ -16145,9 +16143,9 @@ function renderStudentHistory(name, nickname, courses, classes) {
 
       
 
-      const totalHours = c.classType.indexOf('ย่อย') !== -1 ? 16 : 8;
+      const totalHours = c.classType.indexOf('เธขเนเธญเธข') !== -1 ? 16 : 8;
 
-      const ratePerHour = c.full > 0 ? (c.full / totalHours) : (c.classType.indexOf('ย่อย') !== -1 ? 150 : 250);
+      const ratePerHour = c.full > 0 ? (c.full / totalHours) : (c.classType.indexOf('เธขเนเธญเธข') !== -1 ? 150 : 250);
 
       
 
@@ -16165,7 +16163,7 @@ function renderStudentHistory(name, nickname, courses, classes) {
 
       
 
-      const isLowValue = remainingMins <= 60; // 1 ชั่วโมงหรือน้อยกว่า
+      const isLowValue = remainingMins <= 60; // 1 เธเธฑเนเธงเนเธกเธเธซเธฃเธทเธญเธเนเธญเธขเธเธงเนเธฒ
 
       if (isLowValue) {
 
@@ -16179,13 +16177,13 @@ function renderStudentHistory(name, nickname, courses, classes) {
 
         <td style="font-weight: 600;">${c.courseName || '-'}</td>
 
-        <td><span class="badge badge-info">${c.classType || 'เดี่ยว'}</span></td>
+        <td><span class="badge badge-info">${c.classType || 'เน€เธ”เธตเนเธขเธง'}</span></td>
 
-        <td style="text-align: right;">฿${c.full.toLocaleString()}</td>
+        <td style="text-align: right;">เธฟ${c.full.toLocaleString()}</td>
 
-        <td style="text-align: right; color: var(--color-success); font-weight: 600;">฿${c.paid.toLocaleString()}</td>
+        <td style="text-align: right; color: var(--color-success); font-weight: 600;">เธฟ${c.paid.toLocaleString()}</td>
 
-        <td style="text-align: right;">${c.outstanding > 0 ? `<span class="badge badge-danger">ค้าง ฿${c.outstanding.toLocaleString()}</span>` : `<span class="badge badge-success">ชำระแล้ว</span>`}</td>
+        <td style="text-align: right;">${c.outstanding > 0 ? `<span class="badge badge-danger">เธเนเธฒเธ เธฟ${c.outstanding.toLocaleString()}</span>` : `<span class="badge badge-success">เธเธณเธฃเธฐเนเธฅเนเธง</span>`}</td>
 
         <td style="text-align: center; font-weight: 600;">${hoursAccumulatedStr}</td>
 
@@ -16195,7 +16193,7 @@ function renderStudentHistory(name, nickname, courses, classes) {
 
         <td style="text-align: center;">
 
-          <button class="btn btn-primary btn-icon" onclick="payFromHistory('${name.replace(/'/g, "\'")}', '${c.courseName.replace(/'/g, "\'")}')" title="ลงยอดเงินชำระ">🪙</button>
+          <button class="btn btn-primary btn-icon" onclick="payFromHistory('${name.replace(/'/g, "\'")}', '${c.courseName.replace(/'/g, "\'")}')" title="เธฅเธเธขเธญเธ”เน€เธเธดเธเธเธณเธฃเธฐ">๐ช</button>
 
         </td>
 
@@ -16217,7 +16215,7 @@ function renderStudentHistory(name, nickname, courses, classes) {
 
   if (classes.length === 0) {
 
-    lessonsTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">ไม่พบประวัติการเข้าเรียน</td></tr>`;
+    lessonsTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">เนเธกเนเธเธเธเธฃเธฐเธงเธฑเธ•เธดเธเธฒเธฃเน€เธเนเธฒเน€เธฃเธตเธขเธ</td></tr>`;
 
   } else {
 
@@ -16229,19 +16227,19 @@ function renderStudentHistory(name, nickname, courses, classes) {
 
       let statusText = '';
 
-      if (c.isPresentLive > 0) statusText += `<span class="badge badge-success" style="margin-right:2px;">สด (${c.isPresentLive})</span>`;
+      if (c.isPresentLive > 0) statusText += `<span class="badge badge-success" style="margin-right:2px;">เธชเธ” (${c.isPresentLive})</span>`;
 
-      if (c.isPresentOnline > 0) statusText += `<span class="badge badge-info" style="margin-right:2px;">ออน (${c.isPresentOnline})</span>`;
+      if (c.isPresentOnline > 0) statusText += `<span class="badge badge-info" style="margin-right:2px;">เธญเธญเธ (${c.isPresentOnline})</span>`;
 
-      if (c.isLeave > 0) statusText += `<span class="badge badge-warning" style="margin-right:2px;">ลา (${c.isLeave})</span>`;
+      if (c.isLeave > 0) statusText += `<span class="badge badge-warning" style="margin-right:2px;">เธฅเธฒ (${c.isLeave})</span>`;
 
-      if (c.isAbsent > 0) statusText += `<span class="badge badge-danger" style="margin-right:2px;">ขาด (${c.isAbsent})</span>`;
+      if (c.isAbsent > 0) statusText += `<span class="badge badge-danger" style="margin-right:2px;">เธเธฒเธ” (${c.isAbsent})</span>`;
 
-      if (c.isMakeup > 0) statusText += `<span class="badge" style="background-color: #c095e7; color: white; margin-right:2px;">ชด (${c.isMakeup})</span>`;
+      if (c.isMakeup > 0) statusText += `<span class="badge" style="background-color: #c095e7; color: white; margin-right:2px;">เธเธ” (${c.isMakeup})</span>`;
 
       
 
-      const teacherText = c.teacherSub ? `${c.teacherRegular} <span style="font-size:0.75rem; color:var(--text-muted);">(สอนแทน: ${c.teacherSub})</span>` : c.teacherRegular;
+      const teacherText = c.teacherSub ? `${c.teacherRegular} <span style="font-size:0.75rem; color:var(--text-muted);">(เธชเธญเธเนเธ—เธ: ${c.teacherSub})</span>` : c.teacherRegular;
 
       
 
@@ -16319,7 +16317,7 @@ function parseHoursLeftToMinutes(str) {
 
   const isNeg = str.indexOf('-') !== -1;
 
-  const matches = str.match(/(\d+)\s*ชม\.\s*(\d+)\s*นาที/);
+  const matches = str.match(/(\d+)\s*เธเธก\.\s*(\d+)\s*เธเธฒเธ—เธต/);
 
   if (!matches) {
 
@@ -16369,7 +16367,7 @@ function renderReceiptsTable() {
 
   if (!state.students || state.students.length === 0) {
 
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบข้อมูลนักเรียน</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px;">เนเธกเนเธเธเธเนเธญเธกเธนเธฅเธเธฑเธเน€เธฃเธตเธขเธ</td></tr>';
 
     return;
 
@@ -16393,7 +16391,7 @@ function renderReceiptsTable() {
 
   if (filtered.length === 0) {
 
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบผลลัพธ์การค้นหา</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px;">เนเธกเนเธเธเธเธฅเธฅเธฑเธเธเนเธเธฒเธฃเธเนเธเธซเธฒ</td></tr>';
 
     return;
 
@@ -16409,9 +16407,9 @@ function renderReceiptsTable() {
 
       <td>
 
-        <div style="font-weight: 600; color: var(--color-primary-hover); cursor: pointer;" onclick="showStudentHistoryModal('${s.name}', '${s.nickname}')">👤 ${s.name} (${s.nickname})</div>
+        <div style="font-weight: 600; color: var(--color-primary-hover); cursor: pointer;" onclick="showStudentHistoryModal('${s.name}', '${s.nickname}')">๐‘ค ${s.name} (${s.nickname})</div>
 
-        <div style="font-size: 0.8rem; color: var(--text-muted);">สาขาเรียน: ${s.branchLearn || '-'} | Line: ${s.lineName || '-'}</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">เธชเธฒเธเธฒเน€เธฃเธตเธขเธ: ${s.branchLearn || '-'} | Line: ${s.lineName || '-'}</div>
 
       </td>
 
@@ -16419,15 +16417,15 @@ function renderReceiptsTable() {
 
         <div>${s.classType || ''} ${s.grade || ''}</div>
 
-        <div class="student-course-display" data-id="${s.id}" data-type="${s.classType || ''}" data-round="${s.round || ''}" data-section="${s.classSection || ''}" style="font-size: 0.8rem; color: var(--text-muted);">กำลังโหลดคอร์ส...</div>
+        <div class="student-course-display" data-id="${s.id}" data-type="${s.classType || ''}" data-round="${s.round || ''}" data-section="${s.classSection || ''}" style="font-size: 0.8rem; color: var(--text-muted);">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเธญเธฃเนเธช...</div>
 
       </td>
 
-      <td style="text-align: right; font-weight: 600;">฿${(s.full || 0).toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 600;">เธฟ${(s.full || 0).toLocaleString()}</td>
 
-      <td style="text-align: right; font-weight: 600; color: var(--color-success);">฿${(s.paid || 0).toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 600; color: var(--color-success);">เธฟ${(s.paid || 0).toLocaleString()}</td>
 
-      <td style="text-align: right; font-weight: 600; color: ${s.outstanding > 0 ? 'var(--color-danger)' : 'var(--text-muted)'};">฿${(s.outstanding || 0).toLocaleString()}</td>
+      <td style="text-align: right; font-weight: 600; color: ${s.outstanding > 0 ? 'var(--color-danger)' : 'var(--text-muted)'};">เธฟ${(s.outstanding || 0).toLocaleString()}</td>
 
       <td>
 
@@ -16439,7 +16437,7 @@ function renderReceiptsTable() {
 
       <td>
 
-        <button class="btn btn-primary" onclick="showPrintReceiptModal('${s.id}')" style="padding: 6px 12px; font-size: 0.85rem;">📄 ออกใบเสร็จ</button>
+        <button class="btn btn-primary" onclick="showPrintReceiptModal('${s.id}')" style="padding: 6px 12px; font-size: 0.85rem;">๐“ เธญเธญเธเนเธเน€เธชเธฃเนเธ</button>
 
       </td>
 
@@ -16465,7 +16463,7 @@ function renderReceiptsTable() {
 
     const type = el.getAttribute('data-type');
 
-    if (type.includes('เดี่ยว') || type.includes('ย่อย')) {
+    if (type.includes('เน€เธ”เธตเนเธขเธง') || type.includes('เธขเนเธญเธข')) {
 
       const round = el.getAttribute('data-round');
 
@@ -16547,7 +16545,7 @@ function cleanSubjectName(roundStr) {
 
   // 1. Remove parenthesized text like (xxxx) or ( xxxx )
 
-  // Also remove nickname before parentheses if it exists, like สปาย(ตรีเพชร ) or ไข่มุก (บุญสิตา)
+  // Also remove nickname before parentheses if it exists, like เธชเธเธฒเธข(เธ•เธฃเธตเน€เธเธเธฃ ) or เนเธเนเธกเธธเธ (เธเธธเธเธชเธดเธ•เธฒ)
 
   str = str.replace(/^[^\(]+\([^\)]*\)\s*/, '');
 
@@ -16557,7 +16555,7 @@ function cleanSubjectName(roundStr) {
 
   let grade = '';
 
-  const gradeMatch = str.match(/(ม\.[1-6]|ป\.[1-6]|อนุบาล|M[1-6]|P[1-6])/i);
+  const gradeMatch = str.match(/(เธก\.[1-6]|เธ\.[1-6]|เธญเธเธธเธเธฒเธฅ|M[1-6]|P[1-6])/i);
 
   if (gradeMatch) {
 
@@ -16565,11 +16563,11 @@ function cleanSubjectName(roundStr) {
 
     if (grade.toUpperCase().startsWith('M')) {
 
-      grade = 'ม.' + grade.substring(1);
+      grade = 'เธก.' + grade.substring(1);
 
     } else if (grade.toUpperCase().startsWith('P')) {
 
-      grade = 'ป.' + grade.substring(1);
+      grade = 'เธ.' + grade.substring(1);
 
     }
 
@@ -16581,7 +16579,7 @@ function cleanSubjectName(roundStr) {
 
   let subject = '';
 
-  const subjects = ['คณิต', 'วิทย์', 'อังกฤษ', 'ไทย', 'สังคม', 'ฟิสิกส์', 'เคมี', 'ชีวะ', 'ดาราศาสตร์', 'ศิลปะ', 'คอม'];
+  const subjects = ['เธเธ“เธดเธ•', 'เธงเธดเธ—เธขเน', 'เธญเธฑเธเธเธคเธฉ', 'เนเธ—เธข', 'เธชเธฑเธเธเธก', 'เธเธดเธชเธดเธเธชเน', 'เน€เธเธกเธต', 'เธเธตเธงเธฐ', 'เธ”เธฒเธฃเธฒเธจเธฒเธชเธ•เธฃเน', 'เธจเธดเธฅเธเธฐ', 'เธเธญเธก'];
 
   for (const sub of subjects) {
 
@@ -16597,7 +16595,7 @@ function cleanSubjectName(roundStr) {
 
   
 
-  // 4. If both subject and grade are found, format as "subject grade" (e.g., "คณิต ม.2")
+  // 4. If both subject and grade are found, format as "subject grade" (e.g., "เธเธ“เธดเธ• เธก.2")
 
   if (subject && grade) {
 
@@ -16611,7 +16609,7 @@ function cleanSubjectName(roundStr) {
 
   let cleaned = roundStr.replace(/^[^\(]+\([^\)]*\)\s*/, '');
 
-  cleaned = cleaned.replace(/เดี่ยว/g, '').replace(/\s+/g, ' ').trim();
+  cleaned = cleaned.replace(/เน€เธ”เธตเนเธขเธง/g, '').replace(/\s+/g, ' ').trim();
 
   return cleaned;
 
@@ -16627,7 +16625,7 @@ function showPrintReceiptModal(studentId) {
 
   if (!s) {
 
-    showToast('ไม่พบข้อมูลนักเรียนรายนี้', 'error');
+    showToast('เนเธกเนเธเธเธเนเธญเธกเธนเธฅเธเธฑเธเน€เธฃเธตเธขเธเธฃเธฒเธขเธเธตเน', 'error');
 
     return;
 
@@ -16705,7 +16703,7 @@ function showPrintReceiptModal(studentId) {
 
   document.getElementById('pr_tax_id').value = '0215562010486';
 
-  document.getElementById('pr_address').value = 'อ.เมือง จ.ระยอง 21000';
+  document.getElementById('pr_address').value = 'เธญ.เน€เธกเธทเธญเธ เธ.เธฃเธฐเธขเธญเธ 21000';
 
   
 
@@ -16739,13 +16737,13 @@ function showPrintReceiptModal(studentId) {
 
   const payChannel = s.paymentChannel || '';
 
-  if (payChannel.toLowerCase().includes('สด')) {
+  if (payChannel.toLowerCase().includes('เธชเธ”')) {
 
-    document.getElementById('pr_payment_method').value = 'เงินสด';
+    document.getElementById('pr_payment_method').value = 'เน€เธเธดเธเธชเธ”';
 
   } else {
 
-    document.getElementById('pr_payment_method').value = 'เงินโอน';
+    document.getElementById('pr_payment_method').value = 'เน€เธเธดเธเนเธญเธ';
 
   }
 
@@ -16781,7 +16779,7 @@ function showPrintReceiptModal(studentId) {
 
   // Fetch detailed courses
 
-  setLoading(true, 'กำลังค้นหารายละเอียดวิชาเรียนจากไฟล์ชีต...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเนเธเธซเธฒเธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ”เธงเธดเธเธฒเน€เธฃเธตเธขเธเธเธฒเธเนเธเธฅเนเธเธตเธ•...');
 
   google.script.run
 
@@ -16965,7 +16963,7 @@ function updateReceiptFromSelectedRounds(studentName) {
 
     
 
-    setLoading(true, 'กำลังกู้คืนรายละเอียดวิชาเรียน...');
+    setLoading(true, 'เธเธณเธฅเธฑเธเธเธนเนเธเธทเธเธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ”เธงเธดเธเธฒเน€เธฃเธตเธขเธ...');
 
     google.script.run
 
@@ -17011,7 +17009,7 @@ function updateReceiptFromSelectedRounds(studentName) {
 
         const payChannel = s.paymentChannel || '';
 
-        document.getElementById('pr_payment_method').value = payChannel.toLowerCase().includes('สด') ? 'เงินสด' : 'เงินโอน';
+        document.getElementById('pr_payment_method').value = payChannel.toLowerCase().includes('เธชเธ”') ? 'เน€เธเธดเธเธชเธ”' : 'เน€เธเธดเธเนเธญเธ';
 
         document.getElementById('pr_staff').value = s.staff || getLogUser() || '';
 
@@ -17037,7 +17035,7 @@ function updateReceiptFromSelectedRounds(studentName) {
 
   let latestDate = '';
 
-  let latestChannel = 'เงินโอน';
+  let latestChannel = 'เน€เธเธดเธเนเธญเธ';
 
   let latestStaff = '';
 
@@ -17075,7 +17073,7 @@ function updateReceiptFromSelectedRounds(studentName) {
 
   selectedRounds.sort((a, b) => a - b);
 
-  // คงรายละเอียดวิชาเรียนและราคาวิชาแถว 1-10 ตามเดิมทุกประการ ไม่แก้ไขหรือล้างค่า
+  // เธเธเธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ”เธงเธดเธเธฒเน€เธฃเธตเธขเธเนเธฅเธฐเธฃเธฒเธเธฒเธงเธดเธเธฒเนเธ–เธง 1-10 เธ•เธฒเธกเน€เธ”เธดเธกเธ—เธธเธเธเธฃเธฐเธเธฒเธฃ เนเธกเนเนเธเนเนเธเธซเธฃเธทเธญเธฅเนเธฒเธเธเนเธฒ
 
   
 
@@ -17113,7 +17111,7 @@ function updateReceiptFromSelectedRounds(studentName) {
 
   if (latestChannel) {
 
-    document.getElementById('pr_payment_method').value = latestChannel.toLowerCase().includes('สด') ? 'เงินสด' : 'เงินโอน';
+    document.getElementById('pr_payment_method').value = latestChannel.toLowerCase().includes('เธชเธ”') ? 'เน€เธเธดเธเธชเธ”' : 'เน€เธเธดเธเนเธญเธ';
 
   }
 
@@ -17245,7 +17243,7 @@ function updateReceiptPreview() {
 
 
 
-  const headOfficeThai = 'สำนักงานใหญ่ : 103/20 ซอยแสงจันทร์ 5 ถนนแสงจันทร์ ต.เนินพระ อ.เมือง จ.ระยอง 21000 โทร. 097-210-7050 , 065-518-1855';
+  const headOfficeThai = 'เธชเธณเธเธฑเธเธเธฒเธเนเธซเธเน : 103/20 เธเธญเธขเนเธชเธเธเธฑเธเธ—เธฃเน 5 เธ–เธเธเนเธชเธเธเธฑเธเธ—เธฃเน เธ•.เน€เธเธดเธเธเธฃเธฐ เธญ.เน€เธกเธทเธญเธ เธ.เธฃเธฐเธขเธญเธ 21000 เนเธ—เธฃ. 097-210-7050 , 065-518-1855';
 
   const headOfficeEng = 'Head Office : 103/20 Soi Saengchan 5, Saengchan Road, Nernpra, Muang, Rayong 21000 Tel. 097-210-7050 , 065-518-1855';
 
@@ -17259,13 +17257,13 @@ function updateReceiptPreview() {
 
   if (prBranchSelect === '2') {
 
-    branchAddressThai = headOfficeThai + '<br>สาขา 2 : 2/17 ถนนวุฒิสาร ต.ท่าประดู่ อ.เมือง จ.ระยอง 21000 โทร. 083-834-6067, 081-863-1311';
+    branchAddressThai = headOfficeThai + '<br>เธชเธฒเธเธฒ 2 : 2/17 เธ–เธเธเธงเธธเธ’เธดเธชเธฒเธฃ เธ•.เธ—เนเธฒเธเธฃเธฐเธ”เธนเน เธญ.เน€เธกเธทเธญเธ เธ.เธฃเธฐเธขเธญเธ 21000 เนเธ—เธฃ. 083-834-6067, 081-863-1311';
 
     branchAddressEng = headOfficeEng + '<br>Branch 2 : 2/17 Wuttisan Road, Tha Pradu, Muang, Rayong 21000 Tel. 083-834-6067, 081-863-1311';
 
   } else if (prBranchSelect === '3') {
 
-    branchAddressThai = headOfficeThai + '<br>สาขา 3 : 13/7 ม. 3 ถนนสุขุมวิท ต.เนินพระ อ.เมือง จ.ระยอง 21000 โทร. 095-806-7979, 083-834-6067';
+    branchAddressThai = headOfficeThai + '<br>เธชเธฒเธเธฒ 3 : 13/7 เธก. 3 เธ–เธเธเธชเธธเธเธธเธกเธงเธดเธ— เธ•.เน€เธเธดเธเธเธฃเธฐ เธญ.เน€เธกเธทเธญเธ เธ.เธฃเธฐเธขเธญเธ 21000 เนเธ—เธฃ. 095-806-7979, 083-834-6067';
 
     branchAddressEng = headOfficeEng + '<br>Branch 3 : 13/7 Moo 3, Sukhumvit Road, Nernpra, Muang, Rayong 21000 Tel. 095-806-7979, 083-834-6067';
 
@@ -17273,9 +17271,9 @@ function updateReceiptPreview() {
 
 
 
-  const cashChecked = prPaymentMethod === 'เงินสด' ? '☑' : '☐';
+  const cashChecked = prPaymentMethod === 'เน€เธเธดเธเธชเธ”' ? 'โ‘' : 'โ';
 
-  const transferChecked = prPaymentMethod === 'เงินโอน' ? '☑' : '☐';
+  const transferChecked = prPaymentMethod === 'เน€เธเธดเธเนเธญเธ' ? 'โ‘' : 'โ';
 
 
 
@@ -17291,9 +17289,9 @@ function updateReceiptPreview() {
 
           <td style="text-align: left; vertical-align: top; width: 68%;">
 
-            <div style="font-size: 1.35rem; font-weight: 800; color: #1e3a8a; font-family: 'Sarabun', sans-serif; line-height: 1.2;">โรงเรียนกวดวิชาบ้านครูปุ๊กปิ๊ก</div>
+            <div style="font-size: 1.35rem; font-weight: 800; color: #1e3a8a; font-family: 'Sarabun', sans-serif; line-height: 1.2;">เนเธฃเธเน€เธฃเธตเธขเธเธเธงเธ”เธงเธดเธเธฒเธเนเธฒเธเธเธฃเธนเธเธธเนเธเธเธดเนเธ</div>
 
-            <div style="font-size: 0.95rem; font-weight: bold; color: #000000; margin-top: 3px; font-family: 'Sarabun', sans-serif;">บริษัท พิชญปัญญา จำกัด</div>
+            <div style="font-size: 0.95rem; font-weight: bold; color: #000000; margin-top: 3px; font-family: 'Sarabun', sans-serif;">เธเธฃเธดเธฉเธฑเธ— เธเธดเธเธเธเธฑเธเธเธฒ เธเธณเธเธฑเธ”</div>
 
             <div style="font-size: 0.85rem; font-weight: bold; color: #000000; font-family: 'Sarabun', sans-serif; letter-spacing: 0.5px;">PICHAYAPUNYA CO.,LTD.</div>
 
@@ -17303,7 +17301,7 @@ function updateReceiptPreview() {
 
               ${branchAddressEng}<br>
 
-              เลขประจำตัวผู้เสียภาษีอากร / Tax ID : ${prTaxId}
+              เน€เธฅเธเธเธฃเธฐเธเธณเธ•เธฑเธงเธเธนเนเน€เธชเธตเธขเธ เธฒเธฉเธตเธญเธฒเธเธฃ / Tax ID : ${prTaxId}
 
             </div>
 
@@ -17327,7 +17325,7 @@ function updateReceiptPreview() {
 
 
 
-      <div class="receipt-title" style="text-align:center; font-size:1.3rem; font-weight:bold; margin-bottom:12px; text-decoration:underline;">ใบเสร็จรับเงิน / RECEIPT</div>
+      <div class="receipt-title" style="text-align:center; font-size:1.3rem; font-weight:bold; margin-bottom:12px; text-decoration:underline;">เนเธเน€เธชเธฃเนเธเธฃเธฑเธเน€เธเธดเธ / RECEIPT</div>
 
 
 
@@ -17337,7 +17335,7 @@ function updateReceiptPreview() {
 
           <div class="receipt-info-item">
 
-            <span class="receipt-info-label">ผู้รับบริการ:</span>
+            <span class="receipt-info-label">เธเธนเนเธฃเธฑเธเธเธฃเธดเธเธฒเธฃ:</span>
 
             <span class="receipt-info-value" style="font-weight: 600;">${prCustomer}</span>
 
@@ -17345,7 +17343,7 @@ function updateReceiptPreview() {
 
           <div class="receipt-info-item" style="margin-top: 4px;">
 
-            <span class="receipt-info-label">ที่อยู่:</span>
+            <span class="receipt-info-label">เธ—เธตเนเธญเธขเธนเน:</span>
 
             <span class="receipt-info-value">${prAddress}</span>
 
@@ -17353,7 +17351,7 @@ function updateReceiptPreview() {
 
           <div class="receipt-info-item" style="margin-top: 4px;">
 
-            <span class="receipt-info-label">เบอร์โทร:</span>
+            <span class="receipt-info-label">เน€เธเธญเธฃเนเนเธ—เธฃ:</span>
 
             <span class="receipt-info-value">${formatPhone(prPhone) || '-'}</span>
 
@@ -17365,7 +17363,7 @@ function updateReceiptPreview() {
 
           <div class="receipt-info-item">
 
-            <span class="receipt-info-label">เลขที่ใบเสร็จ:</span>
+            <span class="receipt-info-label">เน€เธฅเธเธ—เธตเนเนเธเน€เธชเธฃเนเธ:</span>
 
             <span class="receipt-info-value" style="font-weight: 600;">${prNum}</span>
 
@@ -17373,7 +17371,7 @@ function updateReceiptPreview() {
 
           <div class="receipt-info-item" style="margin-top: 4px;">
 
-            <span class="receipt-info-label">วันที่ชำระ:</span>
+            <span class="receipt-info-label">เธงเธฑเธเธ—เธตเนเธเธณเธฃเธฐ:</span>
 
             <span class="receipt-info-value">${prDate}</span>
 
@@ -17381,11 +17379,11 @@ function updateReceiptPreview() {
 
           <div class="receipt-info-item" style="margin-top: 4px;">
 
-            <span class="receipt-info-label">วิธีการชำระ:</span>
+            <span class="receipt-info-label">เธงเธดเธเธตเธเธฒเธฃเธเธณเธฃเธฐ:</span>
 
             <span class="receipt-info-value" style="font-weight: 600;">
 
-              ${cashChecked} เงินสด &nbsp;&nbsp;&nbsp;&nbsp; ${transferChecked} เงินโอน
+              ${cashChecked} เน€เธเธดเธเธชเธ” &nbsp;&nbsp;&nbsp;&nbsp; ${transferChecked} เน€เธเธดเธเนเธญเธ
 
             </span>
 
@@ -17403,11 +17401,11 @@ function updateReceiptPreview() {
 
           <tr>
 
-            <th style="width: 8%;">ลำดับ</th>
+            <th style="width: 8%;">เธฅเธณเธ”เธฑเธ</th>
 
-            <th style="width: 67%;">รายการชำระเงิน / Description</th>
+            <th style="width: 67%;">เธฃเธฒเธขเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธ / Description</th>
 
-            <th style="width: 25%; text-align: right;">จำนวนเงิน (บาท) / Amount</th>
+            <th style="width: 25%; text-align: right;">เธเธณเธเธงเธเน€เธเธดเธ (เธเธฒเธ—) / Amount</th>
 
           </tr>
 
@@ -17419,11 +17417,11 @@ function updateReceiptPreview() {
 
           <tr style="font-weight: bold;">
 
-            <td colspan="2" style="text-align: right; padding: 4px !important;">รวมเงิน (Subtotal)</td>
+            <td colspan="2" style="text-align: right; padding: 4px !important;">เธฃเธงเธกเน€เธเธดเธ (Subtotal)</td>
 
             <td style="text-align: right; padding: 4px !important;">
 
-              ฿${totalAmount.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+              เธฟ${totalAmount.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
 
             </td>
 
@@ -17431,11 +17429,11 @@ function updateReceiptPreview() {
 
           <tr style="font-weight: bold;">
 
-            <td colspan="2" style="text-align: right; padding: 4px !important;">ส่วนลด (Discount)</td>
+            <td colspan="2" style="text-align: right; padding: 4px !important;">เธชเนเธงเธเธฅเธ” (Discount)</td>
 
             <td style="text-align: right; padding: 4px !important; color: #dc2626;">
 
-              - ฿${prDiscount.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+              - เธฟ${prDiscount.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
 
             </td>
 
@@ -17443,11 +17441,11 @@ function updateReceiptPreview() {
 
           <tr style="font-weight: bold;">
 
-            <td colspan="2" style="text-align: right; padding: 4px !important;">ค้างชำระ (Outstanding)</td>
+            <td colspan="2" style="text-align: right; padding: 4px !important;">เธเนเธฒเธเธเธณเธฃเธฐ (Outstanding)</td>
 
             <td style="text-align: right; padding: 4px !important; color: #dc2626;">
 
-              - ฿${prOutstanding.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+              - เธฟ${prOutstanding.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
 
             </td>
 
@@ -17455,11 +17453,11 @@ function updateReceiptPreview() {
 
           <tr style="background-color: #fafafa; font-weight: bold;">
 
-            <td colspan="2" style="text-align: right; padding: 6px !important;">จำนวนเงินรวมทั้งสิ้น (Total Net)</td>
+            <td colspan="2" style="text-align: right; padding: 6px !important;">เธเธณเธเธงเธเน€เธเธดเธเธฃเธงเธกเธ—เธฑเนเธเธชเธดเนเธ (Total Net)</td>
 
             <td style="text-align: right; font-size: 1.05rem; font-weight: 700; color: #1e3a8a; padding: 6px !important;">
 
-              ฿${netTotal.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+              เธฟ${netTotal.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
 
             </td>
 
@@ -17469,7 +17467,7 @@ function updateReceiptPreview() {
 
             <td colspan="3" style="padding: 8px !important; font-weight: 600; color: #374151;">
 
-              ตัวอักษร: &nbsp;&nbsp; (${totalText})
+              เธ•เธฑเธงเธญเธฑเธเธฉเธฃ: &nbsp;&nbsp; (${totalText})
 
             </td>
 
@@ -17485,15 +17483,15 @@ function updateReceiptPreview() {
 
         <div style="flex: 1; border: 1px dashed #ccc; padding: 10px; border-radius: 4px; background: #fafafa; min-height: 80px; box-sizing: border-box;">
 
-          <div style="font-weight: bold; font-size: 0.75rem; color: #555; margin-bottom: 4px;">หมายเหตุ / Notes:</div>
+          <div style="font-weight: bold; font-size: 0.75rem; color: #555; margin-bottom: 4px;">เธซเธกเธฒเธขเน€เธซเธ•เธธ / Notes:</div>
 
           <div style="font-size: 0.75rem; color: #111; line-height: 1.4;">
 
-            ${prNote1 ? '• ' + prNote1 + '<br>' : ''}
+            ${prNote1 ? 'โ€ข ' + prNote1 + '<br>' : ''}
 
-            ${prNote2 ? '• ' + prNote2 + '<br>' : ''}
+            ${prNote2 ? 'โ€ข ' + prNote2 + '<br>' : ''}
 
-            ${prNote3 ? '• ' + prNote3 + '<br>' : ''}
+            ${prNote3 ? 'โ€ข ' + prNote3 + '<br>' : ''}
 
           </div>
 
@@ -17507,7 +17505,7 @@ function updateReceiptPreview() {
 
             <div class="receipt-signature-line" style="margin-top: 20px;"></div>
 
-            <div style="font-size: 0.72rem; color: #555;">ผู้รับเงิน / Cashier (คุณ ${prStaff})</div>
+            <div style="font-size: 0.72rem; color: #555;">เธเธนเนเธฃเธฑเธเน€เธเธดเธ / Cashier (เธเธธเธ“ ${prStaff})</div>
 
           </div>
 
@@ -17515,7 +17513,7 @@ function updateReceiptPreview() {
 
             <div class="receipt-signature-line" style="margin-top: 20px;"></div>
 
-            <div style="font-size: 0.72rem; color: #555;">ผู้มีอำนาจลงนาม / Authorized Signatory</div>
+            <div style="font-size: 0.72rem; color: #555;">เธเธนเนเธกเธตเธญเธณเธเธฒเธเธฅเธเธเธฒเธก / Authorized Signatory</div>
 
           </div>
 
@@ -17551,7 +17549,7 @@ function thaiBahtText(num) {
 
   num = parseFloat(num);
 
-  if (num === 0) return 'ศูนย์บาทถ้วน';
+  if (num === 0) return 'เธจเธนเธเธขเนเธเธฒเธ—เธ–เนเธงเธ';
 
 
 
@@ -17571,9 +17569,9 @@ function thaiBahtText(num) {
 
   function convertSection(section) {
 
-    const digits = ['', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'];
+    const digits = ['', 'เธซเธเธถเนเธ', 'เธชเธญเธ', 'เธชเธฒเธก', 'เธชเธตเน', 'เธซเนเธฒ', 'เธซเธ', 'เน€เธเนเธ”', 'เนเธเธ”', 'เน€เธเนเธฒ'];
 
-    const positions = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน'];
+    const positions = ['', 'เธชเธดเธ', 'เธฃเนเธญเธข', 'เธเธฑเธ', 'เธซเธกเธทเนเธ', 'เนเธชเธ', 'เธฅเนเธฒเธ'];
 
     let secText = '';
 
@@ -17589,15 +17587,15 @@ function thaiBahtText(num) {
 
         if (pos === 1 && digit === 1) {
 
-          secText += 'สิบ';
+          secText += 'เธชเธดเธ';
 
         } else if (pos === 1 && digit === 2) {
 
-          secText += 'ยี่สิบ';
+          secText += 'เธขเธตเนเธชเธดเธ';
 
         } else if (pos === 0 && digit === 1 && len > 1) {
 
-          secText += 'เอ็ด';
+          secText += 'เน€เธญเนเธ”';
 
         } else {
 
@@ -17653,7 +17651,7 @@ function thaiBahtText(num) {
 
         if (i < sections.length - 1) {
 
-          text += 'ล้าน';
+          text += 'เธฅเนเธฒเธ';
 
         }
 
@@ -17661,7 +17659,7 @@ function thaiBahtText(num) {
 
     }
 
-    text += 'บาท';
+    text += 'เธเธฒเธ—';
 
   }
 
@@ -17671,11 +17669,11 @@ function thaiBahtText(num) {
 
   if (satangVal > 0) {
 
-    text += convertSection(satangVal.toString()) + 'สตางค์';
+    text += convertSection(satangVal.toString()) + 'เธชเธ•เธฒเธเธเน';
 
   } else {
 
-    text += 'ถ้วน';
+    text += 'เธ–เนเธงเธ';
 
   }
 
@@ -17757,7 +17755,7 @@ function calculateInstallmentTotal() {
 
     if (payModeUnpaid && payModeUnpaid.checked) {
 
-      document.getElementById('student_pay_channel').value = 'ยังไม่ชำระเงิน';
+      document.getElementById('student_pay_channel').value = 'เธขเธฑเธเนเธกเนเธเธณเธฃเธฐเน€เธเธดเธ';
 
     } else {
 
@@ -17855,9 +17853,9 @@ function formatDateToThaiShortDate(dateObj) {
 
 const thaiMonths = [
 
-  'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+  'เธกเธเธฃเธฒเธเธก', 'เธเธธเธกเธ เธฒเธเธฑเธเธเน', 'เธกเธตเธเธฒเธเธก', 'เน€เธกเธฉเธฒเธขเธ', 'เธเธคเธฉเธ เธฒเธเธก', 'เธกเธดเธ–เธธเธเธฒเธขเธ',
 
-  'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+  'เธเธฃเธเธเธฒเธเธก', 'เธชเธดเธเธซเธฒเธเธก', 'เธเธฑเธเธขเธฒเธขเธ', 'เธ•เธธเธฅเธฒเธเธก', 'เธเธคเธจเธเธดเธเธฒเธขเธ', 'เธเธฑเธเธงเธฒเธเธก'
 
 ];
 
@@ -17865,17 +17863,17 @@ const thaiMonths = [
 
 function getMonthYearString(dateStr) {
 
-  if (!dateStr) return 'ไม่ระบุ';
+  if (!dateStr) return 'เนเธกเนเธฃเธฐเธเธธ';
 
   const parts = dateStr.split('/');
 
-  if (parts.length !== 3) return 'ไม่ระบุ';
+  if (parts.length !== 3) return 'เนเธกเนเธฃเธฐเธเธธ';
 
   const monthIdx = parseInt(parts[1], 10) - 1;
 
   const year = parseInt(parts[2], 10);
 
-  if (monthIdx < 0 || monthIdx > 11) return 'ไม่ระบุ';
+  if (monthIdx < 0 || monthIdx > 11) return 'เนเธกเนเธฃเธฐเธเธธ';
 
   return `${thaiMonths[monthIdx]} ${year}`;
 
@@ -17935,7 +17933,7 @@ function renderRevenueSummary() {
 
   filtered.forEach(s => {
 
-    const br = s.branchPay || s.branch || 'อื่นๆ';
+    const br = s.branchPay || s.branch || 'เธญเธทเนเธเน';
 
     const amt = parseFloat(s.paid) || 0;
 
@@ -17965,7 +17963,7 @@ function renderRevenueSummary() {
 
     // Group by Daily
 
-    const dateStr = s.paymentDate || 'ไม่ระบุ';
+    const dateStr = s.paymentDate || 'เนเธกเนเธฃเธฐเธเธธ';
 
     if (!dailyGroups[dateStr]) {
 
@@ -18057,11 +18055,11 @@ function renderRevenueSummary() {
 
     <div class="rev-summary-card" style="border-left: 4px solid var(--color-primary);">
 
-      <div class="rev-summary-card-title">💵 ยอดรวมทั้งหมด</div>
+      <div class="rev-summary-card-title">๐’ต เธขเธญเธ”เธฃเธงเธกเธ—เธฑเนเธเธซเธกเธ”</div>
 
       <div class="rev-summary-card-value" style="color: var(--color-primary-hover);">${totalPaidSum.toLocaleString()}</div>
 
-      <div class="rev-summary-card-sub">จำนวน ${totalCount} รายการ</div>
+      <div class="rev-summary-card-sub">เธเธณเธเธงเธ ${totalCount} เธฃเธฒเธขเธเธฒเธฃ</div>
 
     </div>
 
@@ -18071,21 +18069,21 @@ function renderRevenueSummary() {
 
   const branchColors = {
 
-    'สาขา1': '#3b82f6',
+    'เธชเธฒเธเธฒ1': '#3b82f6',
 
-    'สาขา2': '#f97316',
+    'เธชเธฒเธเธฒ2': '#f97316',
 
-    'สาขา3': '#a855f7',
+    'เธชเธฒเธเธฒ3': '#a855f7',
 
-    'สาขา 1': '#3b82f6',
+    'เธชเธฒเธเธฒ 1': '#3b82f6',
 
-    'สาขา 2': '#f97316',
+    'เธชเธฒเธเธฒ 2': '#f97316',
 
-    'สาขา 3': '#a855f7',
+    'เธชเธฒเธเธฒ 3': '#a855f7',
 
-    'ออนไลน์': '#14b8a6',
+    'เธญเธญเธเนเธฅเธเน': '#14b8a6',
 
-    'อื่นๆ': '#64748b'
+    'เธญเธทเนเธเน': '#64748b'
 
   };
 
@@ -18101,11 +18099,11 @@ function renderRevenueSummary() {
 
       <div class="rev-summary-card" style="border-left: 4px solid ${color};">
 
-        <div class="rev-summary-card-title">🏢 ${br}</div>
+        <div class="rev-summary-card-title">๐ข ${br}</div>
 
         <div class="rev-summary-card-value" style="color: ${color};">${data.sum.toLocaleString()}</div>
 
-        <div class="rev-summary-card-sub">จำนวน ${data.count} รายการ</div>
+        <div class="rev-summary-card-sub">เธเธณเธเธงเธ ${data.count} เธฃเธฒเธขเธเธฒเธฃ</div>
 
       </div>
 
@@ -18129,7 +18127,7 @@ function renderRevenueSummary() {
 
     if (branches.length === 0) {
 
-      branchTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">ไม่มีข้อมูลในช่วงวันที่เลือก</td></tr>';
+      branchTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเนเธเธเนเธงเธเธงเธฑเธเธ—เธตเนเน€เธฅเธทเธญเธ</td></tr>';
 
     } else {
 
@@ -18169,7 +18167,7 @@ function renderRevenueSummary() {
 
     if (dailyKeys.length === 0) {
 
-      dailyTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">ไม่มีข้อมูลในช่วงวันที่เลือก</td></tr>';
+      dailyTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเนเธเธเนเธงเธเธงเธฑเธเธ—เธตเนเน€เธฅเธทเธญเธ</td></tr>';
 
     } else {
 
@@ -18209,7 +18207,7 @@ function renderRevenueSummary() {
 
     if (weeklyKeys.length === 0) {
 
-      weeklyTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">ไม่มีข้อมูลในช่วงวันที่เลือก</td></tr>';
+      weeklyTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเนเธเธเนเธงเธเธงเธฑเธเธ—เธตเนเน€เธฅเธทเธญเธ</td></tr>';
 
     } else {
 
@@ -18249,7 +18247,7 @@ function renderRevenueSummary() {
 
     if (monthlyKeys.length === 0) {
 
-      monthlyTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">ไม่มีข้อมูลในช่วงวันที่เลือก</td></tr>';
+      monthlyTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเนเธเธเนเธงเธเธงเธฑเธเธ—เธตเนเน€เธฅเธทเธญเธ</td></tr>';
 
     } else {
 
@@ -18297,7 +18295,7 @@ function openProfileModal() {
 
   
 
-  setLoading(true, 'กำลังดึงข้อมูลโปรไฟล์...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธ”เธถเธเธเนเธญเธกเธนเธฅเนเธเธฃเนเธเธฅเน...');
 
   google.script.run
 
@@ -18322,8 +18320,13 @@ function openProfileModal() {
         if (fEl) fEl.value = p.fullName || '';
 
         const pEl = document.getElementById('profile_phone');
-
         if (pEl) pEl.value = p.phone || '';
+
+        const schoolEl = document.getElementById('profile_school');
+        if (schoolEl) schoolEl.value = p.school || '';
+
+        const subjectsEl = document.getElementById('profile_subjects');
+        if (subjectsEl) subjectsEl.value = p.subjects || '';
 
         const bEl = document.getElementById('profile_bank');
         if (bEl) {
@@ -18334,8 +18337,8 @@ function openProfileModal() {
             if (opt.value === bankVal) { found = true; break; }
           }
           if (!found && bankVal) {
-            // Add as "อื่นๆ" or pick closest - set as อื่นๆ
-            bEl.value = 'อื่นๆ';
+            // Add as "เธญเธทเนเธเน" or pick closest - set as เธญเธทเนเธเน
+            bEl.value = 'เธญเธทเนเธเน';
           } else {
             bEl.value = bankVal;
           }
@@ -18345,7 +18348,7 @@ function openProfileModal() {
         if (aEl) aEl.value = p.accountNumber || '';
         
         const atEl = document.getElementById('profile_account_type');
-        if (atEl) atEl.value = p.accountType || 'บัญชีทั่วไป';
+        if (atEl) atEl.value = p.accountType || 'เธเธฑเธเธเธตเธ—เธฑเนเธงเนเธ';
 
         
 
@@ -18419,7 +18422,7 @@ function openProfileModal() {
 
       } else {
 
-        showToast('ไม่สามารถดึงข้อมูลโปรไฟล์ได้: ' + res.error, 'error');
+        showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธเนเธญเธกเธนเธฅเนเธเธฃเนเธเธฅเนเนเธ”เน: ' + res.error, 'error');
 
       }
 
@@ -18429,7 +18432,7 @@ function openProfileModal() {
 
       setLoading(false);
 
-      showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message, 'error');
+      showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญ: ' + err.message, 'error');
 
     })
 
@@ -18599,6 +18602,12 @@ function saveUserProfileData(e) {
 
   const phone = pEl ? pEl.value.trim() : '';
 
+  const sEl = document.getElementById('profile_school');
+  const school = sEl ? sEl.value.trim() : '';
+
+  const subEl = document.getElementById('profile_subjects');
+  const subjects = subEl ? subEl.value.trim() : '';
+
   const bEl = document.getElementById('profile_bank');
 
   const bank = bEl ? bEl.value.trim() : '';
@@ -18607,7 +18616,7 @@ function saveUserProfileData(e) {
   const accountNo = aEl ? aEl.value.trim() : '';
 
   const atEl = document.getElementById('profile_account_type');
-  const accountType = atEl ? atEl.value : 'บัญชีทั่วไป';
+  const accountType = atEl ? atEl.value : 'เธเธฑเธเธเธตเธ—เธฑเนเธงเนเธ';
 
   
 
@@ -18629,7 +18638,7 @@ function saveUserProfileData(e) {
 
     if (newPass.length < 4) {
 
-      showToast('รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 4 ตัวอักษร', 'warning');
+      showToast('เธฃเธซเธฑเธชเธเนเธฒเธเนเธซเธกเนเธ•เนเธญเธเธกเธตเธเธงเธฒเธกเธขเธฒเธงเธญเธขเนเธฒเธเธเนเธญเธข 4 เธ•เธฑเธงเธญเธฑเธเธฉเธฃ', 'warning');
 
       return;
 
@@ -18637,7 +18646,7 @@ function saveUserProfileData(e) {
 
     if (newPass !== confirmPass) {
 
-      showToast('การยืนยันรหัสผ่านใหม่ไม่ตรงกัน', 'warning');
+      showToast('เธเธฒเธฃเธขเธทเธเธขเธฑเธเธฃเธซเธฑเธชเธเนเธฒเธเนเธซเธกเนเนเธกเนเธ•เธฃเธเธเธฑเธ', 'warning');
 
       return;
 
@@ -18645,7 +18654,7 @@ function saveUserProfileData(e) {
 
     if (!currentPass) {
 
-      showToast('กรุณากรอกรหัสผ่านปัจจุบันเพื่อยืนยันสิทธิ์ในการเปลี่ยนรหัสผ่าน', 'warning');
+      showToast('เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธฃเธซเธฑเธชเธเนเธฒเธเธเธฑเธเธเธธเธเธฑเธเน€เธเธทเนเธญเธขเธทเธเธขเธฑเธเธชเธดเธ—เธเธดเนเนเธเธเธฒเธฃเน€เธเธฅเธตเนเธขเธเธฃเธซเธฑเธชเธเนเธฒเธ', 'warning');
 
       return;
 
@@ -18662,6 +18671,8 @@ function saveUserProfileData(e) {
     fullName: fullName,
 
     phone: phone,
+    school: school,
+    subjects: subjects,
     bank: bank,
     accountNumber: accountNo,
     accountType: accountType,
@@ -18671,7 +18682,7 @@ function saveUserProfileData(e) {
 
   
 
-  setLoading(true, 'กำลังบันทึกข้อมูลโปรไฟล์...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเนเธเธฃเนเธเธฅเน...');
 
   
 
@@ -18695,7 +18706,7 @@ function saveUserProfileData(e) {
 
               if (passRes && passRes.success) {
 
-                showToast('บันทึกข้อมูลโปรไฟล์และเปลี่ยนรหัสผ่านสำเร็จ!', 'success');
+                showToast('เธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเนเธเธฃเนเธเธฅเนเนเธฅเธฐเน€เธเธฅเธตเนเธขเธเธฃเธซเธฑเธชเธเนเธฒเธเธชเธณเน€เธฃเนเธ!', 'success');
 
                 updateSessionAndSidebar(nickname, profileImageDataUrl);
 
@@ -18703,7 +18714,7 @@ function saveUserProfileData(e) {
 
               } else {
 
-                showToast('บันทึกโปรไฟล์สำเร็จ แต่เปลี่ยนรหัสผ่านล้มเหลว: ' + passRes.error, 'error');
+                showToast('เธเธฑเธเธ—เธถเธเนเธเธฃเนเธเธฅเนเธชเธณเน€เธฃเนเธ เนเธ•เนเน€เธเธฅเธตเนเธขเธเธฃเธซเธฑเธชเธเนเธฒเธเธฅเนเธกเน€เธซเธฅเธง: ' + passRes.error, 'error');
 
               }
 
@@ -18713,7 +18724,7 @@ function saveUserProfileData(e) {
 
               setLoading(false);
 
-              showToast('ข้อผิดพลาดการเชื่อมต่อระหว่างเปลี่ยนรหัสผ่าน: ' + err.message, 'error');
+              showToast('เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธฃเธฐเธซเธงเนเธฒเธเน€เธเธฅเธตเนเธขเธเธฃเธซเธฑเธชเธเนเธฒเธ: ' + err.message, 'error');
 
             })
 
@@ -18723,7 +18734,7 @@ function saveUserProfileData(e) {
 
           setLoading(false);
 
-          showToast('บันทึกข้อมูลโปรไฟล์สำเร็จ!', 'success');
+          showToast('เธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเนเธเธฃเนเธเธฅเนเธชเธณเน€เธฃเนเธ!', 'success');
 
           updateSessionAndSidebar(nickname, profileImageDataUrl);
 
@@ -18735,7 +18746,7 @@ function saveUserProfileData(e) {
 
         setLoading(false);
 
-        showToast('บันทึกข้อมูลล้มเหลว: ' + res.error, 'error');
+        showToast('เธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเธฅเนเธกเน€เธซเธฅเธง: ' + res.error, 'error');
 
       }
 
@@ -18745,7 +18756,7 @@ function saveUserProfileData(e) {
 
       setLoading(false);
 
-      showToast('เกิดข้อผิดพลาดในการส่งข้อมูล: ' + err.message, 'error');
+      showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเธชเนเธเธเนเธญเธกเธนเธฅ: ' + err.message, 'error');
 
     })
 
@@ -18773,7 +18784,7 @@ function updateSessionAndSidebar(nickname, profilePic) {
 
     const displayName = nickname || state.currentUser.username;
 
-    const isTeacher = (state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู');
+    const isTeacher = (state.currentUser.role === 'Teacher' || state.currentUser.role === 'เธเธฃเธน');
 
     
 
@@ -18797,17 +18808,15 @@ function updateSessionAndSidebar(nickname, profilePic) {
 
             document.getElementById('teacher_user_display').innerText = fullDisplayName;
 
-            document.getElementById('teacher_sidebar_id').innerText = p.username || '-';
-
+            document.getElementById('teacher_sidebar_username').innerText = p.username || '-';
             document.getElementById('teacher_sidebar_fullname').innerText = p.fullName || '-';
-
-            document.getElementById('teacher_sidebar_bank').innerText = p.bank || '-';
-
-            document.getElementById('teacher_sidebar_account').innerText = p.accountNumber || '-';
-
-            document.getElementById('teacher_sidebar_account_type').innerText = p.accountType || '-';
-
+            document.getElementById('teacher_sidebar_nickname').innerText = p.nickname || '-';
             document.getElementById('teacher_sidebar_phone').innerText = formatPhone(p.phone) || '-';
+            document.getElementById('teacher_sidebar_school').innerText = p.school || '-';
+            document.getElementById('teacher_sidebar_subjects').innerText = p.subjects || '-';
+            document.getElementById('teacher_sidebar_account_type').innerText = p.accountType || '-';
+            document.getElementById('teacher_sidebar_bank').innerText = p.bank || '-';
+            document.getElementById('teacher_sidebar_account').innerText = p.accountNumber || '-';
 
           }
 
@@ -18869,27 +18878,27 @@ function updateSessionAndSidebar(nickname, profilePic) {
 
 var evalMathCriteria = [
 
-  "1. พื้นฐานความรู้เดิมที่ต้องใช้ในการต่อยอดเนื้อหาที่สอน",
+  "1. เธเธทเนเธเธเธฒเธเธเธงเธฒเธกเธฃเธนเนเน€เธ”เธดเธกเธ—เธตเนเธ•เนเธญเธเนเธเนเนเธเธเธฒเธฃเธ•เนเธญเธขเธญเธ”เน€เธเธทเนเธญเธซเธฒเธ—เธตเนเธชเธญเธ",
 
-  "2. ความสามารถการเรียนรู้เนื้อหาใหม่",
+  "2. เธเธงเธฒเธกเธชเธฒเธกเธฒเธฃเธ–เธเธฒเธฃเน€เธฃเธตเธขเธเธฃเธนเนเน€เธเธทเนเธญเธซเธฒเนเธซเธกเน",
 
-  "3. ความสามารถในการวิเคราะห์โจทย์ และจับประเด็นข้อคำถาม",
+  "3. เธเธงเธฒเธกเธชเธฒเธกเธฒเธฃเธ–เนเธเธเธฒเธฃเธงเธดเน€เธเธฃเธฒเธฐเธซเนเนเธเธ—เธขเน เนเธฅเธฐเธเธฑเธเธเธฃเธฐเน€เธ”เนเธเธเนเธญเธเธณเธ–เธฒเธก",
 
-  "4. การตอบคำถามในห้องเรียน",
+  "4. เธเธฒเธฃเธ•เธญเธเธเธณเธ–เธฒเธกเนเธเธซเนเธญเธเน€เธฃเธตเธขเธ",
 
-  "5. การทำแบบฝึกหัด/ ข้อสอบระดับง่าย (คำนวณ)",
+  "5. เธเธฒเธฃเธ—เธณเนเธเธเธเธถเธเธซเธฑเธ”/ เธเนเธญเธชเธญเธเธฃเธฐเธ”เธฑเธเธเนเธฒเธข (เธเธณเธเธงเธ“)",
 
-  "6. การทำแบบฝึกหัด/ ข้อสอบระดับกลาง (เน้นความเข้าใจ และการนำไปใช้)",
+  "6. เธเธฒเธฃเธ—เธณเนเธเธเธเธถเธเธซเธฑเธ”/ เธเนเธญเธชเธญเธเธฃเธฐเธ”เธฑเธเธเธฅเธฒเธ (เน€เธเนเธเธเธงเธฒเธกเน€เธเนเธฒเนเธ เนเธฅเธฐเธเธฒเธฃเธเธณเนเธเนเธเน)",
 
-  "7. การทำแบบฝึกหัด/ข้อสอบระดับยาก(เน้นโจทย์ปัญหา)",
+  "7. เธเธฒเธฃเธ—เธณเนเธเธเธเธถเธเธซเธฑเธ”/เธเนเธญเธชเธญเธเธฃเธฐเธ”เธฑเธเธขเธฒเธ(เน€เธเนเธเนเธเธ—เธขเนเธเธฑเธเธซเธฒ)",
 
-  "8. ความสามารถในการพลิกแพลง ใช้หลัก, กฎ,  ทฤษฎี ตลอดจนองค์ความรู้ต่าง ๆ เพื่อหาคำตอบ",
+  "8. เธเธงเธฒเธกเธชเธฒเธกเธฒเธฃเธ–เนเธเธเธฒเธฃเธเธฅเธดเธเนเธเธฅเธ เนเธเนเธซเธฅเธฑเธ, เธเธ,  เธ—เธคเธฉเธเธต เธ•เธฅเธญเธ”เธเธเธญเธเธเนเธเธงเธฒเธกเธฃเธนเนเธ•เนเธฒเธ เน เน€เธเธทเนเธญเธซเธฒเธเธณเธ•เธญเธ",
 
-  "9. สมาธิในการเรียน และความตั้งใจเรียน",
+  "9. เธชเธกเธฒเธเธดเนเธเธเธฒเธฃเน€เธฃเธตเธขเธ เนเธฅเธฐเธเธงเธฒเธกเธ•เธฑเนเธเนเธเน€เธฃเธตเธขเธ",
 
-  "10. ความขยันหมั่นเพียร",
+  "10. เธเธงเธฒเธกเธเธขเธฑเธเธซเธกเธฑเนเธเน€เธเธตเธขเธฃ",
 
-  "11. ความคงทนในการเรียนรู้"
+  "11. เธเธงเธฒเธกเธเธเธ—เธเนเธเธเธฒเธฃเน€เธฃเธตเธขเธเธฃเธนเน"
 
 ];
 
@@ -18897,27 +18906,27 @@ var evalMathCriteria = [
 
 var evalSciCriteria = [
 
-  "1. พื้นฐานความรู้เดิมที่ต้องใช้ในการต่อยอดเนื้อหาที่สอน",
+  "1. เธเธทเนเธเธเธฒเธเธเธงเธฒเธกเธฃเธนเนเน€เธ”เธดเธกเธ—เธตเนเธ•เนเธญเธเนเธเนเนเธเธเธฒเธฃเธ•เนเธญเธขเธญเธ”เน€เธเธทเนเธญเธซเธฒเธ—เธตเนเธชเธญเธ",
 
-  "2. ความสามารถการเรียนรู้เนื้อหาใหม่",
+  "2. เธเธงเธฒเธกเธชเธฒเธกเธฒเธฃเธ–เธเธฒเธฃเน€เธฃเธตเธขเธเธฃเธนเนเน€เธเธทเนเธญเธซเธฒเนเธซเธกเน",
 
-  "3. ความสามารถในการวิเคราะห์โจทย์ และจับประเด็นข้อคำถาม",
+  "3. เธเธงเธฒเธกเธชเธฒเธกเธฒเธฃเธ–เนเธเธเธฒเธฃเธงเธดเน€เธเธฃเธฒเธฐเธซเนเนเธเธ—เธขเน เนเธฅเธฐเธเธฑเธเธเธฃเธฐเน€เธ”เนเธเธเนเธญเธเธณเธ–เธฒเธก",
 
-  "4. การตอบคำถามในห้องเรียน",
+  "4. เธเธฒเธฃเธ•เธญเธเธเธณเธ–เธฒเธกเนเธเธซเนเธญเธเน€เธฃเธตเธขเธ",
 
-  "5. การทำแบบฝึกหัด/ข้อสอบระดับง่าย (ความจำ ความเข้าใจ พื้นฐาน)",
+  "5. เธเธฒเธฃเธ—เธณเนเธเธเธเธถเธเธซเธฑเธ”/เธเนเธญเธชเธญเธเธฃเธฐเธ”เธฑเธเธเนเธฒเธข (เธเธงเธฒเธกเธเธณ เธเธงเธฒเธกเน€เธเนเธฒเนเธ เธเธทเนเธเธเธฒเธ)",
 
-  "6. การทำแบบฝึกหัด/ ข้อสอบระดับกลาง (เน้นความเข้าใจ และการนำไปใช้)",
+  "6. เธเธฒเธฃเธ—เธณเนเธเธเธเธถเธเธซเธฑเธ”/ เธเนเธญเธชเธญเธเธฃเธฐเธ”เธฑเธเธเธฅเธฒเธ (เน€เธเนเธเธเธงเธฒเธกเน€เธเนเธฒเนเธ เนเธฅเธฐเธเธฒเธฃเธเธณเนเธเนเธเน)",
 
-  "7. การทำแบบฝึกหัด/ข้อสอบระดับยาก (เน้นการวิเคราะห์ สังเคราะห์ ประยุกต์)",
+  "7. เธเธฒเธฃเธ—เธณเนเธเธเธเธถเธเธซเธฑเธ”/เธเนเธญเธชเธญเธเธฃเธฐเธ”เธฑเธเธขเธฒเธ (เน€เธเนเธเธเธฒเธฃเธงเธดเน€เธเธฃเธฒเธฐเธซเน เธชเธฑเธเน€เธเธฃเธฒเธฐเธซเน เธเธฃเธฐเธขเธธเธเธ•เน)",
 
-  "8. ความสามารถในการพลิกแพลง ใช้หลัก, กฎ, ทฤษฎี ตลอดจนองค์ความรู้ต่าง ๆ เพื่อหาคำตอบ",
+  "8. เธเธงเธฒเธกเธชเธฒเธกเธฒเธฃเธ–เนเธเธเธฒเธฃเธเธฅเธดเธเนเธเธฅเธ เนเธเนเธซเธฅเธฑเธ, เธเธ, เธ—เธคเธฉเธเธต เธ•เธฅเธญเธ”เธเธเธญเธเธเนเธเธงเธฒเธกเธฃเธนเนเธ•เนเธฒเธ เน เน€เธเธทเนเธญเธซเธฒเธเธณเธ•เธญเธ",
 
-  "9. สมาธิในการเรียน และความตั้งใจเรียน",
+  "9. เธชเธกเธฒเธเธดเนเธเธเธฒเธฃเน€เธฃเธตเธขเธ เนเธฅเธฐเธเธงเธฒเธกเธ•เธฑเนเธเนเธเน€เธฃเธตเธขเธ",
 
-  "10. ความขยันหมั่นเพียร",
+  "10. เธเธงเธฒเธกเธเธขเธฑเธเธซเธกเธฑเนเธเน€เธเธตเธขเธฃ",
 
-  "11. ความคงทนในการเรียนรู้"
+  "11. เธเธงเธฒเธกเธเธเธ—เธเนเธเธเธฒเธฃเน€เธฃเธตเธขเธเธฃเธนเน"
 
 ];
 
@@ -18925,27 +18934,27 @@ var evalSciCriteria = [
 
 var evalLangSocialCriteria = [
 
-  "1. พื้นฐานความรู้เดิมที่ต้องใช้ในการต่อยอดเนื้อหาที่สอน",
+  "1. เธเธทเนเธเธเธฒเธเธเธงเธฒเธกเธฃเธนเนเน€เธ”เธดเธกเธ—เธตเนเธ•เนเธญเธเนเธเนเนเธเธเธฒเธฃเธ•เนเธญเธขเธญเธ”เน€เธเธทเนเธญเธซเธฒเธ—เธตเนเธชเธญเธ",
 
-  "2. ความสามารถการเรียนรู้เนื้อหาใหม่",
+  "2. เธเธงเธฒเธกเธชเธฒเธกเธฒเธฃเธ–เธเธฒเธฃเน€เธฃเธตเธขเธเธฃเธนเนเน€เธเธทเนเธญเธซเธฒเนเธซเธกเน",
 
-  "3. ความสามารถในการวิเคราะห์โจทย์ ประโยค รูปแบบต่าง ๆ",
+  "3. เธเธงเธฒเธกเธชเธฒเธกเธฒเธฃเธ–เนเธเธเธฒเธฃเธงเธดเน€เธเธฃเธฒเธฐเธซเนเนเธเธ—เธขเน เธเธฃเธฐเนเธขเธ เธฃเธนเธเนเธเธเธ•เนเธฒเธ เน",
 
-  "4. การตอบคำถามในห้องเรียน",
+  "4. เธเธฒเธฃเธ•เธญเธเธเธณเธ–เธฒเธกเนเธเธซเนเธญเธเน€เธฃเธตเธขเธ",
 
-  "5. ทักษะการฟัง (จับใจความถูกต้อง)",
+  "5. เธ—เธฑเธเธฉเธฐเธเธฒเธฃเธเธฑเธ (เธเธฑเธเนเธเธเธงเธฒเธกเธ–เธนเธเธ•เนเธญเธ)",
 
-  "6. ทักษะการพูด (หลักไวยากรณ์และการออกเสียงถูกต้อง)",
+  "6. เธ—เธฑเธเธฉเธฐเธเธฒเธฃเธเธนเธ” (เธซเธฅเธฑเธเนเธงเธขเธฒเธเธฃเธ“เนเนเธฅเธฐเธเธฒเธฃเธญเธญเธเน€เธชเธตเธขเธเธ–เธนเธเธ•เนเธญเธ)",
 
-  "7. ทักษะการอ่าน (การออกเสียงและจับใจความถูกต้อง)",
+  "7. เธ—เธฑเธเธฉเธฐเธเธฒเธฃเธญเนเธฒเธ (เธเธฒเธฃเธญเธญเธเน€เธชเธตเธขเธเนเธฅเธฐเธเธฑเธเนเธเธเธงเธฒเธกเธ–เธนเธเธ•เนเธญเธ)",
 
-  "8. ทักษะการเขียน (หลักไวยากรณ์ และสะกดถูกต้อง)",
+  "8. เธ—เธฑเธเธฉเธฐเธเธฒเธฃเน€เธเธตเธขเธ (เธซเธฅเธฑเธเนเธงเธขเธฒเธเธฃเธ“เน เนเธฅเธฐเธชเธฐเธเธ”เธ–เธนเธเธ•เนเธญเธ)",
 
-  "9. สมาธิในการเรียน และความตั้งใจเรียน",
+  "9. เธชเธกเธฒเธเธดเนเธเธเธฒเธฃเน€เธฃเธตเธขเธ เนเธฅเธฐเธเธงเธฒเธกเธ•เธฑเนเธเนเธเน€เธฃเธตเธขเธ",
 
-  "10. ความขยันหมั่นเพียร",
+  "10. เธเธงเธฒเธกเธเธขเธฑเธเธซเธกเธฑเนเธเน€เธเธตเธขเธฃ",
 
-  "11. ความคงทนในการเรียนรู้"
+  "11. เธเธงเธฒเธกเธเธเธ—เธเนเธเธเธฒเธฃเน€เธฃเธตเธขเธเธฃเธนเน"
 
 ];
 
@@ -18955,7 +18964,7 @@ var evalLangSocialCriteria = [
 
 function initEvaluationForm() {
 
-  setLoading(true, 'กำลังโหลดข้อมูลคอร์สของคุณครู...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธญเธฃเนเธชเธเธญเธเธเธธเธ“เธเธฃเธน...');
 
   
 
@@ -19031,9 +19040,9 @@ function initEvaluationForm() {
 
           
 
-          courseSelect.innerHTML = '<option value="">-- เลือกคอร์สเรียน --</option>';
+          courseSelect.innerHTML = '<option value="">-- เน€เธฅเธทเธญเธเธเธญเธฃเนเธชเน€เธฃเธตเธขเธ --</option>';
 
-          studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
+          studentSelect.innerHTML = '<option value="">-- เน€เธฅเธทเธญเธเธเธฑเธเน€เธฃเธตเธขเธ --</option>';
 
           
 
@@ -19055,7 +19064,7 @@ function initEvaluationForm() {
 
           } else {
 
-            showToast('ไม่พบตารางสอนคอร์สใดๆ ของคุณครู', 'warning');
+            showToast('เนเธกเนเธเธเธ•เธฒเธฃเธฒเธเธชเธญเธเธเธญเธฃเนเธชเนเธ”เน เธเธญเธเธเธธเธ“เธเธฃเธน', 'warning');
 
           }
 
@@ -19071,7 +19080,7 @@ function initEvaluationForm() {
 
           setLoading(false);
 
-          showToast('ไม่สามารถดึงข้อมูลคอร์สครู: ' + err.message, 'error');
+          showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธ”เธถเธเธเนเธญเธกเธนเธฅเธเธญเธฃเนเธชเธเธฃเธน: ' + err.message, 'error');
 
         })
 
@@ -19115,7 +19124,7 @@ function onEvalCourseChange() {
 
   const courseIdx = courseSelect.value;
 
-  studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
+  studentSelect.innerHTML = '<option value="">-- เน€เธฅเธทเธญเธเธเธฑเธเน€เธฃเธตเธขเธ --</option>';
 
   gradeInput.value = '';
 
@@ -19143,13 +19152,13 @@ function onEvalCourseChange() {
 
   const selectedText = courseSelect.options[courseSelect.selectedIndex].text;
 
-  const isSingleOrSubgroup = selectedText.includes('เดี่ยว') || selectedText.includes('ย่อย');
+  const isSingleOrSubgroup = selectedText.includes('เน€เธ”เธตเนเธขเธง') || selectedText.includes('เธขเนเธญเธข');
 
   
 
   if (isSingleOrSubgroup) {
 
-    setLoading(true, 'กำลังค้นหารายละเอียดคอร์สเดี่ยว/ย่อย...');
+    setLoading(true, 'เธเธณเธฅเธฑเธเธเนเธเธซเธฒเธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ”เธเธญเธฃเนเธชเน€เธ”เธตเนเธขเธง/เธขเนเธญเธข...');
 
     google.script.run
 
@@ -19267,7 +19276,7 @@ function onEvalCourseChange() {
 
         opt.disabled = true;
 
-        opt.textContent = "-- ประเมินครบทุกคนแล้ว --";
+        opt.textContent = "-- เธเธฃเธฐเน€เธกเธดเธเธเธฃเธเธ—เธธเธเธเธเนเธฅเนเธง --";
 
         studentSelect.appendChild(opt);
 
@@ -19287,25 +19296,25 @@ function onEvalCourseChange() {
 
   
 
-  if (subjectLower.includes('วิทย์') || subjectLower.includes('science') || 
+  if (subjectLower.includes('เธงเธดเธ—เธขเน') || subjectLower.includes('science') || 
 
-      subjectLower.includes('เคมี') || subjectLower.includes('chemistry') || subjectLower.includes('chem') ||
+      subjectLower.includes('เน€เธเธกเธต') || subjectLower.includes('chemistry') || subjectLower.includes('chem') ||
 
-      subjectLower.includes('ฟิสิกส์') || subjectLower.includes('physics') || subjectLower.includes('phy') ||
+      subjectLower.includes('เธเธดเธชเธดเธเธชเน') || subjectLower.includes('physics') || subjectLower.includes('phy') ||
 
-      subjectLower.includes('ชีวะ') || subjectLower.includes('biology') || subjectLower.includes('bio')) {
+      subjectLower.includes('เธเธตเธงเธฐ') || subjectLower.includes('biology') || subjectLower.includes('bio')) {
 
     templateType = 'sci';
 
-  } else if (subjectLower.includes('คณิต') || subjectLower.includes('math')) {
+  } else if (subjectLower.includes('เธเธ“เธดเธ•') || subjectLower.includes('math')) {
 
     templateType = 'math';
 
-  } else if (subjectLower.includes('อังกฤษ') || subjectLower.includes('english') || subjectLower.includes('eng') ||
+  } else if (subjectLower.includes('เธญเธฑเธเธเธคเธฉ') || subjectLower.includes('english') || subjectLower.includes('eng') ||
 
-             subjectLower.includes('ไทย') || subjectLower.includes('thai') || 
+             subjectLower.includes('เนเธ—เธข') || subjectLower.includes('thai') || 
 
-             subjectLower.includes('สังคม') || subjectLower.includes('social')) {
+             subjectLower.includes('เธชเธฑเธเธเธก') || subjectLower.includes('social')) {
 
     templateType = 'lang_social';
 
@@ -19351,7 +19360,7 @@ function renderEvalCriteriaGrid(type) {
 
     criteria = evalSciCriteria;
 
-    labelText = 'หมวดวิทยาศาสตร์/ฟิสิกส์/เคมี/ชีววิทยา';
+    labelText = 'เธซเธกเธงเธ”เธงเธดเธ—เธขเธฒเธจเธฒเธชเธ•เธฃเน/เธเธดเธชเธดเธเธชเน/เน€เธเธกเธต/เธเธตเธงเธงเธดเธ—เธขเธฒ';
 
     badgeClass = 'badge-success';
 
@@ -19359,7 +19368,7 @@ function renderEvalCriteriaGrid(type) {
 
     criteria = evalMathCriteria;
 
-    labelText = 'หมวดคณิตศาสตร์/คำนวณ';
+    labelText = 'เธซเธกเธงเธ”เธเธ“เธดเธ•เธจเธฒเธชเธ•เธฃเน/เธเธณเธเธงเธ“';
 
     badgeClass = 'badge-info';
 
@@ -19367,7 +19376,7 @@ function renderEvalCriteriaGrid(type) {
 
     criteria = evalLangSocialCriteria;
 
-    labelText = 'หมวดอังกฤษ/ไทย/สังคม/ภาษา';
+    labelText = 'เธซเธกเธงเธ”เธญเธฑเธเธเธคเธฉ/เนเธ—เธข/เธชเธฑเธเธเธก/เธ เธฒเธฉเธฒ';
 
     badgeClass = 'badge-primary';
 
@@ -19393,17 +19402,17 @@ function renderEvalCriteriaGrid(type) {
 
       `<td style="padding: 6px; font-weight: 500; font-size: 0.76rem;">${item}</td>` +
 
-      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="ไม่ผ่าน" required style="width:16px; height:16px; cursor:pointer;"></td>` +
+      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เนเธกเนเธเนเธฒเธ" required style="width:16px; height:16px; cursor:pointer;"></td>` +
 
-      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เกรด 1" required style="width:16px; height:16px; cursor:pointer;"></td>` +
+      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เน€เธเธฃเธ” 1" required style="width:16px; height:16px; cursor:pointer;"></td>` +
 
-      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เกรด 2" required style="width:16px; height:16px; cursor:pointer;"></td>` +
+      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เน€เธเธฃเธ” 2" required style="width:16px; height:16px; cursor:pointer;"></td>` +
 
-      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เกรด 3" required style="width:16px; height:16px; cursor:pointer;"></td>` +
+      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เน€เธเธฃเธ” 3" required style="width:16px; height:16px; cursor:pointer;"></td>` +
 
-      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เกรด 4" required style="width:16px; height:16px; cursor:pointer;" checked></td>` +
+      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เน€เธเธฃเธ” 4" required style="width:16px; height:16px; cursor:pointer;" checked></td>` +
 
-      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เกียรตินิยม" required style="width:16px; height:16px; cursor:pointer;"></td>`;
+      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เน€เธเธตเธขเธฃเธ•เธดเธเธดเธขเธก" required style="width:16px; height:16px; cursor:pointer;"></td>`;
 
     tbody.appendChild(tr);
 
@@ -19477,7 +19486,7 @@ function submitStudentEvaluation(event) {
 
   if (cIdx === '' || sIdx === '' || !state._teacherCourses || !state._teacherCourses[cIdx]) {
 
-    showToast('กรุณาเลือกคอร์สและนักเรียนก่อนส่งใบประเมิน', 'error');
+    showToast('เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธเธญเธฃเนเธชเนเธฅเธฐเธเธฑเธเน€เธฃเธตเธขเธเธเนเธญเธเธชเนเธเนเธเธเธฃเธฐเน€เธกเธดเธ', 'error');
 
     return;
 
@@ -19569,13 +19578,13 @@ function submitStudentEvaluation(event) {
 
     if (filledCount < 3) {
 
-      return { valid: false, error: `หัวข้อ "${nameTh}" ต้องตอบอย่างน้อย 3 ข้อขึ้นไป` };
+      return { valid: false, error: `เธซเธฑเธงเธเนเธญ "${nameTh}" เธ•เนเธญเธเธ•เธญเธเธญเธขเนเธฒเธเธเนเธญเธข 3 เธเนเธญเธเธถเนเธเนเธ` };
 
     }
 
     if (invalidLength) {
 
-      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาว 50 ตัวอักษรขึ้นไป` };
+      return { valid: false, error: `เธซเธฑเธงเธเนเธญ "${nameTh}" เนเธ•เนเธฅเธฐเธเนเธญเธ—เธตเนเธ•เธญเธเธเธฐเธ•เนเธญเธเธกเธตเธเธงเธฒเธกเธขเธฒเธง 50 เธ•เธฑเธงเธญเธฑเธเธฉเธฃเธเธถเนเธเนเธ` };
 
     }
 
@@ -19589,7 +19598,7 @@ function submitStudentEvaluation(event) {
 
 
 
-  const strengthsRes = validateAndGetFeedbackItems('eval-strength-item', 'จุดเด่นในการเรียนรู้ของนักเรียนที่ควรรักษาไว้ และส่งเสริมต่อไป');
+  const strengthsRes = validateAndGetFeedbackItems('eval-strength-item', 'เธเธธเธ”เน€เธ”เนเธเนเธเธเธฒเธฃเน€เธฃเธตเธขเธเธฃเธนเนเธเธญเธเธเธฑเธเน€เธฃเธตเธขเธเธ—เธตเนเธเธงเธฃเธฃเธฑเธเธฉเธฒเนเธงเน เนเธฅเธฐเธชเนเธเน€เธชเธฃเธดเธกเธ•เนเธญเนเธ');
 
   if (!strengthsRes.valid) {
 
@@ -19601,7 +19610,7 @@ function submitStudentEvaluation(event) {
 
 
 
-  const improvementsRes = validateAndGetFeedbackItems('eval-improvement-item', 'ประเด็นที่ควรแก้ไข เพื่อให้ผลการเรียนดีขึ้น');
+  const improvementsRes = validateAndGetFeedbackItems('eval-improvement-item', 'เธเธฃเธฐเน€เธ”เนเธเธ—เธตเนเธเธงเธฃเนเธเนเนเธ เน€เธเธทเนเธญเนเธซเนเธเธฅเธเธฒเธฃเน€เธฃเธตเธขเธเธ”เธตเธเธถเนเธ');
 
   if (!improvementsRes.valid) {
 
@@ -19613,7 +19622,7 @@ function submitStudentEvaluation(event) {
 
 
 
-  const recommendationsRes = validateAndGetFeedbackItems('eval-recommendation-item', 'ข้อเสนอแนะอื่นๆ เพื่อส่งเสริมศักยภาพ');
+  const recommendationsRes = validateAndGetFeedbackItems('eval-recommendation-item', 'เธเนเธญเน€เธชเธเธญเนเธเธฐเธญเธทเนเธเน เน€เธเธทเนเธญเธชเนเธเน€เธชเธฃเธดเธกเธจเธฑเธเธขเธ เธฒเธ');
 
   if (!recommendationsRes.valid) {
 
@@ -19633,11 +19642,11 @@ function submitStudentEvaluation(event) {
 
   let criteria;
 
-  if (templateLabelText.includes('วิทยาศาสตร์')) {
+  if (templateLabelText.includes('เธงเธดเธ—เธขเธฒเธจเธฒเธชเธ•เธฃเน')) {
 
     criteria = evalSciCriteria;
 
-  } else if (templateLabelText.includes('คณิตศาสตร์')) {
+  } else if (templateLabelText.includes('เธเธ“เธดเธ•เธจเธฒเธชเธ•เธฃเน')) {
 
     criteria = evalMathCriteria;
 
@@ -19653,7 +19662,7 @@ function submitStudentEvaluation(event) {
 
     const radioGroup = document.getElementsByName('score_' + i);
 
-    let selectedVal = 'เกรด 4'; // default
+    let selectedVal = 'เน€เธเธฃเธ” 4'; // default
 
     for (let r = 0; r < radioGroup.length; r++) {
 
@@ -19703,7 +19712,7 @@ function submitStudentEvaluation(event) {
 
   if (!data.date || !data.subject || !data.teacher) {
 
-    showToast('กรุณากรอกข้อมูลให้ครบถ้วน (วันที่, วิชา, ครูผู้ประเมิน)', 'error');
+    showToast('เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเนเธญเธกเธนเธฅเนเธซเนเธเธฃเธเธ–เนเธงเธ (เธงเธฑเธเธ—เธตเน, เธงเธดเธเธฒ, เธเธฃเธนเธเธนเนเธเธฃเธฐเน€เธกเธดเธ)', 'error');
 
     return;
 
@@ -19711,7 +19720,7 @@ function submitStudentEvaluation(event) {
 
   
 
-  setLoading(true, 'กำลังบันทึกใบประเมินลงฐานข้อมูล...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเนเธเธเธฃเธฐเน€เธกเธดเธเธฅเธเธเธฒเธเธเนเธญเธกเธนเธฅ...');
 
   google.script.run
 
@@ -19721,7 +19730,7 @@ function submitStudentEvaluation(event) {
 
       if (res && res.success) {
 
-        showToast('บันทึกใบประเมินนักเรียนสำเร็จเรียบร้อย ✓', 'success');
+        showToast('เธเธฑเธเธ—เธถเธเนเธเธเธฃเธฐเน€เธกเธดเธเธเธฑเธเน€เธฃเธตเธขเธเธชเธณเน€เธฃเนเธเน€เธฃเธตเธขเธเธฃเนเธญเธข โ“', 'success');
 
         
 
@@ -19753,7 +19762,7 @@ function submitStudentEvaluation(event) {
 
           if (radioGroup.length >= 6) {
 
-            radioGroup[4].checked = true; // เกรด 4
+            radioGroup[4].checked = true; // เน€เธเธฃเธ” 4
 
           }
 
@@ -19767,7 +19776,7 @@ function submitStudentEvaluation(event) {
 
       } else {
 
-        showToast('บันทึกใบประเมินล้มเหลว: ' + (res ? res.error : 'unknown'), 'error');
+        showToast('เธเธฑเธเธ—เธถเธเนเธเธเธฃเธฐเน€เธกเธดเธเธฅเนเธกเน€เธซเธฅเธง: ' + (res ? res.error : 'unknown'), 'error');
 
       }
 
@@ -19777,7 +19786,7 @@ function submitStudentEvaluation(event) {
 
       setLoading(false);
 
-      showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+      showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
     })
 
@@ -19841,9 +19850,9 @@ function deleteAdminEvaluation(evalId) {
 
   Swal.fire({
 
-    title: 'ยืนยันการลบใบประเมิน?',
+    title: 'เธขเธทเธเธขเธฑเธเธเธฒเธฃเธฅเธเนเธเธเธฃเธฐเน€เธกเธดเธ?',
 
-    html: `คุณต้องการลบใบประเมินของ <b>${ev.studentName}</b> ใช่หรือไม่?<br><br><span style="color:red; font-size:0.9em;">การกระทำนี้ไม่สามารถกู้คืนได้</span>`,
+    html: `เธเธธเธ“เธ•เนเธญเธเธเธฒเธฃเธฅเธเนเธเธเธฃเธฐเน€เธกเธดเธเธเธญเธ <b>${ev.studentName}</b> เนเธเนเธซเธฃเธทเธญเนเธกเน?<br><br><span style="color:red; font-size:0.9em;">เธเธฒเธฃเธเธฃเธฐเธ—เธณเธเธตเนเนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธเธนเนเธเธทเธเนเธ”เน</span>`,
 
     icon: 'warning',
 
@@ -19853,9 +19862,9 @@ function deleteAdminEvaluation(evalId) {
 
     cancelButtonColor: '#3085d6',
 
-    confirmButtonText: 'ลบข้อมูล',
+    confirmButtonText: 'เธฅเธเธเนเธญเธกเธนเธฅ',
 
-    cancelButtonText: 'ยกเลิก'
+    cancelButtonText: 'เธขเธเน€เธฅเธดเธ'
 
   }).then((result) => {
 
@@ -19863,7 +19872,7 @@ function deleteAdminEvaluation(evalId) {
 
       Swal.fire({
 
-        title: 'กำลังลบข้อมูล...',
+        title: 'เธเธณเธฅเธฑเธเธฅเธเธเนเธญเธกเธนเธฅ...',
 
         allowOutsideClick: false,
 
@@ -19879,13 +19888,13 @@ function deleteAdminEvaluation(evalId) {
 
           if (response.success) {
 
-            Swal.fire('สำเร็จ', 'ลบใบประเมินเรียบร้อยแล้ว', 'success');
+            Swal.fire('เธชเธณเน€เธฃเนเธ', 'เธฅเธเนเธเธเธฃเธฐเน€เธกเธดเธเน€เธฃเธตเธขเธเธฃเนเธญเธขเนเธฅเนเธง', 'success');
 
             loadAdminEvaluations(); // Reload the list
 
           } else {
 
-            Swal.fire('ข้อผิดพลาด', response.error, 'error');
+            Swal.fire('เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”', response.error, 'error');
 
           }
 
@@ -19893,7 +19902,7 @@ function deleteAdminEvaluation(evalId) {
 
         .withFailureHandler(function(error) {
 
-          Swal.fire('ข้อผิดพลาด', error.message, 'error');
+          Swal.fire('เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”', error.message, 'error');
 
         })
 
@@ -19915,7 +19924,7 @@ function openAdminEvaluationEditModal(evalId) {
 
   if (!ev) {
 
-    showToast('ไม่พบข้อมูลใบประเมินนี้', 'error');
+    showToast('เนเธกเนเธเธเธเนเธญเธกเธนเธฅเนเธเธเธฃเธฐเน€เธกเธดเธเธเธตเน', 'error');
 
     return;
 
@@ -19947,15 +19956,15 @@ function openAdminEvaluationEditModal(evalId) {
 
   let templateType = 'lang_social';
 
-  if (subjectLower.includes('วิทย์') || subjectLower.includes('science') || subjectLower.includes('เคมี') || subjectLower.includes('chem') ||
+  if (subjectLower.includes('เธงเธดเธ—เธขเน') || subjectLower.includes('science') || subjectLower.includes('เน€เธเธกเธต') || subjectLower.includes('chem') ||
 
-      subjectLower.includes('ฟิสิกส์') || subjectLower.includes('physics') || subjectLower.includes('phy') ||
+      subjectLower.includes('เธเธดเธชเธดเธเธชเน') || subjectLower.includes('physics') || subjectLower.includes('phy') ||
 
-      subjectLower.includes('ชีวะ') || subjectLower.includes('biology') || subjectLower.includes('bio')) {
+      subjectLower.includes('เธเธตเธงเธฐ') || subjectLower.includes('biology') || subjectLower.includes('bio')) {
 
     templateType = 'sci';
 
-  } else if (subjectLower.includes('คณิต') || subjectLower.includes('math')) {
+  } else if (subjectLower.includes('เธเธ“เธดเธ•') || subjectLower.includes('math')) {
 
     templateType = 'math';
 
@@ -19983,7 +19992,7 @@ function openAdminEvaluationEditModal(evalId) {
 
       criteria = evalSciCriteria;
 
-      labelText = 'หมวดวิทยาศาสตร์/ฟิสิกส์/เคมี/ชีววิทยา';
+      labelText = 'เธซเธกเธงเธ”เธงเธดเธ—เธขเธฒเธจเธฒเธชเธ•เธฃเน/เธเธดเธชเธดเธเธชเน/เน€เธเธกเธต/เธเธตเธงเธงเธดเธ—เธขเธฒ';
 
       badgeClass = 'badge-success';
 
@@ -19991,7 +20000,7 @@ function openAdminEvaluationEditModal(evalId) {
 
       criteria = evalMathCriteria;
 
-      labelText = 'หมวดคณิตศาสตร์/คำนวณ';
+      labelText = 'เธซเธกเธงเธ”เธเธ“เธดเธ•เธจเธฒเธชเธ•เธฃเน/เธเธณเธเธงเธ“';
 
       badgeClass = 'badge-info';
 
@@ -19999,7 +20008,7 @@ function openAdminEvaluationEditModal(evalId) {
 
       criteria = evalLangSocialCriteria;
 
-      labelText = 'หมวดอังกฤษ/ไทย/สังคม/ภาษา';
+      labelText = 'เธซเธกเธงเธ”เธญเธฑเธเธเธคเธฉ/เนเธ—เธข/เธชเธฑเธเธเธก/เธ เธฒเธฉเธฒ';
 
       badgeClass = 'badge-primary';
 
@@ -20019,7 +20028,7 @@ function openAdminEvaluationEditModal(evalId) {
 
     criteria.forEach(function(item, idx) {
 
-      const savedVal = ev.scores ? ev.scores[item] : 'เกรด 4';
+      const savedVal = ev.scores ? ev.scores[item] : 'เน€เธเธฃเธ” 4';
 
       
 
@@ -20029,17 +20038,17 @@ function openAdminEvaluationEditModal(evalId) {
 
         `<td style="padding: 6px; font-weight: 500; font-size: 0.76rem;">${item}</td>` +
 
-        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="ไม่ผ่าน" ${savedVal === 'ไม่ผ่าน' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
+        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เนเธกเนเธเนเธฒเธ" ${savedVal === 'เนเธกเนเธเนเธฒเธ' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
 
-        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เกรด 1" ${savedVal === 'เกรด 1' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
+        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เน€เธเธฃเธ” 1" ${savedVal === 'เน€เธเธฃเธ” 1' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
 
-        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เกรด 2" ${savedVal === 'เกรด 2' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
+        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เน€เธเธฃเธ” 2" ${savedVal === 'เน€เธเธฃเธ” 2' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
 
-        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เกรด 3" ${savedVal === 'เกรด 3' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
+        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เน€เธเธฃเธ” 3" ${savedVal === 'เน€เธเธฃเธ” 3' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
 
-        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เกรด 4" ${savedVal === 'เกรด 4' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
+        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เน€เธเธฃเธ” 4" ${savedVal === 'เน€เธเธฃเธ” 4' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
 
-        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เกียรตินิยม" ${savedVal === 'เกียรตินิยม' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>`;
+        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เน€เธเธตเธขเธฃเธ•เธดเธเธดเธขเธก" ${savedVal === 'เน€เธเธตเธขเธฃเธ•เธดเธเธดเธขเธก' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>`;
 
       tbody.appendChild(tr);
 
@@ -20149,11 +20158,11 @@ function saveAdminEvaluationEdit(e) {
 
   let criteria;
 
-  if (templateLabelText.includes('วิทยาศาสตร์')) {
+  if (templateLabelText.includes('เธงเธดเธ—เธขเธฒเธจเธฒเธชเธ•เธฃเน')) {
 
     criteria = evalSciCriteria;
 
-  } else if (templateLabelText.includes('คณิตศาสตร์')) {
+  } else if (templateLabelText.includes('เธเธ“เธดเธ•เธจเธฒเธชเธ•เธฃเน')) {
 
     criteria = evalMathCriteria;
 
@@ -20169,7 +20178,7 @@ function saveAdminEvaluationEdit(e) {
 
     const radioGroup = document.getElementsByName('admin_score_' + i);
 
-    let selectedVal = 'เกรด 4';
+    let selectedVal = 'เน€เธเธฃเธ” 4';
 
     for (let r = 0; r < radioGroup.length; r++) {
 
@@ -20229,13 +20238,13 @@ function saveAdminEvaluationEdit(e) {
 
     if (items.length < 3) {
 
-      return { valid: false, error: `หัวข้อ "${nameTh}" ต้องตอบอย่างน้อย 3 ข้อขึ้นไป` };
+      return { valid: false, error: `เธซเธฑเธงเธเนเธญ "${nameTh}" เธ•เนเธญเธเธ•เธญเธเธญเธขเนเธฒเธเธเนเธญเธข 3 เธเนเธญเธเธถเนเธเนเธ` };
 
     }
 
     if (invalidLength) {
 
-      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาว 50 ตัวอักษรขึ้นไป` };
+      return { valid: false, error: `เธซเธฑเธงเธเนเธญ "${nameTh}" เนเธ•เนเธฅเธฐเธเนเธญเธ—เธตเนเธ•เธญเธเธเธฐเธ•เนเธญเธเธกเธตเธเธงเธฒเธกเธขเธฒเธง 50 เธ•เธฑเธงเธญเธฑเธเธฉเธฃเธเธถเนเธเนเธ` };
 
     }
 
@@ -20249,7 +20258,7 @@ function saveAdminEvaluationEdit(e) {
 
   
 
-  const strengthsRes = getFeedbackItems('admin-eval-strength-item', 'จุดเด่นในการเรียนรู้ของนักเรียนที่ควรรักษาไว้ และส่งเสริมต่อไป');
+  const strengthsRes = getFeedbackItems('admin-eval-strength-item', 'เธเธธเธ”เน€เธ”เนเธเนเธเธเธฒเธฃเน€เธฃเธตเธขเธเธฃเธนเนเธเธญเธเธเธฑเธเน€เธฃเธตเธขเธเธ—เธตเนเธเธงเธฃเธฃเธฑเธเธฉเธฒเนเธงเน เนเธฅเธฐเธชเนเธเน€เธชเธฃเธดเธกเธ•เนเธญเนเธ');
 
   if (!strengthsRes.valid) {
 
@@ -20261,7 +20270,7 @@ function saveAdminEvaluationEdit(e) {
 
   
 
-  const improvementsRes = getFeedbackItems('admin-eval-improvement-item', 'ประเด็นที่ควรแก้ไข เพื่อให้ผลการเรียนดีขึ้น');
+  const improvementsRes = getFeedbackItems('admin-eval-improvement-item', 'เธเธฃเธฐเน€เธ”เนเธเธ—เธตเนเธเธงเธฃเนเธเนเนเธ เน€เธเธทเนเธญเนเธซเนเธเธฅเธเธฒเธฃเน€เธฃเธตเธขเธเธ”เธตเธเธถเนเธ');
 
   if (!improvementsRes.valid) {
 
@@ -20273,7 +20282,7 @@ function saveAdminEvaluationEdit(e) {
 
   
 
-  const recommendationsRes = getFeedbackItems('admin-eval-recommendation-item', 'ข้อเสนอแนะอื่นๆ เพื่อส่งเสริมศักยภาพ');
+  const recommendationsRes = getFeedbackItems('admin-eval-recommendation-item', 'เธเนเธญเน€เธชเธเธญเนเธเธฐเธญเธทเนเธเน เน€เธเธทเนเธญเธชเนเธเน€เธชเธฃเธดเธกเธจเธฑเธเธขเธ เธฒเธ');
 
   if (!recommendationsRes.valid) {
 
@@ -20305,7 +20314,7 @@ function saveAdminEvaluationEdit(e) {
 
   
 
-  setLoading(true, 'กำลังบันทึกการแก้ไข...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธเธฒเธฃเนเธเนเนเธ...');
 
   
 
@@ -20317,7 +20326,7 @@ function saveAdminEvaluationEdit(e) {
 
       if (res && res.success) {
 
-        showToast('อัปเดตใบประเมินเรียบร้อยแล้ว!', 'success');
+        showToast('เธญเธฑเธเน€เธ”เธ•เนเธเธเธฃเธฐเน€เธกเธดเธเน€เธฃเธตเธขเธเธฃเนเธญเธขเนเธฅเนเธง!', 'success');
 
         closeAdminEvaluationEditModal();
 
@@ -20325,7 +20334,7 @@ function saveAdminEvaluationEdit(e) {
 
       } else {
 
-        showToast('ไม่สามารถอัปเดตได้: ' + res.error, 'error');
+        showToast('เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธญเธฑเธเน€เธ”เธ•เนเธ”เน: ' + res.error, 'error');
 
       }
 
@@ -20335,7 +20344,7 @@ function saveAdminEvaluationEdit(e) {
 
       setLoading(false);
 
-      showToast('เชื่อมต่อผิดพลาด: ' + err.message, 'error');
+      showToast('เน€เธเธทเนเธญเธกเธ•เนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + err.message, 'error');
 
     })
 
@@ -20359,7 +20368,7 @@ function loadAdminEvaluationsDashboard(isSilent = false) {
 
   if (!isSilent || !window._adminEvalsCache || window._adminEvalsCache.length === 0) {
 
-    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">กำลังโหลดข้อมูลใบประเมิน...</div>';
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเนเธเธเธฃเธฐเน€เธกเธดเธ...</div>';
 
   }
 
@@ -20373,7 +20382,7 @@ function loadAdminEvaluationsDashboard(isSilent = false) {
 
         if (!isSilent) {
 
-          container.innerHTML = `<div style="color:red; text-align:center; padding: 20px;">พบข้อผิดพลาด: ${res.error}</div>`;
+          container.innerHTML = `<div style="color:red; text-align:center; padding: 20px;">เธเธเธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ${res.error}</div>`;
 
         }
 
@@ -20393,7 +20402,7 @@ function loadAdminEvaluationsDashboard(isSilent = false) {
 
       if (!isSilent) {
 
-        container.innerHTML = `<div style="color:red; text-align:center; padding: 20px;">พบข้อผิดพลาด: ${err.message}</div>`;
+        container.innerHTML = `<div style="color:red; text-align:center; padding: 20px;">เธเธเธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ${err.message}</div>`;
 
       }
 
@@ -20421,7 +20430,7 @@ function renderAdminEvaluationsDashboard(res) {
 
   if (!evals || evals.length === 0) {
 
-    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); background: white; border-radius: 8px;">ยังไม่มีการประเมินนักเรียน</div>';
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); background: white; border-radius: 8px;">เธขเธฑเธเนเธกเนเธกเธตเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธเธเธฑเธเน€เธฃเธตเธขเธ</div>';
 
     return;
 
@@ -20435,7 +20444,7 @@ function renderAdminEvaluationsDashboard(res) {
 
   evals.forEach(ev => {
 
-    const subj = ev.subject || 'ไม่ระบุวิชา';
+    const subj = ev.subject || 'เนเธกเนเธฃเธฐเธเธธเธงเธดเธเธฒ';
 
     if (!grouped[subj]) {
 
@@ -20485,23 +20494,23 @@ function renderAdminEvaluationsDashboard(res) {
 
       if (evaluated >= totalStudents) {
 
-        badgeHtml = `<span class="badge badge-success" style="font-size: 0.75rem;">ครบแล้ว (${evaluated} คน)</span>`;
+        badgeHtml = `<span class="badge badge-success" style="font-size: 0.75rem;">เธเธฃเธเนเธฅเนเธง (${evaluated} เธเธ)</span>`;
 
       } else {
 
-        badgeHtml = `<span class="badge badge-warning" style="font-size: 0.75rem;">เหลือ ${totalStudents - evaluated} คน (ทำแล้ว ${evaluated}/${totalStudents})</span>`;
+        badgeHtml = `<span class="badge badge-warning" style="font-size: 0.75rem;">เน€เธซเธฅเธทเธญ ${totalStudents - evaluated} เธเธ (เธ—เธณเนเธฅเนเธง ${evaluated}/${totalStudents})</span>`;
 
       }
 
     } else {
 
-      badgeHtml = `<span class="badge badge-info" style="font-size: 0.75rem;">ประเมินแล้ว ${evaluated} คน</span>`;
+      badgeHtml = `<span class="badge badge-info" style="font-size: 0.75rem;">เธเธฃเธฐเน€เธกเธดเธเนเธฅเนเธง ${evaluated} เธเธ</span>`;
 
     }
 
     
 
-    header.innerHTML = `<span>📚</span> ${course} ${badgeHtml}`;
+    header.innerHTML = `<span>๐“</span> ${course} ${badgeHtml}`;
 
     section.appendChild(header);
 
@@ -20531,9 +20540,9 @@ function renderAdminEvaluationsDashboard(res) {
 
         <div style="display: flex; gap: 6px;">
 
-          <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 0.75rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไขข้อมูล</button>
+          <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 0.75rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">โ๏ธ เธ”เธน/เนเธเนเนเธเธเนเธญเธกเธนเธฅ</button>
 
-          <button class="btn btn-danger" style="padding: 6px; font-size: 0.75rem;" onclick="deleteAdminEvaluation('${ev.evalId}')"><i class="fas fa-trash"></i> ลบ</button>
+          <button class="btn btn-danger" style="padding: 6px; font-size: 0.75rem;" onclick="deleteAdminEvaluation('${ev.evalId}')"><i class="fas fa-trash"></i> เธฅเธ</button>
 
         </div>
 
@@ -20567,37 +20576,37 @@ function renderAdminEvaluationsDashboard(res) {
 
 const PAYMENT_CHANNELS = [
 
-  "กรุงไทย พีปิ๊ก",
+  "เธเธฃเธธเธเนเธ—เธข เธเธตเธเธดเนเธ",
 
-  "กรุงเทพ พีปิ๊ก",
+  "เธเธฃเธธเธเน€เธ—เธ เธเธตเธเธดเนเธ",
 
-  "SCB พี่ปิ๊ก",
+  "SCB เธเธตเนเธเธดเนเธ",
 
-  "กรุงศรี พี่ปิ๊ก",
+  "เธเธฃเธธเธเธจเธฃเธต เธเธตเนเธเธดเนเธ",
 
   "TTB",
 
-  "กสิกร พี่ปิ๊ก",
+  "เธเธชเธดเธเธฃ เธเธตเนเธเธดเนเธ",
 
-  "SCB คุณยาย",
+  "SCB เธเธธเธ“เธขเธฒเธข",
 
-  "กรุงศรี คุณตา",
+  "เธเธฃเธธเธเธจเธฃเธต เธเธธเธ“เธ•เธฒ",
 
-  "กรุงศรี บัญชีบริษัท",
+  "เธเธฃเธธเธเธจเธฃเธต เธเธฑเธเธเธตเธเธฃเธดเธฉเธฑเธ—",
 
-  "กสิกร บัญชีบริษัท(กด)",
+  "เธเธชเธดเธเธฃ เธเธฑเธเธเธตเธเธฃเธดเธฉเธฑเธ—(เธเธ”)",
 
-  "กสิกร บัญชีบริษัท(สแกน)",
+  "เธเธชเธดเธเธฃ เธเธฑเธเธเธตเธเธฃเธดเธฉเธฑเธ—(เธชเนเธเธ)",
 
-  "TTB บัญชีบริษัท(กด)",
+  "TTB เธเธฑเธเธเธตเธเธฃเธดเธฉเธฑเธ—(เธเธ”)",
 
-  "TTB บัญชีบริษัท(สแกน)",
+  "TTB เธเธฑเธเธเธตเธเธฃเธดเธฉเธฑเธ—(เธชเนเธเธ)",
 
-  "เงินสด",
+  "เน€เธเธดเธเธชเธ”",
 
-  "พี่ปิ๊ก โอน",
+  "เธเธตเนเธเธดเนเธ เนเธญเธ",
 
-  "พี่ต้น โอน"
+  "เธเธตเนเธ•เนเธ เนเธญเธ"
 
 ];
 
@@ -20615,7 +20624,7 @@ function generateStudentBlock(idx) {
 
       <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; color: var(--color-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
 
-        นักเรียนคนที่ ${idx + 1}
+        เธเธฑเธเน€เธฃเธตเธขเธเธเธเธ—เธตเน ${idx + 1}
 
       </div>
 
@@ -20623,7 +20632,7 @@ function generateStudentBlock(idx) {
 
       <div class="section-title-group">
 
-        <div class="section-label">ข้อมูลส่วนตัวนักเรียน & ติดต่อ</div>
+        <div class="section-label">เธเนเธญเธกเธนเธฅเธชเนเธงเธเธ•เธฑเธงเธเธฑเธเน€เธฃเธตเธขเธ & เธ•เธดเธ”เธ•เนเธญ</div>
 
       </div>
 
@@ -20631,49 +20640,49 @@ function generateStudentBlock(idx) {
 
         <div class="form-group">
 
-          <label class="form-label">ชื่อ-นามสกุลนักเรียน</label>
+          <label class="form-label">เธเธทเนเธญ-เธเธฒเธกเธชเธเธธเธฅเธเธฑเธเน€เธฃเธตเธขเธ</label>
 
-          <input type="text" id="student_name_${idx}" class="form-input" placeholder="ชื่อจริง นามสกุลจริง" required>
-
-        </div>
-
-        <div class="form-group">
-
-          <label class="form-label">ชื่อเล่น</label>
-
-          <input type="text" id="student_nickname_${idx}" class="form-input" placeholder="ชื่อเล่น" required>
+          <input type="text" id="student_name_${idx}" class="form-input" placeholder="เธเธทเนเธญเธเธฃเธดเธ เธเธฒเธกเธชเธเธธเธฅเธเธฃเธดเธ" required>
 
         </div>
 
         <div class="form-group">
 
-          <label class="form-label">ชื่อโรงเรียน</label>
+          <label class="form-label">เธเธทเนเธญเน€เธฅเนเธ</label>
 
-          <input type="text" id="student_school_${idx}" class="form-input" list="student_school_list" placeholder="พิมพ์ชื่อโรงเรียน..." required>
-
-        </div>
-
-        <div class="form-group">
-
-          <label class="form-label">ทับ (Section)</label>
-
-          <input type="text" id="student_class_section_${idx}" class="form-input" placeholder="เช่น ป.2/69, ม.5ex1" required>
+          <input type="text" id="student_nickname_${idx}" class="form-input" placeholder="เธเธทเนเธญเน€เธฅเนเธ" required>
 
         </div>
 
         <div class="form-group">
 
-          <label class="form-label">เบอร์ติดต่อผู้ปกครอง</label>
+          <label class="form-label">เธเธทเนเธญเนเธฃเธเน€เธฃเธตเธขเธ</label>
 
-          <input type="text" id="student_contact_${idx}" class="form-input" placeholder="เบอร์โทรศัพท์" required oninput="formatPhoneAsYouType(this)">
+          <input type="text" id="student_school_${idx}" class="form-input" list="student_school_list" placeholder="เธเธดเธกเธเนเธเธทเนเธญเนเธฃเธเน€เธฃเธตเธขเธ..." required>
 
         </div>
 
         <div class="form-group">
 
-          <label class="form-label">ชื่อโปรไฟล์ไลน์ (Line Name)</label>
+          <label class="form-label">เธ—เธฑเธ (Section)</label>
 
-          <input type="text" id="student_line_name_${idx}" class="form-input" placeholder="เช่น แม่ ณดา ป.2/69">
+          <input type="text" id="student_class_section_${idx}" class="form-input" placeholder="เน€เธเนเธ เธ.2/69, เธก.5ex1" required>
+
+        </div>
+
+        <div class="form-group">
+
+          <label class="form-label">เน€เธเธญเธฃเนเธ•เธดเธ”เธ•เนเธญเธเธนเนเธเธเธเธฃเธญเธ</label>
+
+          <input type="text" id="student_contact_${idx}" class="form-input" placeholder="เน€เธเธญเธฃเนเนเธ—เธฃเธจเธฑเธเธ—เน" required oninput="formatPhoneAsYouType(this)">
+
+        </div>
+
+        <div class="form-group">
+
+          <label class="form-label">เธเธทเนเธญเนเธเธฃเนเธเธฅเนเนเธฅเธเน (Line Name)</label>
+
+          <input type="text" id="student_line_name_${idx}" class="form-input" placeholder="เน€เธเนเธ เนเธกเน เธ“เธ”เธฒ เธ.2/69">
 
         </div>
 
@@ -20681,7 +20690,7 @@ function generateStudentBlock(idx) {
 
           <label class="form-label">ID Line</label>
 
-          <input type="text" id="student_line_id_${idx}" class="form-input" placeholder="ไอดีไลน์">
+          <input type="text" id="student_line_id_${idx}" class="form-input" placeholder="เนเธญเธ”เธตเนเธฅเธเน">
 
         </div>
 
@@ -20691,7 +20700,7 @@ function generateStudentBlock(idx) {
 
       <div class="section-title-group">
 
-        <div class="section-label">ข้อมูลการชำระเงิน & ชั่วโมงเรียน</div>
+        <div class="section-label">เธเนเธญเธกเธนเธฅเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธ & เธเธฑเนเธงเนเธกเธเน€เธฃเธตเธขเธ</div>
 
       </div>
 
@@ -20701,31 +20710,31 @@ function generateStudentBlock(idx) {
 
         <div class="form-group form-group-full-3">
 
-          <label class="form-label">รูปแบบการชำระเงิน</label>
+          <label class="form-label">เธฃเธนเธเนเธเธเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธ</label>
 
           <div style="display: flex; gap: 20px; align-items: center; background: #f8fafc; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
 
             <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
 
-              <input type="radio" name="pay_mode_${idx}" id="pay_mode_cash_${idx}" value="cash" checked onchange="calculateBlockOutstanding(${idx})"> สด
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_cash_${idx}" value="cash" checked onchange="calculateBlockOutstanding(${idx})"> เธชเธ”
 
             </label>
 
             <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
 
-              <input type="radio" name="pay_mode_${idx}" id="pay_mode_transfer_${idx}" value="transfer" onchange="calculateBlockOutstanding(${idx})"> โอน
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_transfer_${idx}" value="transfer" onchange="calculateBlockOutstanding(${idx})"> เนเธญเธ
 
             </label>
 
             <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
 
-              <input type="radio" name="pay_mode_${idx}" id="pay_mode_card_${idx}" value="card" onchange="calculateBlockOutstanding(${idx})"> บัตรเครดิต
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_card_${idx}" value="card" onchange="calculateBlockOutstanding(${idx})"> เธเธฑเธ•เธฃเน€เธเธฃเธ”เธดเธ•
 
             </label>
 
             <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
 
-              <input type="radio" name="pay_mode_${idx}" id="pay_mode_unpaid_${idx}" value="unpaid" onchange="calculateBlockOutstanding(${idx})"> ยังไม่ชำระ
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_unpaid_${idx}" value="unpaid" onchange="calculateBlockOutstanding(${idx})"> เธขเธฑเธเนเธกเนเธเธณเธฃเธฐ
 
             </label>
 
@@ -20737,7 +20746,7 @@ function generateStudentBlock(idx) {
 
         <div class="form-group">
 
-          <label class="form-label">ยอดจริง (ค่าเรียนเต็ม)</label>
+          <label class="form-label">เธขเธญเธ”เธเธฃเธดเธ (เธเนเธฒเน€เธฃเธตเธขเธเน€เธ•เนเธก)</label>
 
           <input type="number" id="student_full_${idx}" class="form-input" placeholder="0" oninput="calculateBlockOutstanding(${idx})" required>
 
@@ -20745,7 +20754,7 @@ function generateStudentBlock(idx) {
 
         <div class="form-group">
 
-          <label class="form-label">ยอดจ่ายรวม (บาท)</label>
+          <label class="form-label">เธขเธญเธ”เธเนเธฒเธขเธฃเธงเธก (เธเธฒเธ—)</label>
 
           <input type="number" id="student_paid_${idx}" class="form-input highlight-input" placeholder="0" readonly>
 
@@ -20753,7 +20762,7 @@ function generateStudentBlock(idx) {
 
         <div class="form-group">
 
-          <label class="form-label">ยอดคงค้าง (บาท)</label>
+          <label class="form-label">เธขเธญเธ”เธเธเธเนเธฒเธ (เธเธฒเธ—)</label>
 
           <input type="number" id="student_outstanding_${idx}" class="form-input" placeholder="0" readonly style="background-color: #fee2e2; border-color: #fca5a5; font-weight: bold; color: #b91c1c;">
 
@@ -20761,7 +20770,7 @@ function generateStudentBlock(idx) {
 
         <div class="form-group" id="card_fee_group_${idx}" style="display:none;">
 
-          <label class="form-label" style="color:var(--color-primary);">ค่าธรรมเนียมรูดบัตร (3%)</label>
+          <label class="form-label" style="color:var(--color-primary);">เธเนเธฒเธเธฃเธฃเธกเน€เธเธตเธขเธกเธฃเธนเธ”เธเธฑเธ•เธฃ (3%)</label>
 
           <input type="number" id="student_card_fee_${idx}" class="form-input" placeholder="0" readonly style="background-color: #f0fdf4; border-color: #bbf7d0; color: #15803d; font-weight:bold;">
 
@@ -20769,7 +20778,7 @@ function generateStudentBlock(idx) {
 
         <div class="form-group" id="total_with_card_group_${idx}" style="display:none;">
 
-          <label class="form-label" style="color:var(--color-primary);">ยอดรวมค่ารูดบัตร</label>
+          <label class="form-label" style="color:var(--color-primary);">เธขเธญเธ”เธฃเธงเธกเธเนเธฒเธฃเธนเธ”เธเธฑเธ•เธฃ</label>
 
           <input type="number" id="student_total_with_card_${idx}" class="form-input" placeholder="0" readonly style="background-color: #f0fdf4; border-color: #bbf7d0; color: #15803d; font-weight:bold;">
 
@@ -20779,17 +20788,17 @@ function generateStudentBlock(idx) {
 
         <div class="form-group">
 
-          <label class="form-label">หมายเหตุการชำระเงิน/เวลา</label>
+          <label class="form-label">เธซเธกเธฒเธขเน€เธซเธ•เธธเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธ/เน€เธงเธฅเธฒ</label>
 
-          <input type="text" id="student_time_note_${idx}" class="form-input" placeholder="เช่น ชำระสิ้นเดือน, เรียน 17.00-19.00">
+          <input type="text" id="student_time_note_${idx}" class="form-input" placeholder="เน€เธเนเธ เธเธณเธฃเธฐเธชเธดเนเธเน€เธ”เธทเธญเธ, เน€เธฃเธตเธขเธ 17.00-19.00">
 
         </div>
 
         <div class="form-group">
 
-          <label class="form-label">หมายเหตุอื่นๆ (Admin)</label>
+          <label class="form-label">เธซเธกเธฒเธขเน€เธซเธ•เธธเธญเธทเนเธเน (Admin)</label>
 
-          <input type="text" id="student_extra_note_${idx}" class="form-input" placeholder="เช่น ขอใบเสร็จ, ย้ายรอบ">
+          <input type="text" id="student_extra_note_${idx}" class="form-input" placeholder="เน€เธเนเธ เธเธญเนเธเน€เธชเธฃเนเธ, เธขเนเธฒเธขเธฃเธญเธ">
 
         </div>
 
@@ -20799,7 +20808,7 @@ function generateStudentBlock(idx) {
 
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
 
-            <label class="form-label" style="color: #d97706; margin-bottom: 0;">มียอดยกมา (ย้ายคอร์ส / เรียนไม่ครบ)</label>
+            <label class="form-label" style="color: #d97706; margin-bottom: 0;">เธกเธตเธขเธญเธ”เธขเธเธกเธฒ (เธขเนเธฒเธขเธเธญเธฃเนเธช / เน€เธฃเธตเธขเธเนเธกเนเธเธฃเธ)</label>
 
             <label class="switch">
 
@@ -20815,7 +20824,7 @@ function generateStudentBlock(idx) {
 
             <div>
 
-              <label class="form-label" style="font-size: 0.8rem;">จำนวนเงินที่ยกมา (นำไปหักลบกับยอดจริง)</label>
+              <label class="form-label" style="font-size: 0.8rem;">เธเธณเธเธงเธเน€เธเธดเธเธ—เธตเนเธขเธเธกเธฒ (เธเธณเนเธเธซเธฑเธเธฅเธเธเธฑเธเธขเธญเธ”เธเธฃเธดเธ)</label>
 
               <input type="number" id="student_carried_forward_${idx}" class="form-input" placeholder="0" oninput="calculateBlockOutstanding(${idx})" value="0">
 
@@ -20829,17 +20838,17 @@ function generateStudentBlock(idx) {
 
         <div class="form-group" style="margin-top: 10px;">
 
-          <label class="form-label">ชั่วโมงเรียนทั้งหมด</label>
+          <label class="form-label">เธเธฑเนเธงเนเธกเธเน€เธฃเธตเธขเธเธ—เธฑเนเธเธซเธกเธ”</label>
 
-          <input type="text" id="student_hours_${idx}" class="form-input" placeholder="เช่น 20 ชม.">
+          <input type="text" id="student_hours_${idx}" class="form-input" placeholder="เน€เธเนเธ 20 เธเธก.">
 
         </div>
 
         <div class="form-group" style="margin-top: 10px;">
 
-          <label class="form-label">ชั่วโมงเรียนคงเหลือ</label>
+          <label class="form-label">เธเธฑเนเธงเนเธกเธเน€เธฃเธตเธขเธเธเธเน€เธซเธฅเธทเธญ</label>
 
-          <input type="text" id="student_hours_left_${idx}" class="form-input" placeholder="เช่น 15 ชม.">
+          <input type="text" id="student_hours_left_${idx}" class="form-input" placeholder="เน€เธเนเธ 15 เธเธก.">
 
         </div>
 
@@ -20851,7 +20860,7 @@ function generateStudentBlock(idx) {
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
 
-          <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">บันทึกแบ่งชำระ (กรอกเฉพาะรอบที่จ่ายแล้ว)</h4>
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">เธเธฑเธเธ—เธถเธเนเธเนเธเธเธณเธฃเธฐ (เธเธฃเธญเธเน€เธเธเธฒเธฐเธฃเธญเธเธ—เธตเนเธเนเธฒเธขเนเธฅเนเธง)</h4>
 
         </div>
 
@@ -20863,7 +20872,7 @@ function generateStudentBlock(idx) {
 
           <div>
 
-            <label style="font-size: 0.7rem; color: #64748b;">ครั้งที่ ${r}: วันที่ชำระ</label>
+            <label style="font-size: 0.7rem; color: #64748b;">เธเธฃเธฑเนเธเธ—เธตเน ${r}: เธงเธฑเธเธ—เธตเนเธเธณเธฃเธฐ</label>
 
             <input type="date" id="pay_r${r}_date_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;">
 
@@ -20871,7 +20880,7 @@ function generateStudentBlock(idx) {
 
           <div>
 
-            <label style="font-size: 0.7rem; color: #64748b;">จำนวนเงิน</label>
+            <label style="font-size: 0.7rem; color: #64748b;">เธเธณเธเธงเธเน€เธเธดเธ</label>
 
             <input type="number" id="pay_r${r}_amount_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;" placeholder="0" oninput="calculateBlockOutstanding(${idx})">
 
@@ -20879,11 +20888,11 @@ function generateStudentBlock(idx) {
 
           <div>
 
-            <label style="font-size: 0.7rem; color: #64748b;">ช่องทาง</label>
+            <label style="font-size: 0.7rem; color: #64748b;">เธเนเธญเธเธ—เธฒเธ</label>
 
             <select id="pay_r${r}_channel_${idx}" class="form-select" style="padding: 4px; font-size: 0.8rem;">
 
-              <option value="">- เลือก -</option>
+              <option value="">- เน€เธฅเธทเธญเธ -</option>
 
               ${channelOptions}
 
@@ -20893,15 +20902,15 @@ function generateStudentBlock(idx) {
 
           <div>
 
-            <label style="font-size: 0.7rem; color: #64748b;">พนักงานที่รับเงิน</label>
+            <label style="font-size: 0.7rem; color: #64748b;">เธเธเธฑเธเธเธฒเธเธ—เธตเนเธฃเธฑเธเน€เธเธดเธ</label>
 
-            <input type="text" id="pay_r${r}_staff_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;" placeholder="ชื่อพนักงาน">
+            <input type="text" id="pay_r${r}_staff_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;" placeholder="เธเธทเนเธญเธเธเธฑเธเธเธฒเธ">
 
           </div>
 
           <div>
 
-            <label style="font-size: 0.7rem; color: #64748b;">เวลา (Time)</label>
+            <label style="font-size: 0.7rem; color: #64748b;">เน€เธงเธฅเธฒ (Time)</label>
 
             <input type="time" id="pay_r${r}_time_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;">
 
@@ -20943,13 +20952,13 @@ window.handleClassTypeChange = function() {
 
   
 
-  if (classType === 'กลุ่มหลัก') {
+  if (classType === 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ') {
 
     if(checkboxGroup) checkboxGroup.style.display = 'grid';
 
     numBlocks = 1;
 
-  } else if (classType === 'กลุ่มย่อย') {
+  } else if (classType === 'เธเธฅเธธเนเธกเธขเนเธญเธข') {
 
     sizeGroup.style.display = 'block';
 
@@ -20961,7 +20970,7 @@ window.handleClassTypeChange = function() {
 
     else if (size.includes('6-10')) numBlocks = 10;
 
-  } else if (classType === 'เดี่ยว') {
+  } else if (classType === 'เน€เธ”เธตเนเธขเธง') {
 
     numBlocks = 1;
 
@@ -21195,13 +21204,13 @@ function updateBackgroundQueueIndicator() {
 
     const remaining = saveStudentQueue.length - currentTask;
 
-    const countText = (remaining > 0) ? ` (กำลังบันทึก 1 รายการ, เหลือในคิว ${remaining} รายการ)` : " (กำลังบันทึกรายการสุดท้าย)";
+    const countText = (remaining > 0) ? ` (เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธ 1 เธฃเธฒเธขเธเธฒเธฃ, เน€เธซเธฅเธทเธญเนเธเธเธดเธง ${remaining} เธฃเธฒเธขเธเธฒเธฃ)` : " (เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธฃเธฒเธขเธเธฒเธฃเธชเธธเธ”เธ—เนเธฒเธข)";
 
     indicator.innerHTML = `
 
       <span style="width: 14px; height: 14px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin 1s linear infinite;"></span>
 
-      <span>กำลังบันทึกข้อมูลนักเรียนในเบื้องหลัง${countText}</span>
+      <span>เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเธเธฑเธเน€เธฃเธตเธขเธเนเธเน€เธเธทเนเธญเธเธซเธฅเธฑเธ${countText}</span>
 
     `;
 
@@ -21265,7 +21274,7 @@ function processSaveStudentQueue() {
 
       if (res && res.success) {
 
-        showToast(`บันทึกข้อมูลของ ${item.studentData.StudentName} สำเร็จ!`, 'success');
+        showToast(`เธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเธเธญเธ ${item.studentData.StudentName} เธชเธณเน€เธฃเนเธ!`, 'success');
 
         saveStudentQueue.shift(); // Remove the completed task
 
@@ -21277,7 +21286,7 @@ function processSaveStudentQueue() {
 
       } else {
 
-        showToast(`เกิดข้อผิดพลาดในการบันทึกของ ${item.studentData.StudentName}: ` + (res ? res.message : 'ไม่ทราบสาเหตุ'), 'error');
+        showToast(`เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเธเธฑเธเธ—เธถเธเธเธญเธ ${item.studentData.StudentName}: ` + (res ? res.message : 'เนเธกเนเธ—เธฃเธฒเธเธชเธฒเน€เธซเธ•เธธ'), 'error');
 
         saveStudentQueue.shift();
 
@@ -21291,7 +21300,7 @@ function processSaveStudentQueue() {
 
       isSavingStudent = false;
 
-      showToast(`การเชื่อมต่อขัดข้องในการบันทึกของ ${item.studentData.StudentName}: ${err.message}`, 'error');
+      showToast(`เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธเธฑเธ”เธเนเธญเธเนเธเธเธฒเธฃเธเธฑเธเธ—เธถเธเธเธญเธ ${item.studentData.StudentName}: ${err.message}`, 'error');
 
       saveStudentQueue.shift();
 
@@ -21319,7 +21328,7 @@ window.saveStudent = function(e) {
 
   const classType = document.getElementById('student_class_type').value;
 
-  const subgroupSize = classType === 'กลุ่มย่อย' ? document.getElementById('student_subgroup_size').value : '';
+  const subgroupSize = classType === 'เธเธฅเธธเนเธกเธขเนเธญเธข' ? document.getElementById('student_subgroup_size').value : '';
 
   const grade = document.getElementById('student_grade').value;
 
@@ -21333,7 +21342,7 @@ window.saveStudent = function(e) {
 
   let courseStr = "";
 
-  if (classType === 'กลุ่มหลัก') {
+  if (classType === 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ') {
 
     const selectedCheckboxes = document.querySelectorAll('.course-checkbox:checked');
 
@@ -21343,7 +21352,7 @@ window.saveStudent = function(e) {
 
     } else {
 
-      showToast('กรุณาเลือกวิชาเรียนอย่างน้อย 1 วิชา (กลุ่มหลัก)', 'error');
+      showToast('เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธงเธดเธเธฒเน€เธฃเธตเธขเธเธญเธขเนเธฒเธเธเนเธญเธข 1 เธงเธดเธเธฒ (เธเธฅเธธเนเธกเธซเธฅเธฑเธ)', 'error');
 
       return;
 
@@ -21355,7 +21364,7 @@ window.saveStudent = function(e) {
 
     if(!courseStr) {
 
-      showToast('กรุณาระบุชื่อคอร์ส', 'error');
+      showToast('เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธเธทเนเธญเธเธญเธฃเนเธช', 'error');
 
       return;
 
@@ -21445,7 +21454,7 @@ window.saveStudent = function(e) {
 
   if (studentDataArray.length === 0) {
 
-    showToast('กรุณากรอกข้อมูลนักเรียนอย่างน้อย 1 คน', 'error');
+    showToast('เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเนเธญเธกเธนเธฅเธเธฑเธเน€เธฃเธตเธขเธเธญเธขเนเธฒเธเธเนเธญเธข 1 เธเธ', 'error');
 
     return;
 
@@ -21471,7 +21480,7 @@ window.saveStudent = function(e) {
 
   closeStudentModal();
 
-  showToast(`เพิ่มรายชื่อนักเรียน ${studentDataArray.length} คนเข้าคิวบันทึกในเบื้องหลังเรียบร้อยแล้ว`, 'info');
+  showToast(`เน€เธเธดเนเธกเธฃเธฒเธขเธเธทเนเธญเธเธฑเธเน€เธฃเธตเธขเธ ${studentDataArray.length} เธเธเน€เธเนเธฒเธเธดเธงเธเธฑเธเธ—เธถเธเนเธเน€เธเธทเนเธญเธเธซเธฅเธฑเธเน€เธฃเธตเธขเธเธฃเนเธญเธขเนเธฅเนเธง`, 'info');
 
   processSaveStudentQueue();
 
@@ -21498,18 +21507,18 @@ window.openStudentModal = function(id = null, studentName = null) {
 
     document.getElementById('student_id').value = id;
 
-    document.getElementById('student_modal_title').innerText = 'แก้ไขข้อมูลนักเรียน';
+    document.getElementById('student_modal_title').innerText = 'เนเธเนเนเธเธเนเธญเธกเธนเธฅเธเธฑเธเน€เธฃเธตเธขเธ';
 
     
 
     // Helper function to populate form from data object
     function populateEditForm(data) {
-      document.getElementById('student_class_type').value = data.ClassType || data.classType || 'กลุ่มหลัก';
+      document.getElementById('student_class_type').value = data.ClassType || data.classType || 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ';
       handleClassTypeChange();
       
-      document.getElementById('student_grade').value = data.Grade || data.grade || 'ป.1';
-      document.getElementById('student_branch_learn').value = data.BranchLearn || data.branchLearn || 'สาขา1';
-      document.getElementById('student_branch_pay').value = data.BranchPay || data.branchPay || 'สาขา1';
+      document.getElementById('student_grade').value = data.Grade || data.grade || 'เธ.1';
+      document.getElementById('student_branch_learn').value = data.BranchLearn || data.branchLearn || 'เธชเธฒเธเธฒ1';
+      document.getElementById('student_branch_pay').value = data.BranchPay || data.branchPay || 'เธชเธฒเธเธฒ1';
       
       const courseVal = data.Course || data.round || '';
       if (document.getElementById('shared_course_name')) {
@@ -21528,11 +21537,11 @@ window.openStudentModal = function(id = null, studentName = null) {
       // Payment mode
       const payChannel = data.PaymentChannel || data.paymentChannel || '';
       const payMode = data.PayMode || '';
-      if (payMode === 'card' || payChannel.includes('รูด') || payChannel.includes('card')) {
+      if (payMode === 'card' || payChannel.includes('เธฃเธนเธ”') || payChannel.includes('card')) {
         if (document.getElementById('pay_mode_card_0')) document.getElementById('pay_mode_card_0').checked = true;
-      } else if (payMode === 'transfer' || payChannel.includes('โอน') || payChannel.includes('กสิกร') || payChannel.includes('SCB') || payChannel.includes('กรุง')) {
+      } else if (payMode === 'transfer' || payChannel.includes('เนเธญเธ') || payChannel.includes('เธเธชเธดเธเธฃ') || payChannel.includes('SCB') || payChannel.includes('เธเธฃเธธเธ')) {
         if (document.getElementById('pay_mode_transfer_0')) document.getElementById('pay_mode_transfer_0').checked = true;
-      } else if (payChannel.includes('สด') || payChannel.includes('cash')) {
+      } else if (payChannel.includes('เธชเธ”') || payChannel.includes('cash')) {
         if (document.getElementById('pay_mode_cash_0')) document.getElementById('pay_mode_cash_0').checked = true;
       } else {
         if (document.getElementById('pay_mode_transfer_0')) document.getElementById('pay_mode_transfer_0').checked = true;
@@ -21620,7 +21629,7 @@ window.openStudentModal = function(id = null, studentName = null) {
     }
 
     // Fallback: Try backend if not found locally
-    setLoading(true, 'กำลังโหลดข้อมูล...');
+    setLoading(true, 'เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅ...');
     const lookupId = (id.startsWith('DB_') && studentName) ? studentName : id;
 
     // Helper function to fallback to Grade Sheet data
@@ -21637,7 +21646,7 @@ window.openStudentModal = function(id = null, studentName = null) {
           Contact: gsMatch.contact || '',
           LineName: gsMatch.lineName || '',
           LineID: gsMatch.lineId || '',
-          ClassType: 'กลุ่มหลัก',
+          ClassType: 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ',
           Grade: gsMatch.grade || '',
           BranchLearn: gsMatch.branchLearn || gsMatch.branch || '',
           BranchPay: gsMatch.branchPay || '',
@@ -21649,9 +21658,9 @@ window.openStudentModal = function(id = null, studentName = null) {
         state.selectedStudent = fakeData;
         populateEditForm(fakeData);
         document.getElementById('student_modal').classList.add('active');
-        showToast('ดึงข้อมูลจากตารางคะแนน (ไม่พบใน StatusDB)', 'info');
+        showToast('เธ”เธถเธเธเนเธญเธกเธนเธฅเธเธฒเธเธ•เธฒเธฃเธฒเธเธเธฐเนเธเธ (เนเธกเนเธเธเนเธ StatusDB)', 'info');
       } else {
-        showToast('ไม่พบข้อมูลนักเรียนรายนี้ในระบบ', 'error');
+        showToast('เนเธกเนเธเธเธเนเธญเธกเธนเธฅเธเธฑเธเน€เธฃเธตเธขเธเธฃเธฒเธขเธเธตเนเนเธเธฃเธฐเธเธ', 'error');
       }
     };
 
@@ -21690,11 +21699,11 @@ window.openStudentModal = function(id = null, studentName = null) {
 
     document.getElementById('student_form').reset();
 
-    document.getElementById('student_modal_title').innerText = 'ลงทะเบียนนักเรียน (แบบละเอียด)';
+    document.getElementById('student_modal_title').innerText = 'เธฅเธเธ—เธฐเน€เธเธตเธขเธเธเธฑเธเน€เธฃเธตเธขเธ (เนเธเธเธฅเธฐเน€เธญเธตเธขเธ”)';
 
     document.getElementById('student_class_type').disabled = false;
 
-    document.getElementById('student_class_type').value = 'กลุ่มหลัก';
+    document.getElementById('student_class_type').value = 'เธเธฅเธธเนเธกเธซเธฅเธฑเธ';
 
     handleClassTypeChange(); // Triggers renderStudentBlocks(1)
 
@@ -21814,13 +21823,13 @@ function jumpToLeaveClass(dateStr, rowIndex, roomBranch) {
 
     const roomStr = roomBranch.toString().replace(/\s+/g, '');
 
-    let targetBranch = 'สาขา1';
+    let targetBranch = 'เธชเธฒเธเธฒ1';
 
-    if (roomStr.includes('สาขา3')) targetBranch = 'สาขา3';
+    if (roomStr.includes('เธชเธฒเธเธฒ3')) targetBranch = 'เธชเธฒเธเธฒ3';
 
-    else if (roomStr.includes('สาขา2')) targetBranch = 'สาขา2';
+    else if (roomStr.includes('เธชเธฒเธเธฒ2')) targetBranch = 'เธชเธฒเธเธฒ2';
 
-    else if (roomStr.includes('ออนไลน์')) targetBranch = 'สาขา2'; // online defaults to branch 2
+    else if (roomStr.includes('เธญเธญเธเนเธฅเธเน')) targetBranch = 'เธชเธฒเธเธฒ2'; // online defaults to branch 2
 
     
 
@@ -21868,7 +21877,7 @@ function jumpToLeaveClass(dateStr, rowIndex, roomBranch) {
 
     } else {
 
-      // Same date — just re-render with correct branch and scroll
+      // Same date โ€” just re-render with correct branch and scroll
 
       renderDailyGrid();
 
@@ -21918,7 +21927,7 @@ function highlightScheduledItem(rowIndex) {
 
   } else {
 
-    showToast('ไม่พบคลาสเรียนในหน้านี้ (อาจถูกลบหรือเปลี่ยนห้อง)', 'warning');
+    showToast('เนเธกเนเธเธเธเธฅเธฒเธชเน€เธฃเธตเธขเธเนเธเธซเธเนเธฒเธเธตเน (เธญเธฒเธเธ–เธนเธเธฅเธเธซเธฃเธทเธญเน€เธเธฅเธตเนเธขเธเธซเนเธญเธ)', 'warning');
 
   }
 
@@ -21950,9 +21959,9 @@ function validateDatalistInput(input) {
   
   // If the typed value is not exactly one of the options
   if (!options.includes(input.value)) {
-    // Apply strict validation only for private classes (contains 'เดี่ยว')
-    if (input.value.includes('เดี่ยว')) {
-      showToast('ชื่อคอร์สเด็กเดี่ยว กรุณาเลือกจากรายการที่มีอยู่เท่านั้น ห้ามพิมพ์ข้อความต่อท้าย', 'warning');
+    // Apply strict validation only for private classes (contains 'เน€เธ”เธตเนเธขเธง')
+    if (input.value.includes('เน€เธ”เธตเนเธขเธง')) {
+      showToast('เธเธทเนเธญเธเธญเธฃเนเธชเน€เธ”เนเธเน€เธ”เธตเนเธขเธง เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธเธฒเธเธฃเธฒเธขเธเธฒเธฃเธ—เธตเนเธกเธตเธญเธขเธนเนเน€เธ—เนเธฒเธเธฑเนเธ เธซเนเธฒเธกเธเธดเธกเธเนเธเนเธญเธเธงเธฒเธกเธ•เนเธญเธ—เนเธฒเธข', 'warning');
       input.value = ''; // Clear the invalid input
       input.focus();
     }
@@ -21967,7 +21976,7 @@ function initAvailableRounds() {
       if (res && res.success && res.rounds) {
         select.innerHTML = '';
         if (res.rounds.length === 0) {
-          select.innerHTML = '<option value="">ไม่มีรอบเรียนในระบบ</option>';
+          select.innerHTML = '<option value="">เนเธกเนเธกเธตเธฃเธญเธเน€เธฃเธตเธขเธเนเธเธฃเธฐเธเธ</option>';
           return;
         }
         res.rounds.forEach(r => {
@@ -21980,7 +21989,7 @@ function initAvailableRounds() {
         // Load default summary right after filling dropdown
         loadRoundSummary(true);
       } else {
-        select.innerHTML = '<option value="">โหลดล้มเหลว</option>';
+        select.innerHTML = '<option value="">เนเธซเธฅเธ”เธฅเนเธกเน€เธซเธฅเธง</option>';
       }
     })
     .getAvailableRounds();
@@ -21999,7 +22008,7 @@ window.registerNewCourseForCurrentStudent = function() {
   document.getElementById('student_id').value = '';
   
   // Change title
-  document.getElementById('student_modal_title').innerText = `ลงทะเบียนคอร์สใหม่สำหรับ ${name}`;
+  document.getElementById('student_modal_title').innerText = `เธฅเธเธ—เธฐเน€เธเธตเธขเธเธเธญเธฃเนเธชเนเธซเธกเนเธชเธณเธซเธฃเธฑเธ ${name}`;
   
   // Hide register button since we are now in add mode
   if (document.getElementById('btn_register_new_course')) {
@@ -22032,7 +22041,7 @@ window.registerNewCourseForCurrentStudent = function() {
     toggleCarriedForwardBlock(0);
   }
   
-  showToast('เตรียมข้อมูลประวัตินักเรียนเรียบร้อย กรุณาเลือกวิชา/คอร์สใหม่และกรอกรายละเอียดการชำระเงิน', 'success');
+  showToast('เน€เธ•เธฃเธตเธขเธกเธเนเธญเธกเธนเธฅเธเธฃเธฐเธงเธฑเธ•เธดเธเธฑเธเน€เธฃเธตเธขเธเน€เธฃเธตเธขเธเธฃเนเธญเธข เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธงเธดเธเธฒ/เธเธญเธฃเนเธชเนเธซเธกเนเนเธฅเธฐเธเธฃเธญเธเธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ”เธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธ', 'success');
 };
 
 // ==========================================
@@ -22045,19 +22054,19 @@ function loadPaymentHistory(studentId) {
   
   if (!container) return;
   
-  container.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #94a3b8;">กำลังโหลดประวัติ...</td></tr>';
-  totalEl.innerText = '0 บาท';
+  container.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #94a3b8;">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเธฃเธฐเธงเธฑเธ•เธด...</td></tr>';
+  totalEl.innerText = '0 เธเธฒเธ—';
   
   google.script.run
     .withSuccessHandler(res => {
       if (res && res.success) {
         renderPaymentHistory(res.data);
       } else {
-        container.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center; color: #ef4444;">เกิดข้อผิดพลาด: ${res ? res.error : 'ไม่ทราบสาเหตุ'}</td></tr>`;
+        container.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center; color: #ef4444;">เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ${res ? res.error : 'เนเธกเนเธ—เธฃเธฒเธเธชเธฒเน€เธซเธ•เธธ'}</td></tr>`;
       }
     })
     .withFailureHandler(err => {
-      container.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center; color: #ef4444;">การเชื่อมต่อล้มเหลว: ${err.message}</td></tr>`;
+      container.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center; color: #ef4444;">เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ${err.message}</td></tr>`;
     })
     .getStudentPayments(studentId);
 }
@@ -22067,8 +22076,8 @@ function renderPaymentHistory(payments) {
   const totalEl = document.getElementById('payment_history_total');
   
   if (!payments || payments.length === 0) {
-    container.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #94a3b8;">ยังไม่มีประวัติการชำระเงิน</td></tr>';
-    totalEl.innerText = '0 บาท';
+    container.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #94a3b8;">เธขเธฑเธเนเธกเนเธกเธตเธเธฃเธฐเธงเธฑเธ•เธดเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธ</td></tr>';
+    totalEl.innerText = '0 เธเธฒเธ—';
     return;
   }
   
@@ -22088,14 +22097,14 @@ function renderPaymentHistory(payments) {
         <td style="padding: 8px;">${p.Receiver || '-'}</td>
         <td style="padding: 8px; font-size: 0.75rem; color: #64748b;">${p.Note || '-'}</td>
         <td style="padding: 8px; text-align: center;">
-          <button type="button" class="btn btn-danger" onclick="deletePayment('${p.PaymentID}')" style="font-size: 0.7rem; padding: 4px 8px; background: #ef4444; border: none; color: white; border-radius: 4px; cursor: pointer;">ลบ</button>
+          <button type="button" class="btn btn-danger" onclick="deletePayment('${p.PaymentID}')" style="font-size: 0.7rem; padding: 4px 8px; background: #ef4444; border: none; color: white; border-radius: 4px; cursor: pointer;">เธฅเธ</button>
         </td>
       </tr>
     `;
   });
   
   container.innerHTML = html;
-  totalEl.innerText = totalAmount.toLocaleString() + ' บาท';
+  totalEl.innerText = totalAmount.toLocaleString() + ' เธเธฒเธ—';
   
   // Update the paid amount input field
   const paidInput = document.getElementById('student_paid_0');
@@ -22135,13 +22144,13 @@ function hideAddPaymentForm() {
 function submitNewPayment() {
   const studentId = document.getElementById('student_id').value;
   if (!studentId) {
-    showToast('กรุณาบันทึกข้อมูลนักเรียนก่อนเพิ่มการชำระเงิน', 'warning');
+    showToast('เธเธฃเธธเธ“เธฒเธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเธเธฑเธเน€เธฃเธตเธขเธเธเนเธญเธเน€เธเธดเนเธกเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธ', 'warning');
     return;
   }
   
   const amount = document.getElementById('new_payment_amount').value;
   if (!amount) {
-    showToast('กรุณาระบุจำนวนเงิน', 'warning');
+    showToast('เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธเธณเธเธงเธเน€เธเธดเธ', 'warning');
     return;
   }
   
@@ -22156,32 +22165,32 @@ function submitNewPayment() {
     LogUser: state.currentUser ? state.currentUser.username : 'Unknown'
   };
   
-  setLoading(true, 'กำลังบันทึกรายการชำระเงิน...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธฃเธฒเธขเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธ...');
   
   google.script.run
     .withSuccessHandler(res => {
       setLoading(false);
       if (res && res.success) {
-        showToast('เพิ่มรายการชำระเงินสำเร็จ', 'success');
+        showToast('เน€เธเธดเนเธกเธฃเธฒเธขเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธเธชเธณเน€เธฃเนเธ', 'success');
         hideAddPaymentForm();
         loadPaymentHistory(studentId);
       } else {
-        showToast('เกิดข้อผิดพลาด: ' + (res ? res.error : 'ไม่ทราบสาเหตุ'), 'error');
+        showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + (res ? res.error : 'เนเธกเนเธ—เธฃเธฒเธเธชเธฒเน€เธซเธ•เธธ'), 'error');
       }
     })
     .withFailureHandler(err => {
       setLoading(false);
-      showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      showToast('เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
     })
     .addPayment(paymentData);
 }
 
 function deletePayment(paymentId) {
-  if (!confirm('ยืนยันที่จะลบรายการชำระเงินนี้?')) return;
+  if (!confirm('เธขเธทเธเธขเธฑเธเธ—เธตเนเธเธฐเธฅเธเธฃเธฒเธขเธเธฒเธฃเธเธณเธฃเธฐเน€เธเธดเธเธเธตเน?')) return;
   
   const studentId = document.getElementById('student_id').value;
   
-  setLoading(true, 'กำลังลบรายการ...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธฅเธเธฃเธฒเธขเธเธฒเธฃ...');
   
   const user = state.currentUser ? state.currentUser.username : 'Unknown';
   
@@ -22189,30 +22198,30 @@ function deletePayment(paymentId) {
     .withSuccessHandler(res => {
       setLoading(false);
       if (res && res.success) {
-        showToast('ลบรายการสำเร็จ', 'success');
+        showToast('เธฅเธเธฃเธฒเธขเธเธฒเธฃเธชเธณเน€เธฃเนเธ', 'success');
         loadPaymentHistory(studentId);
       } else {
-        showToast('เกิดข้อผิดพลาด: ' + (res ? res.error : 'ไม่ทราบสาเหตุ'), 'error');
+        showToast('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + (res ? res.error : 'เนเธกเนเธ—เธฃเธฒเธเธชเธฒเน€เธซเธ•เธธ'), 'error');
       }
     })
     .withFailureHandler(err => {
       setLoading(false);
-      showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      showToast('เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญเธฅเนเธกเน€เธซเธฅเธง: ' + err.message, 'error');
     })
     .deletePayment(paymentId, user);
 }
 
     function syncMissingData(btn) {
-      if (!confirm('ต้องการกวาดข้อมูลเด็กที่ตกหล่นจากทุกชีตกลับเข้ามาที่ StatusDB ใช่หรือไม่?\n(ขั้นตอนนี้อาจใช้เวลาประมาณ 1-2 นาที แนะนำให้รอจนกว่าจะเสร็จสิ้น)')) return;
+      if (!confirm('เธ•เนเธญเธเธเธฒเธฃเธเธงเธฒเธ”เธเนเธญเธกเธนเธฅเน€เธ”เนเธเธ—เธตเนเธ•เธเธซเธฅเนเธเธเธฒเธเธ—เธธเธเธเธตเธ•เธเธฅเธฑเธเน€เธเนเธฒเธกเธฒเธ—เธตเน StatusDB เนเธเนเธซเธฃเธทเธญเนเธกเน?\n(เธเธฑเนเธเธ•เธญเธเธเธตเนเธญเธฒเธเนเธเนเน€เธงเธฅเธฒเธเธฃเธฐเธกเธฒเธ“ 1-2 เธเธฒเธ—เธต เนเธเธฐเธเธณเนเธซเนเธฃเธญเธเธเธเธงเนเธฒเธเธฐเน€เธชเธฃเนเธเธชเธดเนเธ)')) return;
       
-      let originalText = '🔄 ซิงค์ข้อมูลตกหล่น';
+      let originalText = '๐” เธเธดเธเธเนเธเนเธญเธกเธนเธฅเธ•เธเธซเธฅเนเธ';
       if (btn) {
         originalText = btn.innerHTML;
-        btn.innerHTML = '⏳ กำลังซิงค์...';
+        btn.innerHTML = 'โณ เธเธณเธฅเธฑเธเธเธดเธเธเน...';
         btn.disabled = true;
       }
       
-      showToast('กำลังซิงค์ข้อมูลตกหล่น ระบบกำลังกวาดข้อมูลจากทุกชีต กรุณารอสักครู่...', 'warning');
+      showToast('เธเธณเธฅเธฑเธเธเธดเธเธเนเธเนเธญเธกเธนเธฅเธ•เธเธซเธฅเนเธ เธฃเธฐเธเธเธเธณเธฅเธฑเธเธเธงเธฒเธ”เธเนเธญเธกเธนเธฅเธเธฒเธเธ—เธธเธเธเธตเธ• เธเธฃเธธเธ“เธฒเธฃเธญเธชเธฑเธเธเธฃเธนเน...', 'warning');
       
       google.script.run
         .withSuccessHandler(res => {
@@ -22221,12 +22230,12 @@ function deletePayment(paymentId) {
             btn.disabled = false;
           }
           if (res && res.success) {
-            showToast('✅ ซิงค์เสร็จสมบูรณ์! พบรายชื่อใหม่ ' + res.addedCount + ' คน', 'success');
+            showToast('โ… เธเธดเธเธเนเน€เธชเธฃเนเธเธชเธกเธเธนเธฃเธ“เน! เธเธเธฃเธฒเธขเธเธทเนเธญเนเธซเธกเน ' + res.addedCount + ' เธเธ', 'success');
             if (res.addedCount > 0) {
               loadStatusDBAndStudents();
             }
           } else {
-            showToast('❌ เกิดข้อผิดพลาด: ' + (res ? res.error : 'ไม่ทราบสาเหตุ'), 'error');
+            showToast('โ เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + (res ? res.error : 'เนเธกเนเธ—เธฃเธฒเธเธชเธฒเน€เธซเธ•เธธ'), 'error');
           }
         })
         .withFailureHandler(err => {
@@ -22234,7 +22243,7 @@ function deletePayment(paymentId) {
             btn.innerHTML = originalText;
             btn.disabled = false;
           }
-          showToast('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message, 'error');
+          showToast('โ เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญ: ' + err.message, 'error');
         })
         .syncMissingStudentsToStatusDB();
     }
@@ -22266,7 +22275,7 @@ function submitTeacherAdjustment() {
   const note = document.getElementById('adj_modal_note').value;
   
   if (isNaN(amount) || amount <= 0) {
-    Swal.fire('ข้อผิดพลาด', 'กรุณาระบุจำนวนเงินให้ถูกต้อง (มากกว่า 0)', 'error');
+    Swal.fire('เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”', 'เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธเธณเธเธงเธเน€เธเธดเธเนเธซเนเธ–เธนเธเธ•เนเธญเธ (เธกเธฒเธเธเธงเนเธฒ 0)', 'error');
     return;
   }
   
@@ -22286,15 +22295,15 @@ function submitTeacherAdjustment() {
     note: note
   };
   
-  setLoading(true, 'กำลังบันทึกรายการ...');
+  setLoading(true, 'เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธเธฃเธฒเธขเธเธฒเธฃ...');
   google.script.run
     .withSuccessHandler(res => {
       setLoading(false);
       if (res && res.success) {
         closeTeacherAdjustmentModal();
         Swal.fire({
-          title: 'สำเร็จ!',
-          text: 'บันทึกรายการเรียบร้อยแล้ว ระบบกำลังคำนวณเงินเดือนใหม่',
+          title: 'เธชเธณเน€เธฃเนเธ!',
+          text: 'เธเธฑเธเธ—เธถเธเธฃเธฒเธขเธเธฒเธฃเน€เธฃเธตเธขเธเธฃเนเธญเธขเนเธฅเนเธง เธฃเธฐเธเธเธเธณเธฅเธฑเธเธเธณเธเธงเธ“เน€เธเธดเธเน€เธ”เธทเธญเธเนเธซเธกเน',
           icon: 'success',
           timer: 1500,
           showConfirmButton: false
@@ -22302,13 +22311,14 @@ function submitTeacherAdjustment() {
         // Reload data
         loadTeacherYearlySalary();
       } else {
-        Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกได้: ' + (res ? res.error : 'Unknown Error'), 'error');
+        Swal.fire('เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”', 'เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธเธฑเธเธ—เธถเธเนเธ”เน: ' + (res ? res.error : 'Unknown Error'), 'error');
       }
     })
     .withFailureHandler(err => {
       setLoading(false);
-      Swal.fire('ข้อผิดพลาด', 'เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message, 'error');
+      Swal.fire('เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”', 'เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญ: ' + err.message, 'error');
     })
     .saveTeacherAdjustment(data, state.username);
 }
+
 
