@@ -22481,7 +22481,7 @@ function renderChatMessages(messages) {
     if (isMe) {
       html += `
         <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 5px;">
-          <div style="background: var(--color-primary); color: white; padding: 10px 15px; border-radius: 15px 15px 0 15px; max-width: 85%; word-wrap: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+          <div style="background: #0084ff; color: white; padding: 10px 15px; border-radius: 18px 18px 4px 18px; max-width: 80%; word-wrap: break-word; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
             ${m.message}
           </div>
           <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
@@ -22494,7 +22494,7 @@ function renderChatMessages(messages) {
       html += `
         <div style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 5px;">
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; margin-left: 5px;">${senderName}</div>
-          <div style="background: #f1f5f9; color: #1e293b; padding: 10px 15px; border-radius: 15px 15px 15px 0; max-width: 85%; word-wrap: break-word; border: 1px solid #e2e8f0;">
+          <div style="background: white; color: #1e293b; padding: 10px 15px; border-radius: 18px 18px 18px 4px; max-width: 80%; word-wrap: break-word; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             ${m.message}
           </div>
           <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
@@ -22508,6 +22508,106 @@ function renderChatMessages(messages) {
   container.innerHTML = html;
   container.scrollTop = container.scrollHeight;
 }
+
+
+// === EMOJI & STICKER PICKER ===
+const EMOJI_LIST = [
+  '😀','😃','😄','😁','😆','😅','🤣','😂',
+  '🙂','😊','😇','🥰','😍','🤩','😘','😗',
+  '😋','😛','😜','🤪','😝','🤗','🤭','🤫',
+  '🤔','🤐','🤨','😐','😑','😶','😏','😒',
+  '🙄','😬','😮','😯','😲','😳','🥺','😢',
+  '😭','😤','😠','😡','🤬','😈','👿','💀',
+  '💩','🤡','👹','👺','👻','👽','🤖','😺',
+  '👍','👎','👊','✊','🤛','🤜','🤞','✌️',
+  '🤟','🤘','👌','🤏','👈','👉','👆','👇',
+  '☝️','✋','🤚','🖐️','🖖','👋','🤙','💪',
+  '❤️','🧡','💛','💚','💙','💜','🖤','🤍',
+  '💯','💢','💥','💫','💦','💨','🕳️','💣',
+  '🎉','🎊','🎈','🎁','🏆','🥇','🏅','⭐',
+  '🌟','✨','💎','🔥','💡','📚','✏️','📝',
+  '✅','❌','⭕','❓','❗','💬','👀','🙏'
+];
+
+const STICKER_LIST = [
+  {emoji: '🎉', label: 'ยินดีด้วย!'},
+  {emoji: '👍', label: 'เยี่ยมมาก!'},
+  {emoji: '💪', label: 'สู้ๆ!'},
+  {emoji: '📚', label: 'อ่านหนังสือ'},
+  {emoji: '✅', label: 'เรียบร้อย!'},
+  {emoji: '🙏', label: 'ขอบคุณ'},
+  {emoji: '❤️', label: 'รักเลย'},
+  {emoji: '🔥', label: 'เก่งมาก!'},
+  {emoji: '😊', label: 'ยิ้ม'},
+  {emoji: '🏆', label: 'แชมป์!'},
+  {emoji: '⭐', label: 'ดีเยี่ยม'},
+  {emoji: '💯', label: '100 คะแนน'},
+  {emoji: '👏', label: 'ปรบมือ'},
+  {emoji: '🎊', label: 'ฉลอง!'},
+  {emoji: '😍', label: 'ชอบมาก'}
+];
+
+function toggleEmojiPanel() {
+  const panel = document.getElementById('chat_emoji_panel');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    showEmojiTab('emoji');
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function showEmojiTab(tab) {
+  const emojiDiv = document.getElementById('emoji_content');
+  const stickerDiv = document.getElementById('sticker_content');
+  const tabEmoji = document.getElementById('tab_emoji');
+  const tabSticker = document.getElementById('tab_sticker');
+  
+  if (tab === 'emoji') {
+    emojiDiv.style.display = 'grid';
+    stickerDiv.style.display = 'none';
+    tabEmoji.style.background = 'var(--color-primary)';
+    tabEmoji.style.color = 'white';
+    tabSticker.style.background = '#f1f5f9';
+    tabSticker.style.color = '#64748b';
+    
+    if (!emojiDiv.innerHTML) {
+      emojiDiv.innerHTML = EMOJI_LIST.map(e => 
+        '<span style="font-size:1.4rem;cursor:pointer;padding:4px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;" onmouseover="this.style.background=\'#e2e8f0\'" onmouseout="this.style.background=\'transparent\'" onclick="insertEmoji(\'' + e + '\')">' + e + '</span>'
+      ).join('');
+    }
+  } else {
+    emojiDiv.style.display = 'none';
+    stickerDiv.style.display = 'grid';
+    tabSticker.style.background = 'var(--color-primary)';
+    tabSticker.style.color = 'white';
+    tabEmoji.style.background = '#f1f5f9';
+    tabEmoji.style.color = '#64748b';
+    
+    if (!stickerDiv.innerHTML) {
+      stickerDiv.innerHTML = STICKER_LIST.map(s => 
+        '<div style="cursor:pointer;padding:8px;border-radius:10px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;" onmouseover="this.style.background=\'#e2e8f0\'" onmouseout="this.style.background=\'#f8fafc\'" onclick="sendSticker(\'' + s.emoji + '\', \'' + s.label + '\')">' +
+        '<div style="font-size:2rem;">' + s.emoji + '</div>' +
+        '<div style="font-size:0.65rem;color:#64748b;margin-top:2px;">' + s.label + '</div>' +
+        '</div>'
+      ).join('');
+    }
+  }
+}
+
+function insertEmoji(emoji) {
+  const input = document.getElementById('chat_input_msg');
+  input.value += emoji;
+  input.focus();
+}
+
+function sendSticker(emoji, label) {
+  const input = document.getElementById('chat_input_msg');
+  input.value = emoji + ' ' + label;
+  document.getElementById('chat_emoji_panel').style.display = 'none';
+  submitChatMessage();
+}
+// === END EMOJI & STICKER PICKER ===
 
 function submitChatMessage() {
   const input = document.getElementById('chat_input_msg');
