@@ -13509,7 +13509,7 @@ function updateRevenues(updates, logUser) {
 
 }
 
-function pingActiveUser(username) {
+function pingActiveUser(username, displayStr) {
 
   if (!username) return [];
 
@@ -13532,8 +13532,8 @@ function pingActiveUser(username) {
     
 
     const now = new Date().getTime();
-
-    users[username] = now;
+    
+    users[username] = { ts: now, display: displayStr || username };
 
     
 
@@ -13543,11 +13543,15 @@ function pingActiveUser(username) {
 
     for (const u in users) {
 
-      if (now - users[u] < 45000) {
+      const userData = users[u];
+      const isLegacy = typeof userData === 'number';
+      const ts = isLegacy ? userData : userData.ts;
+      
+      if (now - ts < 45000) {
 
         cleaned[u] = users[u];
 
-        activeUsernames.push(u);
+        activeUsernames.push(isLegacy ? u : userData.display);
 
       }
 
@@ -13569,7 +13573,13 @@ function pingActiveUser(username) {
 
       let users = JSON.parse(listStr);
 
-      return Object.keys(users);
+      let activeUsernames = [];
+      for (const u in users) {
+        const userData = users[u];
+        const isLegacy = typeof userData === 'number';
+        activeUsernames.push(isLegacy ? u : userData.display);
+      }
+      return activeUsernames;
 
     } catch (err) {
 
@@ -17081,4 +17091,224 @@ function migrateOldDataToNew() {
     props.deleteProperty('MIGRATE_COUNT');
     props.deleteProperty('MIGRATE_LOGS');
   }
+}
+
+// --- MESSAGING SYSTEM ---
+function ensureMessagesDB(sheet) {
+  const lastCol = sheet.getLastColumn();
+  let headers = [];
+  if (lastCol > 0) {
+    headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => h.toString().trim());
+  }
+  const requiredHeaders = ['MessageID', 'Sender', 'Receiver', 'Message', 'Timestamp', 'IsRead'];
+  let added = false;
+  
+  if (headers.length === 0) {
+    sheet.getRange(1, 1, 1, requiredHeaders.length).setValues([requiredHeaders]).setFontWeight('bold');
+    return true;
+  }
+  
+  requiredHeaders.forEach(req => {
+    if (!headers.includes(req)) {
+      sheet.insertColumnAfter(sheet.getLastColumn() || 1);
+      sheet.getRange(1, (sheet.getLastColumn() || 1) + 1).setValue(req).setFontWeight('bold');
+      added = true;
+    }
+  });
+  return added;
+}
+
+function getChatHistory(teacherUsername) {
+  const db = getDb();
+  let sheet = db.getSheetByName('MessagesDB');
+  if (!sheet) {
+    sheet = db.insertSheet('MessagesDB');
+    ensureMessagesDB(sheet);
+  } else {
+    ensureMessagesDB(sheet);
+  }
+  
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return { success: true, messages: [] };
+  
+  const headers = data[0];
+  const col = {
+    id: headers.indexOf('MessageID'),
+    sender: headers.indexOf('Sender'),
+    receiver: headers.indexOf('Receiver'),
+    message: headers.indexOf('Message'),
+    timestamp: headers.indexOf('Timestamp'),
+    isRead: headers.indexOf('IsRead')
+  };
+  
+  const msgs = [];
+  const teacherLower = teacherUsername.toLowerCase();
+  
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const s = (row[col.sender] || '').toString().toLowerCase();
+    const r = (row[col.receiver] || '').toString().toLowerCase();
+    
+    if (s === teacherLower || r === teacherLower) {
+      msgs.push({
+        id: row[col.id],
+        sender: row[col.sender],
+        receiver: row[col.receiver],
+        message: row[col.message],
+        timestamp: row[col.timestamp],
+        isRead: row[col.isRead]
+      });
+    }
+  }
+  
+  return { success: true, messages: msgs };
+}
+
+function sendMessage(sender, receiver, message) {
+  const db = getDb();
+  let sheet = db.getSheetByName('MessagesDB');
+  if (!sheet) {
+    sheet = db.insertSheet('MessagesDB');
+    ensureMessagesDB(sheet);
+  } else {
+    ensureMessagesDB(sheet);
+  }
+  
+  const msgId = 'MSG_' + new Date().getTime();
+  const timestamp = new Date().toISOString();
+  
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const newRow = [];
+  
+  for (let i = 0; i < headers.length; i++) {
+    const h = headers[i];
+    if (h === 'MessageID') newRow.push(msgId);
+    else if (h === 'Sender') newRow.push(sender);
+    else if (h === 'Receiver') newRow.push(receiver);
+    else if (h === 'Message') newRow.push(message);
+    else if (h === 'Timestamp') newRow.push(timestamp);
+    else if (h === 'IsRead') newRow.push(false);
+    else newRow.push('');
+  }
+  
+  sheet.appendRow(newRow);
+  return { success: true, messageId: msgId, timestamp: timestamp };
+}
+
+function markMessagesAsRead(teacherUsername, reader) {
+  const db = getDb();
+  const sheet = db.getSheetByName('MessagesDB');
+  if (!sheet) return { success: false };
+  
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return { success: true };
+  
+  const headers = data[0];
+  const col = {
+    sender: headers.indexOf('Sender'),
+    receiver: headers.indexOf('Receiver'),
+    isRead: headers.indexOf('IsRead')
+  };
+  
+  const teacherLower = teacherUsername.toLowerCase();
+  const readerUsername = typeof reader === 'object' ? reader.username : reader;
+  const readerLower = readerUsername.toLowerCase();
+  const isStaff = typeof reader === 'object' && (reader.role === 'Staff' || reader.role === 'Admin' || reader.role === 'Administrator' || reader.role === 'พนักงาน' || reader.role === 'ผู้บริหาร');
+  let updated = 0;
+  
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const s = (row[col.sender] || '').toString().toLowerCase();
+    const r = (row[col.receiver] || '').toString().toLowerCase();
+    
+    // If the message involves this teacher and the receiver is the reader (or Admin if reader is staff)
+    if ((s === teacherLower || r === teacherLower) && (r === readerLower || (isStaff && r === 'admin')) && row[col.isRead] !== true) {
+      sheet.getRange(i + 1, col.isRead + 1).setValue(true);
+      updated++;
+    }
+  }
+  
+  return { success: true, updated: updated };
+}
+
+function getUnreadMessagesCount(reader) {
+  const db = getDb();
+  const sheet = db.getSheetByName('MessagesDB');
+  if (!sheet) return { success: true, count: 0 };
+  
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return { success: true, count: 0 };
+  
+  const headers = data[0];
+  const colReceiver = headers.indexOf('Receiver');
+  const colIsRead = headers.indexOf('IsRead');
+  
+  let count = 0;
+  const readerUsername = typeof reader === 'object' ? reader.username : reader;
+  const readerLower = readerUsername.toLowerCase();
+  const isStaff = typeof reader === 'object' && (reader.role === 'Staff' || reader.role === 'Admin' || reader.role === 'Administrator' || reader.role === 'พนักงาน' || reader.role === 'ผู้บริหาร');
+  
+  for (let i = 1; i < data.length; i++) {
+    const r = (data[i][colReceiver] || '').toString().toLowerCase();
+    if ((r === readerLower || (isStaff && r === 'admin')) && data[i][colIsRead] !== true) {
+      count++;
+    }
+  }
+  return { success: true, count: count };
+}
+
+function getChatContactsWithUnread(reader) {
+  const db = getDb();
+  const usersSheet = db.getSheetByName('UsersDB');
+  if (!usersSheet) return { success: false, error: 'ไม่พบ UsersDB' };
+  
+  const usersData = usersSheet.getDataRange().getValues();
+  if (usersData.length <= 1) return { success: true, contacts: [] };
+  
+  const uHeaders = usersData[0];
+  const uColUser = uHeaders.indexOf('Username');
+  const uColRole = uHeaders.indexOf('Role');
+  const uColNick = uHeaders.indexOf('Nickname');
+  
+  const contactsMap = {}; 
+  
+  for (let i = 1; i < usersData.length; i++) {
+    const role = (usersData[i][uColRole] || '').toString().trim();
+    if (role !== 'Staff' && role !== 'Admin' && role !== 'Administrator' && role !== 'พนักงาน' && role !== 'ผู้บริหาร') {
+      const uname = (usersData[i][uColUser] || '').toString();
+      const nick = (usersData[i][uColNick] || '').toString() || uname;
+      if (uname) {
+        contactsMap[uname.toLowerCase()] = { username: uname, nickname: nick, unreadCount: 0 };
+      }
+    }
+  }
+  
+  const messagesSheet = db.getSheetByName('MessagesDB');
+  if (messagesSheet) {
+    const msgData = messagesSheet.getDataRange().getValues();
+    if (msgData.length > 1) {
+      const mHeaders = msgData[0];
+      const mColSender = mHeaders.indexOf('Sender');
+      const mColReceiver = mHeaders.indexOf('Receiver');
+      const mColIsRead = mHeaders.indexOf('IsRead');
+      
+      const readerUsername = typeof reader === 'object' ? reader.username : reader;
+      const readerLower = readerUsername.toLowerCase();
+      const isStaff = typeof reader === 'object' && (reader.role === 'Staff' || reader.role === 'Admin' || reader.role === 'Administrator' || reader.role === 'พนักงาน' || reader.role === 'ผู้บริหาร');
+      
+      for (let i = 1; i < msgData.length; i++) {
+        const s = (msgData[i][mColSender] || '').toString().toLowerCase();
+        const r = (msgData[i][mColReceiver] || '').toString().toLowerCase();
+        const isRead = msgData[i][mColIsRead] === true;
+        
+        if (!isRead && (r === readerLower || (isStaff && r === 'admin'))) {
+          if (contactsMap[s]) {
+            contactsMap[s].unreadCount++;
+          }
+        }
+      }
+    }
+  }
+  
+  return { success: true, contacts: Object.values(contactsMap) };
 }

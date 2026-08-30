@@ -2913,21 +2913,23 @@ function runUserHeartbeat() {
 
   
 
+  const nickname = state.currentUser ? (state.currentUser.nickname || user) : user;
+  const role = state.currentUser ? state.currentUser.role : 'User';
+  let displayStr = `${nickname}`;
+  if (role === 'Teacher' || role === 'ครู') {
+    displayStr = `ครู${nickname}`;
+  } else if (role === 'Staff' || role === 'Admin' || role === 'Administrator' || role === 'พนักงาน' || role === 'ผู้บริหาร') {
+    displayStr = `${nickname} (${role})`;
+  }
+
   window._nextTaskSilent = true;
-
   google.script.run
-
     .withSuccessHandler(activeUsers => {
-
       if (Array.isArray(activeUsers)) {
-
         updateOnlineUsers(activeUsers);
-
       }
-
     })
-
-    .pingActiveUser(user);
+    .pingActiveUser(user, displayStr);
 
 }
 
