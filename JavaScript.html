@@ -22377,6 +22377,22 @@ function showChatContactList() {
     .getChatContactsWithUnread(state.currentUser);
 }
 
+
+function filterChatContacts() {
+  const inputEl = document.getElementById('chat_contact_search');
+  if (!inputEl) return;
+  const input = inputEl.value.toLowerCase();
+  const items = document.querySelectorAll('.chat-contact-item');
+  items.forEach(item => {
+    const name = item.getAttribute('data-name') || '';
+    if (name.includes(input)) {
+      item.style.display = 'flex';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
 function renderChatContacts(contacts) {
   const container = document.getElementById('chat_contacts_container');
   if (contacts.length === 0) {
@@ -22386,10 +22402,10 @@ function renderChatContacts(contacts) {
   
   let htmlStr = '';
   contacts.forEach(c => {
-    htmlStr += '<div style="padding: 12px 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="showChatRoom(\'' + c.username + '\', \'' + c.nickname + '\')" onmouseover="this.style.background=\'var(--bg-panel)\'" onmouseout="this.style.background=\'transparent\'">';
+    htmlStr += '<div class="chat-contact-item" data-name="' + c.nickname.toLowerCase() + '" style="padding: 8px 12px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="showChatRoom(\'' + c.username + '\', \'' + c.nickname + '\')" onmouseover="this.style.background=\'var(--bg-panel)\'" onmouseout="this.style.background=\'transparent\'">';
     htmlStr += '<div style="display: flex; align-items: center; gap: 10px;">';
-    htmlStr += '<div style="width: 35px; height: 35px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; justify-content: center; align-items: center; font-weight: bold;">' + c.nickname.charAt(0) + '</div>';
-    htmlStr += '<div style="font-size: 0.95rem;">ครู' + c.nickname + '</div>';
+    htmlStr += '<div style="width: 30px; height: 30px; border-radius: 50%; font-size: 0.85rem; background: var(--color-primary); color: white; display: flex; justify-content: center; align-items: center; font-weight: bold;">' + c.nickname.charAt(0) + '</div>';
+    htmlStr += '<div style="font-size: 0.85rem;">ครู' + c.nickname + '</div>';
     htmlStr += '</div>';
     if (c.unreadCount > 0) {
       htmlStr += '<div style="background: var(--color-danger); color: white; font-size: 0.75rem; font-weight: bold; width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center;">' + c.unreadCount + '</div>';
@@ -22478,7 +22494,7 @@ function renderChatMessages(messages) {
       html += `
         <div style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 5px;">
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; margin-left: 5px;">${senderName}</div>
-          <div style="background: rgba(255,255,255,0.1); color: white; padding: 10px 15px; border-radius: 15px 15px 15px 0; max-width: 85%; word-wrap: break-word; border: 1px solid rgba(255,255,255,0.05);">
+          <div style="background: #f1f5f9; color: #1e293b; padding: 10px 15px; border-radius: 15px 15px 15px 0; max-width: 85%; word-wrap: break-word; border: 1px solid #e2e8f0;">
             ${m.message}
           </div>
           <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
