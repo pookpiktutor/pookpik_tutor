@@ -5492,7 +5492,7 @@ function getAllStudentsFromSubgroupSheets() {
 function getTeacherCoursesAndStudents(logUser) {
 
   try {
-    const cacheKey = 'teacher_courses_' + (logUser || 'guest');
+    const cacheKey = 'teacher_courses_v2_' + (logUser || 'guest');
     const cached = getCacheObject(cacheKey);
     if (cached) return cached;
 
