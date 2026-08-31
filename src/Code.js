@@ -3981,7 +3981,7 @@ function getMonthlyGridData(year, month, dayOfWeek, logUser) {
 
     const rawData = getSheetRows('Data Learn');
 
-    const teachersList = getUsersDB(null);
+    const teachersList = getTeachersDB(null);
 
     
 
@@ -4187,7 +4187,7 @@ function debugExportData() {
 
     const classes = [];
 
-    const teachersList = getUsersDB(null);
+    const teachersList = getTeachersDB(null);
 
     const resolveNick = function(nameOrId) {
 
@@ -5502,7 +5502,7 @@ function getTeacherCoursesAndStudents(logUser) {
 
     // 1. Get current teacher's nickname from TeachersDB using logUser (TeacherID / Username / Name)
 
-    const teachersList = getUsersDB(null);
+    const teachersList = getTeachersDB(null);
 
     let teacherAliases = [(logUser || '').toString().toLowerCase().trim()];
 
@@ -8598,7 +8598,7 @@ function updatePrivateStudentInfo(sheetName, originalName, originalCourseName, r
 
 // ----------------------------------------------------
 
-function getUsersDB(logUser) {
+function getTeachersDB(logUser) {
   try {
     const isTeacher = logUser ? isTeacherUser(logUser) : false;
     const cacheKey = 'teachers_db_raw_usersdb';
@@ -8760,7 +8760,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
     
 
-    const teachersList = getUsersDB(null);
+    const teachersList = getTeachersDB(null);
 
     if (!Array.isArray(teachersList) || teachersList.length === 0) {
 
@@ -9328,7 +9328,7 @@ function getAllTeachersMonthlyPay(year, month) {
 
     
 
-    const teachersList = getUsersDB(null);
+    const teachersList = getTeachersDB(null);
 
     if (!Array.isArray(teachersList) || teachersList.length === 0) {
 
@@ -10304,7 +10304,7 @@ function getClassLogs(filterDate, logUser) {
 
     const rawData = getSheetRows('Data Learn');
 
-    const teachersList = getUsersDB(null);
+    const teachersList = getTeachersDB(null);
 
     
 
@@ -10433,7 +10433,7 @@ function getClassLogByRow(rowIndex) {
 
     const row = sheet.getRange(rowIndex, 1, 1, sheet.getLastColumn()).getValues()[0];
 
-    const teachersList = getUsersDB(null);
+    const teachersList = getTeachersDB(null);
 
     const resolveNick = function(nameOrId) {
 
@@ -10519,7 +10519,7 @@ function getClassLogsForTeacher(teacherName, nickname) {
 
     const rawData = getSheetRows('Data Learn');
 
-    const teachersList = getUsersDB(null);
+    const teachersList = getTeachersDB(null);
 
     const resolveNick = function(nameOrId) {
 
@@ -10877,7 +10877,7 @@ function addClassLog(log, logUser) {
 
     // Resolve teacher names to tutor_xxxx IDs
 
-    const teachersList = getUsersDB(null);
+    const teachersList = getTeachersDB(null);
 
     const resolveId = function(name) {
 
@@ -11063,7 +11063,7 @@ function updateClassLog(rowIndex, log, logUser) {
 
     // Resolve teacher names to tutor_xxxx IDs
 
-    const teachersList = getUsersDB(null);
+    const teachersList = getTeachersDB(null);
 
     const resolveId = function(name) {
 
@@ -12806,7 +12806,7 @@ function getTeacherRoomSchedule(teacherName, nickname, startVal, endVal) {
 
     // 1. Get correct teacher nickname from TeachersDB
 
-    const teachersList = getUsersDB(null);
+    const teachersList = getTeachersDB(null);
 
     let matchedTeacherNick = (nickname || teacherName || '').toString().trim();
 
@@ -14224,7 +14224,7 @@ function getTeacherLeaveToday(logUser) {
 
     try {
 
-      const teachersList = getUsersDB(null);
+      const teachersList = getTeachersDB(null);
 
       if (Array.isArray(teachersList)) {
 
