@@ -5489,42 +5489,26 @@ function getAllStudentsFromSubgroupSheets() {
 
 // ----------------------------------------------------
 
-function isCourseMatching(targetCourse, cellText) {
+function isCourseExactMatch(targetCourse, cellText, dayTimeStr) {
   if (!targetCourse || !cellText) return false;
 
-  let t = targetCourse.toLowerCase().replace(/\s+/g, '').trim();
-  let c = cellText.toLowerCase().replace(/\s+/g, '').trim();
+  const cleanT = targetCourse.toString().toLowerCase().replace(/\s+/g, ' ').trim();
+  const cleanC = cellText.toString().toLowerCase().replace(/\s+/g, ' ').trim();
 
-  if (t === c) return true;
+  if (cleanT === cleanC) return true;
 
-  t = t.replace(/^(เดี่ยว|ย่อย|กลุ่ม|คอร์ส)\s*/, '');
-  c = c.replace(/^(เดี่ยว|ย่อย|กลุ่ม|คอร์ส)\s*/, '');
+  const noSpaceT = cleanT.replace(/\s+/g, '');
+  const noSpaceC = cleanC.replace(/\s+/g, '');
+  if (noSpaceT === noSpaceC) return true;
 
-  if (t === c) return true;
-
-  const cleanT = t.replace(/\(.*\)/g, '').replace(/\d+[:.]\d+.*$/, '').trim();
-  const cleanC = c.replace(/\(.*\)/g, '').replace(/\d+[:.]\d+.*$/, '').trim();
-
-  if (cleanT && cleanC) {
-    if (cleanT === cleanC || cleanT.includes(cleanC) || cleanC.includes(cleanT)) return true;
+  if (dayTimeStr) {
+    const cleanDayTime = dayTimeStr.toString().toLowerCase().replace(/\s+/g, '').trim();
+    const tBase = noSpaceT.replace(cleanDayTime, '');
+    const cBase = noSpaceC.replace(cleanDayTime, '');
+    if (tBase === cBase && tBase.length > 0) return true;
   }
 
-  const synonyms = [
-    ['คณิตศาสตร์', 'คณิต'],
-    ['วิทยาศาสตร์', 'วิทย์'],
-    ['ชีววิทยา', 'ชีวะ'],
-    ['ภาษาอังกฤษ', 'อังกฤษ', 'eng'],
-    ['ภาษาไทย', 'ไทย'],
-    ['สังคมศึกษา', 'สังคม']
-  ];
-
-  for (let pair of synonyms) {
-    const hasT = pair.some(s => t.includes(s));
-    const hasC = pair.some(s => c.includes(s));
-    if (hasT && hasC) return true;
-  }
-
-  return t.includes(c) || c.includes(t);
+  return false;
 }
 
 function isTeacherAssigned(rawTeacherName, cleanLogUser, teachersList) {
@@ -5570,7 +5554,7 @@ function isTeacherAssigned(rawTeacherName, cleanLogUser, teachersList) {
 
 function getTeacherCoursesAndStudents(logUser) {
   try {
-    const cacheKey = 'teacher_courses_v8_' + (logUser || 'guest');
+    const cacheKey = 'teacher_courses_v9_' + (logUser || 'guest');
     const cached = getCacheObject(cacheKey);
     if (cached) return cached;
 
@@ -5614,7 +5598,7 @@ function getTeacherCoursesAndStudents(logUser) {
           }
           
           teacherCoursesMap[fullCourseName] = {
-            courseName: courseKey, // Column A of Data Learn
+            courseName: courseKey, // Exact Column A value from Data Learn
             displayCourseName: fullCourseName,
             dayTimeStr: dayTimeStr,
             day: dayName,
@@ -5642,7 +5626,7 @@ function getTeacherCoursesAndStudents(logUser) {
       'ย่อย 2-3','ย่อย 4-5','ย่อย 6-10'
     ];
 
-    // Main Sheets (Horizontal matching against Row 1 header)
+    // Main Group Sheets (Exact matching Row 1 header with Column A of Data Learn)
     for (let sheetName of mainSheets) {
       const sheet = db.getSheetByName(sheetName);
       if (!sheet) continue;
@@ -5650,7 +5634,7 @@ function getTeacherCoursesAndStudents(logUser) {
       const data = sheet.getDataRange().getValues();
       if (data.length < 4) continue;
       
-      const courseRow = data[0]; // Row 1 (Index 0) - Must match Column A of Data Learn
+      const courseRow = data[0]; // Row 1 (Index 0) - Header
       const dayTimeRow = data[2]; // Row 3 (Index 2)
       
       let branch = '';
@@ -5660,24 +5644,25 @@ function getTeacherCoursesAndStudents(logUser) {
       
       for (let key of courseKeys) {
         const cInfo = teacherCoursesMap[key];
-        const targetCourseName = cInfo.courseName.toLowerCase().trim(); // Column A subject
+        const targetCourseName = cInfo.courseName.toLowerCase().trim(); // Column A subject name
         const targetDayTime = cInfo.dayTimeStr ? cInfo.dayTimeStr.toLowerCase().trim() : '';
         
         for (let c = 4; c < courseRow.length; c++) {
           const cellCourse = (courseRow[c] || '').toString().toLowerCase().trim();
           const cellDayTime = (dayTimeRow[c] || '').toString().toLowerCase().trim();
           
-          let isMatch = isCourseMatching(targetCourseName, cellCourse);
-          if (isMatch && targetDayTime) {
-            if (cellDayTime && !cellDayTime.includes(targetDayTime) && !targetDayTime.includes(cellDayTime) && !cellCourse.includes(targetDayTime)) {
-               isMatch = false;
-            }
-          }
+          let isMatch = isCourseExactMatch(targetCourseName, cellCourse, targetDayTime);
           
           if (isMatch) {
                for (let r = 5; r < data.length; r++) {
                   const val = data[r][c];
-                  const isEnrolled = val === true || val === 'TRUE' || val === '✓' || (val !== '' && val !== null && !isNaN(val) && parseFloat(val) > 0);
+                  // Must have a number > 0 starting from 0 (e.g. > 0 hours/value)
+                  let numVal = NaN;
+                  if (val !== '' && val !== null && val !== undefined) {
+                     numVal = parseFloat(val.toString().replace(/,/g, '').trim());
+                  }
+                  const isEnrolled = !isNaN(numVal) && numVal > 0;
+                  
                   if (isEnrolled) {
                      let idCol = 1, fnameCol = 1, nickCol = 2;
                      const sId = (data[r][idCol] || '').toString().trim();
@@ -5707,7 +5692,7 @@ function getTeacherCoursesAndStudents(logUser) {
         }
       }
 
-    // Private/Subgroup Sheets (Vertical matching - Column K matches Column A of Data Learn)
+    // Private/Subgroup Sheets (Exact matching Column K against Column A of Data Learn)
     for (let sheetName of privateSheets) {
       const sheet = db.getSheetByName(sheetName);
       if (!sheet) continue;
@@ -5724,12 +5709,7 @@ function getTeacherCoursesAndStudents(logUser) {
           const colK = (data[r][10] || '').toString().toLowerCase().trim(); // Column K = index 10 = รอบเรียน
           if (!colK) continue;
           
-          let isMatch = isCourseMatching(targetCourseName, colK);
-          if (isMatch && targetDayTime) {
-             if (!colK.includes(targetDayTime)) {
-                isMatch = false;
-             }
-          }
+          let isMatch = isCourseExactMatch(targetCourseName, colK, targetDayTime);
           
           if (isMatch) {
              const sId = (data[r][1] || '').toString().trim(); // Column B
