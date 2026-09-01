@@ -5962,6 +5962,30 @@ function renderRoundSummaryTable(summary, categories) {
 
 // ----------------------------------------------------
 
+function fetchCachedStudents(forceRefresh = false, callback = null) {
+  if (typeof forceRefresh === 'function') {
+    callback = forceRefresh;
+    forceRefresh = false;
+  }
+  
+  if (!forceRefresh && state.students && state.students.length > 0) {
+    if (typeof callback === 'function') callback(state.students);
+    return;
+  }
+  
+  google.script.run
+    .withSuccessHandler(data => {
+      state.students = Array.isArray(data) ? data : [];
+      if (typeof callback === 'function') callback(state.students);
+    })
+    .withFailureHandler(err => {
+      console.error("Failed to fetch students:", err);
+      if (!state.students) state.students = [];
+      if (typeof callback === 'function') callback(state.students);
+    })
+    .getStudentsList(getLogUser());
+}
+
 function loadStudents(isSilent = false) {
   fetchCachedStudents(isSilent, data => {
     renderStudentsTable();
@@ -13505,6 +13529,8 @@ function saveTeacherProfile(e) {
 }
 
 function loadStaffSalarySummary() {
+  populateTeacherDropdownInSummary();
+  loadTeacherAdjustmentsListInSummary();
 
   const yearEl = document.getElementById('staff_summary_year');
 
@@ -22777,6 +22803,165 @@ function deleteStaffTeacherAdjustment(adjId) {
       }
     })
     .withFailureHandler(function(err) {
+      setLoading(false);
+      showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    })
+    .deleteTeacherAdjustment(adjId, getLogUser());
+}
+
+function populateTeacherDropdownInSummary() {
+  const teacherSelect = document.getElementById('staff_summary_adj_teacher');
+  if (!teacherSelect) return;
+  
+  if (state.teachersList && state.teachersList.length > 0) {
+    teacherSelect.innerHTML = '<option value="">-- เลือกครู --</option>';
+    state.teachersList.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.nickname || t.teacherId;
+      opt.textContent = t.nickname ? (t.nickname + (t.fullName ? ' (' + t.fullName + ')' : '')) : t.teacherId;
+      teacherSelect.appendChild(opt);
+    });
+  } else {
+    google.script.run
+      .withSuccessHandler(teachers => {
+        if (Array.isArray(teachers)) {
+          state.teachersList = teachers;
+          teacherSelect.innerHTML = '<option value="">-- เลือกครู --</option>';
+          teachers.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.nickname || t.teacherId;
+            opt.textContent = t.nickname ? (t.nickname + (t.fullName ? ' (' + t.fullName + ')' : '')) : t.teacherId;
+            teacherSelect.appendChild(opt);
+          });
+        }
+      })
+      .getTeachersDB(getLogUser());
+  }
+}
+
+function loadTeacherAdjustmentsListInSummary() {
+  const teacherSelect = document.getElementById('staff_summary_adj_teacher');
+  const yearEl = document.getElementById('staff_summary_year');
+  const monthEl = document.getElementById('staff_summary_month');
+  const adjContainer = document.getElementById('staff_summary_adj_list_container');
+  const adjTbody = document.getElementById('staff_summary_adj_list_tbody');
+  
+  if (!teacherSelect || !teacherSelect.value || !yearEl || !monthEl || !adjContainer || !adjTbody) {
+    if (adjContainer) adjContainer.style.display = 'none';
+    return;
+  }
+  
+  const teacher = teacherSelect.value;
+  const year = parseInt(yearEl.value);
+  const month = parseInt(monthEl.value);
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res && res.success && Array.isArray(res.adjustments)) {
+        const monthAdjs = res.adjustments.filter(a => a.month === month);
+        adjTbody.innerHTML = '';
+        if (monthAdjs.length > 0) {
+          adjContainer.style.display = 'block';
+          monthAdjs.forEach(adj => {
+            const tr = document.createElement('tr');
+            const isBonus = adj.type === 'เพิ่มเงิน';
+            const typeColor = isBonus ? 'var(--color-success)' : 'var(--color-danger)';
+            const sign = isBonus ? '+' : '-';
+            
+            tr.innerHTML = `
+              <td>${adj.teacher}</td>
+              <td style="font-weight: 600; color: ${typeColor};">${adj.type}</td>
+              <td style="font-weight: 700; color: ${typeColor};">${sign}฿${(adj.amount || 0).toLocaleString()}</td>
+              <td>${adj.note || '-'}</td>
+              <td style="font-size: 0.68rem; color: #6c757d;">${adj.timestamp || '-'}</td>
+              <td style="text-align: center;">
+                <button type="button" class="btn btn-danger btn-sm" style="font-size: 0.65rem; padding: 2px 6px;" onclick="deleteStaffTeacherAdjustmentInSummary('${adj.id}')">ลบ</button>
+              </td>
+            `;
+            adjTbody.appendChild(tr);
+          });
+        } else {
+          adjContainer.style.display = 'none';
+        }
+      } else {
+        adjContainer.style.display = 'none';
+      }
+    })
+    .getTeacherAdjustments(teacher, year, getLogUser());
+}
+
+function submitStaffTeacherAdjustmentInSummary() {
+  const teacherSelect = document.getElementById('staff_summary_adj_teacher');
+  const yearEl = document.getElementById('staff_summary_year');
+  const monthEl = document.getElementById('staff_summary_month');
+  const typeSelect = document.getElementById('staff_summary_adj_type');
+  const amountInput = document.getElementById('staff_summary_adj_amount');
+  const noteInput = document.getElementById('staff_summary_adj_note');
+  
+  if (!teacherSelect || !teacherSelect.value) {
+    showToast('กรุณาเลือกครูก่อนเพิ่มรายการ', 'error');
+    return;
+  }
+  
+  const amount = parseFloat(amountInput.value);
+  if (isNaN(amount) || amount <= 0) {
+    showToast('กรุณาระบุจำนวนเงินให้ถูกต้อง (ต้องมากกว่า 0)', 'error');
+    return;
+  }
+  
+  const teacher = teacherSelect.value;
+  const month = parseInt(monthEl ? monthEl.value : (new Date().getMonth() + 1));
+  const year = parseInt(yearEl ? yearEl.value : new Date().getFullYear());
+  const type = typeSelect ? typeSelect.value : 'หักเงิน';
+  const note = noteInput ? noteInput.value.trim() : '';
+  
+  setLoading(true, 'กำลังบันทึกรายการเพิ่ม/หักเงิน...');
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('บันทึกรายการเรียบร้อย ✓', 'success');
+        amountInput.value = '';
+        noteInput.value = '';
+        
+        loadTeacherAdjustmentsListInSummary();
+        loadStaffSalarySummary();
+      } else {
+        showToast('เกิดข้อผิดพลาด: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('ไม่สามารถบันทึกรายการได้: ' + err.message, 'error');
+    })
+    .saveTeacherAdjustment({
+      teacher: teacher,
+      month: month,
+      year: year,
+      type: type,
+      amount: amount,
+      note: note
+    }, getLogUser());
+}
+
+function deleteStaffTeacherAdjustmentInSummary(adjId) {
+  if (!adjId || !confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) return;
+  
+  setLoading(true, 'กำลังลบรายการ...');
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('ลบรายการเรียบร้อยแล้ว ✓', 'success');
+        loadTeacherAdjustmentsListInSummary();
+        loadStaffSalarySummary();
+      } else {
+        showToast('ไม่สามารถลบรายการได้: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
       setLoading(false);
       showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
     })
