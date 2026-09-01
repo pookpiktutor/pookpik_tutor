@@ -5570,7 +5570,7 @@ function isTeacherAssigned(rawTeacherName, cleanLogUser, teachersList) {
 
 function getTeacherCoursesAndStudents(logUser) {
   try {
-    const cacheKey = 'teacher_courses_v7_' + (logUser || 'guest');
+    const cacheKey = 'teacher_courses_v8_' + (logUser || 'guest');
     const cached = getCacheObject(cacheKey);
     if (cached) return cached;
 
@@ -5580,19 +5580,18 @@ function getTeacherCoursesAndStudents(logUser) {
     // 1. Get all teachers from UsersDB
     const teachersList = getTeachersDB(null);
 
-    // 2. Scan Data Learn for teacher's courses
+    // 2. Scan Data Learn for courses taught by REGULAR teacher (ครูประจำ) ONLY
     const classLogs = getClassLogs('');
     const teacherCoursesMap = {};
 
     if (Array.isArray(classLogs)) {
       classLogs.forEach(c => {
         const rawTeacherRegular = (c.teacherRegular || '').toString().trim();
-        const rawTeacherSub = (c.teacherSub || '').toString().trim();
 
+        // ONLY check regular teacher (ครูประจำ), ignore substitute teacher (ครูแทน)
         const isRegular = isTeacherAssigned(rawTeacherRegular, cleanLogUser, teachersList);
-        const isSub = isTeacherAssigned(rawTeacherSub, cleanLogUser, teachersList);
 
-        if ((isRegular || isSub) && c.subject) {
+        if (isRegular && c.subject) {
           const courseKey = c.subject.trim();
           const dayName = c.dayOfWeek || '';
           const timeStart = c.timeStart || '';
@@ -5615,7 +5614,7 @@ function getTeacherCoursesAndStudents(logUser) {
           }
           
           teacherCoursesMap[fullCourseName] = {
-            courseName: courseKey,
+            courseName: courseKey, // Column A of Data Learn
             displayCourseName: fullCourseName,
             dayTimeStr: dayTimeStr,
             day: dayName,
@@ -5643,7 +5642,7 @@ function getTeacherCoursesAndStudents(logUser) {
       'ย่อย 2-3','ย่อย 4-5','ย่อย 6-10'
     ];
 
-    // Main Sheets (Horizontal matching)
+    // Main Sheets (Horizontal matching against Row 1 header)
     for (let sheetName of mainSheets) {
       const sheet = db.getSheetByName(sheetName);
       if (!sheet) continue;
@@ -5651,7 +5650,7 @@ function getTeacherCoursesAndStudents(logUser) {
       const data = sheet.getDataRange().getValues();
       if (data.length < 4) continue;
       
-      const courseRow = data[0]; // Row 1 (Index 0)
+      const courseRow = data[0]; // Row 1 (Index 0) - Must match Column A of Data Learn
       const dayTimeRow = data[2]; // Row 3 (Index 2)
       
       let branch = '';
@@ -5661,7 +5660,7 @@ function getTeacherCoursesAndStudents(logUser) {
       
       for (let key of courseKeys) {
         const cInfo = teacherCoursesMap[key];
-        const targetCourseName = cInfo.courseName.toLowerCase().trim();
+        const targetCourseName = cInfo.courseName.toLowerCase().trim(); // Column A subject
         const targetDayTime = cInfo.dayTimeStr ? cInfo.dayTimeStr.toLowerCase().trim() : '';
         
         for (let c = 4; c < courseRow.length; c++) {
@@ -5708,7 +5707,7 @@ function getTeacherCoursesAndStudents(logUser) {
         }
       }
 
-    // Private/Subgroup Sheets (Vertical matching - Column K)
+    // Private/Subgroup Sheets (Vertical matching - Column K matches Column A of Data Learn)
     for (let sheetName of privateSheets) {
       const sheet = db.getSheetByName(sheetName);
       if (!sheet) continue;
