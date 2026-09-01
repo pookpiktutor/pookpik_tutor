@@ -5489,321 +5489,290 @@ function getAllStudentsFromSubgroupSheets() {
 
 // ----------------------------------------------------
 
-function getTeacherCoursesAndStudents(logUser) {
+function isCourseMatching(targetCourse, cellText) {
+  if (!targetCourse || !cellText) return false;
 
+  let t = targetCourse.toLowerCase().replace(/\s+/g, '').trim();
+  let c = cellText.toLowerCase().replace(/\s+/g, '').trim();
+
+  if (t === c) return true;
+
+  t = t.replace(/^(เดี่ยว|ย่อย|กลุ่ม|คอร์ส)\s*/, '');
+  c = c.replace(/^(เดี่ยว|ย่อย|กลุ่ม|คอร์ส)\s*/, '');
+
+  if (t === c) return true;
+
+  const cleanT = t.replace(/\(.*\)/g, '').replace(/\d+[:.]\d+.*$/, '').trim();
+  const cleanC = c.replace(/\(.*\)/g, '').replace(/\d+[:.]\d+.*$/, '').trim();
+
+  if (cleanT && cleanC) {
+    if (cleanT === cleanC || cleanT.includes(cleanC) || cleanC.includes(cleanT)) return true;
+  }
+
+  const synonyms = [
+    ['คณิตศาสตร์', 'คณิต'],
+    ['วิทยาศาสตร์', 'วิทย์'],
+    ['ชีววิทยา', 'ชีวะ'],
+    ['ภาษาอังกฤษ', 'อังกฤษ', 'eng'],
+    ['ภาษาไทย', 'ไทย'],
+    ['สังคมศึกษา', 'สังคม']
+  ];
+
+  for (let pair of synonyms) {
+    const hasT = pair.some(s => t.includes(s));
+    const hasC = pair.some(s => c.includes(s));
+    if (hasT && hasC) return true;
+  }
+
+  return t.includes(c) || c.includes(t);
+}
+
+function isTeacherAssigned(rawTeacherName, cleanLogUser, teachersList) {
+  if (!rawTeacherName || !cleanLogUser) return false;
+  const raw = rawTeacherName.toLowerCase().trim();
+  const cleanLog = cleanLogUser.toLowerCase().trim();
+
+  if (raw === cleanLog) return true;
+
+  const teacher = (teachersList || []).find(t => {
+    const tId = (t.teacherId || '').toLowerCase().trim();
+    const tNick = (t.nickname || '').toLowerCase().trim();
+    const tFull = (t.fullName || '').toLowerCase().trim();
+    return tId === cleanLog || tNick === cleanLog || tFull === cleanLog || tNick.includes(cleanLog) || cleanLog.includes(tNick);
+  });
+
+  if (!teacher) {
+    return raw.includes(cleanLog) || cleanLog.includes(raw);
+  }
+
+  const aliases = [
+    (teacher.teacherId || '').toLowerCase().trim(),
+    (teacher.nickname || '').toLowerCase().trim(),
+    (teacher.fullName || '').toLowerCase().trim()
+  ].filter(Boolean);
+
+  const shortNick = (teacher.nickname || '').split('(')[0].toLowerCase().trim();
+  if (shortNick) aliases.push(shortNick);
+  const rawNickWithoutKru = shortNick.replace(/^ครู/, '').trim();
+  if (rawNickWithoutKru) aliases.push(rawNickWithoutKru);
+
+  const cleanRawNoKru = raw.replace(/^ครู/, '').trim();
+
+  return aliases.some(alias => {
+    if (!alias) return false;
+    const cleanAliasNoKru = alias.replace(/^ครู/, '').trim();
+    return alias === raw || 
+           alias.includes(raw) || 
+           raw.includes(alias) || 
+           (cleanRawNoKru && cleanAliasNoKru && (cleanAliasNoKru === cleanRawNoKru || cleanAliasNoKru.includes(cleanRawNoKru) || cleanRawNoKru.includes(cleanAliasNoKru)));
+  });
+}
+
+function getTeacherCoursesAndStudents(logUser) {
   try {
-    const cacheKey = 'teacher_courses_v3_' + (logUser || 'guest');
+    const cacheKey = 'teacher_courses_v7_' + (logUser || 'guest');
     const cached = getCacheObject(cacheKey);
     if (cached) return cached;
 
     const db = getDb();
+    const cleanLogUser = (logUser || '').toString().toLowerCase().trim();
 
-    
-
-    // 1. Get current teacher's nickname from TeachersDB using logUser (TeacherID / Username / Name)
-
+    // 1. Get all teachers from UsersDB
     const teachersList = getTeachersDB(null);
 
-    let teacherAliases = [(logUser || '').toString().toLowerCase().trim()];
-
-    if (logUser) {
-      const cleanLogUser = logUser.toString().toLowerCase().trim();
-      const match = teachersList.find(t => {
-        const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toLowerCase().trim();
-        const tFull = (t.fullName || '').toLowerCase().trim();
-        return tId === cleanLogUser || tNick === cleanLogUser || tFull === cleanLogUser || tNick.includes(cleanLogUser) || tFull.includes(cleanLogUser) || cleanLogUser.includes(tNick);
-      });
-      if (match) {
-        if (match.nickname) teacherAliases.push(match.nickname.toLowerCase().trim());
-        if (match.fullName) teacherAliases.push(match.fullName.toLowerCase().trim());
-        if (match.teacherId) teacherAliases.push(match.teacherId.toLowerCase().trim());
-      }
-      // Deduplicate
-      teacherAliases = [...new Set(teacherAliases.filter(a => a))];
-    }
-
-    
-
     // 2. Scan Data Learn for teacher's courses
-
     const classLogs = getClassLogs('');
-
     const teacherCoursesMap = {};
 
-    
-
     if (Array.isArray(classLogs)) {
-
       classLogs.forEach(c => {
+        const rawTeacherRegular = (c.teacherRegular || '').toString().trim();
+        const rawTeacherSub = (c.teacherSub || '').toString().trim();
 
-        const cRegLower = c.teacherRegular ? c.teacherRegular.toLowerCase().trim() : '';
-        let isAssigned = false;
-        if (cRegLower && teacherAliases.length > 0) {
-          isAssigned = teacherAliases.some(alias => {
-            if (!alias) return false;
-            return cRegLower.includes(alias) || alias.includes(cRegLower);
-          });
-        }
+        const isRegular = isTeacherAssigned(rawTeacherRegular, cleanLogUser, teachersList);
+        const isSub = isTeacherAssigned(rawTeacherSub, cleanLogUser, teachersList);
 
-          
-
-        if (isAssigned && c.subject) {
-
+        if ((isRegular || isSub) && c.subject) {
           const courseKey = c.subject.trim();
-
           const dayName = c.dayOfWeek || '';
-
           const timeStart = c.timeStart || '';
-
           const timeEnd = c.timeEnd || '';
-
           
-
           let fullCourseName = courseKey;
-
           let dayTimeStr = '';
-
           
-
           var hasDay = /(จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์)/.test(courseKey);
-
           var hasTime = /\d+[:.]\d+/.test(courseKey);
-
           
-
           if (hasDay && hasTime) {
-
             fullCourseName = courseKey;
-
             if (dayName && timeStart) {
-
               dayTimeStr = dayName + ' ' + timeStart + '-' + timeEnd;
-
             }
-
           } else if (dayName && timeStart) {
-
             dayTimeStr = dayName + ' ' + timeStart + '-' + timeEnd;
-
             fullCourseName = courseKey + ' ' + dayTimeStr;
-
           }
-
           
-
           teacherCoursesMap[fullCourseName] = {
-
             courseName: courseKey,
-
             displayCourseName: fullCourseName,
-
             dayTimeStr: dayTimeStr,
-
             day: dayName,
-
             timeStart: timeStart,
-
             timeEnd: timeEnd,
-
             roomBranch: c.roomBranch || '',
-
             students: []
-
           };
-
         }
-
       });
-
     }
 
-    
-
     const courseKeys = Object.keys(teacherCoursesMap);
-
     if (courseKeys.length === 0) return [];
 
-    
-
-    // 3. For each course, search enrolled students from Grade Sheets
-
-    const gradeSheets = [
-
+    // 3. Search enrolled students from Grade Sheets
+    const mainSheets = [
       'อนุบาล/1','ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1','ม.1/1','ม.2/1','ม.3/1','ม.4/1','ม.5/1','ม.6/1',
-
       'อนุบาล/2','ป.1/2','ป.2/2','ป.3/2','ป.4/2','ป.5/2','ป.6/2','ม.1/2','ม.2/2','ม.3/2','ม.4/2','ม.5/2','ม.6/2',
-
-      'อนุบาล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3',
-
+      'อนุบาล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3'
+    ];
+    
+    const privateSheets = [
       'เดี่ยว อนุบาล','เดี่ยว ป.1','เดี่ยว ป.2','เดี่ยว ป.3','เดี่ยว ป.4','เดี่ยว ป.5','เดี่ยว ป.6','เดี่ยว ม.1','เดี่ยว ม.2','เดี่ยว ม.3','เดี่ยว ม.4','เดี่ยว ม.5','เดี่ยว ม.6',
-
       'ย่อย 2-3','ย่อย 4-5','ย่อย 6-10'
-
     ];
 
-    for (let sheetName of gradeSheets) {
-
+    // Main Sheets (Horizontal matching)
+    for (let sheetName of mainSheets) {
       const sheet = db.getSheetByName(sheetName);
-
       if (!sheet) continue;
-
       
-
       const data = sheet.getDataRange().getValues();
-
       if (data.length < 4) continue;
-
       
-
       const courseRow = data[0]; // Row 1 (Index 0)
-
       const dayTimeRow = data[2]; // Row 3 (Index 2)
-
       
-
       let branch = '';
-
       if (sheetName.includes('/1')) branch = 'สาขา 1';
-
       else if (sheetName.includes('/2')) branch = 'สาขา 2';
-
       else if (sheetName.includes('/3')) branch = 'สาขา 3';
-
       
-
       for (let key of courseKeys) {
-
         const cInfo = teacherCoursesMap[key];
-
         const targetCourseName = cInfo.courseName.toLowerCase().trim();
-
         const targetDayTime = cInfo.dayTimeStr ? cInfo.dayTimeStr.toLowerCase().trim() : '';
-
         
-
         for (let c = 4; c < courseRow.length; c++) {
-
           const cellCourse = (courseRow[c] || '').toString().toLowerCase().trim();
-
           const cellDayTime = (dayTimeRow[c] || '').toString().toLowerCase().trim();
-
           
-
-          let isMatch = matchCourseName(targetCourseName, cellCourse);
-
+          let isMatch = isCourseMatching(targetCourseName, cellCourse);
           if (isMatch && targetDayTime) {
-
             if (cellDayTime && !cellDayTime.includes(targetDayTime) && !targetDayTime.includes(cellDayTime) && !cellCourse.includes(targetDayTime)) {
-
                isMatch = false;
-
             }
-
           }
-
           
-
           if (isMatch) {
-
-               
-
-               // Start from row 6 (index 5) as requested
-
                for (let r = 5; r < data.length; r++) {
-
                   const val = data[r][c];
-
-                  if (val !== '' && val !== null && !isNaN(val) && parseFloat(val) > 0) {
-
-                     // Use explicit columns as requested: Name/Surname in B (1), Nickname in C (2). Use Name (1) as ID to prevent duplicate conflicts.
-
+                  const isEnrolled = val === true || val === 'TRUE' || val === '✓' || (val !== '' && val !== null && !isNaN(val) && parseFloat(val) > 0);
+                  if (isEnrolled) {
                      let idCol = 1, fnameCol = 1, nickCol = 2;
-
-                     
-
                      const sId = (data[r][idCol] || '').toString().trim();
-
                      const sFname = (data[r][fnameCol] || '').toString().trim();
-
                      const sLname = '';
-
                      let sNick = (data[r][nickCol] || '').toString().trim();
-
-                     if (sNick.includes('GMT+') || sNick.match(/Sun|Mon|Tue|Wed|Thu|Fri|Sat.*202\d/)) {
-
-                        sNick = '';
-
-                     }
-
+                     if (sNick.includes('GMT+') || sNick.match(/Sun|Mon|Tue|Wed|Thu|Fri|Sat.*202\d/)) sNick = '';
                      
-
-                     const existing = cInfo.students.find(s => s.studentId === sId && sId !== '');
-
-                     if (!existing) {
-
-                       cInfo.students.push({
-
-                         studentId: sId,
-
-                         nickname: sNick,
-
-                         name: (sFname + ' ' + sLname).trim(),
-
-                         firstname: sFname,
-
-                         lastname: sLname,
-
-                         grade: sheetName.split('/')[0],
-
-                         branch: branch
-
-                       });
-
+                     if (sId && !sId.includes('ชื่อ') && !sId.includes('ลำดับ')) {
+                       const existing = cInfo.students.find(s => s.studentId === sId);
+                       if (!existing) {
+                         cInfo.students.push({
+                           studentId: sId,
+                           nickname: sNick,
+                           name: (sFname + ' ' + sLname).trim(),
+                           firstname: sFname,
+                           lastname: sLname,
+                           grade: sheetName.split('/')[0],
+                           branch: branch
+                         });
+                       }
                      }
-
                   }
-
                }
-
              }
-
           }
-
         }
-
       }
 
-    
+    // Private/Subgroup Sheets (Vertical matching - Column K)
+    for (let sheetName of privateSheets) {
+      const sheet = db.getSheetByName(sheetName);
+      if (!sheet) continue;
+      
+      const data = sheet.getDataRange().getValues();
+      if (data.length < 2) continue;
+      
+      for (let key of courseKeys) {
+        const cInfo = teacherCoursesMap[key];
+        const targetCourseName = cInfo.courseName.toLowerCase().trim();
+        const targetDayTime = cInfo.dayTimeStr ? cInfo.dayTimeStr.toLowerCase().trim() : '';
+        
+        for (let r = 1; r < data.length; r++) {
+          const colK = (data[r][10] || '').toString().toLowerCase().trim(); // Column K = index 10 = รอบเรียน
+          if (!colK) continue;
+          
+          let isMatch = isCourseMatching(targetCourseName, colK);
+          if (isMatch && targetDayTime) {
+             if (!colK.includes(targetDayTime)) {
+                isMatch = false;
+             }
+          }
+          
+          if (isMatch) {
+             const sId = (data[r][1] || '').toString().trim(); // Column B
+             const sNick = (data[r][2] || '').toString().trim(); // Column C
+             const grade = (data[r][5] || '').toString().trim(); // Column F = ระดับชั้น
+             const branch = (data[r][8] || '').toString().trim(); // Column I = สาขา
+             
+             if (sId && !sId.includes('ชื่อ') && !sId.includes('ลำดับ')) {
+                const existing = cInfo.students.find(s => s.studentId === sId);
+                if (!existing) {
+                   cInfo.students.push({
+                      studentId: sId,
+                      nickname: sNick,
+                      name: sId,
+                      firstname: sId,
+                      lastname: '',
+                      grade: grade || sheetName,
+                      branch: branch
+                   });
+                }
+             }
+          }
+        }
+      }
+    }
 
     const result = [];
-
     courseKeys.forEach(key => {
-
       const item = teacherCoursesMap[key];
-
       result.push({
-
         courseName: item.displayCourseName,
-
         students: item.students
-
       });
-
     });
 
-    
-
+    setCacheObject(cacheKey, result, 1800); // cache for 30 minutes
     return result;
 
   } catch (err) {
-
     return [];
-
   }
-
 }
-
 function getStudentDetailedCourses(studentName, nickname, grade, branchLearn, classType, logUser) {
 
   if (logUser) checkTeacherBlock(logUser);
