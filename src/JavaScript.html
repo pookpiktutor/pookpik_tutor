@@ -14094,11 +14094,48 @@ function handleStaffPayrollMonthChange() {
 
     
 
-    document.getElementById('calc_result_total_pay').innerText = 'รายได้สุทธิ: ฿' + (monthRes.totalPay || 0).toLocaleString();
-
+    const netPayVal = monthRes.netPay !== undefined ? monthRes.netPay : (monthRes.totalPay || 0);
+    document.getElementById('calc_result_total_pay').innerText = 'รายได้สุทธิ: ฿' + netPayVal.toLocaleString();
     document.getElementById('calc_result_total_hours').innerText = formattedSumHours;
-
     document.getElementById('calc_result_total_classes').innerText = (monthRes.totalClasses || 0).toLocaleString() + ' คลาส';
+
+    // Update 4-Box Summary Widgets for Adjustments & Insurance
+    if (document.getElementById('staff_adj_gross_pay')) {
+      document.getElementById('staff_adj_gross_pay').innerText = '฿' + (monthRes.totalPay || 0).toLocaleString();
+      document.getElementById('staff_adj_bonus').innerText = '+฿' + (monthRes.adjustmentBonus || 0).toLocaleString();
+      document.getElementById('staff_adj_deduction').innerText = '-฿' + (monthRes.adjustmentDeduction || 0).toLocaleString();
+      document.getElementById('staff_adj_insurance').innerText = '-฿' + (monthRes.insuranceDeduction || 0).toLocaleString();
+      document.getElementById('staff_adj_insurance_total').innerText = '(สะสม: ฿' + (monthRes.insuranceRunningTotal || 0).toLocaleString() + ' / 2,000)';
+    }
+
+    // Render adjustment items list
+    const adjContainer = document.getElementById('staff_adj_list_container');
+    const adjTbody = document.getElementById('staff_adj_list_tbody');
+    if (adjContainer && adjTbody) {
+      adjTbody.innerHTML = '';
+      if (Array.isArray(monthRes.adjustments) && monthRes.adjustments.length > 0) {
+        adjContainer.style.display = 'block';
+        monthRes.adjustments.forEach(function(adj) {
+          const tr = document.createElement('tr');
+          const isBonus = adj.type === 'เพิ่มเงิน';
+          const typeColor = isBonus ? 'var(--color-success)' : 'var(--color-danger)';
+          const sign = isBonus ? '+' : '-';
+          
+          tr.innerHTML = `
+            <td style="font-weight: 600; color: ${typeColor};">${adj.type}</td>
+            <td style="font-weight: 700; color: ${typeColor};">${sign}฿${(adj.amount || 0).toLocaleString()}</td>
+            <td>${adj.note || '-'}</td>
+            <td style="font-size: 0.65rem; color: #6c757d;">${adj.timestamp || '-'}</td>
+            <td style="text-align: center;">
+              <button type="button" class="btn btn-danger btn-sm" style="font-size: 0.65rem; padding: 1px 6px;" onclick="deleteStaffTeacherAdjustment('${adj.id}')">ลบ</button>
+            </td>
+          `;
+          adjTbody.appendChild(tr);
+        });
+      } else {
+        adjContainer.style.display = 'none';
+      }
+    }
 
     
 
@@ -22670,3 +22707,78 @@ setInterval(() => {
 }, 30000); // Check every 30 seconds globally
 
 </script>
+function submitStaffTeacherAdjustment() {
+  const teacherSelect = document.getElementById('calc_teacher_select');
+  const monthPicker = document.getElementById('calc_month_picker');
+  const yearPicker = document.getElementById('calc_year_picker');
+  const typeSelect = document.getElementById('staff_adj_type');
+  const amountInput = document.getElementById('staff_adj_amount');
+  const noteInput = document.getElementById('staff_adj_note');
+  
+  if (!teacherSelect || !teacherSelect.value) {
+    showToast('กรุณาเลือกครูก่อนเพิ่มรายการ', 'error');
+    return;
+  }
+  
+  const amount = parseFloat(amountInput.value);
+  if (isNaN(amount) || amount <= 0) {
+    showToast('กรุณาระบุจำนวนเงินให้ถูกต้อง (ต้องมากกว่า 0)', 'error');
+    return;
+  }
+  
+  const teacher = teacherSelect.value;
+  const month = parseInt(monthPicker ? monthPicker.value : (new Date().getMonth() + 1));
+  const year = parseInt(yearPicker ? yearPicker.value : new Date().getFullYear());
+  const type = typeSelect ? typeSelect.value : 'หักเงิน';
+  const note = noteInput ? noteInput.value.trim() : '';
+  
+  setLoading(true, 'กำลังบันทึกรายการเพิ่ม/หักเงิน...');
+  
+  google.script.run
+    .withSuccessHandler(function(res) {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('บันทึกรายการเรียบร้อย ✓', 'success');
+        amountInput.value = '';
+        noteInput.value = '';
+        
+        calculateStaffPayroll();
+      } else {
+        showToast('เกิดข้อผิดพลาด: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(function(err) {
+      setLoading(false);
+      showToast('ไม่สามารถบันทึกรายการได้: ' + err.message, 'error');
+    })
+    .saveTeacherAdjustment({
+      teacher: teacher,
+      month: month,
+      year: year,
+      type: type,
+      amount: amount,
+      note: note
+    }, getLogUser());
+}
+
+function deleteStaffTeacherAdjustment(adjId) {
+  if (!adjId || !confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) return;
+  
+  setLoading(true, 'กำลังลบรายการ...');
+  
+  google.script.run
+    .withSuccessHandler(function(res) {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('ลบรายการเรียบร้อยแล้ว ✓', 'success');
+        calculateStaffPayroll();
+      } else {
+        showToast('ไม่สามารถลบรายการได้: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(function(err) {
+      setLoading(false);
+      showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    })
+    .deleteTeacherAdjustment(adjId, getLogUser());
+}

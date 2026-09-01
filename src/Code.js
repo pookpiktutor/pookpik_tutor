@@ -9169,6 +9169,47 @@ function saveTeacherAdjustment(data, logUser) {
 }
 
 /**
+ * ลบรายการเพิ่ม/หักเงินของครู
+ * @param {string} adjId - ID ของรายการ (เช่น ADJ_123456)
+ * @param {string} logUser - ผู้ใช้งาน
+ */
+function deleteTeacherAdjustment(adjId, logUser) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('TeacherAdjustmentsDB');
+    if (!sheet || sheet.getLastRow() <= 1) return { success: false, error: 'ไม่พบข้อมูลรายการ' };
+
+    const data = sheet.getDataRange().getValues();
+    let foundRow = -1;
+    let teacher = '';
+    let year = 0;
+
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === adjId) {
+        foundRow = i + 1; // 1-indexed
+        teacher = data[i][2];
+        year = data[i][4];
+        break;
+      }
+    }
+
+    if (foundRow === -1) return { success: false, error: 'ไม่พบรายการที่ต้องการลบ' };
+
+    sheet.deleteRow(foundRow);
+
+    if (teacher && year) {
+      const cacheKey = 'yearly_pay_v3_' + teacher.toString().trim().toLowerCase() + '_' + year;
+      deleteCacheObject(cacheKey);
+    }
+
+    logActivity(logUser || 'System', 'ลบรายการเพิ่ม/หักเงิน', 'ID: ' + adjId);
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+/**
  * ดึงรายการเพิ่ม/หักเงินของครูตามปี
  * @param {string} teacher - ชื่อ/รหัสครู
  * @param {number} year - ปี พ.ศ.
