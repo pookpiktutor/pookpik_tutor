@@ -12707,6 +12707,7 @@ function loadStaffSalarySummary() {
 
   let yearEl = document.getElementById('staff_summary_year');
   let monthEl = document.getElementById('staff_summary_month');
+  let typeEl = document.getElementById('staff_summary_account_type');
 
   if (yearEl && (!yearEl.options || yearEl.options.length === 0)) {
     initYearAndMonthPickers();
