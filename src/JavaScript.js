@@ -186,6 +186,23 @@ function processBgTaskQueue() {
     let successHandler = null;
     let failureHandler = null;
 
+    function fetchWithRetry(url, options, retries = 3, delay = 800) {
+      return fetch(url, options)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+          }
+          return response.json();
+        })
+        .catch(err => {
+          if (retries > 1) {
+            return new Promise(resolve => setTimeout(resolve, delay))
+              .then(() => fetchWithRetry(url, options, retries - 1, delay * 1.5));
+          }
+          throw err;
+        });
+    }
+
     const runner = new Proxy({}, {
       get: function(target, prop) {
         if (prop === 'withSuccessHandler') {
@@ -217,13 +234,12 @@ function processBgTaskQueue() {
               if (fHandler) r = r.withFailureHandler(fHandler);
               r[prop](...args);
             } else {
-              fetch(GAS_API_URL, {
+              fetchWithRetry(GAS_API_URL, {
                 redirect: 'follow',
                 method: 'POST',
                 body: JSON.stringify({ functionName: prop, arguments: args }),
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' }
               })
-              .then(response => response.json())
               .then(result => {
                 if (result && typeof result === 'object' && result.error && result.success === false) {
                   if (fHandler) fHandler(new Error(result.error));
@@ -233,7 +249,8 @@ function processBgTaskQueue() {
                 }
               })
               .catch(err => {
-                if (fHandler) fHandler(err);
+                const friendlyErr = new Error('สัญญาณอินเทอร์เน็ตไม่เสถียร กรุณากดลองอีกครั้ง (' + (err.message || 'Network error') + ')');
+                if (fHandler) fHandler(friendlyErr);
                 else console.error('GSRunner error in ' + prop + ':', err);
               });
             }
