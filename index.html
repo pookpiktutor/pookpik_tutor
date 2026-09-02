@@ -15685,7 +15685,6 @@ function loadTeacherSchedule(isSilent = false) {
 function loadAllBranchesTeacherSchedule(forceRefresh = false) {
   const container = document.getElementById('all_branches_schedule_container');
   const dateInput = document.getElementById('all_branches_date_select');
-  const dateDisplay = document.getElementById('all_branches_date_display');
 
   if (dateInput && !dateInput.value) {
     const today = new Date();
@@ -15695,13 +15694,10 @@ function loadAllBranchesTeacherSchedule(forceRefresh = false) {
     dateInput.value = `${y}-${m}-${d}`;
   }
 
-  if (state.allClassLogsCache && Array.isArray(state.allClassLogsCache) && state.allClassLogsCache.length > 0 && !forceRefresh) {
-    renderAllBranchesTeacherSchedule();
-    return;
-  }
+  const selectedDate = dateInput ? dateInput.value : '';
 
   if (container) {
-    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">กำลังโหลดตารางสอนรวม 3 สาขา...</div>`;
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">กำลังโหลดตารางสอนประจำวันที่เลือก...</div>`;
   }
 
   google.script.run
@@ -15716,7 +15712,7 @@ function loadAllBranchesTeacherSchedule(forceRefresh = false) {
     .withFailureHandler(err => {
       if (container) container.innerHTML = `<div style="text-align: center; color: var(--color-danger); padding: 40px;">เกิดข้อผิดพลาดในการดึงข้อมูล: ${err.message}</div>`;
     })
-    .getClassLogs('', getLogUser());
+    .getClassLogs(selectedDate, getLogUser());
 }
 
 function renderAllBranchesTeacherSchedule() {
@@ -15730,6 +15726,7 @@ function renderAllBranchesTeacherSchedule() {
 
   let targetDayOfWeek = 'ALL';
   let formattedDateStr = '';
+  let selectedYMD = dateInput ? dateInput.value : '';
 
   if (dateInput && dateInput.value) {
     const dObj = new Date(dateInput.value);
@@ -15751,7 +15748,7 @@ function renderAllBranchesTeacherSchedule() {
 
   const logs = state.allClassLogsCache || state.classLogs || [];
   if (!logs || logs.length === 0) {
-    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบข้อมูลตารางสอน</div>`;
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบข้อมูลตารางสอนประจำ${formattedDateStr || 'วันที่เลือก'}</div>`;
     return;
   }
 
@@ -15780,11 +15777,59 @@ function renderAllBranchesTeacherSchedule() {
     return t;
   }
 
+  function isSameDate(logDateStr, selectedYMD) {
+    if (!logDateStr || !selectedYMD) return true; // fallback if log has no date
+    const partsSel = selectedYMD.split('-');
+    if (partsSel.length < 3) return true;
+
+    const selY = parseInt(partsSel[0]);
+    const selM = parseInt(partsSel[1]);
+    const selD = parseInt(partsSel[2]);
+
+    const str = logDateStr.toString().trim();
+    if (str.includes('/')) {
+      const parts = str.split('/');
+      if (parts.length >= 3) {
+        const d = parseInt(parts[0]);
+        const m = parseInt(parts[1]);
+        let y = parseInt(parts[2]);
+        if (y > 2500) y -= 543;
+        return d === selD && m === selM && y === selY;
+      }
+    } else if (str.includes('-')) {
+      const parts = str.split('T')[0].split('-');
+      if (parts.length >= 3) {
+        let y = parseInt(parts[0]);
+        if (y > 2500) y -= 543;
+        const m = parseInt(parts[1]);
+        const d = parseInt(parts[2]);
+        return d === selD && m === selM && y === selY;
+      }
+    }
+
+    const dObj = new Date(str);
+    if (!isNaN(dObj.getTime())) {
+      let y = dObj.getFullYear();
+      if (y > 2500) y -= 543;
+      return dObj.getDate() === selD && (dObj.getMonth() + 1) === selM && y === selY;
+    }
+
+    return true;
+  }
+
   let filtered = logs.filter(c => {
     const tName = cleanTeacherName(c.teacherRegular, c.teacherSub).toLowerCase();
     if (!tName || tName === 'ไม่ระบุชื่อครู') return false;
     if (searchFilter && !tName.includes(searchFilter)) return false;
-    if (targetDayOfWeek !== 'ALL' && c.dayOfWeek && c.dayOfWeek !== targetDayOfWeek) return false;
+
+    // STRICT DATE FILTER: Only match the specific date selected!
+    if (selectedYMD) {
+      const logDate = c.date || c.dateStr || c.classDate || '';
+      if (logDate && !isSameDate(logDate, selectedYMD)) {
+        return false;
+      }
+    }
+
     return true;
   });
 
