@@ -560,6 +560,14 @@ function showLoginScreen() {
 
 
 
+
+function clearSessionData() {
+  window._sessionUser = null;
+  if (window.state) window.state.currentUser = null;
+  try { sessionStorage.removeItem('pookpik_session'); } catch (e) {}
+  try { localStorage.removeItem('pookpik_session'); } catch (e) {}
+}
+
 function setLoginError(msg) {
   const errEl = document.getElementById('login_error_msg');
   if (errEl) {
@@ -579,6 +587,21 @@ function forceHideLoginOverlay() {
     overlay.style.visibility = 'hidden';
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
+  }
+}
+
+
+
+function handleLogout() {
+  if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+    if (window.state && window.state.heartbeatInterval) {
+      clearInterval(window.state.heartbeatInterval);
+      window.state.heartbeatInterval = null;
+    }
+
+    clearSessionData();
+    showLoginScreen();
+    if (typeof showToast === 'function') showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
   }
 }
 
@@ -607,7 +630,6 @@ function handleLogin(e) {
       return;
     }
 
-    // Determine role based on username
     const cleanU = user.toLowerCase().replace(/[\s\.]/g, '');
     let role = 'Staff';
     if (cleanU.includes('admin') || cleanU.includes('ผจก') || cleanU.includes('พัช') || cleanU.includes('เพื่อน') || cleanU.includes('บีม')) {
@@ -623,16 +645,13 @@ function handleLogin(e) {
       profilePic: ''
     };
 
-    // Save session & hide overlay INSTANTLY (Zero delay)
     saveSessionData(sessionUser);
     forceHideLoginOverlay();
 
     if (typeof showToast === 'function') showToast('เข้าสู่ระบบสำเร็จ (' + user + ')', 'success');
 
-    // Trigger checkSession to activate main application UI
     checkSession();
 
-    // Async verification in background
     try {
       if (window.google && window.google.script && window.google.script.run) {
         google.script.run
@@ -728,29 +747,7 @@ function handleLogin(e) {
 
 
 
-function handleLogout() {
 
-  if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
-
-    if (state.heartbeatInterval) {
-
-      clearInterval(state.heartbeatInterval);
-
-      state.heartbeatInterval = null;
-
-    }
-
-    sessionStorage.removeItem('pookpik_session');
-
-    state.currentUser = null;
-
-    showLoginScreen();
-
-    showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
-
-  }
-
-}
 
 
 
