@@ -2630,82 +2630,50 @@ function logActivity(user, action, details) {
 }
 
 function getActivityLogs(logUser) {
-
   if (logUser) checkTeacherBlock(logUser);
+  const cacheKey = 'activity_logs_all';
+  const cached = getCacheObject(cacheKey);
+  if (cached && Array.isArray(cached)) return cached;
 
   try {
-
     const rows = getSheetRows('ActivityLog');
-
     const logs = [];
 
     for (let i = rows.length - 1; i >= 1; i--) {
-
       if (rows[i][0]) {
-
         let name = '';
-
         let action = '';
-
         let details = '';
 
-        
-
         if (rows[i].length >= 5) {
-
           name = rows[i][2] ? rows[i][2].toString() : '';
-
           action = rows[i][3] ? rows[i][3].toString() : '';
-
           details = rows[i][4] ? rows[i][4].toString() : '';
-
         } else {
-
           action = rows[i][2] ? rows[i][2].toString() : '';
-
           details = rows[i][3] ? rows[i][3].toString() : '';
-
         }
 
-        
-
         logs.push({
-
           timestamp: cleanSheetTimestamp(rows[i][0]),
-
           user: rows[i][1] ? rows[i][1].toString() : '',
-
           name: name,
-
           action: action,
-
           details: details
-
         });
 
         if (logs.length >= 100) break;
-
       }
-
     }
 
     if (Array.isArray(logs) && logs.length > 0) {
-      setCacheObject(cacheKey, logs, 1800);
+      setCacheObject(cacheKey, logs, 300);
     }
     return logs;
   } catch (e) {
-
     return { error: e.message };
-
   }
-
 }
-
-// ----------------------------------------------------
-
-// Rooms DB Settings
-
-// ----------------------------------------------------
 
 function getRoomsList() {
 
