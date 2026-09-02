@@ -9300,9 +9300,10 @@ function getInsuranceTracking(teacher) {
  */
 
 function getAllTeachersMonthlyPay(year, month) {
+  year = parseInt(year) || new Date().getFullYear();
+  month = parseInt(month) || (new Date().getMonth() + 1);
 
   const cacheKey = 'all_teachers_monthly_' + year + '_' + month;
-
   const cached = getCacheObject(cacheKey);
 
   // if (cached) return cached;

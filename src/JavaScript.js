@@ -1,4 +1,5 @@
 
+
 // --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
@@ -5960,6 +5961,30 @@ function renderRoundSummaryTable(summary, categories) {
 // 2. Student Registrations & Dropdown Loaders
 
 // ----------------------------------------------------
+
+function fetchCachedStudents(forceRefresh = false, callback = null) {
+  if (typeof forceRefresh === 'function') {
+    callback = forceRefresh;
+    forceRefresh = false;
+  }
+  
+  if (!forceRefresh && state.students && state.students.length > 0) {
+    if (typeof callback === 'function') callback(state.students);
+    return;
+  }
+  
+  google.script.run
+    .withSuccessHandler(data => {
+      state.students = Array.isArray(data) ? data : [];
+      if (typeof callback === 'function') callback(state.students);
+    })
+    .withFailureHandler(err => {
+      console.error("Failed to fetch students:", err);
+      if (!state.students) state.students = [];
+      if (typeof callback === 'function') callback(state.students);
+    })
+    .getStudentsList(getLogUser());
+}
 
 function loadStudents(isSilent = false) {
   fetchCachedStudents(isSilent, data => {
@@ -13055,7 +13080,7 @@ function loadTeacherProfiles() {
 
     })
 
-    .getTeachersDB(getLogUser());
+    .getUsersDB(getLogUser());
 
 }
 
@@ -13504,20 +13529,23 @@ function saveTeacherProfile(e) {
 }
 
 function loadStaffSalarySummary() {
+  populateTeacherDropdownInSummary();
+  loadTeacherAdjustmentsListInSummary();
 
-  const yearEl = document.getElementById('staff_summary_year');
+  let yearEl = document.getElementById('staff_summary_year');
+  let monthEl = document.getElementById('staff_summary_month');
 
-  const monthEl = document.getElementById('staff_summary_month');
-
-  const typeEl = document.getElementById('staff_summary_account_type');
+  if (yearEl && (!yearEl.options || yearEl.options.length === 0)) {
+    initYearAndMonthPickers();
+    yearEl = document.getElementById('staff_summary_year');
+    monthEl = document.getElementById('staff_summary_month');
+  }
 
   if (!yearEl || !monthEl) return;
 
-  
-
-  const year = parseInt(yearEl.value);
-
-  const month = parseInt(monthEl.value);
+  const today = new Date();
+  const year = parseInt(yearEl.value) || today.getFullYear();
+  const month = parseInt(monthEl.value) || (today.getMonth() + 1);
 
   const filterType = typeEl ? typeEl.value : 'all';
 
@@ -14093,11 +14121,48 @@ function handleStaffPayrollMonthChange() {
 
     
 
-    document.getElementById('calc_result_total_pay').innerText = 'รายได้สุทธิ: ฿' + (monthRes.totalPay || 0).toLocaleString();
-
+    const netPayVal = monthRes.netPay !== undefined ? monthRes.netPay : (monthRes.totalPay || 0);
+    document.getElementById('calc_result_total_pay').innerText = 'รายได้สุทธิ: ฿' + netPayVal.toLocaleString();
     document.getElementById('calc_result_total_hours').innerText = formattedSumHours;
-
     document.getElementById('calc_result_total_classes').innerText = (monthRes.totalClasses || 0).toLocaleString() + ' คลาส';
+
+    // Update 4-Box Summary Widgets for Adjustments & Insurance
+    if (document.getElementById('staff_adj_gross_pay')) {
+      document.getElementById('staff_adj_gross_pay').innerText = '฿' + (monthRes.totalPay || 0).toLocaleString();
+      document.getElementById('staff_adj_bonus').innerText = '+฿' + (monthRes.adjustmentBonus || 0).toLocaleString();
+      document.getElementById('staff_adj_deduction').innerText = '-฿' + (monthRes.adjustmentDeduction || 0).toLocaleString();
+      document.getElementById('staff_adj_insurance').innerText = '-฿' + (monthRes.insuranceDeduction || 0).toLocaleString();
+      document.getElementById('staff_adj_insurance_total').innerText = '(สะสม: ฿' + (monthRes.insuranceRunningTotal || 0).toLocaleString() + ' / 2,000)';
+    }
+
+    // Render adjustment items list
+    const adjContainer = document.getElementById('staff_adj_list_container');
+    const adjTbody = document.getElementById('staff_adj_list_tbody');
+    if (adjContainer && adjTbody) {
+      adjTbody.innerHTML = '';
+      if (Array.isArray(monthRes.adjustments) && monthRes.adjustments.length > 0) {
+        adjContainer.style.display = 'block';
+        monthRes.adjustments.forEach(function(adj) {
+          const tr = document.createElement('tr');
+          const isBonus = adj.type === 'เพิ่มเงิน';
+          const typeColor = isBonus ? 'var(--color-success)' : 'var(--color-danger)';
+          const sign = isBonus ? '+' : '-';
+          
+          tr.innerHTML = `
+            <td style="font-weight: 600; color: ${typeColor};">${adj.type}</td>
+            <td style="font-weight: 700; color: ${typeColor};">${sign}฿${(adj.amount || 0).toLocaleString()}</td>
+            <td>${adj.note || '-'}</td>
+            <td style="font-size: 0.65rem; color: #6c757d;">${adj.timestamp || '-'}</td>
+            <td style="text-align: center;">
+              <button type="button" class="btn btn-danger btn-sm" style="font-size: 0.65rem; padding: 1px 6px;" onclick="deleteStaffTeacherAdjustment('${adj.id}')">ลบ</button>
+            </td>
+          `;
+          adjTbody.appendChild(tr);
+        });
+      } else {
+        adjContainer.style.display = 'none';
+      }
+    }
 
     
 
@@ -19084,189 +19149,158 @@ function initEvaluationForm() {
 
 
 
-function onEvalCourseChange() {
+function isCourseExactMatchFrontend(targetCourse, cellText, dayTimeStr) {
+  if (!targetCourse || !cellText) return false;
 
-  const courseSelect = document.getElementById('eval_course');
+  const cleanT = targetCourse.toString().toLowerCase().replace(/\s+/g, ' ').trim();
+  const cleanC = cellText.toString().toLowerCase().replace(/\s+/g, ' ').trim();
 
-  const studentSelect = document.getElementById('eval_student');
+  if (cleanT === cleanC) return true;
 
-  const subjectInput = document.getElementById('eval_subject');
+  const noSpaceT = cleanT.replace(/\s+/g, '');
+  const noSpaceC = cleanC.replace(/\s+/g, '');
+  if (noSpaceT === noSpaceC) return true;
 
-  const gradeInput = document.getElementById('eval_grade');
-
-  const branchInput = document.getElementById('eval_branch');
-
-  
-
-  if (!courseSelect || !studentSelect) return;
-
-  
-
-  const courseIdx = courseSelect.value;
-
-  studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
-
-  gradeInput.value = '';
-
-  branchInput.value = '';
-
-  subjectInput.value = '';
-
-  
-
-  if (courseIdx === '' || !state._teacherCourses || !state._teacherCourses[courseIdx]) {
-
-    renderEvalCriteriaGrid('math_sci'); // default fallback
-
-    return;
-
+  if (dayTimeStr) {
+    const cleanDayTime = dayTimeStr.toString().toLowerCase().replace(/\s+/g, '').trim();
+    const tBase = noSpaceT.replace(cleanDayTime, '');
+    const cBase = noSpaceC.replace(cleanDayTime, '');
+    if (tBase === cBase && tBase.length > 0) return true;
   }
 
-  
+  return false;
+}
 
+function onEvalCourseChange() {
+  const courseSelect = document.getElementById('eval_course');
+  const studentSelect = document.getElementById('eval_student');
+  const subjectInput = document.getElementById('eval_subject');
+  const gradeInput = document.getElementById('eval_grade');
+  const branchInput = document.getElementById('eval_branch');
+  
+  if (!courseSelect || !studentSelect) return;
+  
+  const courseIdx = courseSelect.value;
+  studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
+  gradeInput.value = '';
+  branchInput.value = '';
+  subjectInput.value = '';
+  
+  if (courseIdx === '' || !state._teacherCourses || !state._teacherCourses[courseIdx]) {
+    renderEvalCriteriaGrid('math_sci'); // default fallback
+    return;
+  }
+  
   const course = state._teacherCourses[courseIdx];
-
   subjectInput.value = course.courseName;
-
   
-
   const selectedText = courseSelect.options[courseSelect.selectedIndex].text;
-
   const isSingleOrSubgroup = selectedText.includes('เดี่ยว') || selectedText.includes('ย่อย');
-
   
-
   if (isSingleOrSubgroup) {
-
     setLoading(true, 'กำลังค้นหารายละเอียดคอร์สเดี่ยว/ย่อย...');
-
     google.script.run
-
       .withSuccessHandler(function(res) {
-
         setLoading(false);
-
         if (res && res.success && res.data) {
-
           const data = res.data;
-
           
+          // Check if already evaluated in state.evaluations
+          const evals = state.evaluations || [];
+          const cleanCourseSub = (course.courseName || '').toString().trim();
+          const cleanStuName = (data.studentName || '').toString().trim().toLowerCase();
+          const cleanStuNick = (data.nickname || '').toString().trim().toLowerCase();
+          
+          const hasEvaluated = evals.some(function(ev) {
+            const cleanEvSub = (ev.subject || '').toString().trim();
+            const cleanEvStuName = (ev.studentName || '').toString().trim().toLowerCase();
+            const cleanEvNick = (ev.nickname || '').toString().trim().toLowerCase();
+            
+            const isSubjectMatch = isCourseExactMatchFrontend(cleanCourseSub, cleanEvSub, course.dayTimeStr);
+            const isStudentMatch = (
+              (cleanStuName !== '' && (cleanEvStuName === cleanStuName || cleanEvStuName.includes(cleanStuName) || cleanStuName.includes(cleanEvStuName))) ||
+              (cleanStuNick !== '' && (cleanEvStuName.includes(cleanStuNick) || cleanEvNick === cleanStuNick || cleanEvNick.includes(cleanStuNick)))
+            );
+            return isSubjectMatch && isStudentMatch;
+          });
 
           studentSelect.innerHTML = '';
-
-          const opt = document.createElement('option');
-
-          opt.value = data.studentName;
-
-          opt.textContent = data.studentName;
-
-          opt.selected = true;
-
-          studentSelect.appendChild(opt);
-
-          
-
-          gradeInput.value = data.grade;
-
-          branchInput.value = data.branch;
-
-          subjectInput.value = data.subject;
-
+          if (hasEvaluated) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.disabled = true;
+            opt.selected = true;
+            opt.textContent = '-- ประเมินนักเรียนคนนี้แล้ว --';
+            studentSelect.appendChild(opt);
+            gradeInput.value = '';
+            branchInput.value = '';
+            subjectInput.value = '';
+          } else {
+            const opt = document.createElement('option');
+            opt.value = data.studentName;
+            opt.textContent = data.studentName;
+            opt.selected = true;
+            studentSelect.appendChild(opt);
+            
+            gradeInput.value = data.grade || '';
+            branchInput.value = data.branch || '';
+            subjectInput.value = data.subject || course.courseName;
+          }
         } else {
-
           populateRegularStudents(course);
-
         }
-
       })
-
       .withFailureHandler(function(err) {
-
         setLoading(false);
-
         populateRegularStudents(course);
-
       })
-
       .getLatestSingleOrSubgroupDetails(selectedText);
-
   } else {
-
     populateRegularStudents(course);
-
   }
-
   
-
   function populateRegularStudents(courseObj) {
-
     if (Array.isArray(courseObj.students)) {
-
       const evals = state.evaluations || [];
+      studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
 
+      let visibleCount = 0;
       courseObj.students.forEach(function(s, idx) {
-
         const hasEvaluated = evals.some(function(ev) {
-
-          const cleanEvSub = (ev.subject || '').toString().trim().toLowerCase();
-
-          const cleanCourseSub = (courseObj.courseName || '').toString().trim().toLowerCase();
-
+          const cleanEvSub = (ev.subject || '').toString().trim();
+          const cleanCourseSub = (courseObj.courseName || '').toString().trim();
           const cleanEvStuName = (ev.studentName || '').toString().trim().toLowerCase();
-
+          const cleanEvNick = (ev.nickname || '').toString().trim().toLowerCase();
+          
+          const cleanStuId = (s.studentId || s.name || '').toString().trim().toLowerCase();
           const cleanStuName = (s.name || '').toString().trim().toLowerCase();
-
           const cleanStuNick = (s.nickname || '').toString().trim().toLowerCase();
-
           
-
-          const isSubjectMatch = (cleanEvSub === cleanCourseSub);
-
-          const isStudentMatch = (cleanEvStuName === cleanStuName || (cleanStuNick !== '' && cleanEvStuName.includes(cleanStuNick)));
-
+          const isSubjectMatch = isCourseExactMatchFrontend(cleanCourseSub, cleanEvSub, courseObj.dayTimeStr);
           
-
+          const isStudentMatch = (
+            (cleanStuId !== '' && (cleanEvStuName === cleanStuId || cleanEvStuName.includes(cleanStuId) || cleanStuId.includes(cleanEvStuName))) ||
+            (cleanStuName !== '' && (cleanEvStuName === cleanStuName || cleanEvStuName.includes(cleanStuName) || cleanStuName.includes(cleanEvStuName))) ||
+            (cleanStuNick !== '' && (cleanEvStuName.includes(cleanStuNick) || cleanEvNick === cleanStuNick || cleanEvNick.includes(cleanStuNick)))
+          );
+          
           return isSubjectMatch && isStudentMatch;
-
         });
-
         
-
         if (!hasEvaluated) {
-
+          visibleCount++;
           const opt = document.createElement('option');
-
           opt.value = idx;
-
-          opt.textContent = s.nickname ? s.name + ' (' + s.nickname + ')' : s.name;
-
+          opt.textContent = s.nickname ? (s.name + ' (' + s.nickname + ')') : s.name;
           studentSelect.appendChild(opt);
-
         }
-
       });
-
       
-
-      if (studentSelect.options.length === 1) {
-
-        const opt = document.createElement('option');
-
-        opt.value = "";
-
-        opt.disabled = true;
-
-        opt.textContent = "-- ประเมินครบทุกคนแล้ว --";
-
-        studentSelect.appendChild(opt);
-
+      if (visibleCount === 0) {
+        studentSelect.innerHTML = '<option value="" disabled selected>-- ประเมินครบทุกคนแล้ว --</option>';
       }
-
     }
-
   }
-
-  
 
   // Determine template based on subject keywords
 
@@ -19711,6 +19745,21 @@ function submitStudentEvaluation(event) {
       if (res && res.success) {
 
         showToast('บันทึกใบประเมินนักเรียนสำเร็จเรียบร้อย ✓', 'success');
+
+        // Push new evaluation to local state so evaluated student disappears immediately
+        if (!state.evaluations) state.evaluations = [];
+        state.evaluations.push({
+          evalId: res.id || ('EVAL_' + new Date().getTime()),
+          studentName: data.studentName,
+          nickname: data.nickname,
+          grade: data.grade,
+          branch: data.branch,
+          date: data.date,
+          subject: data.subject,
+          teacher: data.teacher
+        });
+        
+        onEvalCourseChange();
 
         
 
@@ -22683,4 +22732,239 @@ setInterval(() => {
     checkUnreadBadge();
   }
 }, 30000); // Check every 30 seconds globally
-
+
+</script>
+function submitStaffTeacherAdjustment() {
+  const teacherSelect = document.getElementById('calc_teacher_select');
+  const monthPicker = document.getElementById('calc_month_picker');
+  const yearPicker = document.getElementById('calc_year_picker');
+  const typeSelect = document.getElementById('staff_adj_type');
+  const amountInput = document.getElementById('staff_adj_amount');
+  const noteInput = document.getElementById('staff_adj_note');
+  
+  if (!teacherSelect || !teacherSelect.value) {
+    showToast('กรุณาเลือกครูก่อนเพิ่มรายการ', 'error');
+    return;
+  }
+  
+  const amount = parseFloat(amountInput.value);
+  if (isNaN(amount) || amount <= 0) {
+    showToast('กรุณาระบุจำนวนเงินให้ถูกต้อง (ต้องมากกว่า 0)', 'error');
+    return;
+  }
+  
+  const teacher = teacherSelect.value;
+  const month = parseInt(monthPicker ? monthPicker.value : (new Date().getMonth() + 1));
+  const year = parseInt(yearPicker ? yearPicker.value : new Date().getFullYear());
+  const type = typeSelect ? typeSelect.value : 'หักเงิน';
+  const note = noteInput ? noteInput.value.trim() : '';
+  
+  setLoading(true, 'กำลังบันทึกรายการเพิ่ม/หักเงิน...');
+  
+  google.script.run
+    .withSuccessHandler(function(res) {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('บันทึกรายการเรียบร้อย ✓', 'success');
+        amountInput.value = '';
+        noteInput.value = '';
+        
+        calculateStaffPayroll();
+      } else {
+        showToast('เกิดข้อผิดพลาด: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(function(err) {
+      setLoading(false);
+      showToast('ไม่สามารถบันทึกรายการได้: ' + err.message, 'error');
+    })
+    .saveTeacherAdjustment({
+      teacher: teacher,
+      month: month,
+      year: year,
+      type: type,
+      amount: amount,
+      note: note
+    }, getLogUser());
+}
+
+function deleteStaffTeacherAdjustment(adjId) {
+  if (!adjId || !confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) return;
+  
+  setLoading(true, 'กำลังลบรายการ...');
+  
+  google.script.run
+    .withSuccessHandler(function(res) {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('ลบรายการเรียบร้อยแล้ว ✓', 'success');
+        calculateStaffPayroll();
+      } else {
+        showToast('ไม่สามารถลบรายการได้: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(function(err) {
+      setLoading(false);
+      showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    })
+    .deleteTeacherAdjustment(adjId, getLogUser());
+}
+
+function populateTeacherDropdownInSummary() {
+  const teacherSelect = document.getElementById('staff_summary_adj_teacher');
+  if (!teacherSelect) return;
+  
+  if (state.teachersList && state.teachersList.length > 0) {
+    teacherSelect.innerHTML = '<option value="">-- เลือกครู --</option>';
+    state.teachersList.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.nickname || t.teacherId;
+      opt.textContent = t.nickname ? (t.nickname + (t.fullName ? ' (' + t.fullName + ')' : '')) : t.teacherId;
+      teacherSelect.appendChild(opt);
+    });
+  } else {
+    google.script.run
+      .withSuccessHandler(teachers => {
+        if (Array.isArray(teachers)) {
+          state.teachersList = teachers;
+          teacherSelect.innerHTML = '<option value="">-- เลือกครู --</option>';
+          teachers.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.nickname || t.teacherId;
+            opt.textContent = t.nickname ? (t.nickname + (t.fullName ? ' (' + t.fullName + ')' : '')) : t.teacherId;
+            teacherSelect.appendChild(opt);
+          });
+        }
+      })
+      .getTeachersDB(getLogUser());
+  }
+}
+
+function loadTeacherAdjustmentsListInSummary() {
+  const teacherSelect = document.getElementById('staff_summary_adj_teacher');
+  const yearEl = document.getElementById('staff_summary_year');
+  const monthEl = document.getElementById('staff_summary_month');
+  const adjContainer = document.getElementById('staff_summary_adj_list_container');
+  const adjTbody = document.getElementById('staff_summary_adj_list_tbody');
+  
+  if (!teacherSelect || !teacherSelect.value || !yearEl || !monthEl || !adjContainer || !adjTbody) {
+    if (adjContainer) adjContainer.style.display = 'none';
+    return;
+  }
+  
+  const teacher = teacherSelect.value;
+  const year = parseInt(yearEl.value);
+  const month = parseInt(monthEl.value);
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res && res.success && Array.isArray(res.adjustments)) {
+        const monthAdjs = res.adjustments.filter(a => a.month === month);
+        adjTbody.innerHTML = '';
+        if (monthAdjs.length > 0) {
+          adjContainer.style.display = 'block';
+          monthAdjs.forEach(adj => {
+            const tr = document.createElement('tr');
+            const isBonus = adj.type === 'เพิ่มเงิน';
+            const typeColor = isBonus ? 'var(--color-success)' : 'var(--color-danger)';
+            const sign = isBonus ? '+' : '-';
+            
+            tr.innerHTML = `
+              <td>${adj.teacher}</td>
+              <td style="font-weight: 600; color: ${typeColor};">${adj.type}</td>
+              <td style="font-weight: 700; color: ${typeColor};">${sign}฿${(adj.amount || 0).toLocaleString()}</td>
+              <td>${adj.note || '-'}</td>
+              <td style="font-size: 0.68rem; color: #6c757d;">${adj.timestamp || '-'}</td>
+              <td style="text-align: center;">
+                <button type="button" class="btn btn-danger btn-sm" style="font-size: 0.65rem; padding: 2px 6px;" onclick="deleteStaffTeacherAdjustmentInSummary('${adj.id}')">ลบ</button>
+              </td>
+            `;
+            adjTbody.appendChild(tr);
+          });
+        } else {
+          adjContainer.style.display = 'none';
+        }
+      } else {
+        adjContainer.style.display = 'none';
+      }
+    })
+    .getTeacherAdjustments(teacher, year, getLogUser());
+}
+
+function submitStaffTeacherAdjustmentInSummary() {
+  const teacherSelect = document.getElementById('staff_summary_adj_teacher');
+  const yearEl = document.getElementById('staff_summary_year');
+  const monthEl = document.getElementById('staff_summary_month');
+  const typeSelect = document.getElementById('staff_summary_adj_type');
+  const amountInput = document.getElementById('staff_summary_adj_amount');
+  const noteInput = document.getElementById('staff_summary_adj_note');
+  
+  if (!teacherSelect || !teacherSelect.value) {
+    showToast('กรุณาเลือกครูก่อนเพิ่มรายการ', 'error');
+    return;
+  }
+  
+  const amount = parseFloat(amountInput.value);
+  if (isNaN(amount) || amount <= 0) {
+    showToast('กรุณาระบุจำนวนเงินให้ถูกต้อง (ต้องมากกว่า 0)', 'error');
+    return;
+  }
+  
+  const teacher = teacherSelect.value;
+  const month = parseInt(monthEl ? monthEl.value : (new Date().getMonth() + 1));
+  const year = parseInt(yearEl ? yearEl.value : new Date().getFullYear());
+  const type = typeSelect ? typeSelect.value : 'หักเงิน';
+  const note = noteInput ? noteInput.value.trim() : '';
+  
+  setLoading(true, 'กำลังบันทึกรายการเพิ่ม/หักเงิน...');
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('บันทึกรายการเรียบร้อย ✓', 'success');
+        amountInput.value = '';
+        noteInput.value = '';
+        
+        loadTeacherAdjustmentsListInSummary();
+        loadStaffSalarySummary();
+      } else {
+        showToast('เกิดข้อผิดพลาด: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('ไม่สามารถบันทึกรายการได้: ' + err.message, 'error');
+    })
+    .saveTeacherAdjustment({
+      teacher: teacher,
+      month: month,
+      year: year,
+      type: type,
+      amount: amount,
+      note: note
+    }, getLogUser());
+}
+
+function deleteStaffTeacherAdjustmentInSummary(adjId) {
+  if (!adjId || !confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) return;
+  
+  setLoading(true, 'กำลังลบรายการ...');
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('ลบรายการเรียบร้อยแล้ว ✓', 'success');
+        loadTeacherAdjustmentsListInSummary();
+        loadStaffSalarySummary();
+      } else {
+        showToast('ไม่สามารถลบรายการได้: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    })
+    .deleteTeacherAdjustment(adjId, getLogUser());
+}

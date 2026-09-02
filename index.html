@@ -924,6 +924,71 @@
                   <span class="widget-value" id="calc_result_total_classes" style="font-size: 1.05rem; font-weight: 700;">0 คลาส</span>
                 </div>
               </div>
+
+              <!-- 4-Box Summary Widgets for Adjustments & Insurance -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 10px;">
+                <div class="widget-card glass-panel" style="padding: 8px 10px; border-left: 3px solid var(--color-primary);">
+                  <div style="font-size: 0.68rem; color: var(--text-muted);">ค่าสอนรวม:</div>
+                  <div id="staff_adj_gross_pay" style="font-size: 0.95rem; font-weight: 700; color: var(--text-main);">฿0</div>
+                </div>
+                <div class="widget-card glass-panel" style="padding: 8px 10px; border-left: 3px solid var(--color-success);">
+                  <div style="font-size: 0.68rem; color: var(--color-success);">เงินเพิ่มพิเศษ:</div>
+                  <div id="staff_adj_bonus" style="font-size: 0.95rem; font-weight: 700; color: var(--color-success);">+฿0</div>
+                </div>
+                <div class="widget-card glass-panel" style="padding: 8px 10px; border-left: 3px solid var(--color-danger);">
+                  <div style="font-size: 0.68rem; color: var(--color-danger);">หักเงินอื่นๆ:</div>
+                  <div id="staff_adj_deduction" style="font-size: 0.95rem; font-weight: 700; color: var(--color-danger);">-฿0</div>
+                </div>
+                <div class="widget-card glass-panel" style="padding: 8px 10px; border-left: 3px solid #d97706;">
+                  <div style="font-size: 0.68rem; color: #d97706;">หักประกัน (10%):</div>
+                  <div id="staff_adj_insurance" style="font-size: 0.95rem; font-weight: 700; color: #d97706;">-฿0</div>
+                  <div style="font-size: 0.62rem; color: var(--text-muted);" id="staff_adj_insurance_total">(สะสม: ฿0 / 2,000)</div>
+                </div>
+              </div>
+
+              <!-- Form to Add Adjustments (Bonus/Deduction/Insurance) -->
+              <div style="margin-bottom: 12px; padding: 10px 12px; background: rgba(255,255,255,0.85); border-radius: 8px; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                <div style="font-weight: 700; font-size: 0.8rem; color: var(--color-primary-hover); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                  <span>💵</span> เพิ่มรายการเงินพิเศษ / หักประกัน / หักเงินในเดือนนี้
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;">
+                  <div>
+                    <label class="form-label" style="font-size: 0.70rem; margin-bottom: 2px;">ประเภทรายการ</label>
+                    <select id="staff_adj_type" class="form-select" style="font-size: 0.75rem; padding: 4px 8px; width: 140px;">
+                      <option value="เพิ่มเงิน">➕ เงินเพิ่มพิเศษ (โบนัส)</option>
+                      <option value="หักเงิน">➖ หักเงิน (หักประกัน/อื่นๆ)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label" style="font-size: 0.70rem; margin-bottom: 2px;">จำนวนเงิน (บาท)</label>
+                    <input type="number" id="staff_adj_amount" class="form-input" style="font-size: 0.75rem; padding: 4px 8px; width: 110px;" placeholder="0" min="0">
+                  </div>
+                  <div style="flex: 1; min-width: 140px;">
+                    <label class="form-label" style="font-size: 0.70rem; margin-bottom: 2px;">เหตุผล / หมายเหตุ</label>
+                    <input type="text" id="staff_adj_note" class="form-input" style="font-size: 0.75rem; padding: 4px 8px;" placeholder="ระบุเหตุผล เช่น ค่าเดินทาง, หักประกันสะสม">
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" style="font-size: 0.75rem; padding: 4px 12px; height: 30px;" onclick="submitStaffTeacherAdjustment()">
+                    💾 บันทึกรายการ
+                  </button>
+                </div>
+
+                <!-- Adjustment List Table -->
+                <div id="staff_adj_list_container" style="margin-top: 8px; display: none;">
+                  <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">รายการปรับปรุงเงินในเดือนนี้:</div>
+                  <table class="custom-table" style="font-size: 0.70rem; width: 100%;">
+                    <thead>
+                      <tr style="background: rgba(0,0,0,0.03);">
+                        <th>ประเภท</th>
+                        <th>จำนวนเงิน</th>
+                        <th>หมายเหตุ</th>
+                        <th>เวลาบันทึก</th>
+                        <th style="text-align: center;">ลบ</th>
+                      </tr>
+                    </thead>
+                    <tbody id="staff_adj_list_tbody"></tbody>
+                  </table>
+                </div>
+              </div>
               
               <div style="margin-top: 10px; margin-bottom: 6px; font-weight: 600; font-size: 0.82rem; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
                 <span>📝</span> รายการคลาสสอนทั้งหมด
@@ -979,6 +1044,57 @@
                 <button class="btn btn-secondary" onclick="printStaffSalarySummary()">
                   <span>🖨️</span> พิมพ์รายงาน
                 </button>
+              </div>
+            </div>
+
+            <!-- Form to Add Adjustments (Bonus/Deduction/Insurance) in Summary Page -->
+            <div class="glass-panel" style="padding: 14px 18px; margin-bottom: 20px; background: white;">
+              <div style="font-weight: 700; font-size: 0.95rem; color: var(--color-primary-hover); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                <span>💵</span> บันทึกรายการเงินเพิ่มพิเศษ (โบนัส) / หักประกัน / หักเงินครูรายบุคคล
+              </div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                <div>
+                  <label class="form-label" style="font-size: 0.78rem; margin-bottom: 2px;">เลือกครูผู้สอน <span style="color:red;">*</span></label>
+                  <select id="staff_summary_adj_teacher" class="form-select" style="font-size: 0.82rem; padding: 6px 10px; width: 220px;" onchange="loadTeacherAdjustmentsListInSummary()">
+                    <option value="">-- เลือกครู --</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label" style="font-size: 0.78rem; margin-bottom: 2px;">ประเภทรายการ</label>
+                  <select id="staff_summary_adj_type" class="form-select" style="font-size: 0.82rem; padding: 6px 10px; width: 180px;">
+                    <option value="เพิ่มเงิน">➕ เงินเพิ่มพิเศษ (โบนัส)</option>
+                    <option value="หักเงิน">➖ หักเงิน (หักประกัน/อื่นๆ)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label" style="font-size: 0.78rem; margin-bottom: 2px;">จำนวนเงิน (บาท) <span style="color:red;">*</span></label>
+                  <input type="number" id="staff_summary_adj_amount" class="form-input" style="font-size: 0.82rem; padding: 6px 10px; width: 130px;" placeholder="0" min="0">
+                </div>
+                <div style="flex: 1; min-width: 180px;">
+                  <label class="form-label" style="font-size: 0.78rem; margin-bottom: 2px;">เหตุผล / หมายเหตุ</label>
+                  <input type="text" id="staff_summary_adj_note" class="form-input" style="font-size: 0.82rem; padding: 6px 10px;" placeholder="ระบุเหตุผล เช่น ค่าเดินทาง, หักประกันสะสม">
+                </div>
+                <button type="button" class="btn btn-primary" style="font-size: 0.82rem; padding: 6px 16px; height: 38px;" onclick="submitStaffTeacherAdjustmentInSummary()">
+                  💾 บันทึกรายการ
+                </button>
+              </div>
+
+              <!-- Adjustment List Table for Selected Teacher -->
+              <div id="staff_summary_adj_list_container" style="margin-top: 14px; display: none;">
+                <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">รายการเงินเพิ่ม/หักของครูที่เลือกในเดือนนี้:</div>
+                <table class="custom-table" style="font-size: 0.78rem; width: 100%;">
+                  <thead>
+                    <tr style="background: rgba(0,0,0,0.03);">
+                      <th>ชื่อครู</th>
+                      <th>ประเภท</th>
+                      <th>จำนวนเงิน</th>
+                      <th>หมายเหตุ</th>
+                      <th>เวลาบันทึก</th>
+                      <th style="text-align: center;">ลบ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="staff_summary_adj_list_tbody"></tbody>
+                </table>
               </div>
             </div>
 
