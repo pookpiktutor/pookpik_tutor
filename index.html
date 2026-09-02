@@ -435,6 +435,7 @@
                   </select>
                 
                 <button class="btn btn-primary" onclick="loadGradeSheetGrid()" style="margin-left: 10px;">🔍 โหลดตารางเรียน</button>
+                <button class="btn btn-secondary" onclick="convertAllStudentsToStatusDB()" style="margin-left: 8px;" title="ซิงค์แปลงข้อมูลนักเรียนที่พนักงานลงเองทั้งหมดเข้าสู่ StatusDB เพื่อใช้แก้ไขบน UI">🔄 ซิงค์เข้า StatusDB</button>
                 
                 
               </div>
@@ -24694,6 +24695,31 @@ function runOrganizeStaffDatabase() {
 }
 
 window.runOrganizeStaffDatabase = runOrganizeStaffDatabase;
+
+
+
+function convertAllStudentsToStatusDB() {
+  setLoading(true, 'กำลังแปลงและซิงค์ข้อมูลนักเรียนทั้งหมด (กลุ่มหลัก/เด็กเดี่ยว/กลุ่มย่อย) เข้าสู่ฐานข้อมูล StatusDB...');
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        const added = res.addedCount || 0;
+        showToast('แปลงและซิงค์ข้อมูลนักเรียนเข้า StatusDB สำเร็จ! (เพิ่มนักเรียนใหม่ ' + added + ' คน)', 'success');
+        if (typeof loadGridData === 'function') loadGridData();
+        if (typeof loadGradeSheetGrid === 'function') loadGradeSheetGrid(true);
+      } else {
+        showToast('เกิดข้อผิดพลาดในการแปลงข้อมูล: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('การเชื่อมต่อขัดข้อง: ' + err.message, 'error');
+    })
+    .syncMissingStudentsToStatusDB();
+}
+
+window.convertAllStudentsToStatusDB = convertAllStudentsToStatusDB;
 
 
 function initializeApp() {
