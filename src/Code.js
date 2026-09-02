@@ -8575,7 +8575,7 @@ function getTeachersDB(logUser) {
       if (!row[0]) return;
       
       const role = row[2] ? row[2].toString().trim() : '';
-      if (role !== 'Teacher') return;
+      if (role !== 'Teacher' && role !== 'teacher' && role !== 'TEACHER' && role !== 'ครู' && role !== 'Teacher ') return;
       
       const teacherNick = row[3] ? row[3].toString().trim() : '';
       const teacherId = row[0].toString().trim();

@@ -16001,6 +16001,31 @@ function renderAllBranchesTeacherSchedule() {
   container.innerHTML = html;
 }
 
+function loadTeacherProfiles() {
+  const tbody = document.getElementById('teacher_profiles_tbody');
+  if (tbody) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">กำลังโหลดประวัติคุณครูจากฐานข้อมูล UsersDB...</td></tr>';
+  }
+
+  google.script.run
+    .withSuccessHandler(teachers => {
+      if (Array.isArray(teachers)) {
+        state.teachersList = teachers;
+        if (typeof renderTeacherProfilesTable === 'function') {
+          renderTeacherProfilesTable(teachers);
+        }
+      } else {
+        if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--color-danger); padding: 40px;">ไม่พบข้อมูลประวัติคุณครูใน UsersDB</td></tr>';
+      }
+    })
+    .withFailureHandler(err => {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--color-danger); padding: 40px;">เกิดข้อผิดพลาดในการโหลด UsersDB: ' + err.message + '</td></tr>';
+    })
+    .getTeachersDB(getLogUser());
+}
+
+window.loadTeacherProfiles = loadTeacherProfiles;
+
 function renderTeacherProfilesTable(teachers) {
 
   const tbody = document.getElementById('teacher_profiles_tbody');
