@@ -24672,6 +24672,30 @@ window.openStudentModal = function(id = null, studentName = null) {
   }
 };
 
+
+function runOrganizeStaffDatabase() {
+  setLoading(true, 'กำลังจัดเรียงและจัดโครงสร้างข้อมูลจากฐานข้อมูล Google Sheets...');
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        showToast(res.message, 'success');
+        if (typeof loadAllBranchesTeacherSchedule === 'function') loadAllBranchesTeacherSchedule(true);
+        if (typeof loadGradeSheetGrid === 'function') loadGradeSheetGrid(true);
+      } else {
+        showToast('เกิดข้อผิดพลาดในการจัดเรียงข้อมูล: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('การเชื่อมต่อขัดข้อง: ' + err.message, 'error');
+    })
+    .organizeAndSortStaffDatabaseData();
+}
+
+window.runOrganizeStaffDatabase = runOrganizeStaffDatabase;
+
+
 function initializeApp() {
 
   // Check Login Session first

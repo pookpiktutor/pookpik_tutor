@@ -909,18 +909,12 @@ function include(filename) {
 }
 
 function onOpen() {
-
   const ui = SpreadsheetApp.getUi();
-
-  ui.createMenu('🏫 ระบบครูปุ๊กปิ๊ก')
-
-      .addItem('🔄 สร้าง/รีเซ็ตฐานข้อมูลตารางเรียน', 'initAllDatabases')
-      .addItem('🔄 อัปเดตชื่อผู้ใช้งานในประวัติย้อนหลัง', 'fixHistoricalActivityLogs')
-      .addItem('📥 คัดลอกข้อมูลทุกแผ่นงานไปยังสเปรดชีตใหม่', 'copyAllSheetsFromOldDb')
-      .addItem('📥 นำเข้าข้อมูลนักเรียนจากไฟล์ภายนอก', 'importExternalStudentData')
-      .addItem('📥 ย้ายข้อมูลจากไฟล์เก่า (Migration)', 'migrateOldDataToNew')
-      .addItem('🔄 ซิงค์ข้อมูลย้อนหลังทั้งหมด (แก้ปัญหาข้อมูล 0)', 'syncMissingStudentsToStatusDB')
-      .addItem('🌐 เปิดระบบเว็บไซต์ดูแลโรงเรียน', 'openWebAppUrl')
+  ui.createMenu('🤖 ระบบครูปุ๊กปิ๊ก')
+      .addItem('🧹 จัดเรียงข้อมูลที่พนักงานลงเองเข้าสู่ระบบ UI', 'organizeAndSortStaffDatabaseData')
+      .addItem('🚀 ล้าง/เซ็ตฐานข้อมูลตารางเรียน', 'initAllDatabases')
+      .addItem('🔄 ซิงค์ข้อมูลนักเรียน (แก้ปัญหาค่า 0)', 'syncMissingStudentsToStatusDB')
+      .addItem('🌐 เปิดเว็บไซต์ระบบเรียน', 'openWebAppUrl')
       .addToUi();
 }
 
@@ -17355,4 +17349,95 @@ function getChatContactsWithUnread(reader) {
   });
   
   return { success: true, contacts: contactsArray };
+}
+
+// ====================================================
+// AUTOMATIC DATABASE ORGANIZER & SORTER FOR STAFF DATA
+// ====================================================
+function organizeAndSortStaffDatabaseData() {
+  try {
+    const db = getDb();
+    let logsProcessed = 0;
+    let studentsProcessed = 0;
+
+    // 1. Organize & Sort 'Data Learn' sheet
+    const dataLearnSheet = db.getSheetByName('Data Learn');
+    if (dataLearnSheet && dataLearnSheet.getLastRow() > 1) {
+      const range = dataLearnSheet.getRange(2, 1, dataLearnSheet.getLastRow() - 1, dataLearnSheet.getLastColumn());
+      const values = range.getValues();
+
+      values.forEach(row => {
+        if (row[0]) {
+          if (row[0] instanceof Date) {
+            const d = row[0];
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear() > 2500 ? d.getFullYear() - 543 : d.getFullYear();
+            row[0] = `${dd}/${mm}/${yyyy + 543}`;
+          } else {
+            row[0] = row[0].toString().trim();
+          }
+        }
+        if (row[1]) row[1] = row[1].toString().trim();
+        if (row[2]) {
+          let t = row[2].toString().trim();
+          if (t.includes('T00:00:00') || t.match(/^\d{4}-\d{2}-\d{2}/)) t = '';
+          row[2] = t;
+        }
+        if (row[3]) {
+          let t = row[3].toString().trim();
+          if (t.includes('T00:00:00') || t.match(/^\d{4}-\d{2}-\d{2}/)) t = '';
+          row[3] = t;
+        }
+        if (row[13]) row[13] = row[13].toString().trim();
+      });
+
+      values.sort((a, b) => {
+        const dateA = a[0] ? a[0].toString() : '';
+        const dateB = b[0] ? b[0].toString() : '';
+        if (dateA !== dateB) return dateB.localeCompare(dateA);
+        const timeA = a[4] ? a[4].toString() : '';
+        const timeB = b[4] ? b[4].toString() : '';
+        return timeA.localeCompare(timeB);
+      });
+
+      range.setValues(values);
+      logsProcessed = values.length;
+    }
+
+    // 2. Organize & Sort 'StatusDB' sheet
+    const statusSheet = db.getSheetByName('StatusDB');
+    if (statusSheet && statusSheet.getLastRow() > 1) {
+      const sRange = statusSheet.getRange(2, 1, statusSheet.getLastRow() - 1, statusSheet.getLastColumn());
+      const sValues = sRange.getValues();
+
+      sValues.forEach((row, i) => {
+        if (!row[0] || row[0].toString().trim() === '') {
+          row[0] = 'STU_' + String(i + 1).padStart(4, '0');
+        }
+        if (row[1]) row[1] = row[1].toString().trim();
+        if (row[2]) row[2] = row[2].toString().trim();
+        if (row[3]) row[3] = row[3].toString().trim();
+      });
+
+      sValues.sort((a, b) => (a[1] || '').toString().localeCompare((b[1] || '').toString(), 'th'));
+      sRange.setValues(sValues);
+      studentsProcessed = sValues.length;
+    }
+
+    // 3. Clear Script Cache
+    try {
+      const cache = CacheService.getScriptCache();
+      cache.remove('all_class_logs_data');
+      cache.remove('teachers_db_raw_usersdb');
+      cache.remove('grade_sheet_cache_all');
+    } catch (errCache) {}
+
+    return {
+      success: true,
+      message: `จัดเรียงข้อมูลฐานข้อมูลสำเร็จ! (ตารางสอน ${logsProcessed} รายการ, นักเรียน ${studentsProcessed} รายการ)`
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 }
