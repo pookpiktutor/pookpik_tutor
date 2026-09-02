@@ -1939,12 +1939,16 @@ function isTeacherUser(username, nickname) {
   return false;
 }
 
+function normalizeStr(str) {
+  return (str || '').toString().replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+}
+
 function verifyLogin(username, password) {
   const db = getDb();
-  const cleanUsername = username ? username.toString().trim() : '';
+  const cleanUsername = normalizeStr(username);
   const cleanUsernameLower = cleanUsername.toLowerCase();
   
-  const cleanPassword = password ? password.toString().trim() : '';
+  const cleanPassword = normalizeStr(password);
   if (!cleanUsername || !cleanPassword) {
     return { success: false, error: 'กรุณากรอกชื่อผู้ใช้งานและรหัสผ่าน' };
   }
@@ -1956,13 +1960,13 @@ function verifyLogin(username, password) {
   const rows = sheet.getDataRange().getValues();
   
   for (let i = 1; i < rows.length; i++) {
-    let dbUsername = rows[i][0] !== undefined && rows[i][0] !== null ? rows[i][0].toString().trim() : '';
-    let dbPassword = rows[i][1] !== undefined && rows[i][1] !== null ? rows[i][1].toString().trim() : '';
-    let role = rows[i][2] !== undefined && rows[i][2] !== null && rows[i][2].toString().trim() !== '' ? rows[i][2].toString().trim() : 'Student';
-    let nickname = rows[i][3] !== undefined && rows[i][3] !== null ? rows[i][3].toString().trim() : '';
-    let profilePic = rows[i][4] !== undefined && rows[i][4] !== null ? rows[i][4].toString().trim() : '';
+    let dbUsername = normalizeStr(rows[i][0]);
+    let dbPassword = normalizeStr(rows[i][1]);
+    let role = rows[i][2] !== undefined && rows[i][2] !== null && normalizeStr(rows[i][2]) !== '' ? normalizeStr(rows[i][2]) : 'Student';
+    let nickname = rows[i][3] !== undefined && rows[i][3] !== null ? normalizeStr(rows[i][3]) : '';
+    let profilePic = rows[i][4] !== undefined && rows[i][4] !== null ? normalizeStr(rows[i][4]) : '';
 
-    if (dbUsername.toLowerCase().trim() === cleanUsernameLower && dbPassword.trim() === cleanPassword) {
+    if (dbUsername.toLowerCase() === cleanUsernameLower && dbPassword === cleanPassword) {
       if (isTeacherUser(dbUsername, nickname)) {
         role = 'Teacher';
       }
@@ -1979,7 +1983,7 @@ function verifyLogin(username, password) {
     }
   }
 
-  return { success: false, error: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง' };
+  return { success: false, error: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง (กรุณาตรวจสอบชื่อผู้ใช้และรหัสผ่านอีกครั้ง)' };
 }
 
 function changePassword(username, newPassword, logUser) {

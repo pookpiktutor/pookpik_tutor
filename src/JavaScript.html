@@ -758,8 +758,22 @@ function showLoginScreen() {
 
 
 
+
+function setLoginError(msg) {
+  const errEl = document.getElementById('login_error_msg');
+  if (errEl) {
+    if (msg) {
+      errEl.innerText = msg;
+      errEl.style.display = 'block';
+    } else {
+      errEl.style.display = 'none';
+    }
+  }
+}
+
 function handleLogin(e) {
   if (e && e.preventDefault) e.preventDefault();
+  setLoginError('');
 
   const userEl = document.getElementById('login_username');
   const passEl = document.getElementById('login_password');
@@ -770,11 +784,13 @@ function handleLogin(e) {
   const pass = passEl.value;
 
   if (!user) {
+    setLoginError('กรุณากรอกชื่อผู้ใช้งาน');
     showToast('กรุณากรอกชื่อผู้ใช้งาน', 'error');
     return;
   }
 
   if (!pass) {
+    setLoginError('กรุณากรอกรหัสผ่าน');
     showToast('กรุณากรอกรหัสผ่าน', 'error');
     return;
   }
@@ -785,81 +801,28 @@ function handleLogin(e) {
     .withSuccessHandler(res => {
       setLoading(false);
       if (res && res.success) {
+        setLoginError('');
         saveSessionData(res.user);
 
         const overlay = document.getElementById('login_overlay');
         if (overlay) overlay.style.display = 'none';
 
-        document.getElementById('mobile_menu_btn')?.addEventListener('click', function() {
-
-    const sidebar = document.getElementById('sidebar');
-
-    if (sidebar.style.transform === 'translateX(0px)') {
-
-      sidebar.style.transform = 'translateX(-100%)';
-
-    } else {
-
-      sidebar.style.transform = 'translateX(0px)';
-
-    }
-
-  });
-
-  
-
-  // Call updateTaskWidget on load to show "ready" state if desired
-
-  updateTaskWidget();
-
-  
-
-  // Custom form bindings
-
-  function setupCharCounting() {
-
-    const inputs = document.querySelectorAll('input[maxlength], textarea[maxlength]');
-
-    inputs.forEach(input => {
-
-      function updateCount() {
-
-      }
-
-    });
-
-  }
-
-  showToast('เข้าสู่ระบบสำเร็จ!', 'success');
-
+        showToast('เข้าสู่ระบบสำเร็จ!', 'success');
         checkSession();
-
-        // Check for unread messages after login
-        setTimeout(() => { checkUnreadBadge(); }, 2000);
-
       } else {
-
-        showToast(res.error || 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง', 'error');
-
+        const errMsg = res ? (res.error || 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง') : 'เกิดข้อผิดพลาดในการตรวจสอบสิทธิ์';
+        setLoginError(errMsg);
+        showToast(errMsg, 'error');
       }
-
     })
-
     .withFailureHandler(err => {
-
       setLoading(false);
-
-      showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message, 'error');
-
+      const errMsg = 'เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + (err ? err.message : 'Unknown error');
+      setLoginError(errMsg);
+      showToast(errMsg, 'error');
     })
-
     .verifyLogin(user, pass);
-
 }
-
-
-
-
 
   // Setup character counting for evaluation forms
 
