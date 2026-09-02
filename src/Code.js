@@ -1962,7 +1962,7 @@ function verifyLogin(username, password) {
     let nickname = rows[i][3] !== undefined && rows[i][3] !== null ? rows[i][3].toString().trim() : '';
     let profilePic = rows[i][4] !== undefined && rows[i][4] !== null ? rows[i][4].toString().trim() : '';
 
-    if (dbUsername.toLowerCase() === cleanUsernameLower && dbPassword === cleanPassword) {
+    if (dbUsername.toLowerCase().trim() === cleanUsernameLower && dbPassword.trim() === cleanPassword) {
       if (isTeacherUser(dbUsername, nickname)) {
         role = 'Teacher';
       }
