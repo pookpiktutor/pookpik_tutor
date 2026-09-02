@@ -12034,6 +12034,218 @@ function loadTeacherSchedule(isSilent = false) {
 
 
 
+
+function switchTeacherScheduleMode(mode) {
+  const individualWrapper = document.getElementById('teacher_individual_mode_wrapper');
+  const allBranchesWrapper = document.getElementById('teacher_all_branches_mode_wrapper');
+  const btnInd = document.getElementById('tab_btn_teacher_individual');
+  const btnAll = document.getElementById('tab_btn_teacher_all_branches');
+
+  if (mode === 'all_branches') {
+    if (individualWrapper) individualWrapper.style.display = 'none';
+    if (allBranchesWrapper) allBranchesWrapper.style.display = 'block';
+
+    if (btnInd) { btnInd.className = 'btn btn-secondary'; }
+    if (btnAll) { btnAll.className = 'btn btn-primary'; }
+
+    loadAllBranchesTeacherSchedule();
+  } else {
+    if (allBranchesWrapper) allBranchesWrapper.style.display = 'none';
+    if (individualWrapper) individualWrapper.style.display = 'block';
+
+    if (btnInd) { btnInd.className = 'btn btn-primary'; }
+    if (btnAll) { btnAll.className = 'btn btn-secondary'; }
+  }
+}
+
+function loadAllBranchesTeacherSchedule(forceRefresh = false) {
+  const container = document.getElementById('all_branches_schedule_container');
+
+  if (state.allClassLogsCache && !forceRefresh) {
+    renderAllBranchesTeacherSchedule();
+    return;
+  }
+
+  if (container) {
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">กำลังโหลดข้อมูลตารางสอน 3 สาขา...</div>`;
+  }
+
+  google.script.run
+    .withSuccessHandler(data => {
+      if (Array.isArray(data)) {
+        state.allClassLogsCache = data;
+        renderAllBranchesTeacherSchedule();
+      } else {
+        if (container) container.innerHTML = `<div style="text-align: center; color: var(--color-danger); padding: 40px;">ไม่สามารถดึงข้อมูลได้</div>`;
+      }
+    })
+    .withFailureHandler(err => {
+      if (container) container.innerHTML = `<div style="text-align: center; color: var(--color-danger); padding: 40px;">เกิดข้อผิดพลาดในการดึงข้อมูล: ${err.message}</div>`;
+    })
+    .getClassLogs('', getLogUser());
+}
+
+function renderAllBranchesTeacherSchedule() {
+  const container = document.getElementById('all_branches_schedule_container');
+  if (!container) return;
+
+  const dayFilter = document.getElementById('all_branches_day_select')?.value || 'ALL';
+  const branchFilter = document.getElementById('all_branches_branch_select')?.value || 'ALL';
+  const searchFilter = (document.getElementById('all_branches_teacher_search')?.value || '').trim().toLowerCase();
+
+  const logs = state.allClassLogsCache || state.classLogs || [];
+  if (!logs || logs.length === 0) {
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบข้อมูลตารางสอน</div>`;
+    return;
+  }
+
+  function getBranchInfo(room, branch) {
+    const str = `${room || ''} ${branch || ''}`.toLowerCase();
+    if (str.includes('pmy') || str.includes('สาขา 1') || str.includes('สาขา1')) {
+      return { name: 'สาขา 1 (PMY)', code: 'B1', color: '#2563eb', bg: 'rgba(37, 99, 235, 0.12)' };
+    }
+    if (str.includes('ระยองวิทย์') || str.includes('ryw') || str.includes('สาขา 2') || str.includes('สาขา2')) {
+      return { name: 'สาขา 2 (ระยองวิทย์)', code: 'B2', color: '#d97706', bg: 'rgba(217, 119, 6, 0.12)' };
+    }
+    if (str.includes('อัสสัมชัญ') || str.includes('ass') || str.includes('เซนต์โย') || str.includes('สาขา 3') || str.includes('สาขา3')) {
+      return { name: 'สาขา 3 (อัสสัมชัญ)', code: 'B3', color: '#7c3aed', bg: 'rgba(124, 58, 237, 0.12)' };
+    }
+    return { name: branch || room || 'สาขา 1 (PMY)', code: 'B1', color: '#2563eb', bg: 'rgba(37, 99, 235, 0.12)' };
+  }
+
+  let filtered = logs.filter(c => {
+    const teacherName = (c.teacherRegular || c.teacherSub || '').toLowerCase();
+    if (!teacherName) return false;
+    if (searchFilter && !teacherName.includes(searchFilter)) return false;
+
+    if (dayFilter !== 'ALL' && c.dayOfWeek !== dayFilter) return false;
+
+    const bInfo = getBranchInfo(c.room, c.branch);
+    if (branchFilter === 'B1' && bInfo.code !== 'B1') return false;
+    if (branchFilter === 'B2' && bInfo.code !== 'B2') return false;
+    if (branchFilter === 'B3' && bInfo.code !== 'B3') return false;
+
+    return true;
+  });
+
+  const teacherDayBranchesMap = {};
+  filtered.forEach(c => {
+    const t = c.teacherRegular || c.teacherSub || 'ไม่ระบุ';
+    const day = c.dayOfWeek || 'ไม่ระบุวัน';
+    const bInfo = getBranchInfo(c.room, c.branch);
+    const key = `${t}_${day}`;
+    if (!teacherDayBranchesMap[key]) teacherDayBranchesMap[key] = new Set();
+    teacherDayBranchesMap[key].add(bInfo.name);
+  });
+
+  const dayOrder = { 'วันจันทร์': 1, 'วันอังคาร': 2, 'วันพุธ': 3, 'วันพฤหัสบดี': 4, 'วันศุกร์': 5, 'วันเสาร์': 6, 'วันอาทิตย์': 7 };
+  filtered.sort((a, b) => {
+    const orderA = dayOrder[a.dayOfWeek] || 9;
+    const orderB = dayOrder[b.dayOfWeek] || 9;
+    if (orderA !== orderB) return orderA - orderB;
+    const tA = (a.teacherRegular || a.teacherSub || '');
+    const tB = (b.teacherRegular || b.teacherSub || '');
+    return tA.localeCompare(tB, 'th');
+  });
+
+  let b1Count = 0, b2Count = 0, b3Count = 0;
+  const uniqueTeachers = new Set();
+  filtered.forEach(c => {
+    const t = c.teacherRegular || c.teacherSub;
+    if (t) uniqueTeachers.add(t);
+    const bInfo = getBranchInfo(c.room, c.branch);
+    if (bInfo.code === 'B1') b1Count++;
+    if (bInfo.code === 'B2') b2Count++;
+    if (bInfo.code === 'B3') b3Count++;
+  });
+
+  const statTotalEl = document.getElementById('all_branches_stat_total');
+  const statB1El = document.getElementById('all_branches_stat_b1');
+  const statB2El = document.getElementById('all_branches_stat_b2');
+  const statB3El = document.getElementById('all_branches_stat_b3');
+  if (statTotalEl) statTotalEl.innerText = `${uniqueTeachers.size} คน`;
+  if (statB1El) statB1El.innerText = `${b1Count} คลาส`;
+  if (statB2El) statB2El.innerText = `${b2Count} คลาส`;
+  if (statB3El) statB3El.innerText = `${b3Count} คลาส`;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่พบข้อมูลการสอนตามเงื่อนไขที่เลือก</div>`;
+    return;
+  }
+
+  let html = `
+    <div class="table-responsive">
+      <table class="data-table" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: rgba(0,0,0,0.03);">
+            <th style="padding: 10px 14px; text-align: left; width: 110px;">วัน</th>
+            <th style="padding: 10px 14px; text-align: left;">ครูผู้สอน</th>
+            <th style="padding: 10px 14px; text-align: left; width: 180px;">สาขาที่สอน</th>
+            <th style="padding: 10px 14px; text-align: left; width: 150px;">ห้อง / เวลาสอน</th>
+            <th style="padding: 10px 14px; text-align: left;">คอร์ส / วิชาที่สอน</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  const dayColors = {
+    'วันจันทร์': '#eab308',
+    'วันอังคาร': '#ec4899',
+    'วันพุธ': '#16a34a',
+    'วันพฤหัสบดี': '#f97316',
+    'วันศุกร์': '#2563eb',
+    'วันเสาร์': '#9333ea',
+    'วันอาทิตย์': '#dc2626'
+  };
+
+  filtered.forEach(c => {
+    const tName = c.teacherRegular || c.teacherSub || '-';
+    const day = c.dayOfWeek || '-';
+    const bInfo = getBranchInfo(c.room, c.branch);
+    const dayColor = dayColors[day] || 'var(--color-primary)';
+
+    const key = `${tName}_${day}`;
+    const branchSet = teacherDayBranchesMap[key];
+    const isMultiBranch = branchSet && branchSet.size > 1;
+
+    const timeStr = (c.timeStart && c.timeEnd) ? `${c.timeStart} - ${c.timeEnd} น.` : (c.timeStart || '-');
+
+    html += `
+      <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); transition: background 0.2s;" onmouseenter="this.style.background='rgba(59,130,246,0.04)'" onmouseleave="this.style.background='transparent'">
+        <td style="padding: 10px 14px;">
+          <span style="display: inline-block; padding: 3px 8px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; color: ${dayColor}; background: ${dayColor}15; border: 1px solid ${dayColor}30;">${day}</span>
+        </td>
+        <td style="padding: 10px 14px; font-weight: 600; font-size: 0.9rem;">
+          ${tName}
+          ${isMultiBranch ? `<span style="display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; color: #dc2626; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3);" title="ครูท่านนี้สอนมากกว่า 1 สาขาในวันเดียวกัน">⚡ สอน ${branchSet.size} สาขา/วัน</span>` : ''}
+        </td>
+        <td style="padding: 10px 14px;">
+          <span style="display: inline-block; padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.78rem; color: ${bInfo.color}; background: ${bInfo.bg}; border: 1px solid ${bInfo.color}40;">
+            📍 ${bInfo.name}
+          </span>
+        </td>
+        <td style="padding: 10px 14px; font-size: 0.82rem;">
+          <div style="font-weight: 600; color: var(--color-primary-hover);">${c.room || '-'}</div>
+          <div style="color: #6c757d; font-size: 0.78rem;">⏰ ${timeStr}</div>
+        </td>
+        <td style="padding: 10px 14px; font-size: 0.85rem;">
+          <div style="font-weight: 600;">${c.subject || '-'}</div>
+          <div style="font-size: 0.78rem; color: #6c757d;">${c.grade || ''} ${c.classType || ''}</div>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+
 function renderTeacherScheduleGrid(teacher) {
   const container = document.getElementById('teacher_calendar_container');
   container.innerHTML = '';
