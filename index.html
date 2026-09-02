@@ -4461,7 +4461,7 @@ function handleLogin(e) {
       setLoginError(errMsg);
       showToast(errMsg, 'error');
     })
-    .getClassLogs('');
+    .verifyLogin(user, pass);
 }
 
   // Setup character counting for evaluation forms
@@ -6878,7 +6878,7 @@ function matchRoomAndBranch(roomBranch, roomName, branchName) {
 
   
 
-  const escapedRN = cleanRN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\<script src="src/JavaScript.js?v=1788351964349" charset="utf-8"></script>');
+  const escapedRN = cleanRN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\<script src="src/JavaScript.js?v=1788352335287" charset="utf-8"></script>');
 
   const roomRegex = new RegExp('(?:^|\\s)' + escapedRN + '(?!\\d|/)', 'i');
 

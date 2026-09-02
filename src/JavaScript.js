@@ -698,7 +698,7 @@ function handleLogin(e) {
       setLoginError(errMsg);
       showToast(errMsg, 'error');
     })
-    .getClassLogs('');
+    .verifyLogin(user, pass);
 }
 
   // Setup character counting for evaluation forms
