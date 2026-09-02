@@ -1210,8 +1210,8 @@
               </div>
 
               <!-- Adjustment List Table for Selected Teacher -->
-              <div id="staff_summary_adj_list_container" style="margin-top: 14px; display: none;">
-                <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">รายการเงินเพิ่ม/หักของครูที่เลือกในเดือนนี้:</div>
+              <div id="staff_summary_adj_list_container" style="margin-top: 14px; display: block;">
+                <div id="staff_summary_adj_list_title" style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary-hover); margin-bottom: 8px;">📋 รายการเงินเพิ่ม/หักของครูในเดือนนี้:</div>
                 <table class="custom-table" style="font-size: 0.78rem; width: 100%;">
                   <thead>
                     <tr style="background: rgba(0,0,0,0.03);">
@@ -25609,31 +25609,48 @@ function loadTeacherAdjustmentsListInSummary() {
   const monthEl = document.getElementById('staff_summary_month');
   const adjContainer = document.getElementById('staff_summary_adj_list_container');
   const adjTbody = document.getElementById('staff_summary_adj_list_tbody');
-  
-  if (!teacherSelect || !teacherSelect.value || !yearEl || !monthEl || !adjContainer || !adjTbody) {
-    if (adjContainer) adjContainer.style.display = 'none';
-    return;
-  }
-  
-  const teacher = teacherSelect.value;
+  const adjTitleEl = document.getElementById('staff_summary_adj_list_title');
+
+  if (!yearEl || !monthEl || !adjContainer || !adjTbody) return;
+
+  const selectedTeacher = teacherSelect ? teacherSelect.value : '';
   const year = parseInt(yearEl.value);
   const month = parseInt(monthEl.value);
-  
+
+  const thMonths = ['', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  const monthName = thMonths[month] || '';
+  const yearBE = year > 2400 ? year : (year + 543);
+
+  adjContainer.style.display = 'block';
+
   google.script.run
     .withSuccessHandler(res => {
       if (res && res.success && Array.isArray(res.adjustments)) {
-        const monthAdjs = res.adjustments.filter(a => a.month === month);
+        let monthAdjs = res.adjustments.filter(a => a.month === month);
+
+        if (selectedTeacher) {
+          const normSelect = selectedTeacher.trim().toLowerCase();
+          monthAdjs = monthAdjs.filter(a => (a.teacher || '').trim().toLowerCase() === normSelect);
+        }
+
+        if (adjTitleEl) {
+          if (selectedTeacher) {
+            adjTitleEl.innerHTML = `📋 รายการเงินเพิ่ม/หักของ <strong>${selectedTeacher}</strong> ในเดือน <strong>${monthName} ${yearBE}</strong> (${monthAdjs.length} รายการ):`;
+          } else {
+            adjTitleEl.innerHTML = `📋 รายการเงินเพิ่ม/หักของ<strong>ครูทุกคนประจำเดือน ${monthName} ${yearBE}</strong> (${monthAdjs.length} รายการ):`;
+          }
+        }
+
         adjTbody.innerHTML = '';
         if (monthAdjs.length > 0) {
-          adjContainer.style.display = 'block';
           monthAdjs.forEach(adj => {
             const tr = document.createElement('tr');
             const isBonus = adj.type === 'เพิ่มเงิน';
             const typeColor = isBonus ? 'var(--color-success)' : 'var(--color-danger)';
             const sign = isBonus ? '+' : '-';
-            
+
             tr.innerHTML = `
-              <td>${adj.teacher}</td>
+              <td style="font-weight: 600;">${adj.teacher}</td>
               <td style="font-weight: 600; color: ${typeColor};">${adj.type}</td>
               <td style="font-weight: 700; color: ${typeColor};">${sign}฿${(adj.amount || 0).toLocaleString()}</td>
               <td>${adj.note || '-'}</td>
@@ -25645,13 +25662,16 @@ function loadTeacherAdjustmentsListInSummary() {
             adjTbody.appendChild(tr);
           });
         } else {
-          adjContainer.style.display = 'none';
+          adjTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 16px;">ยังไม่มีรายการเงินเพิ่ม/หักในเดือน ${monthName} ${yearBE}</td></tr>`;
         }
       } else {
-        adjContainer.style.display = 'none';
+        adjTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--color-danger); padding: 16px;">ไม่สามารถดึงข้อมูลรายการได้</td></tr>`;
       }
     })
-    .getTeacherAdjustments(teacher, year, getLogUser());
+    .withFailureHandler(err => {
+      adjTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--color-danger); padding: 16px;">เกิดข้อผิดพลาด: ${err.message}</td></tr>`;
+    })
+    .getTeacherAdjustments(selectedTeacher, year, getLogUser());
 }
 
 function submitStaffTeacherAdjustmentInSummary() {

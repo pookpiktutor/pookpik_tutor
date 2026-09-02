@@ -9238,7 +9238,7 @@ function getTeacherAdjustments(teacher, year, logUser) {
       var rowTeacher = (row[2] || '').toString().trim().toLowerCase().replace(/^ครู/, '').trim();
       var rowYear = parseInt(row[4]) || 0;
       
-      if (rowYear === parseInt(year) && rowTeacher === cleanTeacher) {
+      if (rowYear === parseInt(year) && (!cleanTeacher || rowTeacher === cleanTeacher)) {
         adjustments.push({
           id: row[0],
           timestamp: row[1],
