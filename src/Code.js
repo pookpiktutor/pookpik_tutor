@@ -1939,6 +1939,10 @@ function isTeacherUser(username, nickname) {
   return false;
 }
 
+function cleanUserKey(str) {
+  return (str || '').toString().replace(/[\s\.\-\_\u200B-\u200D\uFEFF]/g, '').toLowerCase();
+}
+
 function normalizeStr(str) {
   return (str || '').toString().replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
 }
@@ -1946,7 +1950,7 @@ function normalizeStr(str) {
 function verifyLogin(username, password) {
   const db = getDb();
   const cleanUsername = normalizeStr(username);
-  const cleanUsernameLower = cleanUsername.toLowerCase();
+  const cleanUsernameKey = cleanUserKey(cleanUsername);
   
   const cleanPassword = normalizeStr(password);
   if (!cleanUsername || !cleanPassword) {
@@ -1959,6 +1963,7 @@ function verifyLogin(username, password) {
   }
   const rows = sheet.getDataRange().getValues();
   
+  let foundUser = false;
   for (let i = 1; i < rows.length; i++) {
     let dbUsername = normalizeStr(rows[i][0]);
     let dbPassword = normalizeStr(rows[i][1]);
@@ -1966,24 +1971,34 @@ function verifyLogin(username, password) {
     let nickname = rows[i][3] !== undefined && rows[i][3] !== null ? normalizeStr(rows[i][3]) : '';
     let profilePic = rows[i][4] !== undefined && rows[i][4] !== null ? normalizeStr(rows[i][4]) : '';
 
-    if (dbUsername.toLowerCase() === cleanUsernameLower && dbPassword === cleanPassword) {
-      if (isTeacherUser(dbUsername, nickname)) {
-        role = 'Teacher';
+    const dbUserKey = cleanUserKey(dbUsername);
+    if (dbUserKey === cleanUsernameKey) {
+      foundUser = true;
+      if (dbPassword === cleanPassword) {
+        if (isTeacherUser(dbUsername, nickname)) {
+          role = 'Teacher';
+        }
+        logActivity(dbUsername, 'เข้าสู่ระบบ', 'ผู้ใช้งานเข้าสู่ระบบสำเร็จ' + (role === 'Teacher' ? ' (จำกัดสิทธิ์ครูผู้สอน)' : ''));
+        return { 
+          success: true, 
+          user: { 
+            username: dbUsername, 
+            role: role,
+            nickname: nickname,
+            profilePic: profilePic
+          } 
+        };
+      } else {
+        return { success: false, error: 'รหัสผ่านไม่ถูกต้อง (กรุณาตรวจสอบรหัสผ่านอีกครั้ง)' };
       }
-      logActivity(dbUsername, 'เข้าสู่ระบบ', 'ผู้ใช้งานเข้าสู่ระบบสำเร็จ' + (role === 'Teacher' ? ' (จำกัดสิทธิ์ครูผู้สอน)' : ''));
-      return { 
-        success: true, 
-        user: { 
-          username: dbUsername, 
-          role: role,
-          nickname: nickname,
-          profilePic: profilePic
-        } 
-      };
     }
   }
 
-  return { success: false, error: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง (กรุณาตรวจสอบชื่อผู้ใช้และรหัสผ่านอีกครั้ง)' };
+  if (!foundUser) {
+    return { success: false, error: 'ไม่พบชื่อผู้ใช้งาน "' + cleanUsername + '" ในระบบ (กรุณาตรวจสอบชื่อผู้ใช้)' };
+  }
+
+  return { success: false, error: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง' };
 }
 
 function changePassword(username, newPassword, logUser) {

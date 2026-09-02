@@ -777,6 +777,7 @@ function handleLogin(e) {
 
   const userEl = document.getElementById('login_username');
   const passEl = document.getElementById('login_password');
+  const btn = document.querySelector('#login_form button');
 
   if (!userEl || !passEl) return;
 
@@ -795,11 +796,20 @@ function handleLogin(e) {
     return;
   }
 
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเข้าสู่ระบบ...';
+  }
+
   setLoading(true, 'กำลังเข้าสู่ระบบ...');
 
   google.script.run
     .withSuccessHandler(res => {
       setLoading(false);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = 'เข้าสู่ระบบ';
+      }
       if (res && res.success) {
         setLoginError('');
         saveSessionData(res.user);
@@ -817,6 +827,10 @@ function handleLogin(e) {
     })
     .withFailureHandler(err => {
       setLoading(false);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = 'เข้าสู่ระบบ';
+      }
       const errMsg = 'เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + (err ? err.message : 'Unknown error');
       setLoginError(errMsg);
       showToast(errMsg, 'error');
