@@ -11978,9 +11978,10 @@ function loadTeacherSchedule(isSilent = false) {
     setTimeout(() => {
       setLoading(false);
       state.classLogs = data;
+      const normT = teacher.trim().toLowerCase();
       state.teacherClasses = data.filter(c => 
-        (c.teacherRegular && c.teacherRegular.toLowerCase().includes(teacher.toLowerCase().trim())) ||
-        (c.teacherSub && c.teacherSub.toLowerCase().includes(teacher.toLowerCase().trim()))
+        (c.teacherRegular && c.teacherRegular.trim().toLowerCase() === normT) ||
+        (c.teacherSub && c.teacherSub.trim().toLowerCase() === normT)
       );
       renderTeacherScheduleGrid(teacher);
     }, 10);
@@ -12000,11 +12001,13 @@ function loadTeacherSchedule(isSilent = false) {
 
         state.classLogs = data; // Store all so showEditClassLogModal can find it!
 
+        const normT = teacher.trim().toLowerCase();
+
         state.teacherClasses = data.filter(c => 
 
-          (c.teacherRegular && c.teacherRegular.toLowerCase().includes(teacher.toLowerCase().trim())) ||
+          (c.teacherRegular && c.teacherRegular.trim().toLowerCase() === normT) ||
 
-          (c.teacherSub && c.teacherSub.toLowerCase().includes(teacher.toLowerCase().trim()))
+          (c.teacherSub && c.teacherSub.trim().toLowerCase() === normT)
 
         );
 
@@ -12423,7 +12426,7 @@ function renderTeacherScheduleGrid(teacher) {
       var confirmedBadge = isTeacherConfirmed ? '<div style="font-weight:bold; color:#2e7d32; font-size:0.58rem;">✅ ยืนยันแล้ว</div>' : '';
 
       // Sub teacher check
-      var isSub = c.teacherSub && c.teacherSub.toLowerCase().includes(teacher.toLowerCase().trim());
+      var isSub = c.teacherSub && c.teacherSub.trim().toLowerCase() === teacher.trim().toLowerCase();
       var roleLabel = isSub ? '<span style="color:var(--color-danger); font-weight:bold;">[สอนแทน]</span>' : '';
 
       // Room/device text

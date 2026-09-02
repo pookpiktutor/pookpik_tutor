@@ -8830,11 +8830,9 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
         
 
-        const matchB = cleanB !== '' && (cleanB === cleanNick || cleanB.includes(cleanNick) || cleanNick.includes(cleanB));
+        const matchB = cleanB !== '' && cleanB === cleanNick;
 
-        const matchC = cleanC !== '' && (cleanC === cleanNick || cleanC.includes(cleanNick) || cleanNick.includes(cleanC) || 
-
-                       (cellC.includes(cleanNick) && !isEmptySub(cellC)));
+        const matchC = cleanC !== '' && cleanC === cleanNick;
 
         
 
@@ -9072,8 +9070,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
           var cleanNickChk = cleanResolvedNick.replace(/^ครู/, '').trim();
           var cleanBChk = cellBChk.replace(/^ครู/, '').trim();
           var cleanCChk = cellCChk.replace(/^ครู/, '').trim();
-          if ((cleanBChk !== '' && (cleanBChk === cleanNickChk || cleanBChk.includes(cleanNickChk) || cleanNickChk.includes(cleanBChk))) ||
-              (cleanCChk !== '' && (cleanCChk === cleanNickChk || cleanCChk.includes(cleanNickChk) || cleanNickChk.includes(cleanCChk)))) {
+          if ((cleanBChk !== '' && cleanBChk === cleanNickChk) || (cleanCChk !== '' && cleanCChk === cleanNickChk)) {
             isNewTeacher = false;
             break;
           }
@@ -9239,7 +9236,7 @@ function getTeacherAdjustments(teacher, year, logUser) {
       var rowTeacher = (row[2] || '').toString().trim().toLowerCase().replace(/^ครู/, '').trim();
       var rowYear = parseInt(row[4]) || 0;
       
-      if (rowYear === parseInt(year) && (rowTeacher === cleanTeacher || rowTeacher.includes(cleanTeacher) || cleanTeacher.includes(rowTeacher))) {
+      if (rowYear === parseInt(year) && rowTeacher === cleanTeacher) {
         adjustments.push({
           id: row[0],
           timestamp: row[1],
@@ -9279,7 +9276,7 @@ function getInsuranceTracking(teacher) {
       var row = data[i];
       var rowTeacher = (row[0] || '').toString().trim().toLowerCase().replace(/^ครู/, '').trim();
       
-      if (rowTeacher === cleanTeacher || rowTeacher.includes(cleanTeacher) || cleanTeacher.includes(rowTeacher)) {
+      if (rowTeacher === cleanTeacher) {
         var amt = parseFloat(row[3]) || 0;
         totalDeducted += amt;
         records.push({
@@ -12858,7 +12855,7 @@ function getTeacherRoomSchedule(teacherName, nickname, startVal, endVal) {
 
       let match = false;
 
-      if (cleanNickTarget && (tReg.includes(cleanNickTarget) || tSub.includes(cleanNickTarget))) {
+      if (cleanNickTarget && (tReg === cleanNickTarget || tSub === cleanNickTarget)) {
 
         match = true;
 
