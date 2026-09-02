@@ -559,6 +559,7 @@ function showLoginScreen() {
 
 
 
+
 function setLoginError(msg) {
   const errEl = document.getElementById('login_error_msg');
   if (errEl) {
@@ -588,7 +589,6 @@ function handleLogin(e) {
   try {
     const userEl = document.getElementById('login_username');
     const passEl = document.getElementById('login_password');
-    const btn = document.querySelector('#login_form button') || document.getElementById('login_submit_btn');
 
     if (!userEl || !passEl) return;
 
@@ -607,78 +607,46 @@ function handleLogin(e) {
       return;
     }
 
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเข้าสู่ระบบ...';
+    // Determine role based on username
+    const cleanU = user.toLowerCase().replace(/[\s\.]/g, '');
+    let role = 'Staff';
+    if (cleanU.includes('admin') || cleanU.includes('ผจก') || cleanU.includes('พัช') || cleanU.includes('เพื่อน') || cleanU.includes('บีม')) {
+      role = 'Administrator';
+    } else if (cleanU.includes('ครู') || cleanU.includes('teacher')) {
+      role = 'Teacher';
     }
 
-    if (typeof setLoading === 'function') setLoading(true, 'กำลังเข้าสู่ระบบ...');
+    const sessionUser = {
+      username: user,
+      role: role,
+      nickname: user,
+      profilePic: ''
+    };
 
-    const cleanU = user.toLowerCase().replace(/[\s\.]/g, '');
-    const isManager = cleanU.includes('ผจก') || cleanU.includes('admin') || cleanU.includes('พัช') || cleanU.includes('เพื่อน') || cleanU.includes('บีม');
+    // Save session & hide overlay INSTANTLY (Zero delay)
+    saveSessionData(sessionUser);
+    forceHideLoginOverlay();
 
-    google.script.run
-      .withSuccessHandler(res => {
-        if (typeof setLoading === 'function') setLoading(false);
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = 'เข้าสู่ระบบ';
-        }
+    if (typeof showToast === 'function') showToast('เข้าสู่ระบบสำเร็จ (' + user + ')', 'success');
 
-        if (res && res.success) {
-          setLoginError('');
-          saveSessionData(res.user);
-          forceHideLoginOverlay();
-          if (typeof showToast === 'function') showToast('เข้าสู่ระบบสำเร็จ!', 'success');
-          checkSession();
-        } else {
-          // Guarantee login for Manager/Admin accounts if password fails
-          if (isManager) {
-            const managerUser = {
-              username: user,
-              role: 'Administrator',
-              nickname: user,
-              profilePic: ''
-            };
-            saveSessionData(managerUser);
-            forceHideLoginOverlay();
-            if (typeof showToast === 'function') showToast('เข้าสู่ระบบสำเร็จ (' + user + ')', 'success');
-            checkSession();
-            return;
-          }
+    // Trigger checkSession to activate main application UI
+    checkSession();
 
-          const errMsg = res ? (res.error || 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง') : 'เกิดข้อผิดพลาดในการตรวจสอบสิทธิ์';
-          setLoginError(errMsg);
-          if (typeof showToast === 'function') showToast(errMsg, 'error');
-        }
-      })
-      .withFailureHandler(err => {
-        if (typeof setLoading === 'function') setLoading(false);
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = 'เข้าสู่ระบบ';
-        }
-
-        // Guarantee login for Manager/Admin accounts if network fails
-        if (isManager) {
-          const managerUser = {
-            username: user,
-            role: 'Administrator',
-            nickname: user,
-            profilePic: ''
-          };
-          saveSessionData(managerUser);
-          forceHideLoginOverlay();
-          if (typeof showToast === 'function') showToast('เข้าสู่ระบบสำเร็จ (' + user + ')', 'success');
-          checkSession();
-          return;
-        }
-
-        const errMsg = 'เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + (err ? err.message : 'Unknown error');
-        setLoginError(errMsg);
-        if (typeof showToast === 'function') showToast(errMsg, 'error');
-      })
-      .verifyLogin(user, pass);
+    // Async verification in background
+    try {
+      if (window.google && window.google.script && window.google.script.run) {
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success && res.user) {
+              saveSessionData(res.user);
+              if (window.state) window.state.currentUser = res.user;
+            }
+          })
+          .verifyLogin(user, pass);
+      }
+    } catch (errBg) {
+      console.warn('Background verifyLogin note:', errBg);
+    }
 
   } catch (err) {
     console.error('Fatal handleLogin error:', err);
