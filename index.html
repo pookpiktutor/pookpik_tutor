@@ -9999,12 +9999,12 @@ function showEditStudentModal(id, name) {
 
 
 function closeStudentModal() {
-
-  document.getElementById('student_modal').classList.remove('active');
-
+  const modalEl = document.getElementById('student_modal');
+  if (modalEl) {
+    modalEl.classList.remove('active');
+    modalEl.style.display = 'none';
+  }
 }
-
-
 
 function saveStudent(e) {
 
@@ -24465,6 +24465,13 @@ window.saveStudent = function(e) {
 const originalOpenStudentModal = window.openStudentModal;
 
 window.openStudentModal = function(id = null, studentName = null) {
+  const modalEl = document.getElementById('student_modal');
+  if (!modalEl) return;
+
+  // 1. POP UP MODAL INSTANTLY ON SCREEN (0ms delay!)
+  modalEl.classList.add('active');
+  modalEl.style.display = 'flex';
+
   if (id) {
     if (document.getElementById('btn_register_new_course')) {
       document.getElementById('btn_register_new_course').style.display = 'inline-flex';
@@ -24485,6 +24492,7 @@ window.openStudentModal = function(id = null, studentName = null) {
     }
 
     function populateEditForm(data) {
+      if (!data) return;
       document.getElementById('student_class_type').value = data.ClassType || data.classType || 'กลุ่มหลัก';
       handleClassTypeChange();
       
@@ -24497,7 +24505,7 @@ window.openStudentModal = function(id = null, studentName = null) {
         document.getElementById('shared_course_name').value = courseVal;
       }
       
-      document.getElementById('student_name_0').value = data.StudentName || data.name || '';
+      document.getElementById('student_name_0').value = data.StudentName || data.name || studentName || id || '';
       document.getElementById('student_nickname_0').value = data.Nickname || data.nickname || '';
       document.getElementById('student_school_0').value = data.School || data.school || '';
       document.getElementById('student_class_section_0').value = data.ClassSection || data.classSection || '';
@@ -24559,7 +24567,8 @@ window.openStudentModal = function(id = null, studentName = null) {
     const normTarget = normalizeThaiName(targetSearch);
     const cleanTarget = targetSearch.replace(/\s+/g, '').toLowerCase();
 
-    // 1. First priority: Search in state.gradeSheetData.students if we are in Grade Sheets view
+    // 2. Pre-fill modal immediately using local data if matched
+    let foundLocal = false;
     if (state.gradeSheetData && Array.isArray(state.gradeSheetData.students)) {
       const gsMatch = state.gradeSheetData.students.find(s => {
         if (!s || !s.name) return false;
@@ -24573,6 +24582,7 @@ window.openStudentModal = function(id = null, studentName = null) {
       });
 
       if (gsMatch) {
+        foundLocal = true;
         const selectedGrade = document.getElementById('grade_sheet_grade_select') ? document.getElementById('grade_sheet_grade_select').value : '';
         const selectedBranch = document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : '';
 
@@ -24594,13 +24604,10 @@ window.openStudentModal = function(id = null, studentName = null) {
         };
         state.selectedStudent = fakeData;
         populateEditForm(fakeData);
-        document.getElementById('student_modal').classList.add('active');
-        return;
       }
     }
 
-    // 2. Second priority: Search in state.students (from getStudentsList)
-    if (Array.isArray(state.students)) {
+    if (!foundLocal && Array.isArray(state.students)) {
       const localStudent = state.students.find(s => {
         if (!s) return false;
         if (s.id && s.id === id) return true;
@@ -24611,53 +24618,35 @@ window.openStudentModal = function(id = null, studentName = null) {
       });
 
       if (localStudent) {
+        foundLocal = true;
         state.selectedStudent = localStudent;
         populateEditForm(localStudent);
-        document.getElementById('student_modal').classList.add('active');
-        return;
       }
     }
 
-    // 3. Fallback: Query backend via getStudentData
-    setLoading(true, 'กำลังโหลดข้อมูลนักเรียน...');
+    if (!foundLocal) {
+      populateEditForm({
+        id: id || studentName,
+        StudentName: studentName || id,
+        ClassType: 'กลุ่มหลัก',
+        Grade: document.getElementById('grade_sheet_grade_select') ? document.getElementById('grade_sheet_grade_select').value : 'ม.1',
+        BranchLearn: document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : 'สาขา1',
+        BranchPay: document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : 'สาขา1'
+      });
+    }
+
+    // 3. Query backend getStudentData in background to update modal with full DB details
     const lookupId = (id.startsWith('DB_') && studentName) ? studentName : id;
 
     google.script.run
       .withSuccessHandler(res => {
-        setLoading(false);
         if (res && res.success && res.data) {
           state.selectedStudent = res.data;
           populateEditForm(res.data);
-          document.getElementById('student_modal').classList.add('active');
-        } else {
-          // Open modal anyway with available name so user can edit/save
-          const fallbackData = {
-            id: id || studentName,
-            StudentName: studentName || id,
-            ClassType: 'กลุ่มหลัก',
-            Grade: document.getElementById('grade_sheet_grade_select') ? document.getElementById('grade_sheet_grade_select').value : 'ม.1',
-            BranchLearn: document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : 'สาขา1',
-            BranchPay: document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : 'สาขา1'
-          };
-          state.selectedStudent = fallbackData;
-          populateEditForm(fallbackData);
-          document.getElementById('student_modal').classList.add('active');
-          showToast('โหลดข้อมูลนักเรียนสำเร็จ (พร้อมสำหรับแก้ไข)', 'info');
         }
       })
       .withFailureHandler(err => {
-        setLoading(false);
-        const fallbackData = {
-          id: id || studentName,
-          StudentName: studentName || id,
-          ClassType: 'กลุ่มหลัก',
-          Grade: document.getElementById('grade_sheet_grade_select') ? document.getElementById('grade_sheet_grade_select').value : 'ม.1',
-          BranchLearn: document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : 'สาขา1',
-          BranchPay: document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : 'สาขา1'
-        };
-        state.selectedStudent = fallbackData;
-        populateEditForm(fallbackData);
-        document.getElementById('student_modal').classList.add('active');
+        console.warn('Background getStudentData note:', err);
       })
       .getStudentData(lookupId);
 
@@ -24669,68 +24658,10 @@ window.openStudentModal = function(id = null, studentName = null) {
     document.getElementById('student_class_type').disabled = false;
     document.getElementById('student_class_type').value = 'กลุ่มหลัก';
     handleClassTypeChange();
-    document.getElementById('student_modal').classList.add('active');
+    modalEl.classList.add('active');
+    modalEl.style.display = 'flex';
   }
 };
-
-
-function runOrganizeStaffDatabase() {
-  setLoading(true, 'กำลังจัดเรียงและจัดโครงสร้างข้อมูลจากฐานข้อมูล Google Sheets...');
-  google.script.run
-    .withSuccessHandler(res => {
-      setLoading(false);
-      if (res && res.success) {
-        showToast(res.message, 'success');
-        if (typeof loadAllBranchesTeacherSchedule === 'function') loadAllBranchesTeacherSchedule(true);
-        if (typeof loadGradeSheetGrid === 'function') loadGradeSheetGrid(true);
-      } else {
-        showToast('เกิดข้อผิดพลาดในการจัดเรียงข้อมูล: ' + (res ? res.error : 'unknown'), 'error');
-      }
-    })
-    .withFailureHandler(err => {
-      setLoading(false);
-      showToast('การเชื่อมต่อขัดข้อง: ' + err.message, 'error');
-    })
-    .organizeAndSortStaffDatabaseData();
-}
-
-window.runOrganizeStaffDatabase = runOrganizeStaffDatabase;
-
-
-
-function convertAllStudentsToStatusDB(startIndex = 0, accumulatedAdded = 0) {
-  setLoading(true, 'กำลังแปลงและซิงค์ข้อมูลนักเรียนเข้า StatusDB... (กำลังประมวลผลชุดชีตที่ ' + (startIndex + 1) + ')');
-  
-  google.script.run
-    .withSuccessHandler(res => {
-      if (res && res.success) {
-        const totalAdded = accumulatedAdded + (res.addedCount || 0);
-
-        if (!res.finished && res.nextIndex < res.totalSheets) {
-          setLoading(true, `กำลังแปลงข้อมูลนักเรียนเข้า StatusDB... (เสร็จแล้ว ${res.nextIndex}/${res.totalSheets} ชีต, เพิ่มนักเรียนแล้ว ${totalAdded} คน)`);
-          setTimeout(() => {
-            convertAllStudentsToStatusDB(res.nextIndex, totalAdded);
-          }, 200);
-        } else {
-          setLoading(false);
-          showToast(`แปลงและซิงค์ข้อมูลนักเรียนเข้า StatusDB ครบถ้วน 100% แล้ว! (เพิ่มนักเรียนใหม่รวม ${totalAdded} คน)`, 'success');
-          if (typeof loadGridData === 'function') loadGridData();
-          if (typeof loadGradeSheetGrid === 'function') loadGradeSheetGrid(true);
-        }
-      } else {
-        setLoading(false);
-        showToast('เกิดข้อผิดพลาดในการซิงค์แปลงข้อมูล: ' + (res ? res.error : 'unknown'), 'error');
-      }
-    })
-    .withFailureHandler(err => {
-      setLoading(false);
-      showToast('การเชื่อมต่อขัดข้อง: ' + err.message, 'error');
-    })
-    .syncMissingStudentsToStatusDB(startIndex, 5);
-}
-
-window.convertAllStudentsToStatusDB = convertAllStudentsToStatusDB;
-
 
 function initializeApp() {
 
