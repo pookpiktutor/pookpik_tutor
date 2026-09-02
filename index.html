@@ -6436,6 +6436,48 @@ function stripGarbageDate(str) {
 
 
 
+
+function formatAdjustmentTimestamp(ts) {
+  if (!ts) return '-';
+  try {
+    let str = String(ts).trim();
+
+    // Check if timestamp contains year month day pattern
+    const beMatch = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})[T\s](\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if (beMatch) {
+      let y = parseInt(beMatch[1], 10);
+      const m = String(beMatch[2]).padStart(2, '0');
+      const d = String(beMatch[3]).padStart(2, '0');
+      let hh = parseInt(beMatch[4], 10);
+      const mm = String(beMatch[5]).padStart(2, '0');
+
+      if (str.endsWith('Z') || str.includes('+00:00')) {
+        hh = (hh + 7) % 24;
+      }
+
+      const hhStr = String(hh).padStart(2, '0');
+      if (y < 2400) y += 543;
+      return `${d}/${m}/${y} ${hhStr}:${mm} น.`;
+    }
+
+    const dateObj = new Date(str);
+    if (!isNaN(dateObj.getTime())) {
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      let y = dateObj.getFullYear();
+      if (y < 2400) y += 543;
+      const hh = String(dateObj.getHours()).padStart(2, '0');
+      const mm = String(dateObj.getMinutes()).padStart(2, '0');
+      return `${d}/${m}/${y} ${hh}:${mm} น.`;
+    }
+
+    return str;
+  } catch (e) {
+    return String(ts);
+  }
+}
+
+
 function formatDateTimeToThaiLong(dateStr) {
 
   if (!dateStr) return '';
@@ -17089,7 +17131,7 @@ function handleStaffPayrollMonthChange() {
             <td style="font-weight: 600; color: ${typeColor};">${adj.type}</td>
             <td style="font-weight: 700; color: ${typeColor};">${sign}฿${(adj.amount || 0).toLocaleString()}</td>
             <td>${adj.note || '-'}</td>
-            <td style="font-size: 0.65rem; color: #6c757d;">${adj.timestamp || '-'}</td>
+            <td style="font-size: 0.68rem; color: #6c757d;">${formatAdjustmentTimestamp(adj.timestamp)}</td>
             <td style="text-align: center;">
               <button type="button" class="btn btn-danger btn-sm" style="font-size: 0.65rem; padding: 1px 6px;" onclick="deleteStaffTeacherAdjustment('${adj.id}')">ลบ</button>
             </td>
@@ -25743,7 +25785,7 @@ function loadTeacherAdjustmentsListInSummary() {
               <td style="font-weight: 600; color: ${typeColor};">${adj.type}</td>
               <td style="font-weight: 700; color: ${typeColor};">${sign}฿${(adj.amount || 0).toLocaleString()}</td>
               <td>${adj.note || '-'}</td>
-              <td style="font-size: 0.68rem; color: #6c757d;">${adj.timestamp || '-'}</td>
+              <td style="font-size: 0.68rem; color: #6c757d;">${formatAdjustmentTimestamp(adj.timestamp)}</td>
               <td style="text-align: center;">
                 <button type="button" class="btn btn-danger btn-sm" style="font-size: 0.65rem; padding: 2px 6px;" onclick="deleteStaffTeacherAdjustmentInSummary('${adj.id}')">ลบ</button>
               </td>
