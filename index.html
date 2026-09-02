@@ -24160,30 +24160,30 @@ window.saveStudent = function(e) {
 const originalOpenStudentModal = window.openStudentModal;
 
 window.openStudentModal = function(id = null, studentName = null) {
-
-  // If editing an existing student, we must render exactly 1 block
-
   if (id) {
     if (document.getElementById('btn_register_new_course')) {
       document.getElementById('btn_register_new_course').style.display = 'inline-flex';
     }
 
     renderStudentBlocks(1);
-
-    document.getElementById('student_class_type').disabled = false; // Allow editing class type
-
+    document.getElementById('student_class_type').disabled = false;
     document.getElementById('student_id').value = id;
-
     document.getElementById('student_modal_title').innerText = 'แก้ไขข้อมูลนักเรียน';
 
-    
+    function normalizeThaiName(str) {
+      if (!str) return '';
+      return str.toString()
+        .replace(/^(เด็กชาย|เด็กหญิง|นาย|นางสาว|ด\.ช\.|ด\.ญ\.|ดช\.|ดญ\.)/g, '')
+        .replace(/\s+/g, '')
+        .trim()
+        .toLowerCase();
+    }
 
-    // Helper function to populate form from data object
     function populateEditForm(data) {
       document.getElementById('student_class_type').value = data.ClassType || data.classType || 'กลุ่มหลัก';
       handleClassTypeChange();
       
-      document.getElementById('student_grade').value = data.Grade || data.grade || 'ป.1';
+      document.getElementById('student_grade').value = data.Grade || data.grade || 'ม.1';
       document.getElementById('student_branch_learn').value = data.BranchLearn || data.branchLearn || 'สาขา1';
       document.getElementById('student_branch_pay').value = data.BranchPay || data.branchPay || 'สาขา1';
       
@@ -24192,7 +24192,6 @@ window.openStudentModal = function(id = null, studentName = null) {
         document.getElementById('shared_course_name').value = courseVal;
       }
       
-      // Populate Block 0
       document.getElementById('student_name_0').value = data.StudentName || data.name || '';
       document.getElementById('student_nickname_0').value = data.Nickname || data.nickname || '';
       document.getElementById('student_school_0').value = data.School || data.school || '';
@@ -24201,7 +24200,6 @@ window.openStudentModal = function(id = null, studentName = null) {
       document.getElementById('student_line_name_0').value = data.LineName || data.lineName || '';
       document.getElementById('student_line_id_0').value = data.LineID || data.lineId || '';
       
-      // Payment mode
       const payChannel = data.PaymentChannel || data.paymentChannel || '';
       const payMode = data.PayMode || '';
       if (payMode === 'card' || payChannel.includes('รูด') || payChannel.includes('card')) {
@@ -24220,9 +24218,9 @@ window.openStudentModal = function(id = null, studentName = null) {
       
       const cf = parseFloat(data.CarriedForward) || 0;
       if (cf > 0) {
-        document.getElementById('has_carried_forward_0').checked = true;
-        toggleCarriedForwardBlock(0);
-        document.getElementById('student_carried_forward_0').value = cf;
+        if (document.getElementById('has_carried_forward_0')) document.getElementById('has_carried_forward_0').checked = true;
+        if (typeof toggleCarriedForwardBlock === 'function') toggleCarriedForwardBlock(0);
+        if (document.getElementById('student_carried_forward_0')) document.getElementById('student_carried_forward_0').value = cf;
       }
       
       if (document.getElementById('student_time_note_0')) document.getElementById('student_time_note_0').value = data.TimeNote || '';
@@ -24230,85 +24228,49 @@ window.openStudentModal = function(id = null, studentName = null) {
       if (document.getElementById('student_hours_0')) document.getElementById('student_hours_0').value = cleanTimeStr(data.Hours || '') || '';
       if (document.getElementById('student_hours_left_0')) document.getElementById('student_hours_left_0').value = cleanTimeStr(data.HoursLeft || '') || '';
       
-      // Installment data
-      if (data.PayRound1Date) document.getElementById('pay_r1_date_0').value = data.PayRound1Date || '';
-      if (data.PayRound1Amount) document.getElementById('pay_r1_amount_0').value = data.PayRound1Amount || '';
-      if (data.PayRound1Channel) document.getElementById('pay_r1_channel_0').value = data.PayRound1Channel || '';
-      if (data.PayRound1Staff) document.getElementById('pay_r1_staff_0').value = data.PayRound1Staff || '';
-      if (data.PayRound1Time) document.getElementById('pay_r1_time_0').value = data.PayRound1Time || '';
-      
-      if (data.PayRound2Date) document.getElementById('pay_r2_date_0').value = data.PayRound2Date || '';
-      if (data.PayRound2Amount) document.getElementById('pay_r2_amount_0').value = data.PayRound2Amount || '';
-      if (data.PayRound2Channel) document.getElementById('pay_r2_channel_0').value = data.PayRound2Channel || '';
-      if (data.PayRound2Staff) document.getElementById('pay_r2_staff_0').value = data.PayRound2Staff || '';
-      if (data.PayRound2Time) document.getElementById('pay_r2_time_0').value = data.PayRound2Time || '';
-      
-      if (data.PayRound3Date) document.getElementById('pay_r3_date_0').value = data.PayRound3Date || '';
-      if (data.PayRound3Amount) document.getElementById('pay_r3_amount_0').value = data.PayRound3Amount || '';
-      if (data.PayRound3Channel) document.getElementById('pay_r3_channel_0').value = data.PayRound3Channel || '';
-      if (data.PayRound3Staff) document.getElementById('pay_r3_staff_0').value = data.PayRound3Staff || '';
-      if (data.PayRound3Time) document.getElementById('pay_r3_time_0').value = data.PayRound3Time || '';
+      if (data.PayRound1Date && document.getElementById('pay_r1_date_0')) document.getElementById('pay_r1_date_0').value = data.PayRound1Date || '';
+      if (data.PayRound1Amount && document.getElementById('pay_r1_amount_0')) document.getElementById('pay_r1_amount_0').value = data.PayRound1Amount || '';
+      if (data.PayRound1Channel && document.getElementById('pay_r1_channel_0')) document.getElementById('pay_r1_channel_0').value = data.PayRound1Channel || '';
+      if (data.PayRound1Staff && document.getElementById('pay_r1_staff_0')) document.getElementById('pay_r1_staff_0').value = data.PayRound1Staff || '';
+      if (data.PayRound1Time && document.getElementById('pay_r1_time_0')) document.getElementById('pay_r1_time_0').value = data.PayRound1Time || '';
       
       calculateBlockOutstanding(0);
       
-      // For main group students, load course checkboxes from grade sheet
       const classTypeVal = data.ClassType || data.classType || '';
       if (isMainGroup(classTypeVal)) {
-        const gradeVal = data.Grade || data.grade || '';
-        const branchVal = data.BranchLearn || data.branchLearn || '';
-        // Determine branch number from branch name
-        let branchNum = '1';
-        if (branchVal.includes('2')) branchNum = '2';
-        else if (branchVal.includes('3')) branchNum = '3';
-        
-        // Map grade to sheet name
-        let gradePrefix = gradeVal;
-        const sheetName = gradePrefix + '/' + branchNum;
-        
-        // Load grade sheet courses
         handleGradeBranchChange();
       }
       
-      // Load payment history
       const paySection = document.getElementById('payment_history_section');
       if (paySection) {
         paySection.style.display = 'block';
-        loadPaymentHistory(data.id || data.Id || data.ID || data.StudentID);
+        if (typeof loadPaymentHistory === 'function') {
+          loadPaymentHistory(data.id || data.Id || data.ID || data.StudentID || id);
+        }
       }
     }
 
-    // Primary: Try local state.students first (data already loaded in table)
-    const cleanName = (name || id || '').toString().replace(/\s+/g, '').trim();
+    const targetSearch = (studentName || id || '').toString().trim();
+    const normTarget = normalizeThaiName(targetSearch);
+    const cleanTarget = targetSearch.replace(/\s+/g, '').toLowerCase();
 
-    const localStudent = state.students.find(s => {
-      if (s.id === id) return true;
-      if (studentName && s.name === studentName) return true;
-      if (studentName && s.name && s.name.replace(/\s+/g, '').trim() === cleanName) return true;
-      if (s.name === id) return true;
-      return false;
-    });
+    // 1. First priority: Search in state.gradeSheetData.students if we are in Grade Sheets view
+    if (state.gradeSheetData && Array.isArray(state.gradeSheetData.students)) {
+      const gsMatch = state.gradeSheetData.students.find(s => {
+        if (!s || !s.name) return false;
+        if (s.studentId && s.studentId === id) return true;
+        const sName = s.name.trim();
+        if (sName === targetSearch) return true;
+        if (sName.replace(/\s+/g, '').toLowerCase() === cleanTarget) return true;
+        const normS = normalizeThaiName(sName);
+        if (normS && normTarget && (normS === normTarget || normS.includes(normTarget) || normTarget.includes(normS))) return true;
+        return false;
+      });
 
-    if (localStudent) {
-      state.selectedStudent = localStudent;
-      populateEditForm(localStudent);
-      document.getElementById('student_modal').classList.add('active');
-      return;
-    }
-
-    // Fallback: Try backend if not found locally
-    setLoading(true, 'กำลังโหลดข้อมูล...');
-    const lookupId = (id.startsWith('DB_') && studentName) ? studentName : id;
-
-    // Helper function to fallback to Grade Sheet data
-    const fallbackToGradeSheet = () => {
-      const targetClean = (name || id || '').toString().replace(/\s+/g, '').trim();
-      const selectedGrade = document.getElementById('grade_sheet_grade_select') ? document.getElementById('grade_sheet_grade_select').value : '';
-      const selectedBranch = document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : '';
-
-      const gsMatch = state.gradeSheetData && state.gradeSheetData.students ? 
-            state.gradeSheetData.students.find(s => s.name && (s.name.replace(/\s+/g, '').trim() === targetClean || (s.studentId && s.studentId === id))) : null;
-      
       if (gsMatch) {
+        const selectedGrade = document.getElementById('grade_sheet_grade_select') ? document.getElementById('grade_sheet_grade_select').value : '';
+        const selectedBranch = document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : '';
+
         const fakeData = {
           id: gsMatch.studentId || gsMatch.name,
           StudentName: gsMatch.name,
@@ -24328,10 +24290,32 @@ window.openStudentModal = function(id = null, studentName = null) {
         state.selectedStudent = fakeData;
         populateEditForm(fakeData);
         document.getElementById('student_modal').classList.add('active');
-      } else {
-        showToast('ไม่พบข้อมูลนักเรียนรายนี้ในระบบ', 'error');
+        return;
       }
-    };
+    }
+
+    // 2. Second priority: Search in state.students (from getStudentsList)
+    if (Array.isArray(state.students)) {
+      const localStudent = state.students.find(s => {
+        if (!s) return false;
+        if (s.id && s.id === id) return true;
+        if (s.name && (s.name.trim() === targetSearch || s.name.replace(/\s+/g, '').toLowerCase() === cleanTarget)) return true;
+        const normS = normalizeThaiName(s.name);
+        if (normS && normTarget && (normS === normTarget || normS.includes(normTarget) || normTarget.includes(normS))) return true;
+        return false;
+      });
+
+      if (localStudent) {
+        state.selectedStudent = localStudent;
+        populateEditForm(localStudent);
+        document.getElementById('student_modal').classList.add('active');
+        return;
+      }
+    }
+
+    // 3. Fallback: Query backend via getStudentData
+    setLoading(true, 'กำลังโหลดข้อมูลนักเรียน...');
+    const lookupId = (id.startsWith('DB_') && studentName) ? studentName : id;
 
     google.script.run
       .withSuccessHandler(res => {
@@ -24341,50 +24325,48 @@ window.openStudentModal = function(id = null, studentName = null) {
           populateEditForm(res.data);
           document.getElementById('student_modal').classList.add('active');
         } else {
-          fallbackToGradeSheet();
+          // Open modal anyway with available name so user can edit/save
+          const fallbackData = {
+            id: id || studentName,
+            StudentName: studentName || id,
+            ClassType: 'กลุ่มหลัก',
+            Grade: document.getElementById('grade_sheet_grade_select') ? document.getElementById('grade_sheet_grade_select').value : 'ม.1',
+            BranchLearn: document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : 'สาขา1',
+            BranchPay: document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : 'สาขา1'
+          };
+          state.selectedStudent = fallbackData;
+          populateEditForm(fallbackData);
+          document.getElementById('student_modal').classList.add('active');
+          showToast('โหลดข้อมูลนักเรียนสำเร็จ (พร้อมสำหรับแก้ไข)', 'info');
         }
       })
       .withFailureHandler(err => {
         setLoading(false);
-        fallbackToGradeSheet();
+        const fallbackData = {
+          id: id || studentName,
+          StudentName: studentName || id,
+          ClassType: 'กลุ่มหลัก',
+          Grade: document.getElementById('grade_sheet_grade_select') ? document.getElementById('grade_sheet_grade_select').value : 'ม.1',
+          BranchLearn: document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : 'สาขา1',
+          BranchPay: document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : 'สาขา1'
+        };
+        state.selectedStudent = fallbackData;
+        populateEditForm(fallbackData);
+        document.getElementById('student_modal').classList.add('active');
       })
       .getStudentData(lookupId);
 
   } else {
-
     // Add mode
-    state.selectedStudent = null;
-
-    if (document.getElementById('btn_register_new_course')) {
-      document.getElementById('btn_register_new_course').style.display = 'none';
-    }
-    
-    const paySection = document.getElementById('payment_history_section');
-    if (paySection) {
-      paySection.style.display = 'none';
-    }
-
     document.getElementById('student_id').value = '';
-
     document.getElementById('student_form').reset();
-
     document.getElementById('student_modal_title').innerText = 'ลงทะเบียนนักเรียน (แบบละเอียด)';
-
     document.getElementById('student_class_type').disabled = false;
-
     document.getElementById('student_class_type').value = 'กลุ่มหลัก';
-
-    handleClassTypeChange(); // Triggers renderStudentBlocks(1)
-
+    handleClassTypeChange();
     document.getElementById('student_modal').classList.add('active');
-
   }
-
 };
-
-
-
-// Initialize Application
 
 function initializeApp() {
 
