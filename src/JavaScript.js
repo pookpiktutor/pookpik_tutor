@@ -622,20 +622,6 @@ function showLoginScreen() {
 }
 
 
-function quickLogin(username) {
-  const userObj = {
-    username: username,
-    role: 'Administrator',
-    nickname: username,
-    profilePic: ''
-  };
-  saveSessionData(userObj);
-  const overlay = document.getElementById('login_overlay');
-  if (overlay) overlay.style.display = 'none';
-  showToast('เข้าสู่ระบบสำเร็จ (' + username + ')', 'success');
-  checkSession();
-}
-
 function setLoginError(msg) {
   const errEl = document.getElementById('login_error_msg');
   if (errEl) {
@@ -697,22 +683,6 @@ function handleLogin(e) {
         showToast('เข้าสู่ระบบสำเร็จ!', 'success');
         checkSession();
       } else {
-        // Guarantee login for Manager/Admin accounts
-        const cleanU = user.toLowerCase().replace(/[\s\.]/g, '');
-        if (cleanU.includes('ผจก') || cleanU.includes('admin') || cleanU.includes('พัช') || cleanU.includes('เพื่อน') || cleanU.includes('บีม')) {
-          saveSessionData({
-            username: user,
-            role: 'Administrator',
-            nickname: user,
-            profilePic: ''
-          });
-          const overlay = document.getElementById('login_overlay');
-          if (overlay) overlay.style.display = 'none';
-          showToast('เข้าสู่ระบบสำเร็จ (' + user + ')', 'success');
-          checkSession();
-          return;
-        }
-
         const errMsg = res ? (res.error || 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง') : 'เกิดข้อผิดพลาดในการตรวจสอบสิทธิ์';
         setLoginError(errMsg);
         showToast(errMsg, 'error');
@@ -724,23 +694,6 @@ function handleLogin(e) {
         btn.disabled = false;
         btn.innerHTML = 'เข้าสู่ระบบ';
       }
-      
-      // Guarantee login for Manager/Admin accounts if network error
-      const cleanU = user.toLowerCase().replace(/[\s\.]/g, '');
-      if (cleanU.includes('ผจก') || cleanU.includes('admin') || cleanU.includes('พัช') || cleanU.includes('เพื่อน') || cleanU.includes('บีม')) {
-        saveSessionData({
-          username: user,
-          role: 'Administrator',
-          nickname: user,
-          profilePic: ''
-        });
-        const overlay = document.getElementById('login_overlay');
-        if (overlay) overlay.style.display = 'none';
-        showToast('เข้าสู่ระบบสำเร็จ (' + user + ')', 'success');
-        checkSession();
-        return;
-      }
-
       const errMsg = 'เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + (err ? err.message : 'Unknown error');
       setLoginError(errMsg);
       showToast(errMsg, 'error');
