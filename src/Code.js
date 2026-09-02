@@ -9231,6 +9231,7 @@ function getTeacherAdjustments(teacher, year, logUser) {
     const data = sheet.getDataRange().getValues();
     const adjustments = [];
     
+    const targetYear = parseInt(year) || new Date().getFullYear();
     const cleanTeacher = (teacher || '').toString().trim().toLowerCase().replace(/^ครู/, '').trim();
     
     for (var i = 1; i < data.length; i++) {
@@ -9238,7 +9239,7 @@ function getTeacherAdjustments(teacher, year, logUser) {
       var rowTeacher = (row[2] || '').toString().trim().toLowerCase().replace(/^ครู/, '').trim();
       var rowYear = parseInt(row[4]) || 0;
       
-      if (rowYear === parseInt(year) && (!cleanTeacher || rowTeacher === cleanTeacher)) {
+      if (rowYear === targetYear && (!cleanTeacher || rowTeacher === cleanTeacher)) {
         adjustments.push({
           id: row[0],
           timestamp: row[1],
@@ -9258,11 +9259,6 @@ function getTeacherAdjustments(teacher, year, logUser) {
   }
 }
 
-/**
- * ดึงยอดประกันสะสมของครู
- * @param {string} teacher - ชื่อครู
- * @returns {Object} { totalDeducted, records }
- */
 function getInsuranceTracking(teacher) {
   try {
     const db = getDb();

@@ -12473,7 +12473,6 @@ function saveTeacherProfile(e) {
 
 function loadStaffSalarySummary() {
   populateTeacherDropdownInSummary();
-  loadTeacherAdjustmentsListInSummary();
 
   let yearEl = document.getElementById('staff_summary_year');
   let monthEl = document.getElementById('staff_summary_month');
@@ -12484,6 +12483,8 @@ function loadStaffSalarySummary() {
     yearEl = document.getElementById('staff_summary_year');
     monthEl = document.getElementById('staff_summary_month');
   }
+
+  loadTeacherAdjustmentsListInSummary();
 
   if (!yearEl || !monthEl) return;
 
@@ -21727,8 +21728,9 @@ function loadTeacherAdjustmentsListInSummary() {
   if (!yearEl || !monthEl || !adjContainer || !adjTbody) return;
 
   const selectedTeacher = teacherSelect ? teacherSelect.value : '';
-  const year = parseInt(yearEl.value);
-  const month = parseInt(monthEl.value);
+  const today = new Date();
+  const year = parseInt(yearEl ? yearEl.value : '') || today.getFullYear();
+  const month = parseInt(monthEl ? monthEl.value : '') || (today.getMonth() + 1);
 
   const thMonths = ['', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
   const monthName = thMonths[month] || '';
