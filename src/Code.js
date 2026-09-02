@@ -2695,8 +2695,10 @@ function getActivityLogs(logUser) {
 
     }
 
+    if (Array.isArray(logs) && logs.length > 0) {
+      setCacheObject(cacheKey, logs, 1800);
+    }
     return logs;
-
   } catch (e) {
 
     return { error: e.message };
@@ -10288,11 +10290,11 @@ function searchHeadersInSheets_(headerCache, sheetNames, keyword, dayOfWeek) {
 }
 
 function getClassLogs(filterDate, logUser) {
-
-  // ครูสามารถดูข้อมูลตารางเรียนได้
-
-  
-
+  const cacheKey = filterDate ? 'class_logs_' + filterDate : 'class_logs_all';
+  const cachedData = getCacheObject(cacheKey);
+  if (cachedData && Array.isArray(cachedData)) {
+    return cachedData;
+  }
   try {
 
     // ensureDataLearnMigrated(getDb());
@@ -14544,77 +14546,69 @@ function runDebugHeaders() {
 }
 
 function getCacheObject(key) {
-
   try {
-
     const cache = CacheService.getScriptCache();
-
-    const cached = cache.get(key);
-
-    if (cached) {
-
-      return JSON.parse(cached);
-
+    const numChunksStr = cache.get(key + '_chunks');
+    if (numChunksStr) {
+      const numChunks = parseInt(numChunksStr, 10);
+      const chunkKeys = [];
+      for (let i = 0; i < numChunks; i++) {
+        chunkKeys.push(`${key}_c${i}`);
+      }
+      const chunks = cache.getAll(chunkKeys);
+      let fullStr = '';
+      for (let i = 0; i < numChunks; i++) {
+        const cVal = chunks[`${key}_c${i}`];
+        if (!cVal) return null;
+        fullStr += cVal;
+      }
+      return JSON.parse(fullStr);
     }
 
+    const cached = cache.get(key);
+    if (cached) {
+      return JSON.parse(cached);
+    }
   } catch (e) {
-
     Logger.log('Cache read error: ' + e.message);
-
   }
-
   return null;
-
 }
 
 function clearCacheObject(key) {
-
   try {
-
     const cache = CacheService.getScriptCache();
-
-    cache.remove(key);
-
+    const numChunksStr = cache.get(key + '_chunks');
+    if (numChunksStr) {
+      const numChunks = parseInt(numChunksStr, 10);
+      const toRemove = [key, key + '_chunks'];
+      for (let i = 0; i < numChunks; i++) {
+        toRemove.push(`${key}_c${i}`);
+      }
+      cache.removeAll(toRemove);
+    } else {
+      cache.remove(key);
+    }
   } catch (e) {}
-
 }
 
 function deleteCacheObject(key) {
-
   return clearCacheObject(key);
-
 }
 
 function invalidateStudentCache() {
-
   clearCacheObject('students_list');
-
   clearCacheObject('low_balance_private_students');
-
-  
-
-  // Invalidate sheet-specific enrollment mappings
-
   try {
-
     const db = getDb();
-
     const sheets = db.getSheets();
-
     sheets.forEach(sheet => {
-
       const name = sheet.getName();
-
       if (name.match(/^(ป\.|ม\.|อนุบาล)/) || name.match(/^(ย่อย)/)) {
-
         clearCacheObject('enroll_map_' + name.replace(/\s+/g, '_'));
-
       }
-
     });
-
   } catch (e) {}
-
 }
 
 function ensureTeacherIDs() {
@@ -14622,20 +14616,30 @@ function ensureTeacherIDs() {
 }
 
 function setCacheObject(key, obj, expirationInSeconds) {
-
   try {
-
     const cache = CacheService.getScriptCache();
-
-    cache.put(key, JSON.stringify(obj), expirationInSeconds || 21600);
-
+    const str = JSON.stringify(obj);
+    const chunkSize = 90000;
+    if (str.length <= chunkSize) {
+      cache.put(key, str, expirationInSeconds || 21600);
+      cache.remove(key + '_chunks');
+    } else {
+      const numChunks = Math.ceil(str.length / chunkSize);
+      const cacheObj = {};
+      for (let i = 0; i < numChunks; i++) {
+        const cKey = `${key}_c${i}`;
+        cacheObj[cKey] = str.substring(i * chunkSize, (i + 1) * chunkSize);
+      }
+      cacheObj[key + '_chunks'] = String(numChunks);
+      cache.putAll(cacheObj, expirationInSeconds || 21600);
+    }
   } catch (e) {
-
+    Logger.log('setCacheObject error: ' + e.message);
   }
-
 }
 
 function clearClassLogsCache(dateStr) {
+  clearCacheObject('class_logs_all');
 
   if (dateStr) {
 
