@@ -3,6 +3,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
+    <title>บ้านครูปุ๊กปิ๊ก</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./src/Styles.css?v=1788083618318">
 
@@ -4294,6 +4295,7 @@ function getSessionData() {
 }
 
 function checkSession() {
+  document.title = 'บ้านครูปุ๊กปิ๊ก';
   const urlParams = new URLSearchParams(window.location.search);
   const urlUser = urlParams.get('logUser');
   if (urlUser) {
@@ -6876,7 +6878,7 @@ function matchRoomAndBranch(roomBranch, roomName, branchName) {
 
   
 
-  const escapedRN = cleanRN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\<script src="src/JavaScript.js?v=1788351924559" charset="utf-8"></script>');
+  const escapedRN = cleanRN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\<script src="src/JavaScript.js?v=1788351964349" charset="utf-8"></script>');
 
   const roomRegex = new RegExp('(?:^|\\s)' + escapedRN + '(?!\\d|/)', 'i');
 

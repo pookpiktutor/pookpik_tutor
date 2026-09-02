@@ -532,6 +532,7 @@ function getSessionData() {
 }
 
 function checkSession() {
+  document.title = 'บ้านครูปุ๊กปิ๊ก';
   const urlParams = new URLSearchParams(window.location.search);
   const urlUser = urlParams.get('logUser');
   if (urlUser) {
