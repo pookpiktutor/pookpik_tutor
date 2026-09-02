@@ -11914,10 +11914,21 @@ function renderAllBranchesTeacherSchedule() {
     return { name: branch || room || 'สาขา 1 (PMY)', code: 'B1' };
   }
 
+  function cleanTeacherName(raw1, raw2) {
+    let t = (raw1 || '').toString().trim();
+    if (!t || t.includes('T00:00:00') || t.match(/^\d{4}-\d{2}-\d{2}/)) {
+      t = (raw2 || '').toString().trim();
+    }
+    if (!t || t.includes('T00:00:00') || t.match(/^\d{4}-\d{2}-\d{2}/)) {
+      return 'ไม่ระบุชื่อครู';
+    }
+    return t;
+  }
+
   let filtered = logs.filter(c => {
-    const teacherName = (c.teacherRegular || c.teacherSub || '').toLowerCase();
-    if (!teacherName) return false;
-    if (searchFilter && !teacherName.includes(searchFilter)) return false;
+    const tName = cleanTeacherName(c.teacherRegular, c.teacherSub).toLowerCase();
+    if (!tName || tName === 'ไม่ระบุชื่อครู') return false;
+    if (searchFilter && !tName.includes(searchFilter)) return false;
     if (targetDayOfWeek !== 'ALL' && c.dayOfWeek && c.dayOfWeek !== targetDayOfWeek) return false;
     return true;
   });
@@ -11925,8 +11936,8 @@ function renderAllBranchesTeacherSchedule() {
   // Group classes by Teacher Name
   const teacherMap = {};
   filtered.forEach(c => {
-    const tName = (c.teacherRegular || c.teacherSub || '').trim();
-    if (!tName) return;
+    const tName = cleanTeacherName(c.teacherRegular, c.teacherSub);
+    if (!tName || tName === 'ไม่ระบุชื่อครู') return;
 
     if (!teacherMap[tName]) {
       teacherMap[tName] = { b1: [], b2: [], b3: [], other: [] };
@@ -11973,26 +11984,26 @@ function renderAllBranchesTeacherSchedule() {
 
   function renderClassCards(classList) {
     if (!classList || classList.length === 0) {
-      return '<span style="color: #9ca3af; font-size: 0.8rem;">-</span>';
+      return '<span style="color: #9ca3af; font-size: 0.74rem;">-</span>';
     }
     return classList.map(c => `
-      <div style="background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-        <div style="font-weight: 700; font-size: 0.84rem; color: var(--text-main);">${c.subject || '-'} ${c.grade ? '<span style="font-weight: normal; color: #6b7280; font-size: 0.78rem;">(' + c.grade + ')</span>' : ''}</div>
-        <div style="font-size: 0.78rem; color: var(--color-primary-hover); font-weight: 600; margin-top: 2px;">🚪 ${c.room || '-'}</div>
-        <div style="font-size: 0.78rem; color: #374151; font-weight: 600; margin-top: 2px;">⏰ ${c.timeStr || '-'}</div>
+      <div style="background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; padding: 5px 8px; margin-bottom: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+        <div style="font-weight: 700; font-size: 0.76rem; color: #1f2937;">${c.subject || '-'} ${c.grade ? '<span style="font-weight: 500; color: #6b7280; font-size: 0.72rem;">(' + c.grade + ')</span>' : ''}</div>
+        <div style="font-size: 0.70rem; color: var(--color-primary-hover); font-weight: 600; margin-top: 1px;">🚪 ${c.room || '-'}</div>
+        <div style="font-size: 0.70rem; color: #4b5563; font-weight: 600; margin-top: 1px;">⏰ ${c.timeStr || '-'}</div>
       </div>
     `).join('');
   }
 
   let html = `
-    <div class="table-responsive">
-      <table class="data-table" style="width: 100%; border-collapse: collapse;">
+    <div class="table-responsive" style="max-height: 72vh; overflow-y: auto; position: relative; border-radius: 8px; border: 1px solid rgba(0,0,0,0.08);">
+      <table class="data-table" style="width: 100%; border-collapse: separate; border-spacing: 0;">
         <thead>
-          <tr style="background: rgba(15,23,42,0.04); font-size: 0.85rem;">
-            <th style="padding: 12px 14px; text-align: left; width: 180px;">ชื่อครูผู้สอน</th>
-            <th style="padding: 12px 14px; text-align: left; background: rgba(37, 99, 235, 0.06); color: #1d4ed8; width: 27%;">📍 สาขา 1 (PMY)</th>
-            <th style="padding: 12px 14px; text-align: left; background: rgba(217, 119, 6, 0.06); color: #b45309; width: 27%;">📍 สาขา 2 (ระยองวิทย์)</th>
-            <th style="padding: 12px 14px; text-align: left; background: rgba(124, 58, 237, 0.06); color: #6d28d9; width: 27%;">📍 สาขา 3 (อัสสัมชัญ)</th>
+          <tr>
+            <th style="position: sticky; top: 0; z-index: 10; background: #f8fafc; padding: 8px 10px; text-align: left; font-size: 0.76rem; font-weight: 700; color: #334155; border-bottom: 2px solid #cbd5e1; width: 160px;">ชื่อครูผู้สอน</th>
+            <th style="position: sticky; top: 0; z-index: 10; background: #eff6ff; padding: 8px 10px; text-align: left; font-size: 0.76rem; font-weight: 700; color: #1d4ed8; border-bottom: 2px solid #bfdbfe; width: 28%;">📍 สาขา 1 (PMY)</th>
+            <th style="position: sticky; top: 0; z-index: 10; background: #fffbeb; padding: 8px 10px; text-align: left; font-size: 0.76rem; font-weight: 700; color: #b45309; border-bottom: 2px solid #fde68a; width: 28%;">📍 สาขา 2 (ระยองวิทย์)</th>
+            <th style="position: sticky; top: 0; z-index: 10; background: #f5f3ff; padding: 8px 10px; text-align: left; font-size: 0.76rem; font-weight: 700; color: #6d28d9; border-bottom: 2px solid #ddd6fe; width: 28%;">📍 สาขา 3 (อัสสัมชัญ)</th>
           </tr>
         </thead>
         <tbody>
@@ -12005,17 +12016,17 @@ function renderAllBranchesTeacherSchedule() {
 
     html += `
       <tr style="border-bottom: 1px solid rgba(0,0,0,0.06); vertical-align: top;">
-        <td style="padding: 12px 14px; font-weight: 700; font-size: 0.92rem; color: var(--color-primary-hover);">
+        <td style="padding: 8px 10px; font-weight: 700; font-size: 0.78rem; color: var(--color-primary-hover); border-bottom: 1px solid #f1f5f9;">
           👤 ${tName}
-          ${isMultiBranch ? `<div style="margin-top: 4px;"><span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; color: #dc2626; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3);" title="ครูท่านนี้สอนมากกว่า 1 สาขาในวันเดียวกัน">⚡ สอน ${branchCount} สาขา/วัน</span></div>` : ''}
+          ${isMultiBranch ? `<div style="margin-top: 3px;"><span style="display: inline-block; padding: 1px 5px; border-radius: 4px; font-size: 0.64rem; font-weight: 700; color: #dc2626; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.25);" title="ครูท่านนี้สอนมากกว่า 1 สาขาในวันเดียวกัน">⚡ สอน ${branchCount} สาขา/วัน</span></div>` : ''}
         </td>
-        <td style="padding: 10px 12px; background: rgba(37, 99, 235, 0.015);">
+        <td style="padding: 6px 8px; background: rgba(37, 99, 235, 0.012); border-bottom: 1px solid #f1f5f9;">
           ${renderClassCards(tData.b1)}
         </td>
-        <td style="padding: 10px 12px; background: rgba(217, 119, 6, 0.015);">
+        <td style="padding: 6px 8px; background: rgba(217, 119, 6, 0.012); border-bottom: 1px solid #f1f5f9;">
           ${renderClassCards(tData.b2)}
         </td>
-        <td style="padding: 10px 12px; background: rgba(124, 58, 237, 0.015);">
+        <td style="padding: 6px 8px; background: rgba(124, 58, 237, 0.012); border-bottom: 1px solid #f1f5f9;">
           ${renderClassCards(tData.b3)}
         </td>
       </tr>
