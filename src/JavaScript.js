@@ -6215,229 +6215,52 @@ function updateRoundFilterDropdown() {
   optAll.innerText = '-- แสดงทุกรอบเรียน --';
   filterSelect.appendChild(optAll);
 
-  const staticRounds = ['MIDTERM 1', 'MIDTERM 2', 'FINAL 1', 'FINAL 2', 'ปิดเทอม ต.ค.', 'Summer'];
-  staticRounds.forEach(r => {
-    const opt = document.createElement('option');
-    opt.value = r;
-    opt.innerText = r;
-    filterSelect.appendChild(opt);
-  });
+  const foundRounds = new Set();
 
-  
-
-  // 3. Find unique year-specific rounds actually present in the sheet
-
-  const courses = state.gradeSheetData.courses;
-
-  const yearSpecificRounds = new Set();
-
-  courses.forEach(c => {
-
-    const round = getCourseRound(c.courseName);
-
-    if (round && round !== 'None' && round.includes('/')) {
-
-      yearSpecificRounds.add(round);
-
-    }
-
-  });
-
-  
-
-  // Add year-specific rounds
-
-  yearSpecificRounds.forEach(r => {
-
-    const opt = document.createElement('option');
-
-    opt.value = r;
-
-    opt.innerText = r;
-
-    filterSelect.appendChild(opt);
-
-  });
-
-  
-
-  // 4. Add unspecified option if there are courses with no round
-
-  let hasNone = false;
-
-  courses.forEach(c => {
-
-    if (getCourseRound(c.courseName) === 'None') {
-
-      hasNone = true;
-
-    }
-
-  });
-
-  
-
-  if (hasNone) {
-
-    const optNone = document.createElement('option');
-
-    optNone.value = 'ไม่ระบุรอบเรียน';
-
-    optNone.innerText = 'ไม่ระบุรอบเรียน';
-
-    filterSelect.appendChild(optNone);
-
+  // 1. Extract rounds from loaded course headers in database
+  if (state.gradeSheetData && Array.isArray(state.gradeSheetData.courses)) {
+    state.gradeSheetData.courses.forEach(c => {
+      const r = getCourseRound(c.courseName);
+      if (r && r !== 'None') {
+        foundRounds.add(r);
+      }
+    });
   }
 
-  
+  // 2. Add fallback rounds with year (/69) if empty or database not loaded
+  if (foundRounds.size === 0) {
+    const curYearBE = (new Date().getFullYear() + 543).toString().slice(-2);
+    const baseRounds = [
+      'MIDTERM 1/' + curYearBE,
+      'MIDTERM 2/' + curYearBE,
+      'FINAL 1/' + curYearBE,
+      'FINAL 2/' + curYearBE,
+      'ปิดเทอม ต.ค./' + curYearBE,
+      'Summer/' + curYearBE,
+      'MIDTERM 1',
+      'MIDTERM 2',
+      'FINAL 1',
+      'FINAL 2',
+      'ปิดเทอม ต.ค.',
+      'Summer'
+    ];
+    baseRounds.forEach(r => foundRounds.add(r));
+  }
 
-  // Restore previously selected filter value if still valid
+  // 3. Render options into dropdown
+  Array.from(foundRounds).forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r;
+    opt.innerText = r;
+    filterSelect.appendChild(opt);
+  });
 
-  const allAvailableValues = ['ALL', ...staticRounds, ...yearSpecificRounds, 'ไม่ระบุรอบเรียน'];
-
-  if (allAvailableValues.includes(curVal)) {
-
+  if (curVal && Array.from(filterSelect.options).some(o => o.value === curVal)) {
     filterSelect.value = curVal;
-
-    state.gradeSheetFilterRound = curVal;
-
   } else {
-
     filterSelect.value = 'ALL';
-
-    state.gradeSheetFilterRound = 'ALL';
-
-  }
-
-}
-
-
-
-function filterGradeSheetGrid() {
-
-  const filterSelect = document.getElementById('grade_sheet_round_filter');
-
-
-  if (filterSelect) {
-    state.gradeSheetFilterRound = filterSelect.value;
-    renderGradeSheetTable();
   }
 }
-
-function syncAllFinancials() {
-  const btn = document.getElementById('btn_sync_all_financials');
-  if (!confirm('ต้องการซิงค์ข้อมูลการเงินทั้งหมดจาก StatusDB ลงตารางกลุ่มหลักหรือไม่? การดำเนินการนี้อาจใช้เวลาสักครู่')) return;
-  
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '🔄 กำลังซิงค์...';
-  }
-  setLoading(true, 'กำลังซิงค์ข้อมูลการเงินทั้งหมด...');
-  
-  google.script.run
-    .withSuccessHandler(res => {
-      setLoading(false);
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = '🔄 ซิงค์ยอดเงินทั้งหมด';
-      }
-      showToast('ซิงค์ข้อมูลสำเร็จ: ' + res, 'success');
-      loadGradeSheetGrid(true); // reload current view silently
-    })
-    .withFailureHandler(err => {
-      setLoading(false);
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = '🔄 ซิงค์ยอดเงินทั้งหมด';
-      }
-      showToast('เกิดข้อผิดพลาดในการซิงค์ข้อมูล: ' + err.message, 'error');
-    })
-    .migrateGradeSheetsFinancials();
-}
-
-
-
-function loadGradeSheetGrid(isSilent = false) {
-
-  const grade = document.getElementById('grade_sheet_grade_select').value;
-
-  const branch = document.getElementById('grade_sheet_branch_select').value;
-
-  
-
-  if (!isSilent) setLoading(true, 'กำลังโหลดสเปรดชีตจัดห้องเรียน ' + grade + ' ของ ' + branch + '...');
-
-  google.script.run
-
-    .withSuccessHandler(res => {
-
-      if (!isSilent) setLoading(false);
-
-      if (res && res.success) {
-
-        state.gradeSheetData = res;
-
-        updateRoundFilterDropdown();
-
-        renderGradeSheetTable();
-
-      } else if (!isSilent) {
-
-        showToast('ไม่สามารถโหลดวิชาและโครงสร้างคอร์สของห้องนี้ได้: ' + (res ? res.error : 'unknown'), 'error');
-
-      }
-
-    })
-
-    .withFailureHandler(err => {
-
-      if (!isSilent) {
-
-        setLoading(false);
-
-        showToast('การเชื่อมต่อนอกสถานที่ล้มเหลว: ' + err.message, 'error');
-
-      }
-
-    })
-
-    .getGradeSheetData(grade, branch, getLogUser());
-
-}
-function searchGlobalBackend() {
-  const input = document.getElementById('grade_sheet_search');
-  if (!input) return;
-  const term = input.value.trim();
-  if (!term) {
-    showToast('กรุณาพิมพ์ชื่อหรือชื่อเล่นที่ต้องการค้นหา', 'warning');
-    return;
-  }
-  
-  // Set grade and branch to "all" automatically for global search
-  const gradeSelect = document.getElementById('grade_sheet_grade_select');
-  const branchSelect = document.getElementById('grade_sheet_branch_select');
-  if (gradeSelect) gradeSelect.value = 'all';
-  if (branchSelect) branchSelect.value = 'all';
-  
-  setLoading(true, 'กำลังค้นหานักเรียนทั่วทั้งระบบ...');
-  google.script.run
-    .withSuccessHandler(res => {
-      setLoading(false);
-      if (res && res.success) {
-        state.gradeSheetData = res;
-        updateRoundFilterDropdown();
-        renderGradeSheetTable();
-      } else {
-        showToast('ค้นหาล้มเหลว: ' + (res ? res.error : 'unknown'), 'error');
-      }
-    })
-    .withFailureHandler(err => {
-      setLoading(false);
-      showToast('การเชื่อมต่อนอกสถานที่ล้มเหลว: ' + err.message, 'error');
-    })
-    .getGradeSheetData('all', 'all', getLogUser(), term);
-}
-
 
 function editStudentFromGradeSheet(studentName) {
   if (!studentName) return;
@@ -20560,7 +20383,7 @@ window.openStudentModal = function(id = null, studentName = null) {
     }
 
     // Primary: Try local state.students first (data already loaded in table)
-    const cleanName = studentName ? studentName.replace(/\s+/g, '').trim() : '';
+    const cleanName = (name || id || '').toString().replace(/\s+/g, '').trim();
 
     const localStudent = state.students.find(s => {
       if (s.id === id) return true;
@@ -20583,8 +20406,12 @@ window.openStudentModal = function(id = null, studentName = null) {
 
     // Helper function to fallback to Grade Sheet data
     const fallbackToGradeSheet = () => {
+      const targetClean = (name || id || '').toString().replace(/\s+/g, '').trim();
+      const selectedGrade = document.getElementById('grade_sheet_grade_select') ? document.getElementById('grade_sheet_grade_select').value : '';
+      const selectedBranch = document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : '';
+
       const gsMatch = state.gradeSheetData && state.gradeSheetData.students ? 
-            state.gradeSheetData.students.find(s => s.name && s.name.replace(/\s+/g, '').trim() === cleanName) : null;
+            state.gradeSheetData.students.find(s => s.name && (s.name.replace(/\s+/g, '').trim() === targetClean || (s.studentId && s.studentId === id))) : null;
       
       if (gsMatch) {
         const fakeData = {
@@ -20596,18 +20423,16 @@ window.openStudentModal = function(id = null, studentName = null) {
           LineName: gsMatch.lineName || '',
           LineID: gsMatch.lineId || '',
           ClassType: 'กลุ่มหลัก',
-          Grade: gsMatch.grade || '',
-          BranchLearn: gsMatch.branchLearn || gsMatch.branch || '',
-          BranchPay: gsMatch.branchPay || '',
+          Grade: gsMatch.grade || selectedGrade || 'ม.1',
+          BranchLearn: gsMatch.branchLearn || gsMatch.branch || selectedBranch || 'สาขา1',
+          BranchPay: gsMatch.branchPay || selectedBranch || 'สาขา1',
           FullAmount: gsMatch.full || 0,
           PaidAmount: gsMatch.paid || 0,
-          Outstanding: gsMatch.outstanding || 0,
-          Course: gsMatch.courses ? gsMatch.courses.map(c => c.courseName).join(', ') : ''
+          Outstanding: gsMatch.outstanding || 0
         };
         state.selectedStudent = fakeData;
         populateEditForm(fakeData);
         document.getElementById('student_modal').classList.add('active');
-        showToast('ดึงข้อมูลจากตารางคะแนน (ไม่พบใน StatusDB)', 'info');
       } else {
         showToast('ไม่พบข้อมูลนักเรียนรายนี้ในระบบ', 'error');
       }
