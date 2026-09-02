@@ -508,256 +508,118 @@ function initIdleTimer() {
 
 
 
+
 function saveSessionData(user) {
+  window._sessionUser = user;
   try {
     sessionStorage.setItem('pookpik_session', JSON.stringify(user));
-  } catch (e) {
-    console.warn('sessionStorage save failed, using memory fallback', e);
-  }
-  window._sessionUser = user;
+  } catch (e) { }
+  try {
+    localStorage.setItem('pookpik_session', JSON.stringify(user));
+  } catch (e) { }
 }
 
 function getSessionData() {
   if (window._sessionUser) return window._sessionUser;
   try {
     const s = sessionStorage.getItem('pookpik_session');
-    if (s && s !== 'undefined' && s !== 'null') {
-      return JSON.parse(s);
-    }
-  } catch (e) {
-    console.warn('sessionStorage read failed', e);
-  }
+    if (s && s !== 'undefined' && s !== 'null') return JSON.parse(s);
+  } catch (e) { }
+  try {
+    const l = localStorage.getItem('pookpik_session');
+    if (l && l !== 'undefined' && l !== 'null') return JSON.parse(l);
+  } catch (e) { }
   return null;
 }
 
 function checkSession() {
-
-  // Check URL parameters first (like LINE OA)
-
   const urlParams = new URLSearchParams(window.location.search);
-
-  const urlUser = urlParams.get("logUser");
-
+  const urlUser = urlParams.get('logUser');
   if (urlUser) {
-
-    sessionStorage.setItem('pookpik_session', JSON.stringify({
-
+    saveSessionData({
       username: urlUser,
-
       role: urlUser.toLowerCase().includes('admin') ? 'Administrator' : (urlUser.toLowerCase().includes('staff') ? 'Staff' : 'Teacher')
-
-    }));
-
+    });
   }
 
-
-
-  const session = sessionStorage.getItem('pookpik_session');
-  if (session && session !== 'undefined' && session !== 'null') {
+  const sessionUser = getSessionData();
+  if (sessionUser) {
     try {
+      state.currentUser = sessionUser;
 
-      state.currentUser = JSON.parse(session);
-
-      // Hide login overlay immediately to prevent locking the screen on load
-
-      if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'none';
-
-      
+      const overlay = document.getElementById('login_overlay');
+      if (overlay) overlay.style.display = 'none';
 
       const isTeacher = (state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู');
 
-      
-
       if (isTeacher) {
-
-        if(document.getElementById('app_shell')) document.getElementById('app_shell').style.display = 'none';
-
-        if(document.getElementById('teacher_app_shell')) document.getElementById('teacher_app_shell').style.display = 'flex';
-
-        
-
-        // Fetch full profile info to display correct details in the sidebar
+        if (document.getElementById('app_shell')) document.getElementById('app_shell').style.display = 'none';
+        if (document.getElementById('teacher_app_shell')) document.getElementById('teacher_app_shell').style.display = 'flex';
 
         google.script.run
-
           .withSuccessHandler(res => {
-
             if (res && res.success && res.profile) {
-
               const p = res.profile;
-
-              // Separate Username and Nickname: Show "Nick (Username)" or just Nick
-
               const displayName = p.nickname ? `${p.nickname} (${p.username})` : p.username;
-
-              document.getElementById('teacher_user_display').innerText = displayName;
-
-              
-
-              // Load extra details
-
-              document.getElementById('teacher_sidebar_username').innerText = p.username || '-';
-              document.getElementById('teacher_sidebar_fullname').innerText = p.fullName || '-';
-              document.getElementById('teacher_sidebar_nickname').innerText = p.nickname || '-';
-              document.getElementById('teacher_sidebar_phone').innerText = formatPhone(p.phone) || '-';
-              document.getElementById('teacher_sidebar_school').innerText = p.school || '-';
-              document.getElementById('teacher_sidebar_subjects').innerText = p.subjects || '-';
-              document.getElementById('teacher_sidebar_account_type').innerText = p.accountType || '-';
-              document.getElementById('teacher_sidebar_bank').innerText = p.bank || '-';
-              document.getElementById('teacher_sidebar_account').innerText = p.accountNumber || '-';
-
+              if (document.getElementById('teacher_user_display')) document.getElementById('teacher_user_display').innerText = displayName;
+              if (document.getElementById('teacher_sidebar_username')) document.getElementById('teacher_sidebar_username').innerText = p.username || '-';
+              if (document.getElementById('teacher_sidebar_fullname')) document.getElementById('teacher_sidebar_fullname').innerText = p.fullName || '-';
+              if (document.getElementById('teacher_sidebar_nickname')) document.getElementById('teacher_sidebar_nickname').innerText = p.nickname || '-';
+              if (document.getElementById('teacher_sidebar_phone')) document.getElementById('teacher_sidebar_phone').innerText = formatPhone(p.phone) || '-';
+              if (document.getElementById('teacher_sidebar_school')) document.getElementById('teacher_sidebar_school').innerText = p.school || '-';
+              if (document.getElementById('teacher_sidebar_subjects')) document.getElementById('teacher_sidebar_subjects').innerText = p.subjects || '-';
+              if (document.getElementById('teacher_sidebar_account_type')) document.getElementById('teacher_sidebar_account_type').innerText = p.accountType || '-';
+              if (document.getElementById('teacher_sidebar_bank')) document.getElementById('teacher_sidebar_bank').innerText = p.bank || '-';
+              if (document.getElementById('teacher_sidebar_account')) document.getElementById('teacher_sidebar_account').innerText = p.accountNumber || '-';
             }
-
           })
-
           .getUserProfile(state.currentUser.username);
 
-        
-
-        const displayName = state.currentUser.nickname || state.currentUser.username;
-
-        document.getElementById('teacher_user_display').innerText = displayName;
-
-        
-
-        const mobNameEl = document.getElementById('teacher_mobile_name');
-
-        if (mobNameEl) {
-
-          mobNameEl.innerText = state.currentUser.nickname || state.currentUser.username || 'คุณครู';
-
-        }
-
-        
-
-        const avatarLettersEl = document.getElementById('teacher_avatar_letters');
-
-        if (state.currentUser.profilePic && state.currentUser.profilePic !== '-') {
-
-          if (avatarLettersEl) avatarLettersEl.innerHTML = `<img src="${state.currentUser.profilePic}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
-
-          if (avatarLettersEl) avatarLettersEl.style.background = 'transparent';
-
-        } else {
-
-          if (avatarLettersEl) avatarLettersEl.innerText = displayName.substring(0, 2).toUpperCase();
-
-          if (avatarLettersEl) avatarLettersEl.style.background = 'var(--color-brown)';
-
-        }
-
-        
-
-        // Load default dates for teacher filter
+        const displayName = state.currentUser.nickname || state.currentUser.username || 'คุณครู';
+        if (document.getElementById('teacher_user_display')) document.getElementById('teacher_user_display').innerText = displayName;
+        if (document.getElementById('teacher_mobile_name')) document.getElementById('teacher_mobile_name').innerText = displayName;
 
         initTeacherFilterDates();
-
-        loadTeacherDailySchedule();
-
+        if (typeof loadTeacherDailySchedule === 'function') loadTeacherDailySchedule();
       } else {
-
-        if(document.getElementById('teacher_app_shell')) document.getElementById('teacher_app_shell').style.display = 'none';
-
-        if(document.getElementById('app_shell')) document.getElementById('app_shell').style.display = 'flex';
-
-        
-
-        // Update displayed name
+        if (document.getElementById('teacher_app_shell')) document.getElementById('teacher_app_shell').style.display = 'none';
+        if (document.getElementById('app_shell')) document.getElementById('app_shell').style.display = 'flex';
 
         const displayName = String(state.currentUser.nickname || state.currentUser.username || '');
+        if (document.getElementById('current_user_display')) document.getElementById('current_user_display').innerText = displayName;
+        if (document.getElementById('current_role_display')) document.getElementById('current_role_display').innerText = state.currentUser.role || 'Staff';
 
-        document.getElementById('current_user_display').innerText = displayName;
-
-        document.getElementById('current_role_display').innerText = state.currentUser.role;
-
-        
-
-        const avatarLettersEl = document.getElementById('avatar_letters');
-
-        if (state.currentUser.profilePic && state.currentUser.profilePic !== '-') {
-
-          if (avatarLettersEl) avatarLettersEl.innerHTML = `<img src="${state.currentUser.profilePic}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
-
-          if (avatarLettersEl) avatarLettersEl.style.background = 'transparent';
-
-        } else {
-
-          if (avatarLettersEl) avatarLettersEl.innerText = displayName.substring(0, 2).toUpperCase();
-
-          if (avatarLettersEl) avatarLettersEl.style.background = 'var(--color-brown)';
-
-        }
-
-        
-
-        // Bootstrap App Data
-
-        bootApp();
-
+        if (typeof bootApp === 'function') bootApp();
       }
 
-      startHeartbeat();
-
-      initIdleTimer();
+      if (typeof startHeartbeat === 'function') startHeartbeat();
+      if (typeof initIdleTimer === 'function') initIdleTimer();
 
     } catch (e) {
-
       console.error('System Error in checkSession:', e);
-
-      if (e instanceof SyntaxError) {
-
-        sessionStorage.removeItem('pookpik_session');
-
-        showLoginScreen();
-
-      } else {
-
-        if (window.showToast) {
-
-          showToast('หน้าจอมีปัญหาบางส่วน: ' + e.message, 'warning');
-
+      const overlay = document.getElementById('login_overlay');
+      if (overlay) overlay.style.display = 'none';
+      if (state.currentUser) {
+        if (state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู') {
+          if (document.getElementById('teacher_app_shell')) document.getElementById('teacher_app_shell').style.display = 'flex';
+          if (typeof loadTeacherDailySchedule === 'function') loadTeacherDailySchedule();
+        } else {
+          if (document.getElementById('app_shell')) document.getElementById('app_shell').style.display = 'flex';
+          if (typeof bootApp === 'function') bootApp();
         }
-
-        if (state.currentUser) {
-
-          if (state.currentUser.role === 'Teacher' || state.currentUser.role === 'ครู') {
-
-            if (typeof loadTeacherDailySchedule === 'function') loadTeacherDailySchedule();
-
-          } else {
-
-            if (typeof bootApp === 'function') bootApp();
-
-          }
-
-        }
-
       }
-
     }
-
   } else {
-
     showLoginScreen();
-
   }
-
 }
-
-
 
 function showLoginScreen() {
-
+  if (getSessionData()) return;
   if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'flex';
-
   if(document.getElementById('app_shell')) document.getElementById('app_shell').style.display = 'none';
-
   if(document.getElementById('teacher_app_shell')) document.getElementById('teacher_app_shell').style.display = 'none';
-
 }
-
-
-
 
 function setLoginError(msg) {
   const errEl = document.getElementById('login_error_msg');
