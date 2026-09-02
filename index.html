@@ -10210,6 +10210,50 @@ function openEditModalByName(studentName) {
 
 
 
+function loadGradeSheetGrid(isSilent = false) {
+  const gradeEl = document.getElementById('grade_sheet_grade_select');
+  const branchEl = document.getElementById('grade_sheet_branch_select');
+
+  if (!gradeEl || !branchEl) return;
+
+  const grade = gradeEl.value;
+  const branch = branchEl.value;
+
+  if (!isSilent) {
+    setLoading(true, 'กำลังโหลดสเปรดชีตจัดห้องเรียน ' + grade + ' ของ ' + branch + '...');
+  }
+
+  google.script.run
+    .withSuccessHandler(res => {
+      if (!isSilent) setLoading(false);
+      if (res && res.success) {
+        state.gradeSheetData = res;
+        if (typeof updateRoundFilterDropdown === 'function') {
+          updateRoundFilterDropdown();
+        }
+        if (typeof renderGradeSheetTable === 'function') {
+          renderGradeSheetTable();
+        }
+      } else if (!isSilent) {
+        showToast('ไม่สามารถโหลดวิชาและโครงสร้างคอร์สของห้องนี้ได้: ' + (res ? res.error : 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      if (!isSilent) {
+        setLoading(false);
+        showToast('การเชื่อมต่อนอกสถานที่ล้มเหลว: ' + err.message, 'error');
+      }
+    })
+    .getGradeSheetData(grade, branch, getLogUser());
+}
+
+function loadGradeSheet(isSilent = false) {
+  return loadGradeSheetGrid(isSilent);
+}
+
+window.loadGradeSheetGrid = loadGradeSheetGrid;
+window.loadGradeSheet = loadGradeSheet;
+
 function renderGradeSheetTable() {
 
   const table = document.getElementById('grade_sheet_grid_table');
