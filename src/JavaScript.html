@@ -6204,45 +6204,23 @@ function getCourseRound(courseName) {
 
 
 function updateRoundFilterDropdown() {
-
   const filterSelect = document.getElementById('grade_sheet_round_filter');
-
   if (!filterSelect) return;
 
-  
-
-  const curVal = filterSelect.value;
-
+  const curVal = filterSelect.value || 'ALL';
   filterSelect.innerHTML = '';
 
-  
-
-  // 1. Add ALL option
-
   const optAll = document.createElement('option');
-
   optAll.value = 'ALL';
-
-  optAll.innerText = '-- แสดงทั้งหมด --';
-
+  optAll.innerText = '-- แสดงทุกรอบเรียน --';
   filterSelect.appendChild(optAll);
 
-  
-
-  // 2. Add static base round options
-
   const staticRounds = ['MIDTERM 1', 'MIDTERM 2', 'FINAL 1', 'FINAL 2', 'ปิดเทอม ต.ค.', 'Summer'];
-
   staticRounds.forEach(r => {
-
     const opt = document.createElement('option');
-
     opt.value = r;
-
     opt.innerText = r;
-
     filterSelect.appendChild(opt);
-
   });
 
   
@@ -6462,9 +6440,11 @@ function searchGlobalBackend() {
 
 
 function editStudentFromGradeSheet(studentName) {
-  fetchCachedStudents(false, data => {
-    openEditModalByName(studentName);
-  });
+  if (!studentName) return;
+  openEditModalByName(studentName);
+  if (!state.students || state.students.length === 0) {
+    fetchCachedStudents(false, () => {});
+  }
 }
 
 
@@ -6732,23 +6712,18 @@ function renderGradeSheetTable() {
     
 
     let rowHTML = `
-
       <td>
-
-        <div style="font-weight:600; color: var(--text-main); font-size: 0.9rem;">${s.name}</div>
-
-        <div style="font-size:0.75rem; color:var(--color-primary); margin-top:2px; font-weight:600;">
-
+        <div style="font-weight:700; color: var(--color-primary-hover); font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 3px;" onclick="editStudentFromGradeSheet('${s.studentId || s.name}');" title="คลิกเพื่อแก้ไขข้อมูลนักเรียน">
+          <span>👤 ${s.name}</span>
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; font-weight:600;">
           [${s.branch === 'สาขา1' ? 'สาขา 1' : s.branch === 'สาขา2' ? 'สาขา 2' : 'สาขา 3'}]
-
         </div>
-
-        <div style="margin-top: 4px;">
-
-          <a href="#" onclick="editStudentFromGradeSheet('${s.studentId || s.name}'); return false;" style="font-size: 0.72rem; color: var(--color-primary); text-decoration: underline; font-weight: 600;">✏️ แก้ไขการลงทะเบียนเรียน</a>
-
+        <div>
+          <button type="button" class="btn btn-sm btn-secondary" onclick="editStudentFromGradeSheet('${s.studentId || s.name}');" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600;">
+            ✏️ แก้ไขข้อมูลนักเรียน
+          </button>
         </div>
-
       </td>
 
       <td><div style="font-size:0.85rem; color:var(--text-main); font-weight:500; text-align:center;">${s.nickname || '-'}</div></td>
