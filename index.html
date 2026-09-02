@@ -6833,7 +6833,7 @@ function matchRoomAndBranch(roomBranch, roomName, branchName) {
 
   
 
-  const escapedRN = cleanRN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\<script src="src/JavaScript.js?v=1788353128525" charset="utf-8"></script>');
+  const escapedRN = cleanRN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
   const roomRegex = new RegExp('(?:^|\\s)' + escapedRN + '(?!\\d|/)', 'i');
 
