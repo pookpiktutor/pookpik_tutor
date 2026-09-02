@@ -20842,25 +20842,35 @@ window.runOrganizeStaffDatabase = runOrganizeStaffDatabase;
 
 
 
-function convertAllStudentsToStatusDB() {
-  setLoading(true, 'กำลังแปลงและซิงค์ข้อมูลนักเรียนทั้งหมด (กลุ่มหลัก/เด็กเดี่ยว/กลุ่มย่อย) เข้าสู่ฐานข้อมูล StatusDB...');
+function convertAllStudentsToStatusDB(startIndex = 0, accumulatedAdded = 0) {
+  setLoading(true, 'กำลังแปลงและซิงค์ข้อมูลนักเรียนเข้า StatusDB... (กำลังประมวลผลชุดชีตที่ ' + (startIndex + 1) + ')');
+  
   google.script.run
     .withSuccessHandler(res => {
-      setLoading(false);
       if (res && res.success) {
-        const added = res.addedCount || 0;
-        showToast('แปลงและซิงค์ข้อมูลนักเรียนเข้า StatusDB สำเร็จ! (เพิ่มนักเรียนใหม่ ' + added + ' คน)', 'success');
-        if (typeof loadGridData === 'function') loadGridData();
-        if (typeof loadGradeSheetGrid === 'function') loadGradeSheetGrid(true);
+        const totalAdded = accumulatedAdded + (res.addedCount || 0);
+
+        if (!res.finished && res.nextIndex < res.totalSheets) {
+          setLoading(true, `กำลังแปลงข้อมูลนักเรียนเข้า StatusDB... (เสร็จแล้ว ${res.nextIndex}/${res.totalSheets} ชีต, เพิ่มนักเรียนแล้ว ${totalAdded} คน)`);
+          setTimeout(() => {
+            convertAllStudentsToStatusDB(res.nextIndex, totalAdded);
+          }, 200);
+        } else {
+          setLoading(false);
+          showToast(`แปลงและซิงค์ข้อมูลนักเรียนเข้า StatusDB ครบถ้วน 100% แล้ว! (เพิ่มนักเรียนใหม่รวม ${totalAdded} คน)`, 'success');
+          if (typeof loadGridData === 'function') loadGridData();
+          if (typeof loadGradeSheetGrid === 'function') loadGradeSheetGrid(true);
+        }
       } else {
-        showToast('เกิดข้อผิดพลาดในการแปลงข้อมูล: ' + (res ? res.error : 'unknown'), 'error');
+        setLoading(false);
+        showToast('เกิดข้อผิดพลาดในการซิงค์แปลงข้อมูล: ' + (res ? res.error : 'unknown'), 'error');
       }
     })
     .withFailureHandler(err => {
       setLoading(false);
       showToast('การเชื่อมต่อขัดข้อง: ' + err.message, 'error');
     })
-    .syncMissingStudentsToStatusDB();
+    .syncMissingStudentsToStatusDB(startIndex, 5);
 }
 
 window.convertAllStudentsToStatusDB = convertAllStudentsToStatusDB;

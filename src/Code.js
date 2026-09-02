@@ -16149,265 +16149,133 @@ function getStudentHorizontalData(name, grade, classType, branchLearn) {
   }
 }
 
-function syncMissingStudentsToStatusDB() {
+function syncMissingStudentsToStatusDB(startIndex = 0, maxBatchSheets = 5) {
   try {
     const db = getDb();
     const statusSheet = db.getSheetByName('StatusDB');
     if (!statusSheet) return { success: false, error: 'StatusDB not found' };
     
-    // We will rebuild cachedStatusValues_ manually if it's missing
-    if (!cachedStatusValues_) {
-       const statusLastRow = statusSheet.getLastRow();
-       if (statusLastRow > 0) {
-           cachedStatusValues_ = statusSheet.getRange(1, 1, statusLastRow, 41).getValues();
-       } else {
-           cachedStatusValues_ = [];
-       }
-    }
+    const statusLastRow = statusSheet.getLastRow();
+    const statusData = statusLastRow > 1 ? statusSheet.getRange(1, 1, statusLastRow, 41).getValues() : [];
     
-    let existingNames = new Set();
-    cachedStatusValues_.forEach((row, idx) => {
-        if (idx > 0 && row[1]) {
-            existingNames.add(row[1].toString().replace(/\s+/g, '').trim());
+    const existingNames = new Set();
+    let maxIdNum = 0;
+
+    statusData.forEach((row, idx) => {
+      if (idx > 0 && row[1]) {
+        existingNames.add(row[1].toString().replace(/\s+/g, '').trim());
+        const idStr = (row[0] || '').toString();
+        const m = idStr.match(/STU_(\d+)/i);
+        if (m) {
+          const num = parseInt(m[1], 10);
+          if (num > maxIdNum) maxIdNum = num;
         }
+      }
     });
-    
+
     const allSheets = db.getSheets();
+    const relevantSheets = allSheets.filter(sheet => {
+      const name = sheet.getName();
+      const isPrivate = name.startsWith('เดี่ยว') || name.startsWith('ย่อย') || name.startsWith('กลุ่ม') || name.includes('VIP');
+      const isMain = name.includes('/') || name.includes('ม.') || name.includes('ป.') || name.includes('อนุบาล');
+      return (isPrivate || isMain) && name !== 'StatusDB' && name !== 'Data Learn' && name !== 'UsersDB';
+    });
+
+    const totalSheets = relevantSheets.length;
+    const start = Math.max(0, parseInt(startIndex) || 0);
+    const end = Math.min(totalSheets, start + (parseInt(maxBatchSheets) || 5));
+
     let addedCount = 0;
     let addedNames = [];
-    let pendingUpdates = [];
     let pendingAppends = [];
-    let paymentsToAdd = [];
-    
-    for (let i = 0; i < allSheets.length; i++) {
-      const sheet = allSheets[i];
+
+    for (let i = start; i < end; i++) {
+      const sheet = relevantSheets[i];
       const sheetName = sheet.getName();
       
-      const isPrivate = sheetName.indexOf('เดี่ยว') === 0 || sheetName.indexOf('ย่อย') === 0 || sheetName.indexOf('กลุ่ม') === 0 || sheetName.includes('VIP');
+      const isPrivate = sheetName.startsWith('เดี่ยว') || sheetName.startsWith('ย่อย') || sheetName.startsWith('กลุ่ม') || sheetName.includes('VIP');
       let isMainClass = false;
       let grade = '';
       let branchSuffix = '1';
-      
+
       const matchSlash = sheetName.match(/^(.+)\/(\d+)$/);
       if (matchSlash) {
-          isMainClass = true;
-          grade = matchSlash[1].trim();
-          branchSuffix = matchSlash[2];
-      } else if (!isPrivate && (sheetName.includes('ป.') || sheetName.includes('ม.') || sheetName.includes('อนุบาล'))) {
-          isMainClass = true;
-          grade = sheetName.trim();
+        isMainClass = true;
+        grade = matchSlash[1].trim();
+        branchSuffix = matchSlash[2];
+      } else if (!isPrivate) {
+        isMainClass = true;
+        grade = sheetName.trim();
       }
-      
-      if (!isMainClass && !isPrivate) continue; // Skip non-student sheets
-      
+
       const startRow = isPrivate ? 12 : 6;
       const lastRow = sheet.getLastRow();
       let lastCol = sheet.getLastColumn();
-      if (lastCol < 25) lastCol = 25; // Ensure we read all data columns (at least up to Col Y)
-      
+      if (lastCol < 25) lastCol = 25;
       if (lastRow < startRow) continue;
-      
-      // Read data from Col B (2) to lastCol
-      const data = sheet.getRange(startRow, 2, lastRow - (startRow - 1), lastCol - 1).getValues();
-      // Dynamically find the header row (scan rows 1 to 15)
-      let headerRowIndex = isMainClass ? 5 : 11;
-      let headersRowFull = [];
-      let foundHeader = false;
-      const headerRowsCount = 15;
-      const scanRange = sheet.getRange(1, 1, headerRowsCount, lastCol).getValues();
-      const normalizeText = (text) => (text || '').toString().replace(/[\\s\\u200B-\\u200D\\uFEFF]+/g, '').trim();
-      
-      for (let r = 0; r < scanRange.length; r++) {
-         const rowVals = scanRange[r].map(normalizeText);
-         if (rowVals.includes('ชื่อ-นามสกุล') || rowVals.includes('ชื่อ-สกุล') || rowVals.includes('ชื่อนักเรียน') || rowVals.includes('ชื่อ') || rowVals.includes('โรงเรียน') || rowVals.includes('ชื่อโปรไฟล์ไลน์')) {
-             headerRowIndex = 1 + r; // row index is 1-based
-             headersRowFull = sheet.getRange(headerRowIndex, 1, 1, lastCol).getValues()[0];
-             foundHeader = true;
-         }
-      }
-      if (!foundHeader) headersRowFull = sheet.getRange(headerRowIndex, 1, 1, lastCol).getValues()[0];
-      
-      let headers = [];
-      if (isMainClass && typeof COURSE_START_COL !== 'undefined' && lastCol >= COURSE_START_COL) {
-          headers = headersRowFull.slice(COURSE_START_COL - 1);
-      }
-      
-      const getColIndex = (possibleNames) => {
-          const headerVals = headersRowFull.map(normalizeText);
-          // 1. Exact match in the identified header row
-          for (let n of possibleNames) {
-              const normalizedName = normalizeText(n);
-              const idx = headerVals.indexOf(normalizedName);
-              if (idx !== -1) return idx - 1;
-          }
-          // 2. Exact match in scanRange
-          for (let n of possibleNames) {
-              const normalizedName = normalizeText(n);
-              for (let r = 0; r < scanRange.length; r++) {
-                  const rowVals = scanRange[r].map(normalizeText);
-                  const idx = rowVals.indexOf(normalizedName);
-                  if (idx !== -1) return idx - 1;
-              }
-          }
-          // 3. Includes match in header row (safe fallback)
-          for (let n of possibleNames) {
-              const normalizedName = normalizeText(n);
-              if (['จ่าย', 'ชำระ', 'โอน', 'วันที่', 'เรียน'].includes(normalizedName)) continue;
-              const idx = headerVals.findIndex(h => h.includes(normalizedName));
-              if (idx !== -1) return idx - 1;
-          }
-          return -1;
-      };
-      
-      // Cache the indices
-      const colFull = getColIndex(['ยอดรวม', 'เรียน', 'ค่าเรียนทั้งหมด(บาท)', 'ค่าเรียน(บาท)', 'ค่าเรียน', 'ยอดเรียน', 'ค่าเรียนทั้งหมด', 'ยอดสุทธิ', 'ราคาสุทธิ']);
-      const colOutstanding = getColIndex(['คงเหลือ', 'ค้างชำระทั้งหมด(บาท)', 'ค้างชำระ(บาท)', 'ค้างชำระ', 'ยอดคงเหลือ', 'คงเหลือทั้งหมด(บาท)', 'คงเหลือทั้งหมด', 'ยอดค้างชำระ']);
-      const colPaid = getColIndex(['ยอดจ่ายมา', 'ยอดจ่าย', 'จ่ายมา', 'จ่าย', 'ยอดชำระมา', 'ชำระมา', 'ยอดชำระ', 'ชำระแล้ว', 'ชำระ', 'ชำระเงิน', 'ยอดชำระเงิน', 'ยอดจ่ายเงิน', 'ยอดเงินจ่าย(บาท)', 'ยอดเงินจ่าย', 'จ่ายเงิน', 'รับชำระ', 'รับเงิน', 'ยอดรับเงิน', 'ยอดรับชำระ', 'ยอดเงินที่จ่าย', 'จำนวนเงินที่จ่าย', 'เงินที่ชำระ']);
-      const colDate = getColIndex(['วันที่ชำระเงิน', 'วันที่รับเงิน', 'วันที่โอน', 'วันที่ชำระ', 'วันที่', 'วันที่โอนเงิน', 'วันที่จ่าย', 'วันที่ได้รับ']);
-      const colChannel = getColIndex(['ช่องทางชำระเงิน', 'ช่องทางการรับเงิน', 'ช่องทาง', 'ช่องทางการชำระเงิน', 'ช่องทางจ่าย', 'วิธีชำระ']);
-      const colStaff = getColIndex(['ผู้รับเงิน', 'พนักงาน', 'ชื่อผู้รับเงิน', 'ผู้รับ']);
-      const colCourse = getColIndex(['คอร์ส', 'คอร์สเรียน', 'รอบเรียน']);
-      const colNote = getColIndex(['หมายเหตุ', 'หมายเหตุเพิ่มเติม']);
-      const colBranchLearn = getColIndex(['สาขาเรียน', 'สาขาเรียน(สาขา)', 'สาขาที่เรียน']);
-      const colBranchPay = getColIndex(['สาขาที่เก็บเงิน', 'สาขาเงิน(สาขา)', 'สาขาที่จ่ายเงิน', 'สาขาเงิน']);
-      const colName = getColIndex(['ชื่อ-นามสกุล', 'ชื่อ-สกุล', 'ชื่อ', 'ชื่อนักเรียน']);
-      const colNickname = getColIndex(['ชื่อเล่น']);
-      const colSchool = getColIndex(['โรงเรียน']);
-      const colContact = getColIndex(['เบอร์ติดต่อ', 'เบอร์โทร', 'เบอร์ผู้ปกครอง/เบอร์ติดต่อ', 'เบอร์ผู้ปกครอง']);
-      const colLineName = getColIndex(['ชื่อโปรไฟล์ไลน์', 'ชื่อไลน์', 'profileline']);
-      const colLineId = getColIndex(['idline', 'ไอดีไลน์', 'lineid']);
-      
-      for (let j = 0; j < data.length; j++) {
-        const safeVal = (idx) => (idx !== -1 && data[j] && data[j][idx] !== undefined) ? data[j][idx] : '';
-        
-        const cName = data[j][0] ? data[j][0].toString().trim() : ''; // Col B (ชื่อ-สกุล)
-        // Only skip if both the extracted name and hardcoded Col B are empty
-        
-        let name = safeVal(colName).toString().trim();
-        // Fallback to hardcoded Col B if header not found
-        if (!name && colName === -1) name = cName;
-        
-        if (!name || name === 'ชื่อ-นามสกุล' || name.includes('ชื่อ-สกุล') || name === 'ชื่อ') continue;
-        
-        const cleanName = name.replace(/\s+/g, '');
-        
-        // Extract selected courses for main class
-        let selectedCourses = [];
-        if (isMainClass && headers.length > 0) {
-            const courseColIndexStart = COURSE_START_COL - 2;
-            for (let c = 0; c < headers.length; c++) {
-               const cName = headers[c] ? headers[c].toString().trim() : '';
-               if (!cName) continue;
-               
-               const cellValue = data[j][courseColIndexStart + c];
-               if (cellValue === true || cellValue === 'TRUE' || cellValue === 1 || cellValue === '1') {
-                   selectedCourses.push(cName);
-               }
-            }
-        }
-        
-        const parseCurrency = (val) => {
-            const num = parseFloat((val || '').toString().replace(/,/g, ''));
-            return isNaN(num) ? 0 : num;
-        };
-        
-        // Build student object based on sheet type
-        let std = {
-          name: name,
-          nickname: colNickname !== -1 ? safeVal(colNickname) : (data[j][1] || ''),
-          school: colSchool !== -1 ? safeVal(colSchool) : (data[j][2] || ''),
-          contact: (colContact !== -1 ? safeVal(colContact) : (data[j][4] || '')).toString(),
-          lineName: (colLineName !== -1 ? safeVal(colLineName) : (data[j][5] || '')).toString(),
-          lineId: (colLineId !== -1 ? safeVal(colLineId) : (data[j][6] || '')).toString(),
-          paymentDate: safeVal(colDate),
-          paymentChannel: safeVal(colChannel),
-          staff: safeVal(colStaff),
-          full: parseCurrency(safeVal(colFull)),
-          outstanding: parseCurrency(safeVal(colOutstanding)),
-          paid: parseCurrency(safeVal(colPaid)),
-          selectedCourses: selectedCourses.join(', ') // Add courses!
-        };
-        
-        if (isMainClass) {
-           std.grade = grade;
-           std.classType = 'กลุ่มหลัก';
-           std.branchLearn = safeVal(colBranchLearn) || ('สาขา' + branchSuffix);
-           std.branchPay = safeVal(colBranchPay) || ('สาขา' + branchSuffix);
-           std.round = 'ManualSync';
-        } else {
-           // Private/Subgroup
-           std.grade = sheetName.replace('เดี่ยว ', '').replace('ย่อย ', '').replace('กลุ่ม ', '').trim();
-           std.classType = sheetName.split(' ')[0] === 'เดี่ยว' ? 'เด็กเดี่ยว' : sheetName;
-           std.branchLearn = safeVal(colBranchLearn) || 'สาขา1';
-           std.branchPay = safeVal(colBranchPay) || 'สาขา1';
-           std.round = safeVal(colCourse); // คอร์ส
-           std.extraNote = safeVal(colNote); // หมายเหตุ
-        }
-        
-         let res = syncStudentToStatusDB(std, true);
-         if (res && res.type === 'append') {
-             pendingAppends.push(res.values);
-             if (parseFloat(res.std.paid) > 0) {
-                 paymentsToAdd.push({
-                   StudentID: res.id,
-                   Amount: res.std.paid,
-                   Date: res.std.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'yyyy-MM-dd'),
-                   Channel: res.std.paymentChannel || 'ชำระแรกเข้า',
-                   Receiver: res.std.staff || 'System',
-                   Round: 'แรกเข้า',
-                   Note: res.std.paymentTimeNote || 'จากการลงทะเบียนครั้งแรก'
-                 });
-             }
-         } else if (res && res.type === 'update') {
-             pendingUpdates.push(res);
-         }
-         
-         if (!existingNames.has(cleanName)) {
-            existingNames.add(cleanName);
-            addedCount++;
-            addedNames.push(name);
-         }
-         
 
-       }
-     }
-     
-     const statusSheetObj = db.getSheetByName('StatusDB');
-     if (statusSheetObj) {
-         const slr = Math.max(1, statusSheetObj.getLastRow());
-         let slc = statusSheetObj.getLastColumn();
-         if (slc < 1) slc = 40;
-         const fullData = statusSheetObj.getRange(1, 1, slr, slc).getValues();
-         pendingUpdates.forEach(u => {
-             if (u.rowIndex - 1 < fullData.length) {
-                 fullData[u.rowIndex - 1] = u.values;
-             }
-         });
-         pendingAppends.forEach(row => {
-             fullData.push(row);
-         });
-         if (fullData.length > 0) {
-             const maxCols = Math.max(...fullData.map(r => r.length));
-             fullData.forEach(r => {
-                 while (r.length < maxCols) r.push('');
-                 r.length = maxCols;
-             });
-             statusSheetObj.getRange(1, 1, fullData.length, maxCols).setValues(fullData);
-         }
-     }
-     
-     paymentsToAdd.forEach(p => {
-         try {
-             addPayment(p);
-         } catch (e) {
-             Logger.log('Error adding batch payment: ' + e);
-         }
-     });
-     
-     CacheService.getScriptCache().remove('students_list');
-     return { success: true, addedCount: addedCount, names: addedNames };
+      const data = sheet.getRange(startRow, 2, lastRow - (startRow - 1), lastCol - 1).getValues();
+
+      for (let j = 0; j < data.length; j++) {
+        const rawName = data[j][0] ? data[j][0].toString().trim() : '';
+        if (!rawName || rawName === 'ชื่อ-นามสกุล' || rawName.includes('ชื่อ-สกุล') || rawName === 'ชื่อ') continue;
+
+        const cleanName = rawName.replace(/\s+/g, '');
+        if (existingNames.has(cleanName)) continue;
+
+        maxIdNum++;
+        const newStudentId = 'STU_' + String(maxIdNum).padStart(4, '0');
+
+        const nickname = data[j][1] ? data[j][1].toString().trim() : '';
+        const school = data[j][2] ? data[j][2].toString().trim() : '';
+        const contact = data[j][4] ? data[j][4].toString().trim() : '';
+        const lineName = data[j][5] ? data[j][5].toString().trim() : '';
+        const lineId = data[j][6] ? data[j][6].toString().trim() : '';
+        const classType = isMainClass ? 'กลุ่มหลัก' : (sheetName.startsWith('เดี่ยว') ? 'เด็กเดี่ยว' : sheetName);
+        const stdGrade = isMainClass ? grade : sheetName.replace('เดี่ยว ', '').replace('ย่อย ', '').replace('กลุ่ม ', '').trim();
+        const branchLearn = 'สาขา' + branchSuffix;
+        const branchPay = 'สาขา' + branchSuffix;
+
+        const rowToAppend = new Array(41).fill('');
+        rowToAppend[0] = newStudentId;
+        rowToAppend[1] = rawName;
+        rowToAppend[2] = nickname;
+        rowToAppend[3] = contact;
+        rowToAppend[4] = school;
+        rowToAppend[5] = branchLearn;
+        rowToAppend[6] = lineName;
+        rowToAppend[7] = lineId;
+        rowToAppend[16] = stdGrade;
+        rowToAppend[23] = classType;
+        rowToAppend[24] = branchPay;
+
+        pendingAppends.push(rowToAppend);
+        existingNames.add(cleanName);
+        addedCount++;
+        addedNames.push(rawName);
+      }
+    }
+
+    if (pendingAppends.length > 0) {
+      const nextRow = statusSheet.getLastRow() + 1;
+      statusSheet.getRange(nextRow, 1, pendingAppends.length, 41).setValues(pendingAppends);
+    }
+
+    const isFinished = end >= totalSheets;
+
+    return {
+      success: true,
+      finished: isFinished,
+      nextIndex: isFinished ? totalSheets : end,
+      totalSheets: totalSheets,
+      processedSheets: end,
+      addedCount: addedCount,
+      names: addedNames,
+      message: isFinished 
+        ? `แปลงและซิงค์ข้อมูลนักเรียนเข้า StatusDB ครบถ้วนแล้ว 100%! (ประมวลผล ${totalSheets} ชีต, เพิ่มใหม่ ${addedCount} คน)`
+        : `กำลังซิงค์แปลงข้อมูล... (เสร็จไปแล้ว ${end}/${totalSheets} ชีต)`
+    };
   } catch (err) {
-    Logger.log('Error in syncMissingStudentsToStatusDB: ' + err.toString());
     return { success: false, error: err.toString() };
   }
 }
