@@ -507,6 +507,29 @@ function initIdleTimer() {
 
 
 
+
+function saveSessionData(user) {
+  try {
+    sessionStorage.setItem('pookpik_session', JSON.stringify(user));
+  } catch (e) {
+    console.warn('sessionStorage save failed, using memory fallback', e);
+  }
+  window._sessionUser = user;
+}
+
+function getSessionData() {
+  if (window._sessionUser) return window._sessionUser;
+  try {
+    const s = sessionStorage.getItem('pookpik_session');
+    if (s && s !== 'undefined' && s !== 'null') {
+      return JSON.parse(s);
+    }
+  } catch (e) {
+    console.warn('sessionStorage read failed', e);
+  }
+  return null;
+}
+
 function checkSession() {
 
   // Check URL parameters first (like LINE OA)
@@ -736,38 +759,36 @@ function showLoginScreen() {
 
 
 function handleLogin(e) {
-
   if (e && e.preventDefault) e.preventDefault();
 
-  const user = document.getElementById('login_username').value.trim();
+  const userEl = document.getElementById('login_username');
+  const passEl = document.getElementById('login_password');
 
-  const pass = document.getElementById('login_password').value;
+  if (!userEl || !passEl) return;
 
-  
+  const user = userEl.value.trim();
+  const pass = passEl.value;
 
-  if (!pass) {
-
-    showToast('กรุณากรอกรหัสผ่าน', 'error');
-
+  if (!user) {
+    showToast('กรุณากรอกชื่อผู้ใช้งาน', 'error');
     return;
-
   }
 
-  
+  if (!pass) {
+    showToast('กรุณากรอกรหัสผ่าน', 'error');
+    return;
+  }
 
   setLoading(true, 'กำลังเข้าสู่ระบบ...');
 
   google.script.run
-
     .withSuccessHandler(res => {
-
       setLoading(false);
-
       if (res && res.success) {
+        saveSessionData(res.user);
 
-        sessionStorage.setItem('pookpik_session', JSON.stringify(res.user));
-
-        if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'none';
+        const overlay = document.getElementById('login_overlay');
+        if (overlay) overlay.style.display = 'none';
 
         document.getElementById('mobile_menu_btn')?.addEventListener('click', function() {
 

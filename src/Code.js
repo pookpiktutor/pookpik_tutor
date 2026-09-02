@@ -27,45 +27,34 @@ function computeCumulativePayment(student) {
 
 
 function doPost(e) {
-
   try {
-
     const payload = JSON.parse(e.postData.contents);
-
     const funcName = payload.functionName;
-
     const args = payload.arguments || [];
 
-    
-
-    // Dynamically call the requested function using its name
-
-    let result;
-
+    let fn = null;
     if (typeof this[funcName] === 'function') {
-
-      result = this[funcName].apply(null, args);
-
+      fn = this[funcName];
+    } else if (typeof globalThis !== 'undefined' && typeof globalThis[funcName] === 'function') {
+      fn = globalThis[funcName];
     } else {
-
-      throw new Error("Function '" + funcName + "' is not defined in Google Apps Script.");
-
+      try {
+        fn = eval(funcName);
+      } catch (err) { }
     }
 
-    
+    if (typeof fn !== 'function') {
+      throw new Error("Function '" + funcName + "' is not defined in Google Apps Script.");
+    }
 
-    return ContentService.createTextOutput(JSON.stringify(result))
+    const result = fn.apply(null, args);
 
+    return ContentService.createTextOutput(JSON.stringify(result !== undefined ? result : null))
       .setMimeType(ContentService.MimeType.JSON);
-
   } catch (err) {
-
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
-
       .setMimeType(ContentService.MimeType.JSON);
-
   }
-
 }
 
 // ============================================================
