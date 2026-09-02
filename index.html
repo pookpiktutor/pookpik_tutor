@@ -10145,87 +10145,72 @@ function editStudentFromGradeSheet(studentName) {
 
 
 function openEditModalByName(studentName) {
+  const selectedBranch = document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : '';
+  const selectedGrade = document.getElementById('grade_sheet_grade_select') ? document.getElementById('grade_sheet_grade_select').value : '';
 
-  const selectedBranch = document.getElementById('grade_sheet_branch_select').value;
-
-  const selectedGrade = document.getElementById('grade_sheet_grade_select').value;
-
-  
-  // Search in state.students (from getStudentsList)
-  let match = state.students.find(reg => 
-
-    reg.name.trim() === studentName.trim() && 
-
-    reg.grade === selectedGrade && 
-
-    reg.branchLearn === selectedBranch
-
-  );
-
-  
-
-  if (!match) {
-
-    match = state.students.find(reg => 
-
-      reg.name.trim() === studentName.trim() && 
-
-      reg.grade === selectedGrade
-
-    );
-
+  function normalizeThaiName(str) {
+    if (!str) return '';
+    return str.toString()
+      .replace(/^(เด็กชาย|เด็กหญิง|นาย|นางสาว|ด.ช.|ด.ญ.|ดช.|ดญ.)/g, '')
+      .replace(/s+/g, '')
+      .trim()
+      .toLowerCase();
   }
 
-  
+  const normTarget = normalizeThaiName(studentName);
+  const cleanTarget = (studentName || '').toString().replace(/s+/g, '').toLowerCase();
 
-  if (!match) {
+  let match = null;
 
-    match = state.students.find(reg => reg.name.trim() === studentName.trim());
+  // 1. Search in state.gradeSheetData.students first (Exact table being viewed!)
+  if (state.gradeSheetData && Array.isArray(state.gradeSheetData.students)) {
+    const gsMatch = state.gradeSheetData.students.find(s => {
+      if (!s || !s.name) return false;
+      const sName = s.name.trim();
+      if (sName === studentName) return true;
+      if (sName.replace(/s+/g, '').toLowerCase() === cleanTarget) return true;
+      const normS = normalizeThaiName(sName);
+      if (normS && normTarget && (normS === normTarget || normS.includes(normTarget) || normTarget.includes(normS))) return true;
+      return false;
+    });
 
-  }
-
-  
-
-  if (!match) {
-
-    const cleanTarget = studentName.replace(/\s+/g, '');
-
-    match = state.students.find(reg => reg.name.replace(/\s+/g, '') === cleanTarget);
-
-  }
-
-  // Fallback: search in state.gradeSheetData.students if available
-  if (!match && state.gradeSheetData && state.gradeSheetData.students) {
-    const gsMatch = state.gradeSheetData.students.find(s => s.name && s.name.trim() === studentName.trim());
     if (gsMatch) {
       match = {
         id: gsMatch.studentId || gsMatch.name,
         name: gsMatch.name,
-        grade: gsMatch.grade,
-        branchLearn: gsMatch.branch || gsMatch.branchLearn || '',
-        branchPay: gsMatch.branchPay || '',
+        nickname: gsMatch.nickname || '',
+        school: gsMatch.school || '',
+        contact: gsMatch.contact || '',
+        grade: gsMatch.grade || selectedGrade,
+        branchLearn: gsMatch.branchLearn || gsMatch.branch || selectedBranch,
+        branchPay: gsMatch.branchPay || selectedBranch,
+        full: gsMatch.full || 0,
+        paid: gsMatch.paid || 0,
+        outstanding: gsMatch.outstanding || 0,
         classType: 'กลุ่มหลัก'
       };
     }
   }
 
-  
-
-  if (match) {
-
-    // Pass both id and name for proper lookup
-    showEditStudentModal(match.id || match.name, match.name);
-
-  } else {
-
-    // Even if no local match, try backend directly with the name
-    showEditStudentModal(studentName, studentName);
-
+  // 2. Search in state.students (from getStudentsList)
+  if (!match && Array.isArray(state.students)) {
+    match = state.students.find(s => {
+      if (!s || !s.name) return false;
+      const sName = s.name.trim();
+      if (sName === studentName) return true;
+      if (sName.replace(/s+/g, '').toLowerCase() === cleanTarget) return true;
+      const normS = normalizeThaiName(sName);
+      if (normS && normTarget && (normS === normTarget || normS.includes(normTarget) || normTarget.includes(normS))) return true;
+      return false;
+    });
   }
 
+  if (match) {
+    showEditStudentModal(match.id || match.name, match.name);
+  } else {
+    showEditStudentModal(studentName, studentName);
+  }
 }
-
-
 
 function loadGradeSheetGrid(isSilent = false) {
   const gradeEl = document.getElementById('grade_sheet_grade_select');
