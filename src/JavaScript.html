@@ -6287,8 +6287,6 @@ function editStudentFromGradeSheet(studentName) {
   }
 }
 
-
-
 function openEditModalByName(studentName) {
   const selectedBranch = document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : '';
   const selectedGrade = document.getElementById('grade_sheet_grade_select') ? document.getElementById('grade_sheet_grade_select').value : '';
@@ -6296,7 +6294,7 @@ function openEditModalByName(studentName) {
   function normalizeThaiName(str) {
     if (!str) return '';
     return str.toString()
-      .replace(/^(เด็กชาย|เด็กหญิง|นาย|นางสาว|ด\.ช\.|ด\.ญ\.|ดช\.|ดญ\.)/gi, '')
+      .replace(/^(เด็กชาย|เด็กหญิง|นาย|นางสาว|ด\.ช\.|ด\.ญ\.|ดช\.|ดญ\.|น\.ส\.)/gi, '')
       .replace(/\s+/g, '')
       .trim()
       .toLowerCase();
@@ -6351,6 +6349,7 @@ function openEditModalByName(studentName) {
   if (match) {
     showEditStudentModal(match.id || match.name, match.name);
   } else {
+    // ALWAYS open student edit modal even if student is not found in database!
     showEditStudentModal(studentName, studentName);
   }
 }

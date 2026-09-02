@@ -18,7 +18,18 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <?!= include('Styles'); ?>
-  </head>
+  
+<style>
+#student_modal.active {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  z-index: 10000 !important;
+}
+</style>
+
+</head>
   <body>
     <!-- LOGIN OVERLAY -->
     <div class="login-overlay" id="login_overlay">
@@ -10143,8 +10154,6 @@ function editStudentFromGradeSheet(studentName) {
   }
 }
 
-
-
 function openEditModalByName(studentName) {
   const selectedBranch = document.getElementById('grade_sheet_branch_select') ? document.getElementById('grade_sheet_branch_select').value : '';
   const selectedGrade = document.getElementById('grade_sheet_grade_select') ? document.getElementById('grade_sheet_grade_select').value : '';
@@ -10152,7 +10161,7 @@ function openEditModalByName(studentName) {
   function normalizeThaiName(str) {
     if (!str) return '';
     return str.toString()
-      .replace(/^(เด็กชาย|เด็กหญิง|นาย|นางสาว|ด\.ช\.|ด\.ญ\.|ดช\.|ดญ\.)/gi, '')
+      .replace(/^(เด็กชาย|เด็กหญิง|นาย|นางสาว|ด\.ช\.|ด\.ญ\.|ดช\.|ดญ\.|น\.ส\.)/gi, '')
       .replace(/\s+/g, '')
       .trim()
       .toLowerCase();
@@ -10207,6 +10216,7 @@ function openEditModalByName(studentName) {
   if (match) {
     showEditStudentModal(match.id || match.name, match.name);
   } else {
+    // ALWAYS open student edit modal even if student is not found in database!
     showEditStudentModal(studentName, studentName);
   }
 }
@@ -25852,51 +25862,7 @@ function deleteStaffTeacherAdjustmentInSummary(adjId) {
 </style>
 
 
-<script>
-// Override edit function to fix name matching
-function cleanStudentName(name) {
-  if (!name) return '';
-  var str = name.toString().trim();
-  var prefixes = ['ด.ช.', 'ด.ญ.', 'นาย', 'นางสาว', 'นาง', 'เด็กชาย', 'เด็กหญิง', 'น.ส.'];
-  for (var i = 0; i < prefixes.length; i++) {
-    if (str.indexOf(prefixes[i]) === 0) {
-      str = str.substring(prefixes[i].length).trim();
-      break;
-    }
-  }
-  return str.replace(/\s+/g, '');
-}
 
-function editStudentFromGradeSheet(studentName) {
-  const selectedBranch = document.getElementById('grade_sheet_branch_select').value;
-  const selectedGrade = document.getElementById('grade_sheet_grade_select').value;
-  
-  var cleanSearchName = cleanStudentName(studentName);
-  
-  let match = state.students.find(reg => 
-    cleanStudentName(reg.name) === cleanSearchName && 
-    reg.grade === selectedGrade && 
-    reg.branchLearn === selectedBranch
-  );
-  
-  if (!match) {
-    match = state.students.find(reg => 
-      cleanStudentName(reg.name) === cleanSearchName && 
-      reg.grade === selectedGrade
-    );
-  }
-  
-  if (!match) {
-    match = state.students.find(reg => cleanStudentName(reg.name) === cleanSearchName);
-  }
-  
-  if (match) {
-    showEditStudentModal(match.id);
-  } else {
-    showToast('ไม่พบข้อมูลนักเรียนคนนี้ในระบบ', 'warning');
-  }
-}
-</script>
     <datalist id="teachers_datalist"></datalist>
     <!-- GITHUB PAGES SCRIPT IMPORT -->
 
