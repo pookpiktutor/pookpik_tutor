@@ -172,167 +172,103 @@ function processBgTaskQueue() {
 
 
 
-if (typeof google !== 'undefined' && google.script && google.script.run) {
-
-   window._originalGSR = google.script.run;
-
-} else {
-
-   window.google = window.google || {};
-
-   window.google.script = window.google.script || {};
-
-}
-
-
-
-window.google.script.run = new Proxy({}, {
-
-  get: function(target, prop) {
-
-    if (prop === 'withSuccessHandler') {
-
-      return function(handler) {
-
-        target._successHandler = handler;
-
-        return window.google.script.run;
-
-      };
-
-    }
-
-    if (prop === 'withFailureHandler') {
-
-      return function(handler) {
-
-        target._failureHandler = handler;
-
-        return window.google.script.run;
-
-      };
-
-    }
-
-    return function(...args) {
-
-      const successHandler = target._successHandler;
-
-      const failureHandler = target._failureHandler;
-
-      target._successHandler = undefined;
-
-      target._failureHandler = undefined;
-
-      
-
-      const title = window._nextTaskTitle || 'ประมวลผลข้อมูล...';
-
-      window._nextTaskTitle = ''; 
-
-      
-
-      const isSilent = window._nextTaskSilent || false;
-
-      window._nextTaskSilent = false;
-
-
-
-      const isMutation = /^(save|add|update|delete|submit|clear|toggle|confirm|migrate|fix|init|ensure|change)/i.test(prop);
-
-
-
-      if (!isMutation) {
-
-        // Execute immediately (Bypass Queue for read operations)
-
-        if (window._originalGSR) {
-
-          const runner = successHandler ? window._originalGSR.withSuccessHandler(successHandler) : window._originalGSR;
-
-          const finalRunner = failureHandler ? runner.withFailureHandler(failureHandler) : runner;
-
-          finalRunner[prop](...args);
-
-        } else {
-
-          const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA/exec';
-
-          fetch(GAS_API_URL, {
-
-            redirect: 'follow',
-
-            method: 'POST',
-
-            body: JSON.stringify({ functionName: prop, arguments: args }),
-
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-
-          })
-
-          .then(response => response.json())
-
-          .then(result => {
-
-            if (result && result.error) {
-
-              if (failureHandler) failureHandler(new Error(result.error));
-
-            } else {
-
-              if (successHandler) successHandler(result);
-
-            }
-
-          })
-
-          .catch(err => {
-
-            if (failureHandler) failureHandler(err);
-
-          });
-
-        }
-
-        return; // Don't push to queue
-
-      }
-
-
-
-      window._bgTaskQueue.push({
-
-        id: Date.now() + Math.random(),
-
-        title: title,
-
-        funcName: prop,
-
-        args: args,
-
-        successHandler: successHandler,
-
-        failureHandler: failureHandler,
-
-        status: 'queued',
-
-        isSilent: isSilent
-
-      });
-
-
-
-      processBgTaskQueue();
-
-    };
-
+(function() {
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    window._originalGSR = google.script.run;
+  } else {
+    window.google = window.google || {};
+    window.google.script = window.google.script || {};
   }
 
-});
+  const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA/exec';
 
-// --- END BACKGROUND TASK QUEUE MANAGER ---
+  function createGSRunner() {
+    let successHandler = null;
+    let failureHandler = null;
 
+    const runner = new Proxy({}, {
+      get: function(target, prop) {
+        if (prop === 'withSuccessHandler') {
+          return function(handler) {
+            successHandler = handler;
+            return runner;
+          };
+        }
+        if (prop === 'withFailureHandler') {
+          return function(handler) {
+            failureHandler = handler;
+            return runner;
+          };
+        }
+        if (prop === 'withUserObject') {
+          return function() { return runner; };
+        }
 
+        return function(...args) {
+          const sHandler = successHandler;
+          const fHandler = failureHandler;
+
+          const isMutation = /^(save|add|update|delete|submit|clear|toggle|confirm|migrate|fix|init|ensure|change)/i.test(prop);
+
+          if (!isMutation) {
+            if (window._originalGSR) {
+              let r = window._originalGSR;
+              if (sHandler) r = r.withSuccessHandler(sHandler);
+              if (fHandler) r = r.withFailureHandler(fHandler);
+              r[prop](...args);
+            } else {
+              fetch(GAS_API_URL, {
+                redirect: 'follow',
+                method: 'POST',
+                body: JSON.stringify({ functionName: prop, arguments: args }),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+              })
+              .then(response => response.json())
+              .then(result => {
+                if (result && typeof result === 'object' && result.error && result.success === false) {
+                  if (fHandler) fHandler(new Error(result.error));
+                  else if (sHandler) sHandler(result);
+                } else {
+                  if (sHandler) sHandler(result);
+                }
+              })
+              .catch(err => {
+                if (fHandler) fHandler(err);
+                else console.error('GSRunner error in ' + prop + ':', err);
+              });
+            }
+          } else {
+            if (!window._bgTaskQueue) window._bgTaskQueue = [];
+            window._bgTaskQueue.push({
+              id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+              funcName: prop,
+              args: args,
+              successHandler: sHandler,
+              failureHandler: fHandler,
+              status: 'queued',
+              title: window._nextTaskTitle || 'ประมวลผลข้อมูล...',
+              isSilent: window._nextTaskSilent || false,
+              startTime: Date.now()
+            });
+            window._nextTaskTitle = '';
+            window._nextTaskSilent = false;
+            if (typeof processBgTaskQueue === 'function') setTimeout(processBgTaskQueue, 10);
+          }
+        };
+      }
+    });
+
+    return runner;
+  }
+
+  Object.defineProperty(window.google.script, 'run', {
+    get: function() {
+      return createGSRunner();
+    },
+    configurable: true,
+    enumerable: true
+  });
+})();
 
 function safeSetValue(id, val) {
 
