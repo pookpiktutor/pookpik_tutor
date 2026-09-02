@@ -11897,18 +11897,31 @@ function renderAllBranchesTeacherSchedule() {
     return;
   }
 
-  function getBranchInfo(room, branch) {
-    const str = `${room || ''} ${branch || ''}`.toLowerCase();
-    if (str.includes('pmy') || str.includes('สาขา 1') || str.includes('สาขา1')) {
-      return { name: 'สาขา 1 (PMY)', code: 'B1' };
-    }
-    if (str.includes('ระยองวิทย์') || str.includes('ryw') || str.includes('สาขา 2') || str.includes('สาขา2')) {
-      return { name: 'สาขา 2 (ระยองวิทย์)', code: 'B2' };
-    }
-    if (str.includes('อัสสัมชัญ') || str.includes('ass') || str.includes('เซนต์โย') || str.includes('สาขา 3') || str.includes('สาขา3')) {
+  function getBranchInfo(c) {
+    const room = c.room || '';
+    const branch = c.branch || '';
+    const roomBranch = c.roomBranch || '';
+    const note = c.note || '';
+    const subject = c.subject || '';
+
+    const str = `${room} ${branch} ${roomBranch} ${note} ${subject}`.toLowerCase();
+
+    if (str.includes('สาขา 3') || str.includes('สาขา3') || str.includes('อัสสัมชัญ') || str.includes('เซนต์โย') || str.includes('ass')) {
       return { name: 'สาขา 3 (อัสสัมชัญ)', code: 'B3' };
     }
-    return { name: branch || room || 'สาขา 1 (PMY)', code: 'B1' };
+    if (str.includes('สาขา 2') || str.includes('สาขา2') || str.includes('ระยองวิทย์') || str.includes('ระยองวิทยาคม') || str.includes('ryw')) {
+      return { name: 'สาขา 2 (ระยองวิทย์)', code: 'B2' };
+    }
+    if (str.includes('สาขา 1') || str.includes('สาขา1') || str.includes('pmy')) {
+      return { name: 'สาขา 1 (PMY)', code: 'B1' };
+    }
+    if (roomBranch.includes('2') || branch.includes('2')) {
+      return { name: 'สาขา 2 (ระยองวิทย์)', code: 'B2' };
+    }
+    if (roomBranch.includes('3') || branch.includes('3')) {
+      return { name: 'สาขา 3 (อัสสัมชัญ)', code: 'B3' };
+    }
+    return { name: 'สาขา 1 (PMY)', code: 'B1' };
   }
 
   function cleanTeacherName(raw1, raw2) {
@@ -11923,7 +11936,7 @@ function renderAllBranchesTeacherSchedule() {
   }
 
   function isSameDate(logDateStr, selectedYMD) {
-    if (!logDateStr || !selectedYMD) return true; // fallback if log has no date
+    if (!logDateStr || !selectedYMD) return true;
     const partsSel = selectedYMD.split('-');
     if (partsSel.length < 3) return true;
 
@@ -11967,13 +11980,17 @@ function renderAllBranchesTeacherSchedule() {
     if (!tName || tName === 'ไม่ระบุชื่อครู') return false;
     if (searchFilter && !tName.includes(searchFilter)) return false;
 
-    // STRICT DATE FILTER: Only match the specific date selected!
     if (selectedYMD) {
       const logDate = c.date || c.dateStr || c.classDate || '';
       if (logDate && !isSameDate(logDate, selectedYMD)) {
         return false;
       }
     }
+
+    const bInfo = getBranchInfo(c);
+    if (branchFilter === 'B1' && bInfo.code !== 'B1') return false;
+    if (branchFilter === 'B2' && bInfo.code !== 'B2') return false;
+    if (branchFilter === 'B3' && bInfo.code !== 'B3') return false;
 
     return true;
   });
@@ -11988,12 +12005,13 @@ function renderAllBranchesTeacherSchedule() {
       teacherMap[tName] = { b1: [], b2: [], b3: [], other: [] };
     }
 
-    const bInfo = getBranchInfo(c.room, c.branch);
+    const bInfo = getBranchInfo(c);
     const timeStr = (c.timeStart && c.timeEnd) ? `${c.timeStart} - ${c.timeEnd} น.` : (c.timeStart || '');
+    const roomDisp = c.roomBranch || c.room || '-';
     const classObj = {
       subject: c.subject || '',
       grade: c.grade || '',
-      room: c.room || '',
+      room: roomDisp,
       timeStr: timeStr,
       classType: c.classType || ''
     };
@@ -12046,7 +12064,7 @@ function renderAllBranchesTeacherSchedule() {
         <thead>
           <tr>
             <th style="position: sticky; top: 0; z-index: 10; background: #f8fafc; padding: 8px 10px; text-align: left; font-size: 0.76rem; font-weight: 700; color: #334155; border-bottom: 2px solid #cbd5e1; width: 160px;">ชื่อครูผู้สอน</th>
-            <th style="position: sticky; top: 0; z-index: 10; background: #eff6ff; padding: 8px 10px; text-align: left; font-size: 0.76rem; font-weight: 700; color: #1d4ed8; border-bottom: 2px solid #bfdbfe; width: 28%;">📍 สาขา 1 (PMY)</th>
+            <th style="position: sticky; top: 0; z-index: 10; background: #eff6ff; padding: 8px 10px; text-align: left; font-size: 0.76rem; font-weight: 700; color: #1d4ed8; width: 28%;">📍 สาขา 1 (PMY)</th>
             <th style="position: sticky; top: 0; z-index: 10; background: #fffbeb; padding: 8px 10px; text-align: left; font-size: 0.76rem; font-weight: 700; color: #b45309; border-bottom: 2px solid #fde68a; width: 28%;">📍 สาขา 2 (ระยองวิทย์)</th>
             <th style="position: sticky; top: 0; z-index: 10; background: #f5f3ff; padding: 8px 10px; text-align: left; font-size: 0.76rem; font-weight: 700; color: #6d28d9; border-bottom: 2px solid #ddd6fe; width: 28%;">📍 สาขา 3 (อัสสัมชัญ)</th>
           </tr>
