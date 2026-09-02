@@ -548,21 +548,6 @@
                     🔄 รีโหลดข้อมูล
                   </button>
                 </div>
-
-                </div>
-                  <div style="flex: 1; min-width: 140px; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 8px; padding: 8px 12px;">
-                    <div style="font-size: 0.75rem; font-weight: 600; color: #2563eb;">📍 สาขา 1 (PMY)</div>
-                    <div id="all_branches_stat_b1" style="font-size: 1.1rem; font-weight: 700; color: #2563eb;">0 คลาส</div>
-                  </div>
-                  <div style="flex: 1; min-width: 140px; background: rgba(217, 119, 6, 0.08); border: 1px solid rgba(217, 119, 6, 0.2); border-radius: 8px; padding: 8px 12px;">
-                    <div style="font-size: 0.75rem; font-weight: 600; color: #d97706;">📍 สาขา 2 (ระยองวิทย์)</div>
-                    <div id="all_branches_stat_b2" style="font-size: 1.1rem; font-weight: 700; color: #d97706;">0 คลาส</div>
-                  </div>
-                  <div style="flex: 1; min-width: 140px; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 8px; padding: 8px 12px;">
-                    <div style="font-size: 0.75rem; font-weight: 600; color: #7c3aed;">📍 สาขา 3 (อัสสัมชัญ)</div>
-                    <div id="all_branches_stat_b3" style="font-size: 1.1rem; font-weight: 700; color: #7c3aed;">0 คลาส</div>
-                  </div>
-                </div>
               </div>
 
               <!-- Table Container -->
@@ -895,39 +880,24 @@
                     </select>
 
                     <label style="font-weight: 600; font-size: 0.85rem; color: var(--text-muted); margin-left: 8px;">เลือกสาขา:</label>
-                    <select id="all_branches_branch_select" class="form-select" onchange="renderAllBranchesTeacherSchedule()" style="width: 180px;">
+                    <select id="all_branches_branch_select_mode2" class="form-select" onchange="renderAllBranchesTeacherSchedule()" style="width: 180px;">
                       <option value="ALL">ทั้งหมด 3 สาขา</option>
                       <option value="B1">สาขา 1 (PMY)</option>
                       <option value="B2">สาขา 2 (ระยองวิทย์)</option>
                       <option value="B3">สาขา 3 (อัสสัมชัญ)</option>
                     </select>
 
-                    <input type="text" id="all_branches_teacher_search" class="form-input" placeholder="🔍 ค้นหาชื่อครู..." oninput="renderAllBranchesTeacherSchedule()" style="width: 180px;">
+                    <input type="text" id="all_branches_teacher_search_mode2" class="form-input" placeholder="🔍 ค้นหาชื่อครู..." oninput="renderAllBranchesTeacherSchedule()" style="width: 180px;">
                   </div>
 
                   <button class="btn btn-outline-primary" onclick="loadAllBranchesTeacherSchedule(true)">
                     🔄 รีโหลดข้อมูล
                   </button>
                 </div>
-
-                </div>
-                  <div style="flex: 1; min-width: 140px; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 8px; padding: 8px 12px;">
-                    <div style="font-size: 0.75rem; font-weight: 600; color: #2563eb;">📍 สาขา 1 (PMY)</div>
-                    <div id="all_branches_stat_b1" style="font-size: 1.1rem; font-weight: 700; color: #2563eb;">0 คลาส</div>
-                  </div>
-                  <div style="flex: 1; min-width: 140px; background: rgba(217, 119, 6, 0.08); border: 1px solid rgba(217, 119, 6, 0.2); border-radius: 8px; padding: 8px 12px;">
-                    <div style="font-size: 0.75rem; font-weight: 600; color: #d97706;">📍 สาขา 2 (ระยองวิทย์)</div>
-                    <div id="all_branches_stat_b2" style="font-size: 1.1rem; font-weight: 700; color: #d97706;">0 คลาส</div>
-                  </div>
-                  <div style="flex: 1; min-width: 140px; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 8px; padding: 8px 12px;">
-                    <div style="font-size: 0.75rem; font-weight: 600; color: #7c3aed;">📍 สาขา 3 (อัสสัมชัญ)</div>
-                    <div id="all_branches_stat_b3" style="font-size: 1.1rem; font-weight: 700; color: #7c3aed;">0 คลาส</div>
-                  </div>
-                </div>
               </div>
 
               <!-- Table Container -->
-              <div class="glass-panel" id="all_branches_schedule_container" style="padding: 12px;">
+              <div class="glass-panel" id="all_branches_schedule_container_mode2" style="padding: 12px;">
                 <div style="text-align: center; color: var(--text-muted); padding: 40px;">กำลังโหลดตารางสอนรวม 3 สาขา...</div>
               </div>
             </div>
