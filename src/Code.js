@@ -16944,8 +16944,8 @@ function markMessagesAsRead(teacherUsername, reader) {
     const s = (row[col.sender] || '').toString().toLowerCase();
     const r = (row[col.receiver] || '').toString().toLowerCase();
     
-    // If the message involves this teacher and the receiver is the reader (or Admin if reader is staff)
-    if ((s === teacherLower || r === teacherLower) && (r === readerLower || (isStaff && r === 'admin'))) {
+    // If the message involves this teacher and was sent by someone else (not the current reader)
+    if ((s === teacherLower || r === teacherLower) && s !== readerLower) {
       let rowChanged = false;
       if (row[col.isRead] !== true) {
         sheet.getRange(i + 1, col.isRead + 1).setValue(true);

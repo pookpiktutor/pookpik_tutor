@@ -1,3 +1,4 @@
+
 // --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
@@ -19307,12 +19308,18 @@ function loadChatWithSelectedTeacher(isSilent = false) {
       if (res && res.success) {
         renderChatMessages(res.messages);
         
-        const r = state.currentUser ? (state.currentUser.role || '').toString().trim().toLowerCase() : '';
-        const isStaff = r === 'staff' || r === 'admin' || r === 'administrator' || r === 'พนักงาน' || r === 'ผู้บริหาร';
+        const readerNick = state.currentUser ? (state.currentUser.nickname || state.currentUser.username) : '';
+        const readerLower = state.currentUser ? (state.currentUser.username || '').toString().trim().toLowerCase() : '';
+        
         const hasUnreadForMe = res.messages.some(m => {
-          if (m.isRead) return false;
-          if (m.receiver.toLowerCase() === state.currentUser.username.toLowerCase()) return true;
-          if (isStaff && m.receiver === 'Admin') return true;
+          const senderLower = (m.sender || '').toString().trim().toLowerCase();
+          if (senderLower !== readerLower) {
+            if (!m.isRead) return true;
+            if (readerNick) {
+              const readByList = (m.readBy || '').split(',').map(x => x.trim()).filter(Boolean);
+              if (!readByList.includes(readerNick)) return true;
+            }
+          }
           return false;
         });
         
@@ -19325,38 +19332,29 @@ function loadChatWithSelectedTeacher(isSilent = false) {
     .getChatHistory(currentChatTeacher);
 }
 
-const STAFF_CHAT_THEMES = [
-  { bg: 'linear-gradient(135deg, #0284c7, #0369a1)', color: '#ffffff' }, // Ocean Blue
-  { bg: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: '#ffffff' }, // Deep Purple
-  { bg: 'linear-gradient(135deg, #059669, #047857)', color: '#ffffff' }, // Emerald Green
-  { bg: 'linear-gradient(135deg, #d97706, #b45309)', color: '#ffffff' }, // Amber Orange
-  { bg: 'linear-gradient(135deg, #db2777, #be185d)', color: '#ffffff' }, // Rose Pink
-  { bg: 'linear-gradient(135deg, #4f46e5, #3730a3)', color: '#ffffff' }, // Indigo
-  { bg: 'linear-gradient(135deg, #0891b2, #155e75)', color: '#ffffff' }, // Cyan
-  { bg: 'linear-gradient(135deg, #e11d48, #9f1239)', color: '#ffffff' }  // Crimson
+const PASTEL_CHAT_THEMES = [
+  { bg: '#e0f2fe', color: '#0369a1', border: '#bae6fd' }, // Soft Sky Blue
+  { bg: '#f3e8ff', color: '#6b21a8', border: '#e9d5ff' }, // Soft Lavender / Purple
+  { bg: '#dcfce7', color: '#15803d', border: '#bbf7d0' }, // Soft Mint Green
+  { bg: '#fef3c7', color: '#b45309', border: '#fde68a' }, // Soft Warm Amber
+  { bg: '#ffe4e6', color: '#be123c', border: '#fecdd3' }, // Soft Rose / Pink
+  { bg: '#ccfbf1', color: '#0f766e', border: '#99f6e4' }, // Soft Teal / Cyan
+  { bg: '#e0e7ff', color: '#3730a3', border: '#c7d2fe' }, // Soft Indigo
+  { bg: '#ffedd5', color: '#c2410c', border: '#fed7aa' }, // Soft Peach / Orange
+  { bg: '#f1f5f9', color: '#334155', border: '#cbd5e1' }, // Soft Slate Gray
+  { bg: '#fae8ff', color: '#86198f', border: '#f5d0fe' }, // Soft Fuchsia
+  { bg: '#ecfdf5', color: '#047857', border: '#a7f3d0' }, // Soft Emerald
+  { bg: '#fdf2f8', color: '#9d174d', border: '#fbcfe8' }  // Soft Blush Pink
 ];
 
-const TEACHER_CHAT_THEMES = [
-  { bg: '#ffffff', color: '#1e293b', border: '#cbd5e1' },               // Crisp White
-  { bg: '#f0f9ff', color: '#0369a1', border: '#bae6fd' },               // Soft Sky Blue
-  { bg: '#f5f3ff', color: '#5b21b6', border: '#ddd6fe' },               // Soft Purple
-  { bg: '#ecfdf5', color: '#047857', border: '#a7f3d0' },               // Soft Mint
-  { bg: '#fffbeb', color: '#b45309', border: '#fde68a' },               // Soft Amber
-  { bg: '#fdf2f8', color: '#be185d', border: '#fbcfe8' }                // Soft Rose
-];
-
-function getSenderTheme(senderKey, isRightSide) {
+function getSenderTheme(senderKey) {
   let hash = 0;
   const str = (senderKey || '').toString().trim();
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
   const index = Math.abs(hash);
-  if (isRightSide) {
-    return STAFF_CHAT_THEMES[index % STAFF_CHAT_THEMES.length];
-  } else {
-    return TEACHER_CHAT_THEMES[index % TEACHER_CHAT_THEMES.length];
-  }
+  return PASTEL_CHAT_THEMES[index % PASTEL_CHAT_THEMES.length];
 }
 
 function renderChatMessages(messages) {
@@ -19385,7 +19383,7 @@ function renderChatMessages(messages) {
       isRightSide = (senderLower === state.currentUser.username.toLowerCase());
     }
     
-    const theme = getSenderTheme(senderName, isRightSide);
+    const theme = getSenderTheme(senderName);
     const timeStr = formatChatTime(m.timestamp);
     
     let readStatus = '';
@@ -19400,7 +19398,7 @@ function renderChatMessages(messages) {
       html += `
         <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 10px;">
           <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 3px; margin-right: 6px; font-weight: 600;">${senderName}</div>
-          <div style="background: ${theme.bg}; color: ${theme.color}; padding: 10px 15px; border-radius: 18px 18px 4px 18px; max-width: 82%; word-wrap: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.12); font-size: 0.92rem; line-height: 1.4;">
+          <div style="background: ${theme.bg}; color: ${theme.color}; border: 1px solid ${theme.border}; padding: 10px 15px; border-radius: 18px 18px 4px 18px; max-width: 82%; word-wrap: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.06); font-size: 0.92rem; line-height: 1.4; font-weight: 500;">
             ${m.message}
           </div>
           <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; margin-right: 4px;">
@@ -19412,7 +19410,7 @@ function renderChatMessages(messages) {
       html += `
         <div style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 10px;">
           <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 3px; margin-left: 6px; font-weight: 600;">${senderName}</div>
-          <div style="background: ${theme.bg}; color: ${theme.color}; border: 1px solid ${theme.border || '#cbd5e1'}; padding: 10px 15px; border-radius: 18px 18px 18px 4px; max-width: 82%; word-wrap: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.06); font-size: 0.92rem; line-height: 1.4;">
+          <div style="background: ${theme.bg}; color: ${theme.color}; border: 1px solid ${theme.border}; padding: 10px 15px; border-radius: 18px 18px 18px 4px; max-width: 82%; word-wrap: break-word; box-shadow: 0 2px 5px rgba(0,0,0,0.06); font-size: 0.92rem; line-height: 1.4; font-weight: 500;">
             ${m.message}
           </div>
           <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; margin-left: 4px;">
