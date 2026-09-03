@@ -19508,29 +19508,55 @@ function onEvalCourseChange() {
     populateRegularStudents(course);
   }
   
-  function populateRegularStudents(courseObj) {
+  function normalizeThaiStudentName(str) {
+  if (!str) return '';
+  return str.toString()
+    .replace(/^(เด็กชาย|เด็กหญิง|นาย|นางสาว|ด\.ช\.|ด\.ญ\.|ดช\.|ดญ\.|น\.ส\.)/gi, '')
+    .replace(/\([^)]*\)/g, '')
+    .replace(/\s+/g, '')
+    .trim()
+    .toLowerCase();
+}
+
+function isSubjectMatchForEval(courseObj, evSubject) {
+  if (!courseObj || !evSubject) return false;
+  const cName = (courseObj.courseName || '').toString().toLowerCase().replace(/\s+/g, '').trim();
+  const cDisplay = (courseObj.displayCourseName || '').toString().toLowerCase().replace(/\s+/g, '').trim();
+  const evSub = (evSubject || '').toString().toLowerCase().replace(/\s+/g, '').trim();
+
+  if (cName === evSub || cDisplay === evSub) return true;
+  if (cName.length > 3 && evSub.length > 3 && (cName.includes(evSub) || evSub.includes(cName))) return true;
+  if (cDisplay.length > 3 && evSub.length > 3 && (cDisplay.includes(evSub) || evSub.includes(cDisplay))) return true;
+
+  const dayTimeRegex = /(จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์|\d+[:.]\d+)/gi;
+  const cBase = cName.replace(dayTimeRegex, '');
+  const evBase = evSub.replace(dayTimeRegex, '');
+  if (cBase.length > 2 && evBase.length > 2 && (cBase === evBase || cBase.includes(evBase) || evBase.includes(cBase))) return true;
+
+  return isCourseExactMatchFrontend(courseObj.courseName, evSubject, courseObj.dayTimeStr);
+}
+
+function populateRegularStudents(courseObj) {
     if (Array.isArray(courseObj.students)) {
       const evals = state.evaluations || [];
       studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
 
       let visibleCount = 0;
       courseObj.students.forEach(function(s, idx) {
+        const normStuName = normalizeThaiStudentName(s.name);
+        const normStuNick = normalizeThaiStudentName(s.nickname);
+        const normStuId = normalizeThaiStudentName(s.studentId);
+
         const hasEvaluated = evals.some(function(ev) {
-          const cleanEvSub = (ev.subject || '').toString().trim();
-          const cleanCourseSub = (courseObj.courseName || '').toString().trim();
-          const cleanEvStuName = (ev.studentName || '').toString().trim().toLowerCase();
-          const cleanEvNick = (ev.nickname || '').toString().trim().toLowerCase();
-          
-          const cleanStuId = (s.studentId || s.name || '').toString().trim().toLowerCase();
-          const cleanStuName = (s.name || '').toString().trim().toLowerCase();
-          const cleanStuNick = (s.nickname || '').toString().trim().toLowerCase();
-          
-          const isSubjectMatch = isCourseExactMatchFrontend(cleanCourseSub, cleanEvSub, courseObj.dayTimeStr);
+          const normEvName = normalizeThaiStudentName(ev.studentName);
+          const normEvNick = normalizeThaiStudentName(ev.nickname);
+
+          const isSubjectMatch = isSubjectMatchForEval(courseObj, ev.subject);
           
           const isStudentMatch = (
-            (cleanStuId !== '' && (cleanEvStuName === cleanStuId || cleanEvStuName.includes(cleanStuId) || cleanStuId.includes(cleanEvStuName))) ||
-            (cleanStuName !== '' && (cleanEvStuName === cleanStuName || cleanEvStuName.includes(cleanStuName) || cleanStuName.includes(cleanEvStuName))) ||
-            (cleanStuNick !== '' && (cleanEvStuName.includes(cleanStuNick) || cleanEvNick === cleanStuNick || cleanEvNick.includes(cleanStuNick)))
+            (normStuName !== '' && normEvName !== '' && (normEvName === normStuName || normEvName.includes(normStuName) || normStuName.includes(normEvName))) ||
+            (normStuId !== '' && normEvName !== '' && (normEvName === normStuId || normEvName.includes(normStuId) || normStuId.includes(normEvName))) ||
+            (normStuNick !== '' && normEvNick !== '' && normEvNick === normStuNick)
           );
           
           return isSubjectMatch && isStudentMatch;
