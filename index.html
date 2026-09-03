@@ -1264,9 +1264,8 @@ h5, h6 { font-size: 0.85rem !important; }
               <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
                 <div>
                   <label class="form-label" style="font-size: 0.78rem; margin-bottom: 2px;">เลือกครูผู้สอน <span style="color:red;">*</span></label>
-                  <select id="staff_summary_adj_teacher" class="form-select" style="font-size: 0.82rem; padding: 6px 10px; width: 220px;" onchange="loadTeacherAdjustmentsListInSummary()">
-                    <option value="">-- เลือกครู --</option>
-                  </select>
+                  <input type="text" id="staff_summary_adj_teacher" list="staff_summary_adj_teacher_list" class="form-input" style="font-size: 0.82rem; padding: 6px 10px; width: 220px;" placeholder="-- พิมพ์ชื่อหรือเลือกครู --" oninput="loadTeacherAdjustmentsListInSummary()" onchange="loadTeacherAdjustmentsListInSummary()" autocomplete="off">
+                  <datalist id="staff_summary_adj_teacher_list"></datalist>
                 </div>
                 <div>
                   <label class="form-label" style="font-size: 0.78rem; margin-bottom: 2px;">ประเภทรายการ</label>
