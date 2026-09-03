@@ -16753,160 +16753,94 @@ function loadAdminEvaluationsDashboard(isSilent = false) {
 
 
 function renderAdminEvaluationsDashboard(res) {
-
   const container = document.getElementById('admin_evaluation_dashboard_container');
-
+  if (!container) return;
   container.innerHTML = '';
 
-  
-
   const evals = Array.isArray(res) ? res : (res.evals || []);
-
   const counts = Array.isArray(res) ? {} : (res.counts || {});
 
-  
-
   if (!evals || evals.length === 0) {
-
     container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); background: white; border-radius: 8px;">ยังไม่มีการประเมินนักเรียน</div>';
-
     return;
-
   }
 
-  
-
   // Group by Course
-
   const grouped = {};
-
   evals.forEach(ev => {
-
     const subj = ev.subject || 'ไม่ระบุวิชา';
-
     if (!grouped[subj]) {
-
       grouped[subj] = [];
-
     }
-
     grouped[subj].push(ev);
-
   });
-
-  
 
   const courses = Object.keys(grouped).sort();
 
-  
-
   courses.forEach(course => {
-
     // Create course section
-
     const section = document.createElement('div');
-
     section.className = 'glass-panel';
-
     section.style.padding = '20px';
-
     section.style.marginBottom = '20px';
 
-    
-
     // Course Header
-
     const header = document.createElement('div');
-
-    header.style.cssText = 'font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; color: var(--color-primary-hover); margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;';
-
-    
+    header.style.cssText = 'font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: var(--color-primary-hover); margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;';
 
     const totalStudents = counts[course] || 0;
-
     const evaluated = grouped[course].length;
-
     let badgeHtml = '';
 
     if (totalStudents > 0) {
-
       if (evaluated >= totalStudents) {
-
         badgeHtml = `<span class="badge badge-success" style="font-size: 0.75rem;">ครบแล้ว (${evaluated} คน)</span>`;
-
       } else {
-
         badgeHtml = `<span class="badge badge-warning" style="font-size: 0.75rem;">เหลือ ${totalStudents - evaluated} คน (ทำแล้ว ${evaluated}/${totalStudents})</span>`;
-
       }
-
     } else {
-
       badgeHtml = `<span class="badge badge-info" style="font-size: 0.75rem;">ประเมินแล้ว ${evaluated} คน</span>`;
-
     }
 
-    
+    // Extract Branch Name for Course Header if available
+    const firstEv = grouped[course][0];
+    const courseBranch = (firstEv && firstEv.branch) ? firstEv.branch.toString().trim() : '';
+    const branchBadgeHtml = courseBranch ? `<span style="background: var(--color-primary); color: #fff; font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">🏫 ${courseBranch}</span>` : '';
 
-    header.innerHTML = `<span>📚</span> ${course} ${badgeHtml}`;
-
+    header.innerHTML = `<span>📚</span> ${course} ${branchBadgeHtml} ${badgeHtml}`;
     section.appendChild(header);
 
-    
-
     const gridContainer = document.createElement('div');
-
-    gridContainer.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 15px;';
-
-    
+    gridContainer.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 15px;';
 
     grouped[course].forEach(ev => {
-
       const card = document.createElement('div');
-
-      card.style.cssText = 'background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease;';
+      card.style.cssText = 'background: white; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease;';
 
       card.onmouseover = () => { card.style.boxShadow = '0 4px 8px rgba(0,0,0,0.08)'; card.style.transform = 'translateY(-2px)'; };
-
       card.onmouseout = () => { card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)'; card.style.transform = 'translateY(0)'; };
 
-      
+      const stuBranchStr = ev.branch ? ev.branch.toString().trim() : '';
+      const stuBranchHtml = stuBranchStr ? `<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; display: flex; align-items: center; gap: 4px;"><span>🏫 สาขา:</span> <span style="font-weight: 600; color: var(--color-primary-hover);">${stuBranchStr}</span></div>` : '';
 
       card.innerHTML = `
-
-        <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-color);">${ev.studentName}</div>
-
-        <div style="display: flex; gap: 6px;">
-
-          <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 0.75rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไขข้อมูล</button>
-
-          <button class="btn btn-danger" style="padding: 6px; font-size: 0.75rem;" onclick="deleteAdminEvaluation('${ev.evalId}')"><i class="fas fa-trash"></i> ลบ</button>
-
+        <div>
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">${ev.studentName}</div>
+          ${stuBranchHtml}
         </div>
-
+        <div style="display: flex; gap: 6px; margin-top: 4px;">
+          <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 0.75rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไขข้อมูล</button>
+          <button class="btn btn-danger" style="padding: 6px; font-size: 0.75rem;" onclick="deleteAdminEvaluation('${ev.evalId}')"><i class="fas fa-trash"></i> ลบ</button>
+        </div>
       `;
 
       gridContainer.appendChild(card);
-
     });
 
-    
-
     section.appendChild(gridContainer);
-
     container.appendChild(section);
-
   });
-
 }
-
-
-
-
-
-
-
-
 
 // --- DYNAMIC REGISTRATION LOGIC ---
 
