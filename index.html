@@ -19342,9 +19342,41 @@ function initEvaluationForm() {
 
           if (Array.isArray(res)) {
 
-            state._teacherCourses = res; // Store globally
+            const seenSingleSubgroup = new Set();
 
-            res.forEach(function(c, idx) {
+            const deduplicated = [];
+
+            res.forEach(function(c) {
+
+              let cleanName = (c.courseName || '').toString().trim();
+
+              if (cleanName.includes('เดี่ยว') || cleanName.includes('ย่อย')) {
+
+                // Strip trailing round numbers / session indicators e.g. " 1", " 2", " ex1", " ex2", " รอบ1"
+
+                cleanName = cleanName.replace(/\s+(ex|EX|รอบ|#)?\s*\d+$/gi, '').trim();
+
+              }
+
+              c.courseName = cleanName;
+
+              c.displayCourseName = cleanName;
+
+              const dedupeKey = cleanName.toLowerCase().replace(/\s+/g, '');
+
+              if (!seenSingleSubgroup.has(dedupeKey)) {
+
+                seenSingleSubgroup.add(dedupeKey);
+
+                deduplicated.push(c);
+
+              }
+
+            });
+
+            state._teacherCourses = deduplicated; // Store globally
+
+            deduplicated.forEach(function(c, idx) {
 
               const opt = document.createElement('option');
 
@@ -19518,8 +19550,22 @@ function onEvalCourseChange() {
     .toLowerCase();
 }
 
+function cleanCourseNameBase(str) {
+  if (!str) return '';
+  let cleaned = str.toString().trim();
+  if (cleaned.includes('เดี่ยว') || cleaned.includes('ย่อย')) {
+    cleaned = cleaned.replace(/\s+(ex|EX|รอบ|#)?\s*\d+$/gi, '').trim();
+  }
+  return cleaned.toLowerCase().replace(/\s+/g, '');
+}
+
 function isSubjectMatchForEval(courseObj, evSubject) {
   if (!courseObj || !evSubject) return false;
+  const cNameClean = cleanCourseNameBase(courseObj.courseName);
+  const evSubClean = cleanCourseNameBase(evSubject);
+
+  if (cNameClean !== '' && evSubClean !== '' && cNameClean === evSubClean) return true;
+
   const cName = (courseObj.courseName || '').toString().toLowerCase().replace(/\s+/g, '').trim();
   const cDisplay = (courseObj.displayCourseName || '').toString().toLowerCase().replace(/\s+/g, '').trim();
   const evSub = (evSubject || '').toString().toLowerCase().replace(/\s+/g, '').trim();
