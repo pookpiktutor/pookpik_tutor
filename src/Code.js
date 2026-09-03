@@ -71,7 +71,7 @@ const SHEET_REGISTRY = [
 
   {
     name: 'UsersDB',
-    headers: ['Username', 'Password', 'Role', 'Nickname', 'FullName', 'Phone', 'ProfilePic', 'School', 'Subjects', 'Bank', 'AccountNumber', 'Compensation', 'AccountType'],
+    headers: ['Username', 'Password', 'Role', 'Nickname', 'FullName', 'Phone', 'ProfilePic', 'School', 'Subjects', 'Bank', 'AccountNumber', 'Compensation', 'AccountType', 'TravelAllowance'],
     headerRow: 1,
     defaultData: [
       ['admin', '1234', 'Administrator', '', '', '', ''],
@@ -8630,15 +8630,15 @@ function saveTeacherProfile(teacher, logUser) {
     } else {
       // Update existing row
       if (teacher.nickname) sheet.getRange(rowIndex, 4).setValue(teacher.nickname);
-      if (teacher.fullName) sheet.getRange(rowIndex, 5).setValue(teacher.fullName);
-      if (teacher.phone) sheet.getRange(rowIndex, 6).setValue(teacher.phone);
-      if (teacher.school) sheet.getRange(rowIndex, 8).setValue(teacher.school);
-      if (teacher.subjects) sheet.getRange(rowIndex, 9).setValue(teacher.subjects);
-      if (teacher.bank) sheet.getRange(rowIndex, 10).setValue(teacher.bank);
-      if (teacher.accountNumber) sheet.getRange(rowIndex, 11).setValue(teacher.accountNumber);
-      if (teacher.compensation) sheet.getRange(rowIndex, 12).setValue(teacher.compensation);
+      if (teacher.fullName !== undefined) sheet.getRange(rowIndex, 5).setValue(teacher.fullName);
+      if (teacher.phone !== undefined) sheet.getRange(rowIndex, 6).setValue(teacher.phone);
+      if (teacher.school !== undefined) sheet.getRange(rowIndex, 8).setValue(teacher.school);
+      if (teacher.subjects !== undefined) sheet.getRange(rowIndex, 9).setValue(teacher.subjects);
+      if (teacher.bank !== undefined) sheet.getRange(rowIndex, 10).setValue(teacher.bank);
+      if (teacher.accountNumber !== undefined) sheet.getRange(rowIndex, 11).setValue(teacher.accountNumber);
+      if (teacher.compensation !== undefined) sheet.getRange(rowIndex, 12).setValue(teacher.compensation);
       if (teacher.teacherId) sheet.getRange(rowIndex, 1).setValue(teacher.teacherId);
-      if (teacher.accountType) sheet.getRange(rowIndex, 13).setValue(teacher.accountType);
+      if (teacher.accountType !== undefined) sheet.getRange(rowIndex, 13).setValue(teacher.accountType);
     }
     
     // Clear cache
