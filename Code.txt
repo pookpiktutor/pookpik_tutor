@@ -16931,9 +16931,9 @@ function markMessagesAsRead(teacherUsername, reader) {
     readBy: headers.indexOf('ReadBy')
   };
   
-  const teacherLower = teacherUsername.toLowerCase();
-  const readerUsername = typeof reader === 'object' ? reader.username : reader;
-  const readerLower = readerUsername.toLowerCase();
+  const teacherLower = (teacherUsername || '').toString().trim().toLowerCase();
+  const readerUsername = typeof reader === 'object' ? (reader.username || '') : (reader || '');
+  const readerLower = readerUsername.toString().trim().toLowerCase();
   const readerRole = typeof reader === 'object' ? (reader.role || '').toString().trim().toLowerCase() : '';
   const readerNick = typeof reader === 'object' ? (reader.nickname || reader.username || '') : readerUsername;
   const isStaff = readerRole === 'staff' || readerRole === 'admin' || readerRole === 'administrator' || readerRole === 'พนักงาน' || readerRole === 'ผู้บริหาร';
@@ -16945,12 +16945,25 @@ function markMessagesAsRead(teacherUsername, reader) {
     const r = (row[col.receiver] || '').toString().toLowerCase();
     
     // If the message involves this teacher and the receiver is the reader (or Admin if reader is staff)
-    if ((s === teacherLower || r === teacherLower) && (r === readerLower || (isStaff && r === 'admin')) && row[col.isRead] !== true) {
-      sheet.getRange(i + 1, col.isRead + 1).setValue(true);
-      if (col.readBy !== -1 && readerNick) {
-        sheet.getRange(i + 1, col.readBy + 1).setValue(readerNick);
+    if ((s === teacherLower || r === teacherLower) && (r === readerLower || (isStaff && r === 'admin'))) {
+      let rowChanged = false;
+      if (row[col.isRead] !== true) {
+        sheet.getRange(i + 1, col.isRead + 1).setValue(true);
+        rowChanged = true;
       }
-      updated++;
+      
+      if (col.readBy !== -1 && readerNick) {
+        const currentReadByStr = (row[col.readBy] || '').toString().trim();
+        const existingList = currentReadByStr ? currentReadByStr.split(',').map(x => x.trim()).filter(Boolean) : [];
+        if (!existingList.includes(readerNick)) {
+          existingList.push(readerNick);
+          const newReadByStr = existingList.join(', ');
+          sheet.getRange(i + 1, col.readBy + 1).setValue(newReadByStr);
+          rowChanged = true;
+        }
+      }
+      
+      if (rowChanged) updated++;
     }
   }
   
