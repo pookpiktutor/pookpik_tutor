@@ -1,4 +1,4 @@
-
+<script>
 // --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
@@ -19627,20 +19627,38 @@ function deleteStaffTeacherAdjustment(adjId) {
 }
 
 function populateTeacherDropdownInSummary() {
-  const teacherSelect = document.getElementById('staff_summary_adj_teacher');
-  if (!teacherSelect) return;
+  const teacherInput = document.getElementById('staff_summary_adj_teacher');
+  const dataList = document.getElementById('staff_summary_adj_teacher_list');
+  if (!teacherInput && !dataList) return;
   
   const fillOptions = (teachers) => {
     if (!Array.isArray(teachers)) return;
     state.teachersList = teachers;
-    teacherSelect.innerHTML = '<option value="">-- เลือกครู --</option>';
-    teachers.forEach(t => {
-      const opt = document.createElement('option');
-      opt.value = t.nickname || t.teacherId;
-      opt.textContent = t.nickname ? (t.nickname + (t.fullName ? ' (' + t.fullName + ')' : '')) : t.teacherId;
-      teacherSelect.appendChild(opt);
-    });
-    makeSelectSearchable('staff_summary_adj_teacher');
+    
+    if (dataList) {
+      dataList.innerHTML = '';
+      teachers.forEach(t => {
+        const opt = document.createElement('option');
+        const nick = t.nickname || t.teacherId || t.name || '';
+        const full = t.fullName || t.name || '';
+        opt.value = nick;
+        opt.label = (full && full !== nick) ? `${nick} (${full})` : nick;
+        dataList.appendChild(opt);
+      });
+    }
+    
+    if (teacherInput && teacherInput.tagName === 'SELECT') {
+      teacherInput.innerHTML = '<option value="">-- เลือกครู --</option>';
+      teachers.forEach(t => {
+        const opt = document.createElement('option');
+        const nick = t.nickname || t.teacherId || t.name || '';
+        const full = t.fullName || t.name || '';
+        opt.value = nick;
+        opt.textContent = (full && full !== nick) ? `${nick} (${full})` : nick;
+        teacherInput.appendChild(opt);
+      });
+      makeSelectSearchable('staff_summary_adj_teacher');
+    }
   };
 
   if (state.teachersList && state.teachersList.length > 0) {
@@ -19803,3 +19821,4 @@ function deleteStaffTeacherAdjustmentInSummary(adjId) {
     })
     .deleteTeacherAdjustment(adjId, getLogUser());
 }
+</script>
