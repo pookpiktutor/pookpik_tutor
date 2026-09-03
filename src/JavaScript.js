@@ -9046,7 +9046,7 @@ function renderDailyGrid() {
     return;
   }
 
-  const currentMode = state.roomViewMode || 'grid';
+  const currentMode = state.roomViewMode || 'timeline';
 
   // Control Header with View Toggle
   var headerHtml = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">';
@@ -11975,7 +11975,280 @@ function toggleRecurringDate(idx) {
 
 }
 
+function switchClassTab(idx) {
+  for (let i = 0; i < 4; i++) {
+    const tabBtn = document.getElementById('class_tab_btn_' + i);
+    const tabContent = document.getElementById('class_tab_' + i);
+    if (tabBtn) {
+      if (i === idx) {
+        tabBtn.classList.add('active');
+        tabBtn.style.fontWeight = 'bold';
+        tabBtn.style.background = 'var(--color-primary)';
+        tabBtn.style.color = '#fff';
+      } else {
+        tabBtn.classList.remove('active');
+        tabBtn.style.fontWeight = 'normal';
+        tabBtn.style.background = '#f1f5f9';
+        tabBtn.style.color = '#475569';
+      }
+    }
+    if (tabContent) {
+      tabContent.style.display = i === idx ? 'block' : 'none';
+    }
+  }
+}
 
+function calculateClassHours(idx) {
+  const startVal = document.getElementById('class_time_start_' + idx)?.value;
+  const endVal = document.getElementById('class_time_end_' + idx)?.value;
+  if (startVal && endVal) {
+    const sParts = startVal.split(':');
+    const eParts = endVal.split(':');
+    let sMin = parseInt(sParts[0], 10) * 60 + parseInt(sParts[1], 10);
+    let eMin = parseInt(eParts[0], 10) * 60 + parseInt(eParts[1], 10);
+    if (eMin > sMin) {
+      const diffMin = eMin - sMin;
+      const h = Math.floor(diffMin / 60);
+      const m = diffMin % 60;
+      const hoursStr = h + ':' + String(m).padStart(2, '0');
+      safeSetValue('class_hours_' + idx, hoursStr);
+    }
+  }
+}
+
+function updateClassKidsSum(idx) {
+  const live = parseInt(document.getElementById('class_kids_live_' + idx)?.value, 10) || 0;
+  const online = parseInt(document.getElementById('class_kids_online_' + idx)?.value, 10) || 0;
+  const leave = parseInt(document.getElementById('class_kids_leave_' + idx)?.value, 10) || 0;
+  safeSetValue('class_kids_sum_' + idx, live + online + leave);
+}
+
+function copyClassLogFromFirst() {
+  const date = document.getElementById('class_date_0')?.value || '';
+  const start = document.getElementById('class_time_start_0')?.value || '';
+  const end = document.getElementById('class_time_end_0')?.value || '';
+  const teacherReg = document.getElementById('class_teacher_reg_0')?.value || '';
+  const teacherSub = document.getElementById('class_teacher_sub_0')?.value || '';
+  const hours = document.getElementById('class_hours_0')?.value || '';
+
+  for (let i = 1; i < 4; i++) {
+    if (document.getElementById('class_date_' + i)) safeSetValue('class_date_' + i, date);
+    if (document.getElementById('class_time_start_' + i)) safeSetValue('class_time_start_' + i, start);
+    if (document.getElementById('class_time_end_' + i)) safeSetValue('class_time_end_' + i, end);
+    if (document.getElementById('class_teacher_reg_' + i)) safeSetValue('class_teacher_reg_' + i, teacherReg);
+    if (document.getElementById('class_teacher_sub_' + i)) safeSetValue('class_teacher_sub_' + i, teacherSub);
+    if (document.getElementById('class_hours_' + i)) safeSetValue('class_hours_' + i, hours);
+  }
+  showToast('คัดลอกข้อมูลจากคลาส 1 ไปยังคลาส 2-4 แล้ว', 'info');
+}
+
+function showEditClassLogModal(rowIndex) {
+  const log = (state.classLogs || []).find(c => Number(c.rowIndex) === Number(rowIndex));
+  if (!log) {
+    showToast('ไม่พบข้อมูลคลาสเรียนแถวที่ ' + rowIndex, 'error');
+    return;
+  }
+
+  safeSetValue('class_row_index', rowIndex);
+  const titleEl = document.getElementById('class_modal_title');
+  if (titleEl) titleEl.textContent = '✏️ แก้ไขข้อมูลคลาสเรียน (แถวที่ ' + rowIndex + ')';
+  const submitBtn = document.getElementById('class_submit_btn');
+  if (submitBtn) submitBtn.textContent = '💾 บันทึกการแก้ไข';
+
+  safeSetValue('class_room', log.roomBranch || '');
+  switchClassTab(0);
+
+  safeSetValue('class_subject_0', log.subject || '');
+  safeSetValue('class_teacher_reg_0', log.teacherRegular || '');
+  safeSetValue('class_teacher_sub_0', log.teacherSub || '');
+  safeSetValue('class_time_start_0', cleanTimeForInput(log.timeStart || ''));
+  safeSetValue('class_time_end_0', cleanTimeForInput(log.timeEnd || ''));
+  
+  let dateVal = log.date || '';
+  if (dateVal && dateVal.includes('/')) {
+    const p = dateVal.split('/');
+    if (p.length === 3) {
+      dateVal = p[2] + '-' + p[1].padStart(2, '0') + '-' + p[0].padStart(2, '0');
+    }
+  }
+  safeSetValue('class_date_0', dateVal);
+  safeSetValue('class_hours_0', log.hours || '');
+
+  safeSetValue('class_kids_live_0', log.isPresentLive || 0);
+  safeSetValue('class_kids_online_0', log.isPresentOnline || 0);
+  safeSetValue('class_kids_leave_0', log.isLeave || 0);
+  safeSetValue('class_kids_absent_0', log.isAbsent || 0);
+  safeSetValue('class_kids_makeup_0', log.isMakeup || 0);
+  safeSetValue('class_kids_sum_0', (Number(log.isPresentLive)||0) + (Number(log.isPresentOnline)||0) + (Number(log.isLeave)||0));
+  safeSetValue('class_note_0', log.note || '');
+
+  const modal = document.getElementById('class_modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+  }
+}
+
+function openClassLogModal(roomLabel = '') {
+  quickAddClassLog(roomLabel);
+}
+
+function quickAddClassLog(roomLabel = '') {
+  safeSetValue('class_row_index', '');
+  const titleEl = document.getElementById('class_modal_title');
+  if (titleEl) titleEl.textContent = '➕ บันทึกชั่วโมงสอนคลาสเรียนใหม่';
+  const submitBtn = document.getElementById('class_submit_btn');
+  if (submitBtn) submitBtn.textContent = '💾 บันทึกข้อมูลคลาสเรียน';
+
+  safeSetValue('class_room', roomLabel || '');
+  switchClassTab(0);
+
+  const defaultDate = state.selectedDailyDate || getTodayString();
+  for (let i = 0; i < 4; i++) {
+    safeSetValue('class_subject_' + i, '');
+    safeSetValue('class_teacher_reg_' + i, '');
+    safeSetValue('class_teacher_sub_' + i, '');
+    safeSetValue('class_time_start_' + i, '');
+    safeSetValue('class_time_end_' + i, '');
+    safeSetValue('class_date_' + i, defaultDate);
+    safeSetValue('class_hours_' + i, '');
+    safeSetValue('class_kids_live_' + i, 0);
+    safeSetValue('class_kids_online_' + i, 0);
+    safeSetValue('class_kids_leave_' + i, 0);
+    safeSetValue('class_kids_absent_' + i, 0);
+    safeSetValue('class_kids_makeup_' + i, 0);
+    safeSetValue('class_kids_sum_' + i, 0);
+    safeSetValue('class_note_' + i, '');
+  }
+
+  const modal = document.getElementById('class_modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+  }
+}
+
+function closeClassLogModal() {
+  const modal = document.getElementById('class_modal');
+  if (modal) {
+    modal.style.display = 'none';
+    modal.classList.remove('active');
+  }
+}
+
+function deleteClassLog(rowIndex) {
+  if (!confirm('คุณต้องการลบข้อมูลคลาสเรียนแถวที่ ' + rowIndex + ' ใช่หรือไม่?')) return;
+  setLoading(true, 'กำลังลบข้อมูลคลาสเรียน...');
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('ลบข้อมูลคลาสเรียนเรียบร้อยแล้ว', 'success');
+        if (typeof loadDailyGrid === 'function') loadDailyGrid();
+      } else {
+        showToast('เกิดข้อผิดพลาดในการลบ: ' + (res?.error || 'ไม่ทราบสาเหตุ'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    })
+    .deleteClassLog(rowIndex, getLogUser());
+}
+
+function saveClassLog(e) {
+  if (e) e.preventDefault();
+  const rowIndex = document.getElementById('class_row_index')?.value;
+  const roomBranch = document.getElementById('class_room')?.value || '';
+
+  if (!roomBranch.trim()) {
+    showToast('กรุณาระบุห้องเรียน / สาขา', 'error');
+    return;
+  }
+
+  if (rowIndex) {
+    const logData = {
+      roomBranch: roomBranch,
+      subject: document.getElementById('class_subject_0')?.value || '',
+      teacherRegular: document.getElementById('class_teacher_reg_0')?.value || '',
+      teacherSub: document.getElementById('class_teacher_sub_0')?.value || '',
+      timeStart: document.getElementById('class_time_start_0')?.value || '',
+      timeEnd: document.getElementById('class_time_end_0')?.value || '',
+      date: document.getElementById('class_date_0')?.value || '',
+      hours: document.getElementById('class_hours_0')?.value || '',
+      isPresentLive: parseInt(document.getElementById('class_kids_live_0')?.value, 10) || 0,
+      isPresentOnline: parseInt(document.getElementById('class_kids_online_0')?.value, 10) || 0,
+      isLeave: parseInt(document.getElementById('class_kids_leave_0')?.value, 10) || 0,
+      isAbsent: parseInt(document.getElementById('class_kids_absent_0')?.value, 10) || 0,
+      isMakeup: parseInt(document.getElementById('class_kids_makeup_0')?.value, 10) || 0,
+      note: document.getElementById('class_note_0')?.value || ''
+    };
+
+    setLoading(true, 'กำลังบันทึกการแก้ไขคลาสเรียน...');
+    google.script.run
+      .withSuccessHandler(res => {
+        setLoading(false);
+        if (res && res.success) {
+          showToast('บันทึกการแก้ไขเรียบร้อยแล้ว', 'success');
+          closeClassLogModal();
+          if (typeof loadDailyGrid === 'function') loadDailyGrid();
+        } else {
+          showToast('บันทึกไม่สำเร็จ: ' + (res?.error || 'ไม่ทราบสาเหตุ'), 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        setLoading(false);
+        showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+      })
+      .updateClassLog(parseInt(rowIndex, 10), logData, getLogUser());
+  } else {
+    const logs = [];
+    for (let i = 0; i < 4; i++) {
+      const subj = document.getElementById('class_subject_' + i)?.value || '';
+      if (subj.trim()) {
+        logs.push({
+          roomBranch: roomBranch,
+          subject: subj,
+          teacherRegular: document.getElementById('class_teacher_reg_' + i)?.value || '',
+          teacherSub: document.getElementById('class_teacher_sub_' + i)?.value || '',
+          timeStart: document.getElementById('class_time_start_' + i)?.value || '',
+          timeEnd: document.getElementById('class_time_end_' + i)?.value || '',
+          date: document.getElementById('class_date_' + i)?.value || '',
+          hours: document.getElementById('class_hours_' + i)?.value || '',
+          isPresentLive: parseInt(document.getElementById('class_kids_live_' + i)?.value, 10) || 0,
+          isPresentOnline: parseInt(document.getElementById('class_kids_online_' + i)?.value, 10) || 0,
+          isLeave: parseInt(document.getElementById('class_kids_leave_' + i)?.value, 10) || 0,
+          isAbsent: parseInt(document.getElementById('class_kids_absent_' + i)?.value, 10) || 0,
+          isMakeup: parseInt(document.getElementById('class_kids_makeup_' + i)?.value, 10) || 0,
+          note: document.getElementById('class_note_' + i)?.value || ''
+        });
+      }
+    }
+
+    if (logs.length === 0) {
+      showToast('กรุณากรอกวิชาเรียนอย่างน้อย 1 คลาส', 'error');
+      return;
+    }
+
+    setLoading(true, 'กำลังบันทึกคลาสเรียน...');
+    google.script.run
+      .withSuccessHandler(res => {
+        setLoading(false);
+        if (res && res.success) {
+          showToast('บันทึกข้อมูลคลาสเรียนเรียบร้อยแล้ว', 'success');
+          closeClassLogModal();
+          if (typeof loadDailyGrid === 'function') loadDailyGrid();
+        } else {
+          showToast('บันทึกไม่สำเร็จ: ' + (res?.error || 'ไม่ทราบสาเหตุ'), 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        setLoading(false);
+        showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+      })
+      .addMultipleClassLogs(logs, getLogUser());
+  }
+}
 
 function loadDebtors(isSilent = false) {
   fetchCachedStudents(isSilent, students => {
