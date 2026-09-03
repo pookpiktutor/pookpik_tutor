@@ -2074,7 +2074,108 @@ function toggleDailyGridConfirm(rowIndex, isChecked) {
 
 }
 
+function toggleClassAbsence(rowIndex, type, chkEl) {
+  if (!rowIndex) return;
+  const isChecked = chkEl ? chkEl.checked : false;
+  const backendType = (type === 'studentLeave' || type === 'nong') ? 'nong' : 'kru';
 
+  // 1. Update state.classAbsences and localStorage
+  if (!state.classAbsences) state.classAbsences = {};
+  if (!state.classAbsences[rowIndex]) state.classAbsences[rowIndex] = {};
+
+  if (backendType === 'nong') {
+    state.classAbsences[rowIndex].studentLeave = isChecked;
+  } else {
+    state.classAbsences[rowIndex].teacherLeave = isChecked;
+  }
+
+  try {
+    localStorage.setItem('classAbsences', JSON.stringify(state.classAbsences));
+  } catch(e) {
+    console.error('Failed to save classAbsences to localStorage:', e);
+  }
+
+  // 2. Update local state.classLogs if present
+  if (Array.isArray(state.classLogs)) {
+    const log = state.classLogs.find(l => l.rowIndex === rowIndex);
+    if (log) {
+      if (backendType === 'nong') {
+        log.isLeave = isChecked ? 1 : 0;
+        if (isChecked) {
+          log.isPresentLive = 0;
+          log.isPresentOnline = 0;
+          log.isMakeup = 0;
+        }
+      } else {
+        let noteStr = (log.note || '').toString().trim();
+        if (isChecked) {
+          if (!noteStr.includes('ครูลา')) {
+            noteStr = (noteStr ? noteStr + ' ' : '') + 'ครูลา';
+          }
+        } else {
+          noteStr = noteStr.replace(/ครูลา/g, '').trim();
+        }
+        log.note = noteStr;
+      }
+    }
+  }
+
+  // Also update dailyGridCache if present
+  if (state.dailyGridCache) {
+    Object.keys(state.dailyGridCache).forEach(dateKey => {
+      const cacheObj = state.dailyGridCache[dateKey];
+      if (cacheObj && Array.isArray(cacheObj.classes)) {
+        const cachedLog = cacheObj.classes.find(l => l.rowIndex === rowIndex);
+        if (cachedLog) {
+          if (backendType === 'nong') {
+            cachedLog.isLeave = isChecked ? 1 : 0;
+            if (isChecked) {
+              cachedLog.isPresentLive = 0;
+              cachedLog.isPresentOnline = 0;
+              cachedLog.isMakeup = 0;
+            }
+          } else {
+            let noteStr = (cachedLog.note || '').toString().trim();
+            if (isChecked) {
+              if (!noteStr.includes('ครูลา')) {
+                noteStr = (noteStr ? noteStr + ' ' : '') + 'ครูลา';
+              }
+            } else {
+              noteStr = noteStr.replace(/ครูลา/g, '').trim();
+            }
+            cachedLog.note = noteStr;
+          }
+        }
+      }
+    });
+  }
+
+  // 3. Immediately re-render daily grid so UI updates instantly
+  if (typeof renderDailyGrid === 'function' && document.getElementById('rooms_grid_container')) {
+    renderDailyGrid();
+  }
+
+  // 4. Save to Google Apps Script backend
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res && res.success) {
+        const label = backendType === 'nong' ? 'น้องลา' : 'ครูลา';
+        showToast((isChecked ? 'บันทึก ' : 'ยกเลิก ') + label + ' สำเร็จ', 'success');
+      } else {
+        showToast('การบันทึกสถานะลามีข้อผิดพลาด: ' + (res ? res.error : 'ไม่ทราบสาเหตุ'), 'error');
+        if (typeof renderDailyGrid === 'function') renderDailyGrid();
+      }
+    })
+    .withFailureHandler(err => {
+      showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      if (typeof renderDailyGrid === 'function') renderDailyGrid();
+    })
+    .toggleClassAbsentInSheet(rowIndex, backendType, isChecked);
+}
+
+function handleTeacherLeaveToggle(rowIndex, chkEl) {
+  toggleClassAbsence(rowIndex, 'teacherLeave', chkEl);
+}
 
 function getLogUser() {
 
