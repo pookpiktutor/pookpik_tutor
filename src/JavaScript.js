@@ -1,4 +1,4 @@
-<script>
+
 // --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
@@ -4315,6 +4315,8 @@ function makeSelectSearchable(selectId) {
   else if (selectId === 'teacher_schedule_select') placeholderText = 'พิมพ์ชื่อครูเพื่อดูตาราง...';
 
   else if (selectId === 'calc_teacher_select') placeholderText = 'พิมพ์ชื่อครูเพื่อคำนวณเงิน...';
+
+  else if (selectId === 'staff_summary_adj_teacher') placeholderText = '-- พิมพ์ชื่อหรือเลือกครู --';
 
   
 
@@ -19628,27 +19630,25 @@ function populateTeacherDropdownInSummary() {
   const teacherSelect = document.getElementById('staff_summary_adj_teacher');
   if (!teacherSelect) return;
   
-  if (state.teachersList && state.teachersList.length > 0) {
+  const fillOptions = (teachers) => {
+    if (!Array.isArray(teachers)) return;
+    state.teachersList = teachers;
     teacherSelect.innerHTML = '<option value="">-- เลือกครู --</option>';
-    state.teachersList.forEach(t => {
+    teachers.forEach(t => {
       const opt = document.createElement('option');
       opt.value = t.nickname || t.teacherId;
       opt.textContent = t.nickname ? (t.nickname + (t.fullName ? ' (' + t.fullName + ')' : '')) : t.teacherId;
       teacherSelect.appendChild(opt);
     });
+    makeSelectSearchable('staff_summary_adj_teacher');
+  };
+
+  if (state.teachersList && state.teachersList.length > 0) {
+    fillOptions(state.teachersList);
   } else {
     google.script.run
       .withSuccessHandler(teachers => {
-        if (Array.isArray(teachers)) {
-          state.teachersList = teachers;
-          teacherSelect.innerHTML = '<option value="">-- เลือกครู --</option>';
-          teachers.forEach(t => {
-            const opt = document.createElement('option');
-            opt.value = t.nickname || t.teacherId;
-            opt.textContent = t.nickname ? (t.nickname + (t.fullName ? ' (' + t.fullName + ')' : '')) : t.teacherId;
-            teacherSelect.appendChild(opt);
-          });
-        }
+        fillOptions(teachers);
       })
       .getTeachersDB(getLogUser());
   }
@@ -19803,4 +19803,3 @@ function deleteStaffTeacherAdjustmentInSummary(adjId) {
     })
     .deleteTeacherAdjustment(adjId, getLogUser());
 }
-</script>
