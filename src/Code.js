@@ -14189,25 +14189,45 @@ function getTeacherLeaveToday(logUser) {
 
     for (let i = 0; i < data.length; i++) {
       const note = (data[i][5] || '').toString();
-      if (note.indexOf('ครูลา') === -1) continue;
+      const isLeaveVal = parseInt(data[i][8]) || 0;
+      if (note.indexOf('ครูลา') === -1 && isLeaveVal !== 1 && data[i][8] !== true) continue;
 
-      const dateValStr = cleanSheetDate(data[i][12]);
-      if (!dateValStr) continue;
+      const rawDate = data[i][12];
+      let rowDate = null;
+      let dateValStr = '';
 
-      const parts = dateValStr.split('/');
-      if (parts.length === 3) {
-         const d = parseInt(parts[0], 10);
-         const m = parseInt(parts[1], 10) - 1;
-         let y = parseInt(parts[2], 10);
-         if (y > 2500) y -= 543;
-         const rowDate = new Date(y, m, d);
-         
-         // ONLY INCLUDE DATES FROM TODAY ONWARDS!
-         if (rowDate < todayStart) {
-             continue;
-         }
-      } else {
-         continue;
+      if (rawDate instanceof Date) {
+        rowDate = rawDate;
+        dateValStr = Utilities.formatDate(rawDate, 'Asia/Bangkok', 'dd/MM/yyyy');
+      } else if (rawDate) {
+        dateValStr = rawDate.toString().trim();
+        if (dateValStr.includes('/')) {
+          const parts = dateValStr.split('/');
+          if (parts.length === 3) {
+            const d = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            let y = parseInt(parts[2], 10);
+            if (y > 2500) y -= 543;
+            rowDate = new Date(y, m, d);
+          }
+        } else if (dateValStr.includes('-')) {
+          const parts = dateValStr.split('-');
+          if (parts.length === 3) {
+            let y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const d = parseInt(parts[2], 10);
+            if (y > 2500) y -= 543;
+            rowDate = new Date(y, m, d);
+            dateValStr = String(d).padStart(2, '0') + '/' + String(m + 1).padStart(2, '0') + '/' + y;
+          }
+        }
+      }
+
+      if (!rowDate || isNaN(rowDate.getTime())) continue;
+
+      const rowDateStart = new Date(rowDate.getFullYear(), rowDate.getMonth(), rowDate.getDate());
+      if (rowDateStart < todayStart) {
+        continue;
       }
 
       let teacherName = (data[i][1] || '').toString().trim();
@@ -14219,12 +14239,8 @@ function getTeacherLeaveToday(logUser) {
 
       let timeStart = data[i][3] || '';
       let timeEnd = data[i][4] || '';
-      let teacherSub = (data[i][2] || '').toString().trim();
-      
-      // If there is a substitute teacher, DO NOT show it in the leave list
-      if (!isEmptySub(teacherSub)) {
-        continue;
-      }
+      let teacherSubRaw = (data[i][2] || '').toString().trim();
+      let teacherSub = isEmptySub(teacherSubRaw) ? '' : teacherSubRaw;
 
       const room = data[i][13] || '';
       if (teacherName && teachersMap[teacherName.toLowerCase()]) {
@@ -14237,10 +14253,10 @@ function getTeacherLeaveToday(logUser) {
         subject: subject,
         timeStart: timeStart,
         timeEnd: timeEnd,
-        teacherSub: '',
+        teacherSub: teacherSub,
         room: room,
         date: dateValStr,
-        isToday: (dateValStr === todayFormatted)
+        isToday: (rowDateStart.getTime() === todayStart.getTime())
       });
     }
 

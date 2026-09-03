@@ -18,6 +18,50 @@ const claspRcPath = join(homedir(), '.clasprc.json');
 const claspRc = JSON.parse(readFileSync(claspRcPath, 'utf8'));
 const tokenData = claspRc.tokens?.default || claspRc;
 
+// Refresh token using OAuth2
+async function refreshAccessToken() {
+  const clientId = claspRc.oauth2ClientSettings?.clientId || '1072944905499-vm2v2i5dvn0a0d2o4ca36i1vge8cvdn.apps.googleusercontent.com';
+  const clientSecret = claspRc.oauth2ClientSettings?.clientSecret || '-petD6MvLBQs-7KUlNCC_Yl7';
+  const refreshToken = tokenData.refresh_token;
+
+  return new Promise((resolve, reject) => {
+    const body = new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token'
+    }).toString();
+
+    const req = https.request({
+      hostname: 'oauth2.googleapis.com',
+      path: '/token',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    }, res => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (json.access_token) {
+            resolve(json.access_token);
+          } else {
+            reject(new Error('No access_token in response: ' + data));
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
 async function apiRequest(method, path, body, token) {
   return new Promise((resolve, reject) => {
     const bodyStr = body ? JSON.stringify(body) : null;
@@ -45,8 +89,15 @@ async function apiRequest(method, path, body, token) {
 }
 
 async function main() {
-  const token = tokenData.access_token;
-  console.log('🔑 Using existing access token');
+  console.log('🔄 Refreshing access token...');
+  let token;
+  try {
+    token = await refreshAccessToken();
+    console.log('🔑 Token refreshed successfully');
+  } catch (e) {
+    console.log('⚠️ Could not refresh token, trying existing access token:', e.message);
+    token = tokenData.access_token;
+  }
 
   // 1. Get current project files
   console.log('\n📥 Fetching current Apps Script project files...');

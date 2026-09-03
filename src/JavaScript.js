@@ -1,3 +1,4 @@
+<script>
 // --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
@@ -9339,6 +9340,108 @@ function renderDailyGrid() {
   html += '</div>';
 
   container.innerHTML = html;
+}
+
+function showEditRoomModal(branch, roomName, ipad = '', zoom = '') {
+  const modal = document.getElementById('room_modal');
+  if (!modal) return;
+  const title = document.getElementById('room_modal_title');
+  const addFields = document.getElementById('room_add_fields');
+  
+  if (title) title.innerText = 'ตั้งค่าห้องเรียน: ' + roomName + ' (' + (branch || '') + ')';
+  if (addFields) addFields.style.display = 'none';
+  
+  if (document.getElementById('room_edit_branch')) document.getElementById('room_edit_branch').value = branch || '';
+  if (document.getElementById('room_edit_name')) document.getElementById('room_edit_name').value = roomName || '';
+  if (document.getElementById('room_edit_ipad')) document.getElementById('room_edit_ipad').value = ipad || '';
+  if (document.getElementById('room_edit_zoom')) document.getElementById('room_edit_zoom').value = zoom || '';
+  
+  modal.style.display = 'flex';
+}
+
+function showAddRoomModal() {
+  const modal = document.getElementById('room_modal');
+  if (!modal) return;
+  const title = document.getElementById('room_modal_title');
+  const addFields = document.getElementById('room_add_fields');
+  
+  if (title) title.innerText = 'เพิ่มห้องเรียนใหม่';
+  if (addFields) addFields.style.display = 'block';
+  
+  if (document.getElementById('room_edit_branch')) document.getElementById('room_edit_branch').value = '';
+  if (document.getElementById('room_edit_name')) document.getElementById('room_edit_name').value = '';
+  if (document.getElementById('room_edit_ipad')) document.getElementById('room_edit_ipad').value = '';
+  if (document.getElementById('room_edit_zoom')) document.getElementById('room_edit_zoom').value = '';
+  if (document.getElementById('room_add_name')) document.getElementById('room_add_name').value = '';
+  
+  modal.style.display = 'flex';
+}
+
+function closeRoomModal() {
+  const modal = document.getElementById('room_modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveRoomSettings(e) {
+  if (e) e.preventDefault();
+  const editBranch = document.getElementById('room_edit_branch') ? document.getElementById('room_edit_branch').value : '';
+  const editName = document.getElementById('room_edit_name') ? document.getElementById('room_edit_name').value : '';
+  
+  let branch = editBranch;
+  let roomName = editName;
+  
+  if (!branch || !roomName) {
+    branch = document.getElementById('room_add_branch') ? document.getElementById('room_add_branch').value : '';
+    roomName = document.getElementById('room_add_name') ? document.getElementById('room_add_name').value.trim() : '';
+  }
+  
+  if (!branch || !roomName) {
+    showToast('กรุณากรอกข้อมูลสาขาและชื่อห้องเรียนให้ครบถ้วน', 'warning');
+    return;
+  }
+  
+  const ipad = document.getElementById('room_edit_ipad') ? document.getElementById('room_edit_ipad').value.trim() : '';
+  const zoom = document.getElementById('room_edit_zoom') ? document.getElementById('room_edit_zoom').value.trim() : '';
+  
+  setLoading(true, 'กำลังบันทึกการตั้งค่าห้องเรียน...');
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('บันทึกการตั้งค่าห้องเรียนเรียบร้อยแล้ว', 'success');
+        closeRoomModal();
+        loadDailyGrid();
+      } else {
+        showToast('เกิดข้อผิดพลาด: ' + ((res && res.error) || 'ไม่สามารถบันทึกข้อมูลได้'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    })
+    .updateRoomSettings(branch, roomName, ipad, zoom, getLogUser());
+}
+
+function deleteRoomFrontend(branch, roomName) {
+  if (!branch || !roomName) return;
+  if (!confirm('คุณต้องการลบห้องเรียน "' + roomName + '" (' + branch + ') ใช่หรือไม่?')) return;
+  
+  setLoading(true, 'กำลังลบห้องเรียน...');
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('ลบห้องเรียนเรียบร้อยแล้ว', 'success');
+        loadDailyGrid();
+      } else {
+        showToast('เกิดข้อผิดพลาด: ' + ((res && res.error) || 'ไม่สามารถลบห้องเรียนได้'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    })
+    .deleteRoom(branch, roomName, getLogUser());
 }
 
 function loadTeacherProfiles() {
@@ -19579,3 +19682,4 @@ function deleteStaffTeacherAdjustmentInSummary(adjId) {
     })
     .deleteTeacherAdjustment(adjId, getLogUser());
 }
+</script>
