@@ -19231,7 +19231,8 @@ function formatChatTime(ts) {
 
 function renderChatContacts(contacts) {
   const container = document.getElementById('chat_contacts_container');
-  if (contacts.length === 0) {
+  if (!container) return;
+  if (!contacts || contacts.length === 0) {
     container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted);">ไม่มีครูผู้สอนในระบบ</div>';
     return;
   }
@@ -19239,14 +19240,32 @@ function renderChatContacts(contacts) {
   let htmlStr = '';
   contacts.forEach(c => {
     const timeDisplay = formatChatTime(c.lastMessageTime);
-    htmlStr += '<div class="chat-contact-item" data-name="' + c.nickname.toLowerCase() + '" style="padding: 8px 12px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="showChatRoom(\'' + c.username + '\', \'' + c.nickname + '\')" onmouseover="this.style.background=\'var(--bg-panel)\'" onmouseout="this.style.background=\'transparent\'">';
-    htmlStr += '<div style="display: flex; align-items: center; gap: 10px;">';
-    htmlStr += '<div style="width: 32px; height: 32px; border-radius: 50%; font-size: 0.85rem; background: var(--color-primary); color: white; display: flex; justify-content: center; align-items: center; font-weight: bold;">' + c.nickname.charAt(0) + '</div>';
-    htmlStr += '<div><div style="font-size: 0.85rem; font-weight: 600;">ครู' + c.nickname + '</div>' + (timeDisplay ? '<div style="font-size: 0.7rem; color: var(--text-muted);">' + timeDisplay + '</div>' : '') + '</div>';
+    let statusMeta = '';
+    
+    if (c.lastMessageTime) {
+      if (c.lastMessageReadBy) {
+        statusMeta = ` • อ่านแล้วโดย ${c.lastMessageReadBy}`;
+      } else if (c.lastMessageSenderNickname) {
+        statusMeta = ` • ตอบโดย ${c.lastMessageSenderNickname}`;
+      }
+    }
+
+    const fullTimeLine = timeDisplay ? `${timeDisplay}${statusMeta}` : '';
+
+    htmlStr += '<div class="chat-contact-item" data-name="' + (c.nickname || '').toLowerCase() + '" style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.15s;" onclick="showChatRoom(\'' + c.username + '\', \'' + c.nickname + '\')" onmouseover="this.style.background=\'rgba(0,132,255,0.05)\'" onmouseout="this.style.background=\'transparent\'">';
+    htmlStr += '<div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">';
+    htmlStr += '<div style="width: 34px; height: 34px; border-radius: 50%; font-size: 0.85rem; background: var(--color-primary); color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; flex-shrink: 0;">' + (c.nickname ? c.nickname.charAt(0) : '?') + '</div>';
+    htmlStr += '<div style="flex: 1; min-width: 0;">';
+    htmlStr += '<div style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ครู' + c.nickname + '</div>';
+    if (fullTimeLine) {
+      htmlStr += '<div style="font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px;">' + fullTimeLine + '</div>';
+    }
     htmlStr += '</div>';
-    htmlStr += '<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">';
+    htmlStr += '</div>';
+    
+    htmlStr += '<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px; margin-left: 8px; flex-shrink: 0;">';
     if (c.unreadCount > 0) {
-      htmlStr += '<div style="background: var(--color-danger); color: white; font-size: 0.75rem; font-weight: bold; width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center;">' + c.unreadCount + '</div>';
+      htmlStr += '<div style="background: var(--color-danger); color: white; font-size: 0.72rem; font-weight: bold; padding: 2px 7px; border-radius: 10px; display: flex; justify-content: center; align-items: center;">' + c.unreadCount + '</div>';
     }
     htmlStr += '</div>';
     htmlStr += '</div>';

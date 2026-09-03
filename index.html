@@ -6038,7 +6038,108 @@ function toggleDailyGridConfirm(rowIndex, isChecked) {
 
 }
 
+function toggleClassAbsence(rowIndex, type, chkEl) {
+  if (!rowIndex) return;
+  const isChecked = chkEl ? chkEl.checked : false;
+  const backendType = (type === 'studentLeave' || type === 'nong') ? 'nong' : 'kru';
 
+  // 1. Update state.classAbsences and localStorage
+  if (!state.classAbsences) state.classAbsences = {};
+  if (!state.classAbsences[rowIndex]) state.classAbsences[rowIndex] = {};
+
+  if (backendType === 'nong') {
+    state.classAbsences[rowIndex].studentLeave = isChecked;
+  } else {
+    state.classAbsences[rowIndex].teacherLeave = isChecked;
+  }
+
+  try {
+    localStorage.setItem('classAbsences', JSON.stringify(state.classAbsences));
+  } catch(e) {
+    console.error('Failed to save classAbsences to localStorage:', e);
+  }
+
+  // 2. Update local state.classLogs if present
+  if (Array.isArray(state.classLogs)) {
+    const log = state.classLogs.find(l => l.rowIndex === rowIndex);
+    if (log) {
+      if (backendType === 'nong') {
+        log.isLeave = isChecked ? 1 : 0;
+        if (isChecked) {
+          log.isPresentLive = 0;
+          log.isPresentOnline = 0;
+          log.isMakeup = 0;
+        }
+      } else {
+        let noteStr = (log.note || '').toString().trim();
+        if (isChecked) {
+          if (!noteStr.includes('ครูลา')) {
+            noteStr = (noteStr ? noteStr + ' ' : '') + 'ครูลา';
+          }
+        } else {
+          noteStr = noteStr.replace(/ครูลา/g, '').trim();
+        }
+        log.note = noteStr;
+      }
+    }
+  }
+
+  // Also update dailyGridCache if present
+  if (state.dailyGridCache) {
+    Object.keys(state.dailyGridCache).forEach(dateKey => {
+      const cacheObj = state.dailyGridCache[dateKey];
+      if (cacheObj && Array.isArray(cacheObj.classes)) {
+        const cachedLog = cacheObj.classes.find(l => l.rowIndex === rowIndex);
+        if (cachedLog) {
+          if (backendType === 'nong') {
+            cachedLog.isLeave = isChecked ? 1 : 0;
+            if (isChecked) {
+              cachedLog.isPresentLive = 0;
+              cachedLog.isPresentOnline = 0;
+              cachedLog.isMakeup = 0;
+            }
+          } else {
+            let noteStr = (cachedLog.note || '').toString().trim();
+            if (isChecked) {
+              if (!noteStr.includes('ครูลา')) {
+                noteStr = (noteStr ? noteStr + ' ' : '') + 'ครูลา';
+              }
+            } else {
+              noteStr = noteStr.replace(/ครูลา/g, '').trim();
+            }
+            cachedLog.note = noteStr;
+          }
+        }
+      }
+    });
+  }
+
+  // 3. Immediately re-render daily grid so UI updates instantly
+  if (typeof renderDailyGrid === 'function' && document.getElementById('rooms_grid_container')) {
+    renderDailyGrid();
+  }
+
+  // 4. Save to Google Apps Script backend
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res && res.success) {
+        const label = backendType === 'nong' ? 'น้องลา' : 'ครูลา';
+        showToast((isChecked ? 'บันทึก ' : 'ยกเลิก ') + label + ' สำเร็จ', 'success');
+      } else {
+        showToast('การบันทึกสถานะลามีข้อผิดพลาด: ' + (res ? res.error : 'ไม่ทราบสาเหตุ'), 'error');
+        if (typeof renderDailyGrid === 'function') renderDailyGrid();
+      }
+    })
+    .withFailureHandler(err => {
+      showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
+      if (typeof renderDailyGrid === 'function') renderDailyGrid();
+    })
+    .toggleClassAbsentInSheet(rowIndex, backendType, isChecked);
+}
+
+function handleTeacherLeaveToggle(rowIndex, chkEl) {
+  toggleClassAbsence(rowIndex, 'teacherLeave', chkEl);
+}
 
 function getLogUser() {
 
@@ -13304,6 +13405,108 @@ function renderDailyGrid() {
   html += '</div>';
 
   container.innerHTML = html;
+}
+
+function showEditRoomModal(branch, roomName, ipad = '', zoom = '') {
+  const modal = document.getElementById('room_modal');
+  if (!modal) return;
+  const title = document.getElementById('room_modal_title');
+  const addFields = document.getElementById('room_add_fields');
+  
+  if (title) title.innerText = 'ตั้งค่าห้องเรียน: ' + roomName + ' (' + (branch || '') + ')';
+  if (addFields) addFields.style.display = 'none';
+  
+  if (document.getElementById('room_edit_branch')) document.getElementById('room_edit_branch').value = branch || '';
+  if (document.getElementById('room_edit_name')) document.getElementById('room_edit_name').value = roomName || '';
+  if (document.getElementById('room_edit_ipad')) document.getElementById('room_edit_ipad').value = ipad || '';
+  if (document.getElementById('room_edit_zoom')) document.getElementById('room_edit_zoom').value = zoom || '';
+  
+  modal.style.display = 'flex';
+}
+
+function showAddRoomModal() {
+  const modal = document.getElementById('room_modal');
+  if (!modal) return;
+  const title = document.getElementById('room_modal_title');
+  const addFields = document.getElementById('room_add_fields');
+  
+  if (title) title.innerText = 'เพิ่มห้องเรียนใหม่';
+  if (addFields) addFields.style.display = 'block';
+  
+  if (document.getElementById('room_edit_branch')) document.getElementById('room_edit_branch').value = '';
+  if (document.getElementById('room_edit_name')) document.getElementById('room_edit_name').value = '';
+  if (document.getElementById('room_edit_ipad')) document.getElementById('room_edit_ipad').value = '';
+  if (document.getElementById('room_edit_zoom')) document.getElementById('room_edit_zoom').value = '';
+  if (document.getElementById('room_add_name')) document.getElementById('room_add_name').value = '';
+  
+  modal.style.display = 'flex';
+}
+
+function closeRoomModal() {
+  const modal = document.getElementById('room_modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveRoomSettings(e) {
+  if (e) e.preventDefault();
+  const editBranch = document.getElementById('room_edit_branch') ? document.getElementById('room_edit_branch').value : '';
+  const editName = document.getElementById('room_edit_name') ? document.getElementById('room_edit_name').value : '';
+  
+  let branch = editBranch;
+  let roomName = editName;
+  
+  if (!branch || !roomName) {
+    branch = document.getElementById('room_add_branch') ? document.getElementById('room_add_branch').value : '';
+    roomName = document.getElementById('room_add_name') ? document.getElementById('room_add_name').value.trim() : '';
+  }
+  
+  if (!branch || !roomName) {
+    showToast('กรุณากรอกข้อมูลสาขาและชื่อห้องเรียนให้ครบถ้วน', 'warning');
+    return;
+  }
+  
+  const ipad = document.getElementById('room_edit_ipad') ? document.getElementById('room_edit_ipad').value.trim() : '';
+  const zoom = document.getElementById('room_edit_zoom') ? document.getElementById('room_edit_zoom').value.trim() : '';
+  
+  setLoading(true, 'กำลังบันทึกการตั้งค่าห้องเรียน...');
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('บันทึกการตั้งค่าห้องเรียนเรียบร้อยแล้ว', 'success');
+        closeRoomModal();
+        loadDailyGrid();
+      } else {
+        showToast('เกิดข้อผิดพลาด: ' + ((res && res.error) || 'ไม่สามารถบันทึกข้อมูลได้'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    })
+    .updateRoomSettings(branch, roomName, ipad, zoom, getLogUser());
+}
+
+function deleteRoomFrontend(branch, roomName) {
+  if (!branch || !roomName) return;
+  if (!confirm('คุณต้องการลบห้องเรียน "' + roomName + '" (' + branch + ') ใช่หรือไม่?')) return;
+  
+  setLoading(true, 'กำลังลบห้องเรียน...');
+  google.script.run
+    .withSuccessHandler(res => {
+      setLoading(false);
+      if (res && res.success) {
+        showToast('ลบห้องเรียนเรียบร้อยแล้ว', 'success');
+        loadDailyGrid();
+      } else {
+        showToast('เกิดข้อผิดพลาด: ' + ((res && res.error) || 'ไม่สามารถลบห้องเรียนได้'), 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      setLoading(false);
+      showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    })
+    .deleteRoom(branch, roomName, getLogUser());
 }
 
 function loadTeacherProfiles() {
@@ -21212,6 +21415,7 @@ function renderAdminEvaluationsDashboard(res) {
         <div>
           <div style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">${ev.studentName}</div>
           ${stuBranchHtml}
+          ${ev.teacher ? `<div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 4px;"><span>👨‍🏫 ครู:</span> <span style="font-weight: 600; color: #334155;">${ev.teacher}</span></div>` : ''}
         </div>
         <div style="display: flex; gap: 4px; margin-top: 4px;">
           <button class="btn btn-secondary" style="flex: 1; padding: 4px 6px; font-size: 0.7rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไข</button>

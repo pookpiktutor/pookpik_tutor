@@ -16997,6 +16997,23 @@ function getChatContactsWithUnread(reader) {
   const uColRole = uHeaders.indexOf('Role');
   const uColNick = uHeaders.indexOf('Nickname');
   
+  // Build username -> nickname map
+  const nicknameMap = {};
+  for (let i = 1; i < usersData.length; i++) {
+    const uname = (usersData[i][uColUser] || '').toString().trim().toLowerCase();
+    const nick = (usersData[i][uColNick] || '').toString().trim();
+    if (uname && nick) nicknameMap[uname] = nick;
+  }
+  const teachersSheet = db.getSheetByName('TeachersDB');
+  if (teachersSheet) {
+    const tData = teachersSheet.getDataRange().getValues();
+    for (let i = 1; i < tData.length; i++) {
+      const tuser = (tData[i][0] || '').toString().trim().toLowerCase();
+      const tNick = (tData[i][2] || '').toString().trim();
+      if (tuser && tNick) nicknameMap[tuser] = tNick;
+    }
+  }
+
   const contactsMap = {}; 
   
   for (let i = 1; i < usersData.length; i++) {
@@ -17006,7 +17023,16 @@ function getChatContactsWithUnread(reader) {
       const uname = (usersData[i][uColUser] || '').toString();
       const nick = (usersData[i][uColNick] || '').toString() || uname;
       if (uname) {
-        contactsMap[uname.toLowerCase()] = { username: uname, nickname: nick, unreadCount: 0, lastMessageTime: 0 };
+        contactsMap[uname.toLowerCase()] = {
+          username: uname,
+          nickname: nick,
+          unreadCount: 0,
+          lastMessageTime: 0,
+          lastMessageSender: '',
+          lastMessageSenderNickname: '',
+          lastMessageReadBy: '',
+          lastMessageIsRead: false
+        };
       }
     }
   }
@@ -17019,10 +17045,10 @@ function getChatContactsWithUnread(reader) {
       const mColSender = mHeaders.indexOf('Sender');
       const mColReceiver = mHeaders.indexOf('Receiver');
       const mColIsRead = mHeaders.indexOf('IsRead');
-      
+      const mColReadBy = mHeaders.indexOf('ReadBy');
       const mColTimestamp = mHeaders.indexOf('Timestamp');
 
-      const readerUsername = typeof reader === 'object' ? reader.username : reader;
+      const readerUsername = typeof reader === 'object' ? (reader.username || '') : (reader || '');
       const readerLower = readerUsername.toLowerCase();
       const readerRole = typeof reader === 'object' ? (reader.role || '').toString().trim().toLowerCase() : '';
       const isStaff = readerRole === 'staff' || readerRole === 'admin' || readerRole === 'administrator' || readerRole === 'พนักงาน' || readerRole === 'ผู้บริหาร';
@@ -17030,9 +17056,12 @@ function getChatContactsWithUnread(reader) {
       for (let i = 1; i < msgData.length; i++) {
         const s = (msgData[i][mColSender] || '').toString().toLowerCase();
         const r = (msgData[i][mColReceiver] || '').toString().toLowerCase();
+        const senderRaw = (msgData[i][mColSender] || '').toString().trim();
         const isRead = msgData[i][mColIsRead] === true;
+        const readByVal = mColReadBy !== -1 ? (msgData[i][mColReadBy] || '').toString().trim() : '';
         const tsVal = msgData[i][mColTimestamp];
         const ts = tsVal ? new Date(tsVal).getTime() : 0;
+        const senderNick = nicknameMap[s] || senderRaw;
         
         if (contactsMap[s] && (r === readerLower || (isStaff && r === 'admin'))) {
           if (!isRead) {
@@ -17040,12 +17069,20 @@ function getChatContactsWithUnread(reader) {
           }
           if (ts > contactsMap[s].lastMessageTime) {
             contactsMap[s].lastMessageTime = ts;
+            contactsMap[s].lastMessageSender = senderRaw;
+            contactsMap[s].lastMessageSenderNickname = senderNick;
+            contactsMap[s].lastMessageReadBy = readByVal;
+            contactsMap[s].lastMessageIsRead = isRead;
           }
         }
         
         if (contactsMap[r] && (s === readerLower || (isStaff && s === 'admin'))) {
            if (ts > contactsMap[r].lastMessageTime) {
              contactsMap[r].lastMessageTime = ts;
+             contactsMap[r].lastMessageSender = senderRaw;
+             contactsMap[r].lastMessageSenderNickname = senderNick;
+             contactsMap[r].lastMessageReadBy = readByVal;
+             contactsMap[r].lastMessageIsRead = isRead;
            }
         }
       }
