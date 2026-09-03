@@ -15563,6 +15563,106 @@ var evalLangSocialCriteria = [
 
 
 
+function normalizeThaiStudentName(str) {
+  if (!str) return '';
+  return str.toString()
+    .replace(/^(เด็กชาย|เด็กหญิง|นาย|นางสาว|ด\.ช\.|ด\.ญ\.|ดช\.|ดญ\.|น\.ส\.)/gi, '')
+    .replace(/\([^)]*\)/g, '')
+    .replace(/\s+/g, '')
+    .trim()
+    .toLowerCase();
+}
+
+function cleanCourseNameBase(str) {
+  if (!str) return '';
+  let cleaned = str.toString().trim();
+  if (cleaned.includes('เดี่ยว') || cleaned.includes('ย่อย')) {
+    cleaned = cleaned.replace(/\s+(ex|EX|รอบ|#)?\s*\d+$/gi, '').trim();
+  }
+  return cleaned.toLowerCase().replace(/\s+/g, '');
+}
+
+function isSubjectMatchForEval(courseObj, evSubject) {
+  if (!courseObj || !evSubject) return false;
+  const cNameClean = cleanCourseNameBase(courseObj.courseName);
+  const evSubClean = cleanCourseNameBase(evSubject);
+
+  if (cNameClean !== '' && evSubClean !== '' && cNameClean === evSubClean) return true;
+
+  const cName = (courseObj.courseName || '').toString().toLowerCase().replace(/\s+/g, '').trim();
+  const cDisplay = (courseObj.displayCourseName || '').toString().toLowerCase().replace(/\s+/g, '').trim();
+  const evSub = (evSubject || '').toString().toLowerCase().replace(/\s+/g, '').trim();
+
+  if (cName === evSub || cDisplay === evSub) return true;
+  if (cName.length > 3 && evSub.length > 3 && (cName.includes(evSub) || evSub.includes(cName))) return true;
+  if (cDisplay.length > 3 && evSub.length > 3 && (cDisplay.includes(evSub) || evSub.includes(cDisplay))) return true;
+
+  const dayTimeRegex = /(จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์|\d+[:.]\d+)/gi;
+  const cBase = cName.replace(dayTimeRegex, '');
+  const evBase = evSub.replace(dayTimeRegex, '');
+  if (cBase.length > 2 && evBase.length > 2 && (cBase === evBase || cBase.includes(evBase) || evBase.includes(cBase))) return true;
+
+  return isCourseExactMatchFrontend(courseObj.courseName, evSubject, courseObj.dayTimeStr);
+}
+
+function isCourseFullyEvaluated(c, evals) {
+  if (!c || !evals) return false;
+  const isSingleOrSubgroup = (c.courseName || '').includes('เดี่ยว') || (c.courseName || '').includes('ย่อย');
+  
+  if (Array.isArray(c.students) && c.students.length > 0) {
+    return c.students.every(function(s) {
+      const normStuName = normalizeThaiStudentName(s.name);
+      const normStuNick = normalizeThaiStudentName(s.nickname);
+      const normStuId = normalizeThaiStudentName(s.studentId);
+
+      return evals.some(function(ev) {
+        const normEvName = normalizeThaiStudentName(ev.studentName);
+        const normEvNick = normalizeThaiStudentName(ev.nickname);
+        const isSubjectMatch = isSubjectMatchForEval(c, ev.subject);
+        const isStudentMatch = (
+          (normStuName !== '' && normEvName !== '' && (normEvName === normStuName || normEvName.includes(normStuName) || normStuName.includes(normEvName))) ||
+          (normStuId !== '' && normEvName !== '' && (normEvName === normStuId || normEvName.includes(normStuId) || normStuId.includes(normEvName))) ||
+          (normStuNick !== '' && normEvNick !== '' && normEvNick === normStuNick)
+        );
+        return isSubjectMatch && isStudentMatch;
+      });
+    });
+  } else if (isSingleOrSubgroup) {
+    return evals.some(function(ev) {
+      return isSubjectMatchForEval(c, ev.subject);
+    });
+  }
+  return false;
+}
+
+function populateTeacherCourseDropdown() {
+  const courseSelect = document.getElementById('eval_course');
+  const studentSelect = document.getElementById('eval_student');
+  if (!courseSelect) return;
+  
+  courseSelect.innerHTML = '<option value="">-- เลือกคอร์สเรียน --</option>';
+  if (studentSelect) studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
+
+  if (Array.isArray(state._teacherCourses)) {
+    const evals = state.evaluations || [];
+    let availableCount = 0;
+    
+    state._teacherCourses.forEach(function(c, idx) {
+      if (!isCourseFullyEvaluated(c, evals)) {
+        availableCount++;
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = c.courseName;
+        courseSelect.appendChild(opt);
+      }
+    });
+
+    if (availableCount === 0 && state._teacherCourses.length > 0) {
+      courseSelect.innerHTML = '<option value="" disabled selected>-- ทำใบประเมินครบทุกคอร์สแล้ว --</option>';
+    }
+  }
+}
+
 function initEvaluationForm() {
 
   setLoading(true, 'กำลังโหลดข้อมูลคอร์สของคุณครู...');
@@ -15641,12 +15741,6 @@ function initEvaluationForm() {
 
           
 
-          courseSelect.innerHTML = '<option value="">-- เลือกคอร์สเรียน --</option>';
-
-          studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
-
-          
-
           if (Array.isArray(res)) {
 
             const seenSingleSubgroup = new Set();
@@ -15683,17 +15777,7 @@ function initEvaluationForm() {
 
             state._teacherCourses = deduplicated; // Store globally
 
-            deduplicated.forEach(function(c, idx) {
-
-              const opt = document.createElement('option');
-
-              opt.value = idx;
-
-              opt.textContent = c.courseName;
-
-              courseSelect.appendChild(opt);
-
-            });
+            populateTeacherCourseDropdown();
 
           } else {
 
@@ -16387,6 +16471,7 @@ function submitStudentEvaluation(event) {
           teacher: data.teacher
         });
         
+        populateTeacherCourseDropdown();
         onEvalCourseChange();
 
         
@@ -17138,7 +17223,10 @@ function renderAdminEvaluationsDashboard(res) {
     const branchStyle = getBranchBadgeStyle(courseBranch);
     const branchBadgeHtml = courseBranch ? `<span style="${branchStyle} font-size: 0.68rem; padding: 2px 8px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">🏫 ${courseBranch}</span>` : '';
 
-    header.innerHTML = `<span style="font-size: 0.9rem;">📚</span> ${course} ${branchBadgeHtml} ${badgeHtml}`;
+    const teacherNames = [...new Set(grouped[course].map(e => e.teacher).filter(Boolean))].join(', ');
+    const teacherBadgeHtml = teacherNames ? `<span style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; font-size: 0.68rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">👨‍🏫 ครู: ${teacherNames}</span>` : '';
+
+    header.innerHTML = `<span style="font-size: 0.9rem;">📚</span> ${course} ${branchBadgeHtml} ${teacherBadgeHtml} ${badgeHtml}`;
     section.appendChild(header);
 
     // Compact Grid Container (minmax 180px)
@@ -18923,6 +19011,20 @@ function filterChatContacts() {
   });
 }
 
+function formatChatTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  if (isNaN(d.getTime())) return '';
+  const now = new Date();
+  const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+  if (d.toDateString() === now.toDateString()) {
+    return timeStr;
+  }
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return day + '/' + month + ' ' + timeStr;
+}
+
 function renderChatContacts(contacts) {
   const container = document.getElementById('chat_contacts_container');
   if (contacts.length === 0) {
@@ -18932,14 +19034,17 @@ function renderChatContacts(contacts) {
   
   let htmlStr = '';
   contacts.forEach(c => {
+    const timeDisplay = formatChatTime(c.lastMessageTime);
     htmlStr += '<div class="chat-contact-item" data-name="' + c.nickname.toLowerCase() + '" style="padding: 8px 12px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="showChatRoom(\'' + c.username + '\', \'' + c.nickname + '\')" onmouseover="this.style.background=\'var(--bg-panel)\'" onmouseout="this.style.background=\'transparent\'">';
     htmlStr += '<div style="display: flex; align-items: center; gap: 10px;">';
-    htmlStr += '<div style="width: 30px; height: 30px; border-radius: 50%; font-size: 0.85rem; background: var(--color-primary); color: white; display: flex; justify-content: center; align-items: center; font-weight: bold;">' + c.nickname.charAt(0) + '</div>';
-    htmlStr += '<div style="font-size: 0.85rem;">ครู' + c.nickname + '</div>';
+    htmlStr += '<div style="width: 32px; height: 32px; border-radius: 50%; font-size: 0.85rem; background: var(--color-primary); color: white; display: flex; justify-content: center; align-items: center; font-weight: bold;">' + c.nickname.charAt(0) + '</div>';
+    htmlStr += '<div><div style="font-size: 0.85rem; font-weight: 600;">ครู' + c.nickname + '</div>' + (timeDisplay ? '<div style="font-size: 0.7rem; color: var(--text-muted);">' + timeDisplay + '</div>' : '') + '</div>';
     htmlStr += '</div>';
+    htmlStr += '<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">';
     if (c.unreadCount > 0) {
       htmlStr += '<div style="background: var(--color-danger); color: white; font-size: 0.75rem; font-weight: bold; width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center;">' + c.unreadCount + '</div>';
     }
+    htmlStr += '</div>';
     htmlStr += '</div>';
   });
   container.innerHTML = htmlStr;
@@ -19006,16 +19111,20 @@ function renderChatMessages(messages) {
   let html = '';
   messages.forEach(m => {
     const isMe = m.sender.toLowerCase() === state.currentUser.username.toLowerCase();
-    const timeStr = new Date(m.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    const timeStr = formatChatTime(m.timestamp);
     
     if (isMe) {
+      let readStatus = '✓ ส่งแล้ว';
+      if (m.isRead) {
+        readStatus = m.readBy ? `✓✓ อ่านแล้วโดย ${m.readBy}` : '✓✓ อ่านแล้ว';
+      }
       html += `
         <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 5px;">
           <div style="background: #0084ff; color: white; padding: 10px 15px; border-radius: 18px 18px 4px 18px; max-width: 80%; word-wrap: break-word; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
             ${m.message}
           </div>
           <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
-            ${timeStr} ${m.isRead ? '✓✓ อ่านแล้ว' : '✓ ส่งแล้ว'}
+            ${timeStr} ${readStatus}
           </div>
         </div>
       `;
@@ -19023,7 +19132,7 @@ function renderChatMessages(messages) {
       const senderName = m.senderNickname || m.sender; // use nickname if available
       html += `
         <div style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 5px;">
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; margin-left: 5px;">${senderName}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; margin-left: 5px; font-weight: 600;">${senderName}</div>
           <div style="background: white; color: #1e293b; padding: 10px 15px; border-radius: 18px 18px 18px 4px; max-width: 80%; word-wrap: break-word; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             ${m.message}
           </div>

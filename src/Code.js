@@ -16778,7 +16778,7 @@ function ensureMessagesDB(sheet) {
   if (lastCol > 0) {
     headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => h.toString().trim());
   }
-  const requiredHeaders = ['MessageID', 'Sender', 'Receiver', 'Message', 'Timestamp', 'IsRead'];
+  const requiredHeaders = ['MessageID', 'Sender', 'Receiver', 'Message', 'Timestamp', 'IsRead', 'ReadBy'];
   let added = false;
   
   if (headers.length === 0) {
@@ -16837,7 +16837,8 @@ function getChatHistory(teacherUsername) {
     receiver: headers.indexOf('Receiver'),
     message: headers.indexOf('Message'),
     timestamp: headers.indexOf('Timestamp'),
-    isRead: headers.indexOf('IsRead')
+    isRead: headers.indexOf('IsRead'),
+    readBy: headers.indexOf('ReadBy')
   };
   
   const msgs = [];
@@ -16857,7 +16858,8 @@ function getChatHistory(teacherUsername) {
         receiver: row[col.receiver],
         message: row[col.message],
         timestamp: row[col.timestamp],
-        isRead: row[col.isRead]
+        isRead: row[col.isRead],
+        readBy: col.readBy !== -1 ? (row[col.readBy] || '') : ''
       });
     }
   }
@@ -16889,6 +16891,7 @@ function sendMessage(sender, receiver, message) {
     else if (h === 'Message') newRow.push(message);
     else if (h === 'Timestamp') newRow.push(timestamp);
     else if (h === 'IsRead') newRow.push(false);
+    else if (h === 'ReadBy') newRow.push('');
     else newRow.push('');
   }
   
@@ -16908,13 +16911,15 @@ function markMessagesAsRead(teacherUsername, reader) {
   const col = {
     sender: headers.indexOf('Sender'),
     receiver: headers.indexOf('Receiver'),
-    isRead: headers.indexOf('IsRead')
+    isRead: headers.indexOf('IsRead'),
+    readBy: headers.indexOf('ReadBy')
   };
   
   const teacherLower = teacherUsername.toLowerCase();
   const readerUsername = typeof reader === 'object' ? reader.username : reader;
   const readerLower = readerUsername.toLowerCase();
   const readerRole = typeof reader === 'object' ? (reader.role || '').toString().trim().toLowerCase() : '';
+  const readerNick = typeof reader === 'object' ? (reader.nickname || reader.username || '') : readerUsername;
   const isStaff = readerRole === 'staff' || readerRole === 'admin' || readerRole === 'administrator' || readerRole === 'พนักงาน' || readerRole === 'ผู้บริหาร';
   let updated = 0;
   
@@ -16926,6 +16931,9 @@ function markMessagesAsRead(teacherUsername, reader) {
     // If the message involves this teacher and the receiver is the reader (or Admin if reader is staff)
     if ((s === teacherLower || r === teacherLower) && (r === readerLower || (isStaff && r === 'admin')) && row[col.isRead] !== true) {
       sheet.getRange(i + 1, col.isRead + 1).setValue(true);
+      if (col.readBy !== -1 && readerNick) {
+        sheet.getRange(i + 1, col.readBy + 1).setValue(readerNick);
+      }
       updated++;
     }
   }
