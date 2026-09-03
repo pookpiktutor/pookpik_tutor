@@ -9099,6 +9099,36 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
  * @param {Object} data - {teacher, month, year, type, amount, note}
  * @param {string} logUser - ผู้ใช้งานที่กรอกข้อมูล
  */
+function clearTeacherPayCache(teacher, year) {
+  if (!year) return;
+  const y = parseInt(year) || new Date().getFullYear();
+  if (!teacher) return;
+  const cleanT = teacher.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
+  deleteCacheObject('yearly_pay_v3_' + cleanT + '_' + y);
+  deleteCacheObject('yearly_pay_v3_' + teacher.toString().trim().toLowerCase() + '_' + y);
+  
+  try {
+    const teachersList = getTeachersDB(null);
+    if (Array.isArray(teachersList)) {
+      teachersList.forEach(t => {
+        const tId = (t.teacherId || '').toLowerCase().trim();
+        const tNick = (t.nickname || '').toLowerCase().replace(/^ครู/, '').trim();
+        const tUser = (t.username || '').toLowerCase().trim();
+        if (tId === cleanT || tNick === cleanT || tUser === cleanT || (tNick && cleanT && (tNick.includes(cleanT) || cleanT.includes(tNick)))) {
+          if (tUser) deleteCacheObject('yearly_pay_v3_' + tUser + '_' + y);
+          if (tNick) deleteCacheObject('yearly_pay_v3_' + tNick + '_' + y);
+          if (tId) deleteCacheObject('yearly_pay_v3_' + tId + '_' + y);
+        }
+      });
+    }
+  } catch (e) { /* ignore */ }
+}
+
+/**
+ * บันทึกรายการเพิ่ม/หักเงินของครู
+ * @param {Object} data - {teacher, month, year, type, amount, note}
+ * @param {string} logUser - ผู้ใช้งานที่กรอกข้อมูล
+ */
 function saveTeacherAdjustment(data, logUser) {
   try {
     const db = getDb();
@@ -9114,20 +9144,22 @@ function saveTeacherAdjustment(data, logUser) {
     
     if (amount <= 0) throw new Error('จำนวนเงินต้องมากกว่า 0');
     
+    const teacherVal = data.teacher || logUser;
+    const yearVal = parseInt(data.year) || new Date().getFullYear();
+
     sheet.appendRow([
       id,
       timestamp,
-      data.teacher || logUser,
+      teacherVal,
       parseInt(data.month) || 1,
-      parseInt(data.year) || new Date().getFullYear(),
+      yearVal,
       data.type || 'หักเงิน',
       amount,
       data.note || ''
     ]);
     
-    // ล้างแคชเงินเดือนรายปี
-    const cacheKey = 'yearly_pay_v3_' + (data.teacher || logUser).toString().trim().toLowerCase() + '_' + (data.year || new Date().getFullYear());
-    deleteCacheObject(cacheKey);
+    // ล้างแคชเงินเดือนรายปีสำหรับทุก Alias ของครูคนนี้
+    clearTeacherPayCache(teacherVal, yearVal);
     
     logActivity(logUser || 'System', 'บันทึกรายการเพิ่ม/หักเงิน', JSON.stringify(data));
     
@@ -9167,8 +9199,7 @@ function deleteTeacherAdjustment(adjId, logUser) {
     sheet.deleteRow(foundRow);
 
     if (teacher && year) {
-      const cacheKey = 'yearly_pay_v3_' + teacher.toString().trim().toLowerCase() + '_' + year;
-      deleteCacheObject(cacheKey);
+      clearTeacherPayCache(teacher, year);
     }
 
     logActivity(logUser || 'System', 'ลบรายการเพิ่ม/หักเงิน', 'ID: ' + adjId);
@@ -9194,14 +9225,62 @@ function getTeacherAdjustments(teacher, year, logUser) {
     const adjustments = [];
     
     const targetYear = parseInt(year) || new Date().getFullYear();
-    const cleanTeacher = (teacher || '').toString().trim().toLowerCase().replace(/^ครู/, '').trim();
+    const inputTeacher = (teacher || '').toString().trim();
+    
+    // สร้างเซต Alias ทั้งหมดที่เชื่อมโยงกับ teacher
+    const teacherAliases = new Set();
+    if (inputTeacher) {
+      const cleanInput = inputTeacher.toLowerCase().replace(/^ครู/, '').trim();
+      if (cleanInput) teacherAliases.add(cleanInput);
+      
+      try {
+        const teachersList = getTeachersDB(null);
+        if (Array.isArray(teachersList)) {
+          teachersList.forEach(t => {
+            const tId = (t.teacherId || '').toLowerCase().trim();
+            const tNick = (t.nickname || '').toLowerCase().replace(/^ครู/, '').trim();
+            const tName = (t.fullName || t.name || '').toLowerCase().replace(/^ครู/, '').trim();
+            const tUser = (t.username || '').toLowerCase().trim();
+            
+            const isMatchInput = (
+              (cleanInput && (tId === cleanInput || tNick === cleanInput || tName === cleanInput || tUser === cleanInput)) ||
+              (tNick && cleanInput && (tNick.includes(cleanInput) || cleanInput.includes(tNick))) ||
+              (tId && cleanInput && (tId.includes(cleanInput) || cleanInput.includes(tId)))
+            );
+            
+            if (isMatchInput) {
+              if (tId) teacherAliases.add(tId);
+              if (tNick) teacherAliases.add(tNick);
+              if (tName) teacherAliases.add(tName);
+              if (tUser) teacherAliases.add(tUser);
+            }
+          });
+        }
+      } catch (err) { /* ignore */ }
+    }
     
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
-      var rowTeacher = (row[2] || '').toString().trim().toLowerCase().replace(/^ครู/, '').trim();
+      var rowTeacherRaw = (row[2] || '').toString().trim();
+      var cleanRowTeacher = rowTeacherRaw.toLowerCase().replace(/^ครู/, '').trim();
       var rowYear = parseInt(row[4]) || 0;
       
-      if (rowYear === targetYear && (!cleanTeacher || rowTeacher === cleanTeacher)) {
+      let isMatch = false;
+      if (!inputTeacher) {
+        isMatch = true; // ไม่กรองรายชื่อ ดึงทั้งหมดสำหรับสรุปของเจ้าหน้าที่
+      } else if (rowYear === targetYear) {
+        if (teacherAliases.has(cleanRowTeacher) || cleanRowTeacher === inputTeacher.toLowerCase().trim()) {
+          isMatch = true;
+        } else {
+          teacherAliases.forEach(alias => {
+            if (alias && alias.length >= 2 && (cleanRowTeacher.includes(alias) || alias.includes(cleanRowTeacher))) {
+              isMatch = true;
+            }
+          });
+        }
+      }
+      
+      if (isMatch && rowYear === targetYear) {
         adjustments.push({
           id: row[0],
           timestamp: row[1],
