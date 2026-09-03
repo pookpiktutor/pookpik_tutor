@@ -1,4 +1,3 @@
-
 // --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
