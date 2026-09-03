@@ -87,6 +87,47 @@ h5, h6 { font-size: 0.85rem !important; }
 }
 
 </style>
+<style>
+
+/* ===== Floating Always-Visible Scrollbar & Single Scroll Container ===== */
+::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-radius: 10px !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 132, 255, 0.45) !important;
+  border-radius: 10px !important;
+  border: 2px solid transparent !important;
+  background-clip: content-box !important;
+  box-shadow: inset 0 0 6px rgba(0, 132, 255, 0.3) !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 132, 255, 0.75) !important;
+}
+
+* {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(0, 132, 255, 0.45) rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Eliminate Double Scrollbars across all pages */
+.view-panel, .panel, #rooms_grid_container {
+  overflow-y: visible !important;
+  max-height: none !important;
+}
+
+.main-content {
+  overflow-y: scroll !important;
+}
+
+</style>
 </head>
   <body>
     <!-- LOGIN OVERLAY -->

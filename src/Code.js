@@ -14160,215 +14160,103 @@ function getLowBalancePrivateStudents() {
 // ----------------------------------------------------
 
 function getTeacherLeaveToday(logUser) {
-
   try {
-
     const sheet = getDb().getSheetByName('Data Learn');
-
     if (!sheet) return { success: false, leaves: [] };
 
-    
-
     const lastRow = sheet.getLastRow();
-
     if (lastRow < 2) return { success: true, leaves: [] };
 
-    
-
     const teachersMap = {};
-
     try {
-
       const teachersList = getTeachersDB(null);
-
       if (Array.isArray(teachersList)) {
-
         teachersList.forEach(t => {
-
           if (t.teacherId) teachersMap[t.teacherId.toLowerCase().trim()] = t.nickname;
-
           if (t.nickname) teachersMap[t.nickname.toLowerCase().trim()] = t.nickname;
-
         });
-
       }
-
     } catch(err) {}
 
     const data = sheet.getRange(2, 1, lastRow - 1, 15).getValues();
-
     const leaves = [];
-
     const seen = new Set();
 
-    
-
-    // Calculate current week boundaries (Monday to Sunday)
-
+    // Filter dates from TODAY onwards (03/09/2026 onwards)
     const todayDate = new Date();
-
-    const currentDay = todayDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-
-    const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
-
-    const monday = new Date(todayDate);
-
-    monday.setDate(todayDate.getDate() + diffToMonday);
-
-    monday.setHours(0,0,0,0);
-
-    
-
-    const sunday = new Date(monday);
-
-    sunday.setDate(monday.getDate() + 6);
-
-    sunday.setHours(23,59,59,999);
-
-    
-
+    const todayStart = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate());
     const todayFormatted = Utilities.formatDate(todayDate, 'Asia/Bangkok', 'dd/MM/yyyy');
 
     for (let i = 0; i < data.length; i++) {
-
       const note = (data[i][5] || '').toString();
-
       if (note.indexOf('ครูลา') === -1) continue;
 
-      
-
       const dateValStr = cleanSheetDate(data[i][12]);
-
       if (!dateValStr) continue;
 
-      
-
       const parts = dateValStr.split('/');
-
       if (parts.length === 3) {
-
          const d = parseInt(parts[0], 10);
-
          const m = parseInt(parts[1], 10) - 1;
-
-         const y = parseInt(parts[2], 10);
-
+         let y = parseInt(parts[2], 10);
+         if (y > 2500) y -= 543;
          const rowDate = new Date(y, m, d);
-
          
-
-         if (rowDate < monday || rowDate > sunday) {
-
+         // ONLY INCLUDE DATES FROM TODAY ONWARDS!
+         if (rowDate < todayStart) {
              continue;
-
          }
-
       } else {
-
          continue;
-
       }
-
-      
 
       let teacherName = (data[i][1] || '').toString().trim();
-
       const subject = cleanSubjectNameString((data[i][0] || '').toString().trim());
-
       const key = teacherName + '|' + subject + '|' + dateValStr;
 
-      
-
       if (seen.has(key)) continue;
-
       seen.add(key);
 
-      
-
       let timeStart = data[i][3] || '';
-
       let timeEnd = data[i][4] || '';
-
-      
-
-      try {
-
-        if (timeStart instanceof Date) timeStart = Utilities.formatDate(timeStart, 'Asia/Bangkok', 'HH:mm');
-
-        if (timeEnd instanceof Date) timeEnd = Utilities.formatDate(timeEnd, 'Asia/Bangkok', 'HH:mm');
-
-      } catch(e) {}
-
       let teacherSub = (data[i][2] || '').toString().trim();
-
       
-
       // If there is a substitute teacher, DO NOT show it in the leave list
-
       if (!isEmptySub(teacherSub)) {
-
         continue;
-
       }
 
-      
-
       const room = data[i][13] || '';
-
       if (teacherName && teachersMap[teacherName.toLowerCase()]) {
-
         teacherName = teachersMap[teacherName.toLowerCase()];
-
       }
 
       leaves.push({
-
         rowIndex: i + 2,
-
         teacher: teacherName,
-
         subject: subject,
-
         timeStart: timeStart,
-
         timeEnd: timeEnd,
-
-        teacherSub: '', // Force empty so UI knows there's no sub
-
+        teacherSub: '',
         room: room,
-
         date: dateValStr,
-
         isToday: (dateValStr === todayFormatted)
-
       });
-
     }
 
-    leaves.sort((a,b) => {
-
-        const pa = a.date.split('/');
-
-        const pb = b.date.split('/');
-
-        if (pa.length !== 3 || pb.length !== 3) return 0;
-
-        const da = new Date(pa[2], pa[1]-1, pa[0]);
-
-        const db = new Date(pb[2], pb[1]-1, pb[0]);
-
-        return da - db;
-
+    leaves.sort((a, b) => {
+      const pa = a.date.split('/');
+      const pb = b.date.split('/');
+      if (pa.length !== 3 || pb.length !== 3) return 0;
+      const da = new Date(pa[2], pa[1]-1, pa[0]);
+      const db = new Date(pb[2], pb[1]-1, pb[0]);
+      return da - db;
     });
 
     return { success: true, leaves: leaves, today: todayFormatted };
-
   } catch (e) {
-
     return { success: false, error: e.message, leaves: [] };
-
   }
-
 }
 
 //=========================================
