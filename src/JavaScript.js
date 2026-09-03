@@ -16798,6 +16798,18 @@ function loadAdminEvaluationsDashboard(isSilent = false) {
 
 
 
+function getBranchBadgeStyle(branchStr) {
+  const b = (branchStr || '').toString().trim();
+  if (b.includes('1') || b.includes('สาขา 1') || b.includes('สาขา1')) {
+    return 'background: #2563eb; color: #ffffff; border: 1px solid #1d4ed8;'; // สาขา 1 = สีน้ำเงิน
+  } else if (b.includes('2') || b.includes('สาขา 2') || b.includes('สาขา2')) {
+    return 'background: #d97706; color: #ffffff; border: 1px solid #b45309;'; // สาขา 2 = สีเหลือง
+  } else if (b.includes('3') || b.includes('สาขา 3') || b.includes('สาขา3')) {
+    return 'background: #7c3aed; color: #ffffff; border: 1px solid #6d28d9;'; // สาขา 3 = สีม่วง
+  }
+  return 'background: #475569; color: #ffffff;';
+}
+
 function renderAdminEvaluationsDashboard(res) {
   const container = document.getElementById('admin_evaluation_dashboard_container');
   if (!container) return;
@@ -16807,7 +16819,7 @@ function renderAdminEvaluationsDashboard(res) {
   const counts = Array.isArray(res) ? {} : (res.counts || {});
 
   if (!evals || evals.length === 0) {
-    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); background: white; border-radius: 8px;">ยังไม่มีการประเมินนักเรียน</div>';
+    container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--text-muted); background: white; border-radius: 8px;">ยังไม่มีการประเมินนักเรียน</div>';
     return;
   }
 
@@ -16824,15 +16836,14 @@ function renderAdminEvaluationsDashboard(res) {
   const courses = Object.keys(grouped).sort();
 
   courses.forEach(course => {
-    // Create course section
+    // Create course section (Compact scaled-down layout)
     const section = document.createElement('div');
     section.className = 'glass-panel';
-    section.style.padding = '20px';
-    section.style.marginBottom = '20px';
+    section.style.cssText = 'padding: 12px 16px; margin-bottom: 12px; border-radius: 10px;';
 
-    // Course Header
+    // Course Header (Smaller font size & compact padding)
     const header = document.createElement('div');
-    header.style.cssText = 'font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: var(--color-primary-hover); margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;';
+    header.style.cssText = 'font-family: var(--font-heading); font-size: 0.95rem; font-weight: 700; color: var(--color-primary-hover); margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;';
 
     const totalStudents = counts[course] || 0;
     const evaluated = grouped[course].length;
@@ -16840,43 +16851,46 @@ function renderAdminEvaluationsDashboard(res) {
 
     if (totalStudents > 0) {
       if (evaluated >= totalStudents) {
-        badgeHtml = `<span class="badge badge-success" style="font-size: 0.75rem;">ครบแล้ว (${evaluated} คน)</span>`;
+        badgeHtml = `<span class="badge badge-success" style="font-size: 0.68rem; padding: 2px 6px;">ครบแล้ว (${evaluated} คน)</span>`;
       } else {
-        badgeHtml = `<span class="badge badge-warning" style="font-size: 0.75rem;">เหลือ ${totalStudents - evaluated} คน (ทำแล้ว ${evaluated}/${totalStudents})</span>`;
+        badgeHtml = `<span class="badge badge-warning" style="font-size: 0.68rem; padding: 2px 6px;">เหลือ ${totalStudents - evaluated} คน (ทำแล้ว ${evaluated}/${totalStudents})</span>`;
       }
     } else {
-      badgeHtml = `<span class="badge badge-info" style="font-size: 0.75rem;">ประเมินแล้ว ${evaluated} คน</span>`;
+      badgeHtml = `<span class="badge badge-info" style="font-size: 0.68rem; padding: 2px 6px;">ประเมินแล้ว ${evaluated} คน</span>`;
     }
 
-    // Extract Branch Name for Course Header if available
+    // Extract Branch Name for Course Header with distinct colors
     const firstEv = grouped[course][0];
     const courseBranch = (firstEv && firstEv.branch) ? firstEv.branch.toString().trim() : '';
-    const branchBadgeHtml = courseBranch ? `<span style="background: var(--color-primary); color: #fff; font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">🏫 ${courseBranch}</span>` : '';
+    const branchStyle = getBranchBadgeStyle(courseBranch);
+    const branchBadgeHtml = courseBranch ? `<span style="${branchStyle} font-size: 0.68rem; padding: 2px 8px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">🏫 ${courseBranch}</span>` : '';
 
-    header.innerHTML = `<span>📚</span> ${course} ${branchBadgeHtml} ${badgeHtml}`;
+    header.innerHTML = `<span style="font-size: 0.9rem;">📚</span> ${course} ${branchBadgeHtml} ${badgeHtml}`;
     section.appendChild(header);
 
+    // Compact Grid Container (minmax 180px)
     const gridContainer = document.createElement('div');
-    gridContainer.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 15px;';
+    gridContainer.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-top: 8px;';
 
     grouped[course].forEach(ev => {
       const card = document.createElement('div');
-      card.style.cssText = 'background: white; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease;';
+      card.style.cssText = 'background: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: all 0.2s ease;';
 
-      card.onmouseover = () => { card.style.boxShadow = '0 4px 8px rgba(0,0,0,0.08)'; card.style.transform = 'translateY(-2px)'; };
-      card.onmouseout = () => { card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)'; card.style.transform = 'translateY(0)'; };
+      card.onmouseover = () => { card.style.boxShadow = '0 3px 6px rgba(0,0,0,0.08)'; card.style.transform = 'translateY(-1px)'; };
+      card.onmouseout = () => { card.style.boxShadow = '0 1px 3px rgba(0,0,0,0.02)'; card.style.transform = 'translateY(0)'; };
 
       const stuBranchStr = ev.branch ? ev.branch.toString().trim() : '';
-      const stuBranchHtml = stuBranchStr ? `<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; display: flex; align-items: center; gap: 4px;"><span>🏫 สาขา:</span> <span style="font-weight: 600; color: var(--color-primary-hover);">${stuBranchStr}</span></div>` : '';
+      const stuBranchStyle = getBranchBadgeStyle(stuBranchStr);
+      const stuBranchHtml = stuBranchStr ? `<div style="font-size: 0.68rem; margin-top: 2px; display: flex; align-items: center; gap: 4px; color: var(--text-muted);"><span>🏫 สาขา:</span> <span style="${stuBranchStyle} padding: 1px 6px; border-radius: 8px; font-weight: 700; font-size: 0.65rem;">${stuBranchStr}</span></div>` : '';
 
       card.innerHTML = `
         <div>
-          <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">${ev.studentName}</div>
+          <div style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">${ev.studentName}</div>
           ${stuBranchHtml}
         </div>
-        <div style="display: flex; gap: 6px; margin-top: 4px;">
-          <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 0.75rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไขข้อมูล</button>
-          <button class="btn btn-danger" style="padding: 6px; font-size: 0.75rem;" onclick="deleteAdminEvaluation('${ev.evalId}')"><i class="fas fa-trash"></i> ลบ</button>
+        <div style="display: flex; gap: 4px; margin-top: 4px;">
+          <button class="btn btn-secondary" style="flex: 1; padding: 4px 6px; font-size: 0.7rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไข</button>
+          <button class="btn btn-danger" style="padding: 4px 6px; font-size: 0.7rem;" onclick="deleteAdminEvaluation('${ev.evalId}')"><i class="fas fa-trash"></i> ลบ</button>
         </div>
       `;
 
