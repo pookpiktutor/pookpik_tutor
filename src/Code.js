@@ -9015,48 +9015,18 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         }
       } catch (e) { /* ignore */ }
 
-      // คำนวณหักประกัน 10% (เฉพาะครูที่เริ่มงานปี 2569 เป็นต้นไป)
+      // ดึงรายการเพิ่ม/หักประกันจาก TeacherAdjustmentsDB สำหรับเดือนนี้
       var insuranceDeduction = 0;
-      var insuranceRunningTotal = 0;
-      var INSURANCE_CAP = 2000;
-      var INSURANCE_RATE = 0.10;
-      
-      // ตรวจสอบว่าครูคนนี้เริ่มงานหลัง ม.ค. 2569 หรือไม่
-      // สมมติว่าถ้าไม่มีคลาสเรียนก่อนปี 2569 (2026) ถือเป็นครูใหม่
-      var isNewTeacher = true;
-      var cutoffDate = parseDateString('2026-01-01');
-      for (var ci = 0; ci < classLogs.length; ci++) {
-        var cLog = classLogs[ci];
-        var cDate = parseDateString(cLog.date);
-        if (cDate < cutoffDate) {
-          var cellBChk = cLog.teacherRegular ? cLog.teacherRegular.toString().trim().toLowerCase() : '';
-          var cellCChk = cLog.teacherSub ? cLog.teacherSub.toString().trim().toLowerCase() : '';
-          var cleanNickChk = cleanResolvedNick.replace(/^ครู/, '').trim();
-          var cleanBChk = cellBChk.replace(/^ครู/, '').trim();
-          var cleanCChk = cellCChk.replace(/^ครู/, '').trim();
-          if ((cleanBChk !== '' && cleanBChk === cleanNickChk) || (cleanCChk !== '' && cleanCChk === cleanNickChk)) {
-            isNewTeacher = false;
-            break;
-          }
+      monthAdjustments.forEach(function(a) {
+        var typeStr = (a.type || '').toString().toLowerCase();
+        var noteStr = (a.note || '').toString().toLowerCase();
+        if (typeStr.includes('ประกัน') || noteStr.includes('ประกัน')) {
+          insuranceDeduction += a.amount;
         }
-      }
+      });
 
       var currentTotalPay = Math.round(totalPay * 100) / 100;
-      
-      try {
-        var insuranceData = getInsuranceTracking(teacher);
-        insuranceRunningTotal = insuranceData.totalDeducted || 0;
-      } catch (e) { /* ignore */ }
-
-      if (isNewTeacher && currentTotalPay > 0) {
-        try {
-          if (insuranceRunningTotal < INSURANCE_CAP) {
-            var rawDeduction = Math.round(currentTotalPay * INSURANCE_RATE);
-            var remainingCap = INSURANCE_CAP - insuranceRunningTotal;
-            insuranceDeduction = Math.min(rawDeduction, remainingCap);
-          }
-        } catch (e) { /* ignore */ }
-      }
+      var netPay = Math.max(0, currentTotalPay + adjustmentBonus - adjustmentDeduction - insuranceDeduction);
 
       monthlyResults[m] = {
         classes: matchedClasses,
@@ -9064,12 +9034,12 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         totalClasses: totalClasses,
         totalPay: currentTotalPay,
         adjustments: monthAdjustments,
-        adjustmentBonus: adjustmentBonus,
-        adjustmentDeduction: adjustmentDeduction,
-        insuranceDeduction: insuranceDeduction,
-        insuranceRunningTotal: insuranceRunningTotal,
-        isNewTeacher: isNewTeacher,
-        netPay: Math.round((currentTotalPay + adjustmentBonus - adjustmentDeduction - insuranceDeduction) * 100) / 100
+        adjustmentBonus: Math.round(adjustmentBonus * 100) / 100,
+        adjustmentDeduction: Math.round(adjustmentDeduction * 100) / 100,
+        insuranceDeduction: Math.round(insuranceDeduction * 100) / 100,
+        insuranceRunningTotal: Math.round(insuranceDeduction * 100) / 100,
+        isNewTeacher: false,
+        netPay: Math.round(netPay * 100) / 100
       };
 
     }
@@ -9269,414 +9239,240 @@ function getAllTeachersMonthlyPay(year, month) {
   month = parseInt(month) || (new Date().getMonth() + 1);
 
   const cacheKey = 'all_teachers_monthly_' + year + '_' + month;
-  const cached = getCacheObject(cacheKey);
-
-  // if (cached) return cached;
-
-  
+  deleteCacheObject(cacheKey);
 
   try {
-
     const classLogs = getClassLogs('');
-
     if (!Array.isArray(classLogs)) throw new Error(classLogs.error || 'ไม่สามารถดึงข้อมูล Class Logs ได้');
 
-    
-
     const teachersList = getTeachersDB(null);
-
     if (!Array.isArray(teachersList) || teachersList.length === 0) {
-
       throw new Error('ไม่พบข้อมูลรายชื่อครูในฐานข้อมูล TeachersDB');
-
     }
-
-    
 
     // Build date range for the month
-
     const isLeap = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
-
     const yStr = year.toString();
-
     const prevYStr = (year - 1).toString();
-
     let startStr, endStr;
-
     switch (month) {
-
       case 1: startStr = prevYStr + '-12-29'; endStr = yStr + '-01-28'; break;
-
       case 2: startStr = yStr + '-01-29'; endStr = yStr + '-02-28'; break;
-
       case 3: startStr = isLeap ? yStr + '-02-29' : yStr + '-03-01'; endStr = yStr + '-03-28'; break;
-
       case 4: startStr = yStr + '-03-29'; endStr = yStr + '-04-28'; break;
-
       case 5: startStr = yStr + '-04-29'; endStr = yStr + '-05-28'; break;
-
       case 6: startStr = yStr + '-05-29'; endStr = yStr + '-06-28'; break;
-
       case 7: startStr = yStr + '-06-29'; endStr = yStr + '-07-28'; break;
-
       case 8: startStr = yStr + '-07-29'; endStr = yStr + '-08-28'; break;
-
       case 9: startStr = yStr + '-08-29'; endStr = yStr + '-09-28'; break;
-
       case 10: startStr = yStr + '-09-29'; endStr = yStr + '-10-28'; break;
-
       case 11: startStr = yStr + '-10-29'; endStr = yStr + '-11-28'; break;
-
       case 12: startStr = yStr + '-11-29'; endStr = yStr + '-12-28'; break;
-
     }
-
     const rangeStart = parseDateString(startStr);
-
     const rangeEnd = parseDateString(endStr);
 
-    
-
-    // Filter class logs to only this month's date range
-
     const monthLogs = classLogs.filter(c => {
-
       const cDate = parseDateString(c.date);
-
       return cDate >= rangeStart && cDate <= rangeEnd;
-
     });
 
-    
-
     // Get confirmation data
-
-    const confirmSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TeacherSalaryConfirmations');
-
+    const confirmSheet = getDb().getSheetByName('TeacherSalaryConfirmations');
     const confirmMap = {};
-
-    if (confirmSheet) {
-
+    if (confirmSheet && confirmSheet.getLastRow() > 1) {
       const confirmData = confirmSheet.getDataRange().getValues();
-
       for (let i = 1; i < confirmData.length; i++) {
-
         if (confirmData[i][0] == year && confirmData[i][1] == month) {
-
           confirmMap[confirmData[i][3]] = {
-
             totalPay: confirmData[i][4],
-
             confirmedAt: confirmData[i][5]
-
           };
-
         }
-
       }
-
     }
 
-    
+    // Fetch TeacherAdjustmentsDB for this year & month
+    const adjSheet = getDb().getSheetByName('TeacherAdjustmentsDB');
+    const allAdjustments = [];
+    if (adjSheet && adjSheet.getLastRow() > 1) {
+      const adjData = adjSheet.getDataRange().getValues();
+      for (let i = 1; i < adjData.length; i++) {
+        const row = adjData[i];
+        const rowYear = parseInt(row[4]) || 0;
+        const rowMonth = parseInt(row[3]) || 0;
+        const matchYear = (rowYear === year || rowYear === year + 543 || rowYear === year - 543);
+        const matchMonth = (rowMonth === month);
+        if (matchYear && matchMonth) {
+          allAdjustments.push({
+            teacher: (row[2] || '').toString().trim(),
+            type: (row[5] || '').toString().trim(),
+            amount: Math.abs(parseFloat(row[6]) || 0),
+            note: (row[7] || '').toString().trim()
+          });
+        }
+      }
+    }
 
-    // Helper: calculate pay rate
+    function isTeacherMatch(rowTeacherStr, profile) {
+      if (!rowTeacherStr || !profile) return false;
+      const s1 = rowTeacherStr.toLowerCase().replace(/^ครู/, '').trim();
+      const s2 = (profile.nickname || '').toLowerCase().replace(/^ครู/, '').trim();
+      const s3 = (profile.fullName || '').toLowerCase().replace(/^ครู/, '').trim();
+      const s4 = (profile.teacherId || '').toLowerCase().trim();
+      if (s1 === s2 || s1 === s3 || s1 === s4) return true;
+      if (s2 && (s1.includes(s2) || s2.includes(s1))) return true;
+      if (s3 && (s1.includes(s3) || s3.includes(s1))) return true;
+      const nick1 = s1.split('(')[0].trim();
+      const nick2 = s2.split('(')[0].trim();
+      if (nick1 && nick2 && (nick1 === nick2 || nick1.includes(nick2) || nick2.includes(nick1))) return true;
+      return false;
+    }
 
     function getRate(numKids, hasEx, hasRyw) {
-
       if (numKids === 0) return 0;
-
       if (hasEx || hasRyw) {
-
         if (numKids === 1) return hasEx ? 200 : 150;
-
         if (numKids <= 5) return 200;
-
         if (numKids <= 10) return 250;
-
         if (numKids <= 15) return 300;
-
         if (numKids <= 20) return 350;
-
         if (numKids <= 25) return 400;
-
         if (numKids <= 30) return 450;
-
         if (numKids <= 35) return 500;
-
         if (numKids <= 40) return 550;
-
         if (numKids <= 45) return 600;
-
         if (numKids <= 50) return 650;
-
         if (numKids <= 55) return 700;
-
         if (numKids <= 60) return 750;
-
         if (numKids <= 65) return 800;
-
         if (numKids <= 70) return 850;
-
         if (numKids <= 75) return 900;
-
         return 950;
-
       } else {
-
         if (numKids === 1) return 150;
-
         if (numKids <= 5) return 150;
-
         if (numKids <= 10) return 200;
-
         if (numKids <= 15) return 250;
-
         if (numKids <= 20) return 300;
-
         if (numKids <= 25) return 350;
-
         if (numKids <= 30) return 400;
-
         if (numKids <= 35) return 450;
-
         if (numKids <= 40) return 500;
-
         if (numKids <= 45) return 550;
-
         if (numKids <= 50) return 600;
-
         if (numKids <= 55) return 650;
-
         if (numKids <= 60) return 700;
-
         if (numKids <= 65) return 750;
-
         if (numKids <= 70) return 800;
-
         if (numKids <= 75) return 850;
-
         return 900;
-
       }
-
     }
-
-    
-
-    // For each teacher, calculate their monthly pay
-
-    const settings = getGeneralSettings();
-
-    const teacherNames = settings.teachers || [];
 
     const results = [];
 
-    
-
-    teacherNames.forEach(teacherName => {
-
-      // Find teacher profile
-
-      const teacherProfile = teachersList.find(t => {
-
-        const tNick = t.nickname.toLowerCase().trim();
-
-        const targetNick = teacherName.toLowerCase().trim();
-
-        return tNick === targetNick;
-
-      });
-
-      
-
-      if (!teacherProfile) {
-
-        // Teacher name from settings but no profile - still include with 0
-
-        const conf = confirmMap[teacherName];
-
-        results.push({
-
-          teacherName: teacherName,
-
-          totalPay: 0,
-
-          totalHours: 0,
-
-          totalClasses: 0,
-
-          isConfirmed: !!conf,
-
-          confirmedAt: conf ? conf.confirmedAt : null,
-
-          guaranteeDeduction: 0
-
-        });
-
-        return;
-
-      }
-
-      
-
+    teachersList.forEach(teacherProfile => {
       const resolvedNickname = teacherProfile.nickname;
-
       const cleanResolvedNick = resolvedNickname.toLowerCase().trim();
-
       const cleanNick = cleanResolvedNick.replace(/^ครู/, '').trim();
 
-      
-
       let totalHours = 0;
-
-      let totalPay = 0;
-
+      let basePay = 0;
       let totalClasses = 0;
 
-      
-
       monthLogs.forEach(c => {
-
         const cellB = c.teacherRegular ? c.teacherRegular.toString().trim().toLowerCase() : '';
-
         const cellC = c.teacherSub ? c.teacherSub.toString().trim().toLowerCase() : '';
-
         const cleanB = cellB.replace(/^ครู/, '').trim();
-
         const cleanC = cellC.replace(/^ครู/, '').trim();
 
-        
-
         const matchB = cleanB !== '' && (cleanB === cleanNick || cleanB.includes(cleanNick) || cleanNick.includes(cleanB));
-
-        const matchC = cleanC !== '' && (cleanC === cleanNick || cleanC.includes(cleanNick) || cleanNick.includes(cleanC) || 
-
-                       (cellC.includes(cleanNick) && !isEmptySub(cellC)));
-
-        
+        const matchC = cleanC !== '' && (cleanC === cleanNick || cleanC.includes(cleanNick) || cleanNick.includes(cleanC) || (cellC.includes(cleanNick) && !isEmptySub(cellC)));
 
         let role = '';
-
         if (cellB !== '' && cellC !== '' && !isEmptySub(cellC)) {
-
           if (!matchC) return;
-
           role = 'sub';
-
         } else if (cellB !== '') {
-
           if (!matchB) return;
-
           role = 'regular';
-
         } else if (cellC !== '' && !isEmptySub(cellC)) {
-
           if (!matchC) return;
-
           role = 'sub';
-
         } else {
-
           return;
-
         }
 
-        
-
-        // Skip leave notes only for regular teacher
-
-        if (role === 'regular' && (c.note || '').includes('\u0e04\u0e23\u0e39\u0e25\u0e32')) return;
-
-        
-
-        // Parse hours
+        if (role === 'regular' && (c.note || '').includes('ครูลา')) return;
 
         const hoursStr = c.hours || '';
-
         let hoursVal = 0;
-
         if (hoursStr.includes(':')) {
-
           const parts = hoursStr.split(':');
-
           hoursVal = parseFloat(parts[0]) + (parseFloat(parts[1] || '0') / 60);
-
         } else {
-
           hoursVal = parseFloat(hoursStr) || 0;
-
         }
-
         if (isNaN(hoursVal) || hoursVal <= 0) return;
 
-        
-
-        // Count only สด + ออนไลน์ + ชดเชย
-
         let numKids = (parseInt(c.isPresentLive) || 0) + (parseInt(c.isPresentOnline) || 0) + (parseInt(c.isMakeup) || 0);
-
-        
-
         const subject = c.subject || '';
-
         const hasEx = subject.toLowerCase().includes('ex');
-
         const hasRyw = cleanResolvedNick.includes('รยว.') || resolvedNickname.includes('รยว.');
 
-        
-
         const rate = getRate(numKids, hasEx, hasRyw);
-
         const pay = hoursVal * rate;
 
-        
-
-        // if (numKids > 0) {
-
-          totalHours += hoursVal;
-
-          totalClasses += 1;
-
-        // }
-
-        totalPay += pay;
-
+        totalHours += hoursVal;
+        totalClasses += 1;
+        basePay += pay;
       });
 
-      
+      // Filter adjustments for this teacher
+      const myAdjustments = allAdjustments.filter(a => isTeacherMatch(a.teacher, teacherProfile));
+      let bonusAmt = 0;
+      let deductionAmt = 0;
+      let insuranceAmt = 0;
 
-      const conf = confirmMap[teacherName];
+      myAdjustments.forEach(a => {
+        const typeStr = a.type.toLowerCase();
+        const noteStr = a.note.toLowerCase();
+        if (typeStr.includes('ประกัน') || noteStr.includes('ประกัน')) {
+          insuranceAmt += a.amount;
+        } else if (typeStr.includes('เพิ่ม') || typeStr.includes('โบนัส') || typeStr.includes('bonus')) {
+          bonusAmt += a.amount;
+        } else {
+          deductionAmt += a.amount;
+        }
+      });
+
+      const netPay = Math.max(0, basePay + bonusAmt - deductionAmt - insuranceAmt);
+
+      const conf = confirmMap[resolvedNickname] || confirmMap[teacherProfile.fullName] || confirmMap[teacherProfile.teacherId];
 
       results.push({
-
-        teacherName: teacherName,
-
-        totalPay: Math.round(totalPay * 100) / 100,
-
+        teacherName: resolvedNickname,
+        fullName: teacherProfile.fullName || resolvedNickname,
+        bank: teacherProfile.bank || '-',
+        accountNumber: teacherProfile.accountNumber || '-',
+        basePay: Math.round(basePay * 100) / 100,
+        extraBonus: Math.round(bonusAmt * 100) / 100,
+        otherDeductions: Math.round(deductionAmt * 100) / 100,
+        guaranteeDeduction: Math.round(insuranceAmt * 100) / 100,
+        totalPay: Math.round(netPay * 100) / 100,
         totalHours: Math.round(totalHours * 100) / 100,
-
         totalClasses: totalClasses,
         isConfirmed: !!conf,
         confirmedAt: conf ? conf.confirmedAt : null,
-        guaranteeDeduction: teacherProfile.compensation || 0,
         accountType: teacherProfile.accountType || 'บัญชีทั่วไป'
       });
     });
 
-    
-
-    const resultVal = { success: true, data: results };
-
-    setCacheObject(cacheKey, resultVal, 300); // Cache 5 minutes
-
-    return resultVal;
-
+    return { success: true, data: results };
   } catch (e) {
-
     return { success: false, error: e.message };
-
   }
-
 }
 
 function toggleClassAbsentInSheet(rowIndex, type, isChecked) {

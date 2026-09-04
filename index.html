@@ -14151,9 +14151,14 @@ function loadStaffSalarySummary() {
 
       
 
-      // Filter 1: Only teachers with hours/classes > 0
-
-      let filteredData = allData.filter(item => item.totalClasses > 0);
+      // Filter 1: Teachers with hours/classes > 0 OR with adjustments/pay
+      let filteredData = allData.filter(item => 
+        item.totalClasses > 0 || 
+        (item.guaranteeDeduction && item.guaranteeDeduction > 0) || 
+        (item.extraBonus && item.extraBonus > 0) || 
+        (item.otherDeductions && item.otherDeductions > 0) || 
+        (item.totalPay && item.totalPay > 0)
+      );
 
       
 
@@ -14191,11 +14196,13 @@ function loadStaffSalarySummary() {
 
           
 
-          let payText = '-';
+          let netSalaryVal = parseFloat(match.totalPay || 0);
+
+          let payText = '฿' + Math.round(netSalaryVal).toLocaleString();
 
           let deduction = parseFloat(match.guaranteeDeduction || 0);
 
-          let deductionText = deduction > 0 ? '-฿' + Math.round(deduction).toLocaleString() : '฿0';
+          let deductionText = deduction > 0 ? '-฿' + Math.round(deduction).toLocaleString() : (deduction < 0 ? '฿' + Math.round(Math.abs(deduction)).toLocaleString() : '฿0');
 
           let timeText = '-';
 
@@ -14207,9 +14214,7 @@ function loadStaffSalarySummary() {
 
             confirmedCount++;
 
-            totalConfirmedPay += parseFloat(match.totalPay || 0);
-
-            payText = '฿' + Math.round(parseFloat(match.totalPay)).toLocaleString();
+            totalConfirmedPay += netSalaryVal;
 
             
 
