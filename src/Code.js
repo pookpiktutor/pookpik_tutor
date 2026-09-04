@@ -71,7 +71,7 @@ const SHEET_REGISTRY = [
 
   {
     name: 'UsersDB',
-    headers: ['Username', 'Password', 'Role', 'Nickname', 'FullName', 'Phone', 'ProfilePic', 'School', 'Subjects', 'Bank', 'AccountNumber', 'Compensation', 'AccountType', 'TravelAllowance'],
+    headers: ['Username', 'Password', 'Role', 'Nickname', 'FullName', 'Phone', 'ProfilePic', 'School', 'Subjects', 'Bank', 'AccountNumber', 'Compensation', 'AccountType'],
     headerRow: 1,
     defaultData: [
       ['admin', '1234', 'Administrator', '', '', '', ''],
@@ -8630,15 +8630,15 @@ function saveTeacherProfile(teacher, logUser) {
     } else {
       // Update existing row
       if (teacher.nickname) sheet.getRange(rowIndex, 4).setValue(teacher.nickname);
-      if (teacher.fullName !== undefined) sheet.getRange(rowIndex, 5).setValue(teacher.fullName);
-      if (teacher.phone !== undefined) sheet.getRange(rowIndex, 6).setValue(teacher.phone);
-      if (teacher.school !== undefined) sheet.getRange(rowIndex, 8).setValue(teacher.school);
-      if (teacher.subjects !== undefined) sheet.getRange(rowIndex, 9).setValue(teacher.subjects);
-      if (teacher.bank !== undefined) sheet.getRange(rowIndex, 10).setValue(teacher.bank);
-      if (teacher.accountNumber !== undefined) sheet.getRange(rowIndex, 11).setValue(teacher.accountNumber);
-      if (teacher.compensation !== undefined) sheet.getRange(rowIndex, 12).setValue(teacher.compensation);
+      if (teacher.fullName) sheet.getRange(rowIndex, 5).setValue(teacher.fullName);
+      if (teacher.phone) sheet.getRange(rowIndex, 6).setValue(teacher.phone);
+      if (teacher.school) sheet.getRange(rowIndex, 8).setValue(teacher.school);
+      if (teacher.subjects) sheet.getRange(rowIndex, 9).setValue(teacher.subjects);
+      if (teacher.bank) sheet.getRange(rowIndex, 10).setValue(teacher.bank);
+      if (teacher.accountNumber) sheet.getRange(rowIndex, 11).setValue(teacher.accountNumber);
+      if (teacher.compensation) sheet.getRange(rowIndex, 12).setValue(teacher.compensation);
       if (teacher.teacherId) sheet.getRange(rowIndex, 1).setValue(teacher.teacherId);
-      if (teacher.accountType !== undefined) sheet.getRange(rowIndex, 13).setValue(teacher.accountType);
+      if (teacher.accountType) sheet.getRange(rowIndex, 13).setValue(teacher.accountType);
     }
     
     // Clear cache
@@ -9099,36 +9099,6 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
  * @param {Object} data - {teacher, month, year, type, amount, note}
  * @param {string} logUser - ผู้ใช้งานที่กรอกข้อมูล
  */
-function clearTeacherPayCache(teacher, year) {
-  if (!year) return;
-  const y = parseInt(year) || new Date().getFullYear();
-  if (!teacher) return;
-  const cleanT = teacher.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
-  deleteCacheObject('yearly_pay_v3_' + cleanT + '_' + y);
-  deleteCacheObject('yearly_pay_v3_' + teacher.toString().trim().toLowerCase() + '_' + y);
-  
-  try {
-    const teachersList = getTeachersDB(null);
-    if (Array.isArray(teachersList)) {
-      teachersList.forEach(t => {
-        const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toLowerCase().replace(/^ครู/, '').trim();
-        const tUser = (t.username || '').toLowerCase().trim();
-        if (tId === cleanT || tNick === cleanT || tUser === cleanT || (tNick && cleanT && (tNick.includes(cleanT) || cleanT.includes(tNick)))) {
-          if (tUser) deleteCacheObject('yearly_pay_v3_' + tUser + '_' + y);
-          if (tNick) deleteCacheObject('yearly_pay_v3_' + tNick + '_' + y);
-          if (tId) deleteCacheObject('yearly_pay_v3_' + tId + '_' + y);
-        }
-      });
-    }
-  } catch (e) { /* ignore */ }
-}
-
-/**
- * บันทึกรายการเพิ่ม/หักเงินของครู
- * @param {Object} data - {teacher, month, year, type, amount, note}
- * @param {string} logUser - ผู้ใช้งานที่กรอกข้อมูล
- */
 function saveTeacherAdjustment(data, logUser) {
   try {
     const db = getDb();
@@ -9144,22 +9114,20 @@ function saveTeacherAdjustment(data, logUser) {
     
     if (amount <= 0) throw new Error('จำนวนเงินต้องมากกว่า 0');
     
-    const teacherVal = data.teacher || logUser;
-    const yearVal = parseInt(data.year) || new Date().getFullYear();
-
     sheet.appendRow([
       id,
       timestamp,
-      teacherVal,
+      data.teacher || logUser,
       parseInt(data.month) || 1,
-      yearVal,
+      parseInt(data.year) || new Date().getFullYear(),
       data.type || 'หักเงิน',
       amount,
       data.note || ''
     ]);
     
-    // ล้างแคชเงินเดือนรายปีสำหรับทุก Alias ของครูคนนี้
-    clearTeacherPayCache(teacherVal, yearVal);
+    // ล้างแคชเงินเดือนรายปี
+    const cacheKey = 'yearly_pay_v3_' + (data.teacher || logUser).toString().trim().toLowerCase() + '_' + (data.year || new Date().getFullYear());
+    deleteCacheObject(cacheKey);
     
     logActivity(logUser || 'System', 'บันทึกรายการเพิ่ม/หักเงิน', JSON.stringify(data));
     
@@ -9199,7 +9167,8 @@ function deleteTeacherAdjustment(adjId, logUser) {
     sheet.deleteRow(foundRow);
 
     if (teacher && year) {
-      clearTeacherPayCache(teacher, year);
+      const cacheKey = 'yearly_pay_v3_' + teacher.toString().trim().toLowerCase() + '_' + year;
+      deleteCacheObject(cacheKey);
     }
 
     logActivity(logUser || 'System', 'ลบรายการเพิ่ม/หักเงิน', 'ID: ' + adjId);
@@ -9225,62 +9194,14 @@ function getTeacherAdjustments(teacher, year, logUser) {
     const adjustments = [];
     
     const targetYear = parseInt(year) || new Date().getFullYear();
-    const inputTeacher = (teacher || '').toString().trim();
-    
-    // สร้างเซต Alias ทั้งหมดที่เชื่อมโยงกับ teacher
-    const teacherAliases = new Set();
-    if (inputTeacher) {
-      const cleanInput = inputTeacher.toLowerCase().replace(/^ครู/, '').trim();
-      if (cleanInput) teacherAliases.add(cleanInput);
-      
-      try {
-        const teachersList = getTeachersDB(null);
-        if (Array.isArray(teachersList)) {
-          teachersList.forEach(t => {
-            const tId = (t.teacherId || '').toLowerCase().trim();
-            const tNick = (t.nickname || '').toLowerCase().replace(/^ครู/, '').trim();
-            const tName = (t.fullName || t.name || '').toLowerCase().replace(/^ครู/, '').trim();
-            const tUser = (t.username || '').toLowerCase().trim();
-            
-            const isMatchInput = (
-              (cleanInput && (tId === cleanInput || tNick === cleanInput || tName === cleanInput || tUser === cleanInput)) ||
-              (tNick && cleanInput && (tNick.includes(cleanInput) || cleanInput.includes(tNick))) ||
-              (tId && cleanInput && (tId.includes(cleanInput) || cleanInput.includes(tId)))
-            );
-            
-            if (isMatchInput) {
-              if (tId) teacherAliases.add(tId);
-              if (tNick) teacherAliases.add(tNick);
-              if (tName) teacherAliases.add(tName);
-              if (tUser) teacherAliases.add(tUser);
-            }
-          });
-        }
-      } catch (err) { /* ignore */ }
-    }
+    const cleanTeacher = (teacher || '').toString().trim().toLowerCase().replace(/^ครู/, '').trim();
     
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
-      var rowTeacherRaw = (row[2] || '').toString().trim();
-      var cleanRowTeacher = rowTeacherRaw.toLowerCase().replace(/^ครู/, '').trim();
+      var rowTeacher = (row[2] || '').toString().trim().toLowerCase().replace(/^ครู/, '').trim();
       var rowYear = parseInt(row[4]) || 0;
       
-      let isMatch = false;
-      if (!inputTeacher) {
-        isMatch = true; // ไม่กรองรายชื่อ ดึงทั้งหมดสำหรับสรุปของเจ้าหน้าที่
-      } else if (rowYear === targetYear) {
-        if (teacherAliases.has(cleanRowTeacher) || cleanRowTeacher === inputTeacher.toLowerCase().trim()) {
-          isMatch = true;
-        } else {
-          teacherAliases.forEach(alias => {
-            if (alias && alias.length >= 2 && (cleanRowTeacher.includes(alias) || alias.includes(cleanRowTeacher))) {
-              isMatch = true;
-            }
-          });
-        }
-      }
-      
-      if (isMatch && rowYear === targetYear) {
+      if (rowYear === targetYear && (!cleanTeacher || rowTeacher === cleanTeacher)) {
         adjustments.push({
           id: row[0],
           timestamp: row[1],
@@ -16891,11 +16812,6 @@ function ensureMessagesDB(sheet) {
   return added;
 }
 
-function cleanNickname(nick) {
-  if (!nick) return '';
-  return nick.toString().replace(/\([^)]*\)/g, '').replace(/^(ครู\s*)+/g, 'ครู').trim();
-}
-
 function getChatHistory(teacherUsername) {
   const db = getDb();
   let sheet = db.getSheetByName('MessagesDB');
@@ -16913,7 +16829,7 @@ function getChatHistory(teacherUsername) {
     const uData = usersSheet.getDataRange().getValues();
     for (let i = 1; i < uData.length; i++) {
       const uname = (uData[i][0] || '').toString().trim().toLowerCase();
-      const nick = cleanNickname((uData[i][3] || '').toString().trim());
+      const nick = (uData[i][3] || '').toString().trim();
       if (uname && nick) nicknameMap[uname] = nick;
     }
   }
@@ -16922,7 +16838,7 @@ function getChatHistory(teacherUsername) {
     const tData = teachersSheet.getDataRange().getValues();
     for (let i = 1; i < tData.length; i++) {
       const tuser = (tData[i][0] || '').toString().trim().toLowerCase();
-      const tNick = cleanNickname((tData[i][2] || '').toString().trim());
+      const tNick = (tData[i][2] || '').toString().trim();
       if (tuser && tNick) nicknameMap[tuser] = tNick;
     }
   }
@@ -17028,8 +16944,8 @@ function markMessagesAsRead(teacherUsername, reader) {
     const s = (row[col.sender] || '').toString().toLowerCase();
     const r = (row[col.receiver] || '').toString().toLowerCase();
     
-    // If the message involves this teacher and was sent by someone else (not the current reader)
-    if ((s === teacherLower || r === teacherLower) && s !== readerLower) {
+    // If the message involves this teacher and the receiver is the reader (or Admin if reader is staff)
+    if ((s === teacherLower || r === teacherLower) && (r === readerLower || (isStaff && r === 'admin'))) {
       let rowChanged = false;
       if (row[col.isRead] !== true) {
         sheet.getRange(i + 1, col.isRead + 1).setValue(true);
@@ -17098,7 +17014,7 @@ function getChatContactsWithUnread(reader) {
   const nicknameMap = {};
   for (let i = 1; i < usersData.length; i++) {
     const uname = (usersData[i][uColUser] || '').toString().trim().toLowerCase();
-    const nick = cleanNickname((usersData[i][uColNick] || '').toString().trim());
+    const nick = (usersData[i][uColNick] || '').toString().trim();
     if (uname && nick) nicknameMap[uname] = nick;
   }
   const teachersSheet = db.getSheetByName('TeachersDB');
@@ -17106,7 +17022,7 @@ function getChatContactsWithUnread(reader) {
     const tData = teachersSheet.getDataRange().getValues();
     for (let i = 1; i < tData.length; i++) {
       const tuser = (tData[i][0] || '').toString().trim().toLowerCase();
-      const tNick = cleanNickname((tData[i][2] || '').toString().trim());
+      const tNick = (tData[i][2] || '').toString().trim();
       if (tuser && tNick) nicknameMap[tuser] = tNick;
     }
   }
@@ -17118,7 +17034,7 @@ function getChatContactsWithUnread(reader) {
     const r = role.toLowerCase();
     if (r !== 'staff' && r !== 'admin' && r !== 'administrator' && r !== 'พนักงาน' && r !== 'ผู้บริหาร') {
       const uname = (usersData[i][uColUser] || '').toString();
-      const nick = cleanNickname((usersData[i][uColNick] || '').toString() || uname);
+      const nick = (usersData[i][uColNick] || '').toString() || uname;
       if (uname) {
         contactsMap[uname.toLowerCase()] = {
           username: uname,

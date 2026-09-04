@@ -12604,29 +12604,33 @@ function renderMonthlyGrid(data) {
 
           let cardBorderStyle = '';
 
+          const subjStr = String(c.subject || '');
+
+          const isPrivate = subjStr.includes('เดี่ยว') || subjStr.includes('ย่อย');
+
           if (isTeacherConfirmed) {
 
-            cardBgStyle = 'background-color: rgba(25, 135, 84, 0.12) !important;';
+            cardBgStyle = 'background-color: #f0fdf4 !important;';
 
-            cardBorderStyle = 'border: 1.5px solid rgba(25, 135, 84, 0.4) !important;';
+            cardBorderStyle = 'border: 1.5px solid #86efac !important;';
 
           } else if (isStudentLeaveChecked) {
 
-            cardBgStyle = 'background-color: rgb(254, 226, 226) !important;';
+            cardBgStyle = 'background-color: #fef2f2 !important;';
 
-            cardBorderStyle = 'border-color: rgba(239, 68, 68, 0.35) !important;';
+            cardBorderStyle = 'border: 1.5px solid #fca5a5 !important;';
 
           } else if (isTeacherLeaveChecked) {
 
-            cardBgStyle = 'background-color: rgb(255, 237, 213) !important;';
+            cardBgStyle = 'background-color: #fffbeb !important;';
 
-            cardBorderStyle = 'border-color: rgba(249, 115, 22, 0.45) !important;';
+            cardBorderStyle = 'border: 1.5px solid #fde68a !important;';
 
           } else {
 
-            cardBgStyle = 'background-color: rgba(138, 200, 255, 0.1) !important;';
+            cardBgStyle = isPrivate ? 'background-color: #f5f3ff !important;' : 'background-color: #eff6ff !important;';
 
-            cardBorderStyle = 'border-color: rgba(138, 200, 255, 0.3) !important;';
+            cardBorderStyle = isPrivate ? 'border: 1.5px solid #c4b5fd !important;' : 'border: 1.5px solid #93c5fd !important;';
 
           }
 
