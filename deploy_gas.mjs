@@ -32,8 +32,8 @@ const tokenData = claspRc.tokens?.default || claspRc;
 
 // Refresh token using OAuth2
 async function refreshAccessToken() {
-  const clientId = claspRc.oauth2ClientSettings?.clientId || '1072944905499-vm2v2i5dvn0a0d2o4ca36i1vge8cvdn.apps.googleusercontent.com';
-  const clientSecret = claspRc.oauth2ClientSettings?.clientSecret || '-petD6MvLBQs-7KUlNCC_Yl7';
+  const clientId = claspRc.oauth2ClientSettings?.clientId || claspRc.tokens?.default?.client_id || '1072944905499-vm2v2i5dvn0a0d2o4ca36i1vge8cvbn0.apps.googleusercontent.com';
+  const clientSecret = claspRc.oauth2ClientSettings?.clientSecret || claspRc.tokens?.default?.client_secret || 'v6V3fKV_zWU7iw1DrpO1rknX';
   const refreshToken = tokenData.refresh_token;
 
   return new Promise((resolve, reject) => {
