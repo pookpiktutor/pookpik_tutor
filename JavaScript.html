@@ -15866,17 +15866,16 @@ function populateTeacherCourseDropdown() {
     let availableCount = 0;
     
     state._teacherCourses.forEach(function(c, idx) {
-      if (!isCourseFullyEvaluated(c, evals)) {
-        availableCount++;
-        const opt = document.createElement('option');
-        opt.value = idx;
-        opt.textContent = c.courseName;
-        courseSelect.appendChild(opt);
-      }
+      const isDone = isCourseFullyEvaluated(c, evals);
+      availableCount++;
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = c.courseName + (isDone ? ' (ประเมินแล้ว)' : '');
+      courseSelect.appendChild(opt);
     });
 
     if (availableCount === 0 && state._teacherCourses.length > 0) {
-      courseSelect.innerHTML = '<option value="" disabled selected>-- ทำใบประเมินครบทุกคอร์สแล้ว --</option>';
+      courseSelect.innerHTML = '<option value="" disabled selected>-- ไม่พบตารางคอร์สเรียน --</option>';
     }
   }
 }

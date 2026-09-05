@@ -5488,11 +5488,15 @@ function isCourseExactMatch(targetCourse, cellText, dayTimeStr) {
   const noSpaceC = cleanC.replace(/\s+/g, '');
   if (noSpaceT === noSpaceC) return true;
 
+  if (cleanT.length > 3 && cleanC.length > 3 && (cleanT.includes(cleanC) || cleanC.includes(cleanT))) return true;
+  if (noSpaceT.length > 3 && noSpaceC.length > 3 && (noSpaceT.includes(noSpaceC) || noSpaceC.includes(noSpaceT))) return true;
+
   if (dayTimeStr) {
     const cleanDayTime = dayTimeStr.toString().toLowerCase().replace(/\s+/g, '').trim();
     const tBase = noSpaceT.replace(cleanDayTime, '');
     const cBase = noSpaceC.replace(cleanDayTime, '');
     if (tBase === cBase && tBase.length > 0) return true;
+    if (tBase.length > 3 && cBase.length > 3 && (tBase.includes(cBase) || cBase.includes(tBase))) return true;
   }
 
   return false;
@@ -5541,28 +5545,26 @@ function isTeacherAssigned(rawTeacherName, cleanLogUser, teachersList) {
 
 function getTeacherCoursesAndStudents(logUser) {
   try {
-    const cacheKey = 'teacher_courses_v9_' + (logUser || 'guest');
-    const cached = getCacheObject(cacheKey);
-    if (cached) return cached;
-
-    const db = getDb();
+    // Dynamic cache key & bypass stale cache
     const cleanLogUser = (logUser || '').toString().toLowerCase().trim();
+    const db = getDb();
 
     // 1. Get all teachers from UsersDB
     const teachersList = getTeachersDB(null);
 
-    // 2. Scan Data Learn for courses taught by REGULAR teacher (ครูประจำ) ONLY
+    // 2. Scan Data Learn for courses taught by teacher (both regular and sub)
     const classLogs = getClassLogs('');
     const teacherCoursesMap = {};
 
     if (Array.isArray(classLogs)) {
       classLogs.forEach(c => {
         const rawTeacherRegular = (c.teacherRegular || '').toString().trim();
+        const rawTeacherSub = (c.teacherSub || '').toString().trim();
 
-        // ONLY check regular teacher (ครูประจำ), ignore substitute teacher (ครูแทน)
         const isRegular = isTeacherAssigned(rawTeacherRegular, cleanLogUser, teachersList);
+        const isSub = isTeacherAssigned(rawTeacherSub, cleanLogUser, teachersList);
 
-        if (isRegular && c.subject) {
+        if ((isRegular || isSub) && c.subject) {
           const courseKey = c.subject.trim();
           const dayName = c.dayOfWeek || '';
           const timeStart = c.timeStart || '';
@@ -5723,6 +5725,30 @@ function getTeacherCoursesAndStudents(logUser) {
       }
     }
 
+    // Fallback student extraction for private/single courses if students list is empty
+    courseKeys.forEach(key => {
+      const cInfo = teacherCoursesMap[key];
+      if (!Array.isArray(cInfo.students) || cInfo.students.length === 0) {
+        const cName = cInfo.courseName || '';
+        const match = cName.match(/^([^\d]+(?:\([^\)]+\))?)/);
+        if (match && match[1]) {
+          let sName = match[1].trim();
+          sName = sName.replace(/^ครู[^\s]+\s*/, '').trim();
+          if (sName && sName.length > 1 && !sName.startsWith('หลัก') && !sName.startsWith('คอร์ส')) {
+            cInfo.students.push({
+              studentId: sName,
+              nickname: sName.split('(')[0].trim(),
+              name: sName,
+              firstname: sName,
+              lastname: '',
+              grade: (cName.match(/ป\.\d+|ม\.\d+|อนุบาล/)?.[0]) || '',
+              branch: cInfo.roomBranch || ''
+            });
+          }
+        }
+      }
+    });
+
     const result = [];
     courseKeys.forEach(key => {
       const item = teacherCoursesMap[key];
@@ -5732,7 +5758,6 @@ function getTeacherCoursesAndStudents(logUser) {
       });
     });
 
-    setCacheObject(cacheKey, result, 1800); // cache for 30 minutes
     return result;
 
   } catch (err) {
