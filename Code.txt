@@ -8761,7 +8761,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
   
 
   try {
-
+    const targetYear = parseInt(year) || new Date().getFullYear();
     logActivity(logUser || teacher || 'System', 'คำนวณเงินเดือนรายปีเริ่ม', 'คุณครู: ' + teacher + ', ปี: ' + year);
 
     const classLogs = getClassLogs('');
@@ -8835,6 +8835,9 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
     };
 
     const monthlyResults = {};
+
+    var allAdjustmentsResult = getTeacherAdjustments(resolvedNickname || teacher, 'all', null);
+    var allTeacherAdjustments = (allAdjustmentsResult && allAdjustmentsResult.success && allAdjustmentsResult.adjustments) ? allAdjustmentsResult.adjustments : [];
 
     for (let m = 1; m <= 12; m++) {
 
@@ -9076,27 +9079,43 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
       
 
       // ดึงรายการเพิ่ม/หักเงินของเดือนนี้
-      var monthAdjustments = [];
+      var monthAdjustments = allTeacherAdjustments.filter(a => {
+        var yMatch = (a.year === targetYear || a.year === targetYear + 543 || a.year === targetYear - 543);
+        return yMatch && a.month === m;
+      });
+
       var adjustmentBonus = 0;
       var adjustmentDeduction = 0;
       var insuranceDeduction = 0;
-      try {
-        var adjResult = getTeacherAdjustments(resolvedNickname || teacher, year, null);
-        if (adjResult && adjResult.success && adjResult.adjustments) {
-          monthAdjustments = adjResult.adjustments.filter(a => a.month === m);
-          monthAdjustments.forEach(a => {
-            var typeStr = (a.type || '').toString().toLowerCase();
-            var noteStr = (a.note || '').toString().toLowerCase();
-            if (typeStr.includes('ประกัน') || noteStr.includes('ประกัน')) {
-              insuranceDeduction += a.amount;
-            } else if (typeStr.includes('เพิ่ม') || typeStr.includes('โบนัส') || typeStr.includes('bonus')) {
-              adjustmentBonus += a.amount;
-            } else {
-              adjustmentDeduction += a.amount;
-            }
-          });
+
+      monthAdjustments.forEach(a => {
+        var typeStr = (a.type || '').toString().toLowerCase();
+        var noteStr = (a.note || '').toString().toLowerCase();
+        if (typeStr.includes('ประกัน') || noteStr.includes('ประกัน')) {
+          insuranceDeduction += a.amount;
+        } else if (typeStr.includes('เพิ่ม') || typeStr.includes('โบนัส') || typeStr.includes('bonus')) {
+          adjustmentBonus += a.amount;
+        } else {
+          adjustmentDeduction += a.amount;
         }
-      } catch (e) { /* ignore */ }
+      });
+
+      // ยอดหักประกันสะสมทั้งหมดจนถึงเดือน m ของปี targetYear (และปีก่อนหน้า)
+      var insuranceRunningTotal = 0;
+      allTeacherAdjustments.forEach(a => {
+        var typeStr = (a.type || '').toString().toLowerCase();
+        var noteStr = (a.note || '').toString().toLowerCase();
+        if (typeStr.includes('ประกัน') || noteStr.includes('ประกัน')) {
+          var aYear = parseInt(a.year) || 0;
+          var aMonth = parseInt(a.month) || 0;
+          var isSameYear = (aYear === targetYear || aYear === targetYear + 543 || aYear === targetYear - 543);
+          var isPriorYear = (aYear < targetYear && aYear < (targetYear - 500));
+          var isSameYearPriorMonth = isSameYear && aMonth <= m;
+          if (isPriorYear || isSameYearPriorMonth) {
+            insuranceRunningTotal += a.amount;
+          }
+        }
+      });
 
       var currentTotalPay = Math.round(totalPay * 100) / 100;
       var netPay = Math.max(0, currentTotalPay + adjustmentBonus - adjustmentDeduction - insuranceDeduction);
@@ -9110,7 +9129,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         adjustmentBonus: Math.round(adjustmentBonus * 100) / 100,
         adjustmentDeduction: Math.round(adjustmentDeduction * 100) / 100,
         insuranceDeduction: Math.round(insuranceDeduction * 100) / 100,
-        insuranceRunningTotal: Math.round(insuranceDeduction * 100) / 100,
+        insuranceRunningTotal: Math.round(insuranceRunningTotal * 100) / 100,
         isNewTeacher: false,
         netPay: Math.round(netPay * 100) / 100
       };
@@ -9236,7 +9255,7 @@ function getTeacherAdjustments(teacher, year, logUser) {
     const data = sheet.getDataRange().getValues();
     const adjustments = [];
     
-    const targetYear = parseInt(year) || new Date().getFullYear();
+    const targetYear = (year && year !== 'all' && year !== 'ทั้งหมด') ? parseInt(year) : null;
 
     const teachersList = getTeachersDB(null);
     let teacherProfile = findTeacherProfile(teachersList, teacher);
