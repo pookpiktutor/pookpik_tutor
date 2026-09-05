@@ -120,77 +120,7 @@ function doPost(e) {
   }
 }
 
-function dumpSheetData(sheetName) {
-  try {
-    const db = getDb();
-    const sheet = db.getSheetByName(sheetName);
-    if (!sheet) return { success: false, error: 'Sheet not found: ' + sheetName };
-    const values = sheet.getDataRange().getValues();
-    return { success: true, rows: values };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
 
-function debugGetTeacherAdjustments(teacher, year) {
-  const log = [];
-  try {
-    const db = getDb();
-    const sheet = db.getSheetByName('TeacherAdjustmentsDB');
-    log.push('sheet exists: ' + !!sheet + ', rows: ' + (sheet ? sheet.getLastRow() : 0));
-    if (!sheet || sheet.getLastRow() <= 1) return { log: log, adjustments: [] };
-
-    const data = sheet.getDataRange().getValues();
-    log.push('data total rows: ' + data.length);
-
-    const targetYear = parseInt(year) || new Date().getFullYear();
-    log.push('targetYear: ' + targetYear);
-
-    const teachersList = getTeachersDB(null);
-    log.push('teachersList count: ' + (teachersList ? teachersList.length : 0));
-
-    let teacherProfile = findTeacherProfile(teachersList, teacher);
-    log.push('teacherProfile: ' + JSON.stringify(teacherProfile));
-
-    const adjustments = [];
-    for (var i = 1; i < data.length; i++) {
-      var row = data[i];
-      var rowTeacherStr = (row[2] || '').toString().trim();
-      var rowYear = parseInt(row[4]) || 0;
-      var matchYear = (!targetYear || rowYear === targetYear || rowYear === targetYear + 543 || rowYear === targetYear - 543);
-      log.push(`row ${i}: teacher='${rowTeacherStr}', year=${rowYear}, matchYear=${matchYear}`);
-      if (!matchYear) continue;
-
-      var matchTeacher = false;
-      if (!teacher || teacher === 'all' || teacher === 'ทั้งหมด') {
-        matchTeacher = true;
-      } else if (teacherProfile) {
-        matchTeacher = isTeacherMatch(rowTeacherStr, teacherProfile);
-      } else {
-        var cleanRow = rowTeacherStr.toLowerCase().replace(/^ครู/, '').trim();
-        var cleanArg = teacher.toString().toLowerCase().replace(/^ครู/, '').trim();
-        matchTeacher = cleanRow === cleanArg || cleanRow.includes(cleanArg) || cleanArg.includes(cleanRow);
-      }
-      log.push(`row ${i}: matchTeacher=${matchTeacher}`);
-
-      if (matchTeacher) {
-        adjustments.push({
-          id: row[0],
-          timestamp: row[1],
-          teacher: row[2],
-          month: parseInt(row[3]) || 0,
-          year: rowYear,
-          type: row[5],
-          amount: Math.abs(parseFloat(row[6]) || 0),
-          note: row[7] || ''
-        });
-      }
-    }
-    return { log: log, adjustments: adjustments };
-  } catch(e) {
-    return { error: e.message, stack: e.stack, log: log };
-  }
-}
 
 // ============================================================
 
