@@ -1446,13 +1446,11 @@ export async function getTeacherCoursesAndStudents(teacherName) {
         qLogs.forEach(docSnap => {
             const c = docSnap.data();
             const tRegId = (c.mainTeacherId || '').toLowerCase();
-            const tSubId = (c.subTeacherId || '').toLowerCase();
             const tReg = (c.teacherRegular || '').toLowerCase();
-            const tSub = (c.teacherSub || '').toLowerCase();
 
             let match = false;
-            if (cleanName && (tRegId === cleanName || tSubId === cleanName)) match = true;
-            if (!match && cleanName && (tReg.includes(cleanName) || tSub.includes(cleanName))) match = true;
+            if (cleanName && tRegId === cleanName) match = true;
+            if (!match && cleanName && tReg.includes(cleanName)) match = true;
 
             if (match) {
                 if (c.subject) {

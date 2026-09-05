@@ -5602,19 +5602,17 @@ function getTeacherCoursesAndStudents(logUser) {
     // 1. Get all teachers from UsersDB
     const teachersList = getTeachersDB(null);
 
-    // 2. Scan Data Learn for courses taught by teacher (both regular and sub)
+    // 2. Scan Data Learn for regular courses taught by teacher (excluding substitute courses)
     const classLogs = getClassLogs('');
     const teacherCoursesMap = {};
 
     if (Array.isArray(classLogs)) {
       classLogs.forEach(c => {
         const rawTeacherRegular = (c.teacherRegular || '').toString().trim();
-        const rawTeacherSub = (c.teacherSub || '').toString().trim();
 
         const isRegular = isTeacherAssigned(rawTeacherRegular, cleanLogUser, teachersList);
-        const isSub = isTeacherAssigned(rawTeacherSub, cleanLogUser, teachersList);
 
-        if ((isRegular || isSub) && c.subject) {
+        if (isRegular && c.subject) {
           const courseKey = c.subject.trim();
           const dayName = c.dayOfWeek || '';
           const timeStart = c.timeStart || '';
