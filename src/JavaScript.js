@@ -12805,7 +12805,7 @@ function renderTeacherProfilesTable(teachers) {
 
     const tr = document.createElement('tr');
 
-    const compVal = t.compensation || '150';
+    const compVal = t.compensation || '0';
 
     tr.innerHTML = `
 
@@ -13117,7 +13117,7 @@ function showAddTeacherModal() {
 
   document.getElementById('teacher_form').reset();
 
-  document.getElementById('t_compensation').value = '150';
+  document.getElementById('t_compensation').value = '0';
 
   document.getElementById('teacher_modal_title').innerText = 'เพิ่มประวัติคุณครูใหม่';
 
@@ -13151,7 +13151,7 @@ function showEditTeacherModal(nickname, fullName, school, phone, subjects, bank,
 
   document.getElementById('t_account_number').value = accountNumber !== '-' ? accountNumber : '';
 
-  document.getElementById('t_compensation').value = compensation && compensation !== '-' ? compensation : '150';
+  document.getElementById('t_compensation').value = compensation && compensation !== '-' ? compensation : '0';
 
   
 
@@ -13189,7 +13189,7 @@ function saveTeacherProfile(e) {
 
     accountNumber: document.getElementById('t_account_number').value.trim(),
 
-    compensation: parseFloat(document.getElementById('t_compensation').value) || 150
+    compensation: parseFloat(document.getElementById('t_compensation').value) || 0
 
   };
 
@@ -13293,11 +13293,13 @@ function loadStaffSalarySummary() {
 
       // Filter 1: Teachers with hours/classes > 0 OR with adjustments/pay
       let filteredData = allData.filter(item => 
-        item.totalClasses > 0 || 
-        (item.guaranteeDeduction && item.guaranteeDeduction > 0) || 
+        (item.totalClasses && item.totalClasses > 0) || 
+        (item.totalHours && item.totalHours > 0) || 
+        (item.basePay && item.basePay > 0) || 
+        (item.totalPay && item.totalPay > 0) || 
         (item.extraBonus && item.extraBonus > 0) || 
         (item.otherDeductions && item.otherDeductions > 0) || 
-        (item.totalPay && item.totalPay > 0)
+        (item.guaranteeDeduction && item.guaranteeDeduction > 0)
       );
 
       

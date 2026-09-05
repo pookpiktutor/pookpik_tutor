@@ -8561,7 +8561,7 @@ function getTeachersDB(logUser) {
         subjects: row[8] ? row[8].toString().trim() : '',
         bank: row[9] ? row[9].toString().trim() : '',
         accountNumber: row[10] ? row[10].toString().trim() : '',
-        compensation: row[11] ? row[11].toString().trim() : '150',
+        compensation: row[11] ? row[11].toString().trim() : '0',
         teacherId: teacherId,
         accountType: row[12] ? row[12].toString().trim() : 'บัญชีทั่วไป'
       });
@@ -8620,7 +8620,7 @@ function saveTeacherProfile(teacher, logUser) {
         teacher.subjects || '', // 8 Subjects
         teacher.bank || '', // 9 Bank
         teacher.accountNumber || '', // 10 AccountNumber
-        teacher.compensation || '150', // 11 Compensation
+        teacher.compensation || '0', // 11 Compensation
         teacher.accountType || 'บัญชีทั่วไป' // 12 AccountType
       ]);
       const genSheet = db.getSheetByName('DATA General');
@@ -9451,22 +9451,25 @@ function getAllTeachersMonthlyPay(year, month) {
 
       const conf = confirmMap[resolvedNickname] || confirmMap[teacherProfile.fullName] || confirmMap[teacherProfile.teacherId];
 
-      results.push({
-        teacherName: resolvedNickname,
-        fullName: teacherProfile.fullName || resolvedNickname,
-        bank: teacherProfile.bank || '-',
-        accountNumber: teacherProfile.accountNumber || '-',
-        basePay: Math.round(basePay * 100) / 100,
-        extraBonus: Math.round(bonusAmt * 100) / 100,
-        otherDeductions: Math.round(deductionAmt * 100) / 100,
-        guaranteeDeduction: Math.round(insuranceAmt * 100) / 100,
-        totalPay: Math.round(netPay * 100) / 100,
-        totalHours: Math.round(totalHours * 100) / 100,
-        totalClasses: totalClasses,
-        isConfirmed: !!conf,
-        confirmedAt: conf ? conf.confirmedAt : null,
-        accountType: teacherProfile.accountType || 'บัญชีทั่วไป'
-      });
+      const hasActivity = totalClasses > 0 || totalHours > 0 || basePay > 0 || netPay > 0 || bonusAmt > 0 || deductionAmt > 0 || insuranceAmt > 0;
+      if (hasActivity) {
+        results.push({
+          teacherName: resolvedNickname,
+          fullName: teacherProfile.fullName || resolvedNickname,
+          bank: teacherProfile.bank || '-',
+          accountNumber: teacherProfile.accountNumber || '-',
+          basePay: Math.round(basePay * 100) / 100,
+          extraBonus: Math.round(bonusAmt * 100) / 100,
+          otherDeductions: Math.round(deductionAmt * 100) / 100,
+          guaranteeDeduction: Math.round(insuranceAmt * 100) / 100,
+          totalPay: Math.round(netPay * 100) / 100,
+          totalHours: Math.round(totalHours * 100) / 100,
+          totalClasses: totalClasses,
+          isConfirmed: !!conf,
+          confirmedAt: conf ? conf.confirmedAt : null,
+          accountType: teacherProfile.accountType || 'บัญชีทั่วไป'
+        });
+      }
     });
 
     return { success: true, data: results };
