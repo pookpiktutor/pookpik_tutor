@@ -1,3 +1,18 @@
+function isTeacherMatch(rowTeacherStr, profile) {
+  if (!rowTeacherStr || !profile) return false;
+  const s1 = rowTeacherStr.toLowerCase().replace(/^ครู/, '').trim();
+  const s2 = (profile.nickname || '').toLowerCase().replace(/^ครู/, '').trim();
+  const s3 = (profile.fullName || '').toLowerCase().replace(/^ครู/, '').trim();
+  const s4 = (profile.teacherId || '').toLowerCase().trim();
+  if (s1 === s2 || s1 === s3 || s1 === s4) return true;
+  if (s2 && (s1.includes(s2) || s2.includes(s1))) return true;
+  if (s3 && (s1.includes(s3) || s3.includes(s1))) return true;
+  const nick1 = s1.split('(')[0].trim();
+  const nick2 = s2.split('(')[0].trim();
+  if (nick1 && nick2 && (nick1 === nick2 || nick1.includes(nick2) || nick2.includes(nick1))) return true;
+  return false;
+}
+
 const SPREADSHEET_ID = '1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI';
 const COURSE_START_COL = 20;
 
@@ -9001,12 +9016,17 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
       var monthAdjustments = [];
       var adjustmentBonus = 0;
       var adjustmentDeduction = 0;
+      var insuranceDeduction = 0;
       try {
-        var adjResult = getTeacherAdjustments(teacher, year, null);
+        var adjResult = getTeacherAdjustments(resolvedNickname || teacher, year, null);
         if (adjResult && adjResult.success && adjResult.adjustments) {
           monthAdjustments = adjResult.adjustments.filter(a => a.month === m);
           monthAdjustments.forEach(a => {
-            if (a.type === 'เพิ่มเงิน') {
+            var typeStr = (a.type || '').toString().toLowerCase();
+            var noteStr = (a.note || '').toString().toLowerCase();
+            if (typeStr.includes('ประกัน') || noteStr.includes('ประกัน')) {
+              insuranceDeduction += a.amount;
+            } else if (typeStr.includes('เพิ่ม') || typeStr.includes('โบนัส') || typeStr.includes('bonus')) {
               adjustmentBonus += a.amount;
             } else {
               adjustmentDeduction += a.amount;
@@ -9014,16 +9034,6 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
           });
         }
       } catch (e) { /* ignore */ }
-
-      // ดึงรายการเพิ่ม/หักประกันจาก TeacherAdjustmentsDB สำหรับเดือนนี้
-      var insuranceDeduction = 0;
-      monthAdjustments.forEach(function(a) {
-        var typeStr = (a.type || '').toString().toLowerCase();
-        var noteStr = (a.note || '').toString().toLowerCase();
-        if (typeStr.includes('ประกัน') || noteStr.includes('ประกัน')) {
-          insuranceDeduction += a.amount;
-        }
-      });
 
       var currentTotalPay = Math.round(totalPay * 100) / 100;
       var netPay = Math.max(0, currentTotalPay + adjustmentBonus - adjustmentDeduction - insuranceDeduction);
@@ -9164,14 +9174,42 @@ function getTeacherAdjustments(teacher, year, logUser) {
     const adjustments = [];
     
     const targetYear = parseInt(year) || new Date().getFullYear();
-    const cleanTeacher = (teacher || '').toString().trim().toLowerCase().replace(/^ครู/, '').trim();
-    
+
+    const teachersList = getTeachersDB(null);
+    let teacherProfile = null;
+    if (Array.isArray(teachersList) && teacher && teacher !== 'all' && teacher !== 'ทั้งหมด') {
+      const cleanTarget = teacher.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
+      teacherProfile = teachersList.find(t => {
+        const tId = (t.teacherId || '').toLowerCase().trim();
+        const tNick = (t.nickname || '').toLowerCase().trim().replace(/^ครู/, '').trim();
+        const tFull = (t.fullName || '').toLowerCase().trim().replace(/^ครู/, '').trim();
+        return (tId && tId === teacher.toString().toLowerCase().trim()) || 
+               tNick === cleanTarget || tFull === cleanTarget || 
+               (cleanTarget && (tNick.includes(cleanTarget) || cleanTarget.includes(tNick))) ||
+               (cleanTarget && (tFull.includes(cleanTarget) || cleanTarget.includes(tFull)));
+      });
+    }
+
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
-      var rowTeacher = (row[2] || '').toString().trim().toLowerCase().replace(/^ครู/, '').trim();
+      var rowTeacherStr = (row[2] || '').toString().trim();
       var rowYear = parseInt(row[4]) || 0;
       
-      if (rowYear === targetYear && (!cleanTeacher || rowTeacher === cleanTeacher)) {
+      var matchYear = (!targetYear || rowYear === targetYear || rowYear === targetYear + 543 || rowYear === targetYear - 543);
+      if (!matchYear) continue;
+
+      var matchTeacher = false;
+      if (!teacher || teacher === 'all' || teacher === 'ทั้งหมด') {
+        matchTeacher = true;
+      } else if (teacherProfile) {
+        matchTeacher = isTeacherMatch(rowTeacherStr, teacherProfile);
+      } else {
+        var cleanRow = rowTeacherStr.toLowerCase().replace(/^ครู/, '').trim();
+        var cleanArg = teacher.toString().toLowerCase().replace(/^ครู/, '').trim();
+        matchTeacher = cleanRow === cleanArg || cleanRow.includes(cleanArg) || cleanArg.includes(cleanRow);
+      }
+      
+      if (matchTeacher) {
         adjustments.push({
           id: row[0],
           timestamp: row[1],
@@ -9179,7 +9217,7 @@ function getTeacherAdjustments(teacher, year, logUser) {
           month: parseInt(row[3]) || 0,
           year: rowYear,
           type: row[5],
-          amount: parseFloat(row[6]) || 0,
+          amount: Math.abs(parseFloat(row[6]) || 0),
           note: row[7] || ''
         });
       }
@@ -9314,20 +9352,7 @@ function getAllTeachersMonthlyPay(year, month) {
       }
     }
 
-    function isTeacherMatch(rowTeacherStr, profile) {
-      if (!rowTeacherStr || !profile) return false;
-      const s1 = rowTeacherStr.toLowerCase().replace(/^ครู/, '').trim();
-      const s2 = (profile.nickname || '').toLowerCase().replace(/^ครู/, '').trim();
-      const s3 = (profile.fullName || '').toLowerCase().replace(/^ครู/, '').trim();
-      const s4 = (profile.teacherId || '').toLowerCase().trim();
-      if (s1 === s2 || s1 === s3 || s1 === s4) return true;
-      if (s2 && (s1.includes(s2) || s2.includes(s1))) return true;
-      if (s3 && (s1.includes(s3) || s3.includes(s1))) return true;
-      const nick1 = s1.split('(')[0].trim();
-      const nick2 = s2.split('(')[0].trim();
-      if (nick1 && nick2 && (nick1 === nick2 || nick1.includes(nick2) || nick2.includes(nick1))) return true;
-      return false;
-    }
+// isTeacherMatch is now a global top-level function
 
     function getRate(numKids, hasEx, hasRyw) {
       if (numKids === 0) return 0;
