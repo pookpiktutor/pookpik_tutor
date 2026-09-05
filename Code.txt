@@ -1,15 +1,63 @@
+function findTeacherProfile(teachersList, teacherArg) {
+  if (!Array.isArray(teachersList) || !teacherArg) return null;
+  const cleanArg = teacherArg.toString().trim();
+  if (!cleanArg || cleanArg === 'all' || cleanArg === 'ทั้งหมด') return null;
+  const lowerArg = cleanArg.toLowerCase();
+  const cleanNickArg = lowerArg.replace(/^ครู/, '').trim();
+
+  // 1. Exact match on teacherId (e.g. 'tutor_0107')
+  let found = teachersList.find(t => t.teacherId && t.teacherId.toLowerCase().trim() === lowerArg);
+  if (found) return found;
+
+  // 2. Exact match on nickname (without 'ครู')
+  found = teachersList.find(t => {
+    const nick = (t.nickname || '').toLowerCase().trim().replace(/^ครู/, '').trim();
+    return nick && nick === cleanNickArg;
+  });
+  if (found) return found;
+
+  // 3. Exact match on fullName (without 'ครู')
+  found = teachersList.find(t => {
+    const full = (t.fullName || '').toLowerCase().trim().replace(/^ครู/, '').trim();
+    return full && full === cleanNickArg;
+  });
+  if (found) return found;
+
+  // 4. Substring match on nickname / fullName (only when nick/full non-empty, and min length 2)
+  if (cleanNickArg.length >= 2) {
+    found = teachersList.find(t => {
+      const nick = (t.nickname || '').toLowerCase().trim().replace(/^ครู/, '').trim();
+      const full = (t.fullName || '').toLowerCase().trim().replace(/^ครู/, '').trim();
+      return (nick && (nick.includes(cleanNickArg) || cleanNickArg.includes(nick))) ||
+             (full && (full.includes(cleanNickArg) || cleanNickArg.includes(full)));
+    });
+    if (found) return found;
+  }
+
+  return null;
+}
+
 function isTeacherMatch(rowTeacherStr, profile) {
   if (!rowTeacherStr || !profile) return false;
   const s1 = rowTeacherStr.toLowerCase().replace(/^ครู/, '').trim();
   const s2 = (profile.nickname || '').toLowerCase().replace(/^ครู/, '').trim();
   const s3 = (profile.fullName || '').toLowerCase().replace(/^ครู/, '').trim();
   const s4 = (profile.teacherId || '').toLowerCase().trim();
-  if (s1 === s2 || s1 === s3 || s1 === s4) return true;
-  if (s2 && (s1.includes(s2) || s2.includes(s1))) return true;
-  if (s3 && (s1.includes(s3) || s3.includes(s1))) return true;
+
+  // 1. Exact teacherId match
+  if (s4 && s1 === s4) return true;
+
+  // 2. Exact or substring nickname match (only when s2 non-empty)
+  if (s2 && (s1 === s2 || s1.includes(s2) || s2.includes(s1))) return true;
+
+  // 3. Exact or substring fullName match (only when s3 non-empty)
+  if (s3 && (s1 === s3 || s1.includes(s3) || s3.includes(s1))) return true;
+
+  // 4. Nickname prefix match before parenthetical
   const nick1 = s1.split('(')[0].trim();
-  const nick2 = s2.split('(')[0].trim();
+  const nick2 = s2 ? s2.split('(')[0].trim() : '';
   if (nick1 && nick2 && (nick1 === nick2 || nick1.includes(nick2) || nick2.includes(nick1))) return true;
+
   return false;
 }
 
@@ -69,6 +117,78 @@ function doPost(e) {
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function dumpSheetData(sheetName) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName(sheetName);
+    if (!sheet) return { success: false, error: 'Sheet not found: ' + sheetName };
+    const values = sheet.getDataRange().getValues();
+    return { success: true, rows: values };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function debugGetTeacherAdjustments(teacher, year) {
+  const log = [];
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('TeacherAdjustmentsDB');
+    log.push('sheet exists: ' + !!sheet + ', rows: ' + (sheet ? sheet.getLastRow() : 0));
+    if (!sheet || sheet.getLastRow() <= 1) return { log: log, adjustments: [] };
+
+    const data = sheet.getDataRange().getValues();
+    log.push('data total rows: ' + data.length);
+
+    const targetYear = parseInt(year) || new Date().getFullYear();
+    log.push('targetYear: ' + targetYear);
+
+    const teachersList = getTeachersDB(null);
+    log.push('teachersList count: ' + (teachersList ? teachersList.length : 0));
+
+    let teacherProfile = findTeacherProfile(teachersList, teacher);
+    log.push('teacherProfile: ' + JSON.stringify(teacherProfile));
+
+    const adjustments = [];
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var rowTeacherStr = (row[2] || '').toString().trim();
+      var rowYear = parseInt(row[4]) || 0;
+      var matchYear = (!targetYear || rowYear === targetYear || rowYear === targetYear + 543 || rowYear === targetYear - 543);
+      log.push(`row ${i}: teacher='${rowTeacherStr}', year=${rowYear}, matchYear=${matchYear}`);
+      if (!matchYear) continue;
+
+      var matchTeacher = false;
+      if (!teacher || teacher === 'all' || teacher === 'ทั้งหมด') {
+        matchTeacher = true;
+      } else if (teacherProfile) {
+        matchTeacher = isTeacherMatch(rowTeacherStr, teacherProfile);
+      } else {
+        var cleanRow = rowTeacherStr.toLowerCase().replace(/^ครู/, '').trim();
+        var cleanArg = teacher.toString().toLowerCase().replace(/^ครู/, '').trim();
+        matchTeacher = cleanRow === cleanArg || cleanRow.includes(cleanArg) || cleanArg.includes(cleanRow);
+      }
+      log.push(`row ${i}: matchTeacher=${matchTeacher}`);
+
+      if (matchTeacher) {
+        adjustments.push({
+          id: row[0],
+          timestamp: row[1],
+          teacher: row[2],
+          month: parseInt(row[3]) || 0,
+          year: rowYear,
+          type: row[5],
+          amount: Math.abs(parseFloat(row[6]) || 0),
+          note: row[7] || ''
+        });
+      }
+    }
+    return { log: log, adjustments: adjustments };
+  } catch(e) {
+    return { error: e.message, stack: e.stack, log: log };
   }
 }
 
@@ -8728,19 +8848,7 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
     }
 
-    const teacherProfile = teachersList.find(t => {
-
-      const tId = (t.teacherId || '').toLowerCase().trim();
-
-      const tNick = t.nickname.toLowerCase().trim().replace(/^ครู/, '').trim();
-
-      const targetNick = teacher.toLowerCase().trim().replace(/^ครู/, '').trim();
-
-      return (tId !== '' && tId === teacher.toLowerCase().trim()) || 
-
-             tNick === targetNick || tNick.includes(targetNick) || targetNick.includes(tNick);
-
-    });
+    const teacherProfile = findTeacherProfile(teachersList, teacher);
 
     if (!teacherProfile) {
 
@@ -9201,19 +9309,7 @@ function getTeacherAdjustments(teacher, year, logUser) {
     const targetYear = parseInt(year) || new Date().getFullYear();
 
     const teachersList = getTeachersDB(null);
-    let teacherProfile = null;
-    if (Array.isArray(teachersList) && teacher && teacher !== 'all' && teacher !== 'ทั้งหมด') {
-      const cleanTarget = teacher.toString().trim().toLowerCase().replace(/^ครู/, '').trim();
-      teacherProfile = teachersList.find(t => {
-        const tId = (t.teacherId || '').toLowerCase().trim();
-        const tNick = (t.nickname || '').toLowerCase().trim().replace(/^ครู/, '').trim();
-        const tFull = (t.fullName || '').toLowerCase().trim().replace(/^ครู/, '').trim();
-        return (tId && tId === teacher.toString().toLowerCase().trim()) || 
-               tNick === cleanTarget || tFull === cleanTarget || 
-               (cleanTarget && (tNick.includes(cleanTarget) || cleanTarget.includes(tNick))) ||
-               (cleanTarget && (tFull.includes(cleanTarget) || cleanTarget.includes(tFull)));
-      });
-    }
+    let teacherProfile = findTeacherProfile(teachersList, teacher);
 
     for (var i = 1; i < data.length; i++) {
       var row = data[i];

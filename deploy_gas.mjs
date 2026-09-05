@@ -1,5 +1,5 @@
 /**
- * deploy_gas.mjs - Deploy Code.txt to Google Apps Script and index.html to Google Sheets
+ * deploy_gas.mjs - Deploy Code.txt to Google Apps Script and update Web App deployment
  * Usage: node deploy_gas.mjs
  */
 
@@ -13,6 +13,7 @@ const https = require('https');
 
 // ============ CONFIG ============
 const SCRIPT_ID = '1btIyBNvEsl4h7fyRhGkR94NXt2eDJEsL2tuw3CHuuzDDMFQNYiAC6MQZ';
+const DEPLOYMENT_ID = 'AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA';
 const SPREADSHEET_ID = '1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI';
 const BASE_DIR = process.cwd();
 const CODE_FILE = join(BASE_DIR, 'Code.txt');
@@ -69,7 +70,7 @@ async function refreshAccessToken() {
   });
 }
 
-async function apiRequest(method, path, body, token) {
+async function apiRequestSingle(method, path, body, token) {
   return new Promise((resolve, reject) => {
     const bodyStr = body ? JSON.stringify(body) : null;
     const req = https.request({
@@ -95,30 +96,14 @@ async function apiRequest(method, path, body, token) {
   });
 }
 
-async function sheetsApiRequest(method, path, body, token) {
-  return new Promise((resolve, reject) => {
-    const bodyStr = body ? JSON.stringify(body) : null;
-    const req = https.request({
-      hostname: 'sheets.googleapis.com',
-      path: path,
-      method: method,
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json',
-        ...(bodyStr ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {})
-      }
-    }, res => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
-        catch (e) { resolve({ status: res.statusCode, body: data }); }
-      });
-    });
-    req.on('error', reject);
-    if (bodyStr) req.write(bodyStr);
-    req.end();
-  });
+async function apiRequest(method, path, body, token, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    const res = await apiRequestSingle(method, path, body, token);
+    if (res.status === 200) return res;
+    console.warn(`  ⚠️  API request ${method} ${path} returned status ${res.status}. Attempt ${i + 1}/${retries}...`);
+    await new Promise(r => setTimeout(r, 1500 * (i + 1)));
+  }
+  return await apiRequestSingle(method, path, body, token);
 }
 
 async function main() {
@@ -149,64 +134,60 @@ async function main() {
   const newCodeContent = readFileSync(CODE_FILE, 'utf8');
   console.log(`  Code.txt: ${newCodeContent.length} chars, ${newCodeContent.split('\n').length} lines`);
 
-  // 3. Read new JavaScript.js and index.html
-  console.log('📖 Reading JavaScript.js...');
-  const jsContent = readFileSync(JS_FILE, 'utf8');
-  console.log(`  JavaScript.js: ${jsContent.length} chars`);
+  // 3. Read new index.html if exists
+  const indexContent = readFileSync(INDEX_FILE, 'utf8');
 
-  // 4. Update the project: replace Code file, keep HTML files
+  // 4. Update project files
   const updatedFiles = projectFiles.map(f => {
     if (f.name === 'Code' && f.type === 'SERVER_JS') {
       console.log(`  ✏️  Replacing Code.gs (${f.source.length} → ${newCodeContent.length} chars)`);
       return { ...f, source: newCodeContent };
     }
+    if (f.type === 'HTML') {
+      console.log(`  ✏️  Replacing HTML file ${f.name}`);
+      return { ...f, source: indexContent };
+    }
     return f;
   });
 
-  // Check if Code file was found
-  const hasCode = updatedFiles.some(f => f.name === 'Code' && f.type === 'SERVER_JS');
-  if (!hasCode) {
-    console.log('  ➕ Code.gs not found, adding new file');
-    updatedFiles.push({ name: 'Code', type: 'SERVER_JS', source: newCodeContent });
-  }
-
-  // 5. Deploy to Apps Script
+  // 5. Save updated content to Apps Script
   console.log('\n🚀 Deploying Code.gs to Apps Script...');
   const putRes = await apiRequest('PUT', `/v1/projects/${SCRIPT_ID}/content`, { files: updatedFiles }, token);
   
-  if (putRes.status === 200) {
-    console.log('✅ Code.gs deployed successfully!');
-  } else {
+  if (putRes.status !== 200) {
     console.error('❌ Failed to deploy Code.gs:', putRes.status, JSON.stringify(putRes.body).slice(0, 500));
+    process.exit(1);
   }
 
-  // 6. Update HTML in Google Sheets (the index.html stored as a string in a cell or sheet)
-  // First check if there's an HTML file in the Apps Script project
-  const htmlFile = projectFiles.find(f => f.type === 'HTML');
-  if (htmlFile) {
-    console.log(`\n📄 Found HTML file in project: ${htmlFile.name}`);
-    
-    // Read the current index.html 
-    const indexContent = readFileSync(INDEX_FILE, 'utf8');
-    console.log(`  index.html: ${indexContent.length} chars`);
+  console.log('✅ Project content updated successfully!');
 
-    // Update HTML in project
-    const updatedWithHtml = updatedFiles.map(f => {
-      if (f.name === htmlFile.name && f.type === 'HTML') {
-        console.log(`  ✏️  Replacing ${htmlFile.name}.html`);
-        return { ...f, source: indexContent };
+  // 6. Create new version & update Web App deployment
+  console.log('\n🏷️  Creating new version in Apps Script...');
+  const verRes = await apiRequest('POST', `/v1/projects/${SCRIPT_ID}/versions`, {
+    description: `Auto-version ${new Date().toISOString()}`
+  }, token);
+
+  if (verRes.status === 200 && verRes.body.versionNumber) {
+    const newVersion = verRes.body.versionNumber;
+    console.log(`✅ Created Version ${newVersion}`);
+
+    console.log(`\n🚀 Updating Web App deployment ${DEPLOYMENT_ID} to Version ${newVersion}...`);
+    const depRes = await apiRequest('PUT', `/v1/projects/${SCRIPT_ID}/deployments/${DEPLOYMENT_ID}`, {
+      deploymentConfig: {
+        scriptId: SCRIPT_ID,
+        versionNumber: newVersion,
+        manifestFileName: 'appsscript',
+        description: `Deployed version ${newVersion}`
       }
-      return f;
-    });
+    }, token);
 
-    const putHtmlRes = await apiRequest('PUT', `/v1/projects/${SCRIPT_ID}/content`, { files: updatedWithHtml }, token);
-    if (putHtmlRes.status === 200) {
-      console.log('✅ HTML deployed successfully!');
+    if (depRes.status === 200) {
+      console.log(`🎉 Web App deployment successfully updated to Version ${newVersion}!`);
     } else {
-      console.error('❌ Failed to deploy HTML:', putHtmlRes.status, JSON.stringify(putHtmlRes.body).slice(0, 300));
+      console.error('⚠️  Failed to update Web App deployment:', depRes.status, JSON.stringify(depRes.body).slice(0, 300));
     }
   } else {
-    console.log('\n⚠️  No HTML file found in Apps Script project (HTML may be served from GitHub Pages)');
+    console.error('⚠️  Failed to create version:', verRes.status, JSON.stringify(verRes.body).slice(0, 300));
   }
 
   console.log('\n✅ Deploy complete!');
