@@ -17077,44 +17077,9 @@ function migrateGroupGradeSheetsColKToS() {
 function updateDataLearnMidtermToFinal() {
   try {
     const db = getDb();
-    let gradeHeadersUpdated = 0;
     let dataLearnUpdated = 0;
 
-    // 1. Update Row 1 course headers in ALL Grade Sheets
-    const gradeSheetNames = [
-      'อนุบาล/1','ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1','ม.1/1','ม.2/1','ม.3/1','ม.4/1','ม.5/1','ม.6/1',
-      'อนุบาล/2','ป.1/2','ป.2/2','ป.3/2','ป.4/2','ป.5/2','ป.6/2','ม.1/2','ม.2/2','ม.3/2','ม.4/2','ม.5/2','ม.6/2',
-      'อนุบาล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3'
-    ];
-
-    gradeSheetNames.forEach(sn => {
-      const sheet = db.getSheetByName(sn);
-      if (sheet) {
-        const lastCol = sheet.getLastColumn();
-        if (lastCol >= 11) {
-          const row1Range = sheet.getRange(1, 1, 1, lastCol);
-          const row1Vals = row1Range.getValues()[0];
-          let changed = false;
-          for (let c = 0; c < row1Vals.length; c++) {
-            const h = row1Vals[c] ? row1Vals[c].toString() : '';
-            if (h && /MIDTERM/i.test(h)) {
-              const newH = h.replace(/MIDTERM\s*1\/2569/gi, 'FINAL 1/2569')
-                            .replace(/MIDTERM\s*1\/69/gi, 'FINAL 1/69');
-              if (newH !== h) {
-                row1Vals[c] = newH;
-                changed = true;
-                gradeHeadersUpdated++;
-              }
-            }
-          }
-          if (changed) {
-            row1Range.setValues([row1Vals]);
-          }
-        }
-      }
-    });
-
-    // 2. Update Column A (subject) in Data Learn sheet for date range 21/07/2026 to 25/09/2026
+    // Update Column A (subject) in Data Learn sheet
     const learnSheet = db.getSheetByName('Data Learn');
     if (learnSheet && learnSheet.getLastRow() >= 2) {
       const lastRow = learnSheet.getLastRow();
@@ -17132,6 +17097,8 @@ function updateDataLearnMidtermToFinal() {
 
       for (let i = 0; i < subjects.length; i++) {
         const subj = subjects[i][0] ? subjects[i][0].toString().trim() : '';
+        if (!subj || !/MIDTERM/i.test(subj)) continue;
+
         const rawDate = dates[i][0];
         const dispDate = displayDates[i][0];
 
@@ -17167,15 +17134,14 @@ function updateDataLearnMidtermToFinal() {
           }
         }
 
-        if (dObj && dObj >= startDate && dObj <= endDate) {
-          if (/MIDTERM/i.test(subj)) {
-            const newSubj = subj.replace(/MIDTERM\s*1\/2569/gi, 'FINAL 1/2569')
-                                .replace(/MIDTERM\s*1\/69/gi, 'FINAL 1/69');
-            if (newSubj !== subj) {
-              subjects[i][0] = newSubj;
-              changedDataLearn = true;
-              dataLearnUpdated++;
-            }
+        const isMatch = (dObj && dObj >= startDate && dObj <= endDate) || !dObj;
+        if (isMatch) {
+          const newSubj = subj.replace(/MIDTERM\s*1\/2569/gi, 'FINAL 1/2569')
+                              .replace(/MIDTERM\s*1\/69/gi, 'FINAL 1/69');
+          if (newSubj !== subj) {
+            subjects[i][0] = newSubj;
+            changedDataLearn = true;
+            dataLearnUpdated++;
           }
         }
       }
@@ -17185,20 +17151,15 @@ function updateDataLearnMidtermToFinal() {
       }
     }
 
-    // 3. Clear Caches
-    clearGradeHeaderCache();
     try {
       const cache = CacheService.getScriptCache();
       cache.remove('all_class_logs_data');
-      cache.remove('grade_sheet_cache_all');
-      cache.remove('grade_header_cache');
     } catch (eCache) {}
 
     return {
       success: true,
-      gradeHeadersUpdated: gradeHeadersUpdated,
       dataLearnUpdated: dataLearnUpdated,
-      message: `อัปเดตชื่อคอร์สวิชากลุ่มหลักจาก MIDTERM เป็น FINAL สำเร็จแล้ว (หัวตารางชีตกลุ่ม ${gradeHeadersUpdated} รายการ, Data Learn ${dataLearnUpdated} รายการ)`
+      message: `อัปเดตชื่อคอร์สวิชาเฉพาะใน Data Learn จาก MIDTERM เป็น FINAL สำเร็จแล้ว (${dataLearnUpdated} รายการ)`
     };
   } catch (e) {
     return { success: false, error: e.message };
