@@ -62,7 +62,7 @@ function isTeacherMatch(rowTeacherStr, profile) {
 }
 
 const SPREADSHEET_ID = '1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI';
-const COURSE_START_COL = 20;
+const COURSE_START_COL = 11;
 
 function computeCumulativePayment(student) {
   const r1Amt = parseFloat(student.payRound1_amount) || 0;
@@ -5124,7 +5124,7 @@ function getAllCoursesFromGradeSheets() {
 
         const lastCol = sheet.getLastColumn();
 
-        if (lastCol >= 15) {
+        if (lastCol >= COURSE_START_COL) {
           const fullHeader = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
           let colOutstanding = -1, colPaid = -1;
           for (let c = 0; c < fullHeader.length; c++) {
@@ -5133,7 +5133,7 @@ function getAllCoursesFromGradeSheets() {
               if (['ยอดจ่าย', 'จ่าย', 'ชำระแล้ว', 'ยอดชำระมา'].includes(val)) colPaid = c + 1;
           }
           let startCourseCol = COURSE_START_COL;
-          for (let c = 15; c <= lastCol; c++) {
+          for (let c = COURSE_START_COL; c <= lastCol; c++) {
               const val = fullHeader[c - 1] ? fullHeader[c - 1].toString().trim() : '';
               if (val && !['ยอดจ่าย', 'คงเหลือ', 'ราคาเต็ม', 'จ่าย', 'ชำระแล้ว'].includes(val) && val.length > 2) {
                   if (c > colOutstanding && c > colPaid) {
@@ -6243,87 +6243,23 @@ function syncToGradeSheet(student) {
     let targetRow = targetRowIndex;
 
     if (targetRowIndex === -1) {
-
       targetRow = sheet.getLastRow() + 1;
-
-      sheet.getRange(targetRow, 1, 1, 10).setValues([[
-
-        student.grade, student.name, student.nickname, student.school, student.classSection,
-
-        student.contact, student.lineName, student.lineId, student.branchLearn, student.branchPay
-
-      ]]);
-
-      sheet.getRange(targetRow, 11).setValue(student.full || 0); 
-      sheet.getRange(targetRow, 12).setValue(student.discount || 0); 
-      sheet.getRange(targetRow, 13).setValue(student.outstanding !== undefined ? student.outstanding : ((student.full || 0) - (student.paid || 0)));
-      sheet.getRange(targetRow, 14).setValue(student.paid || 0); 
-      sheet.getRange(targetRow, 15).setValue(student.isCard ? 1 : 0);
-      sheet.getRange(targetRow, 16).setValue(student.paymentDate || '');
-      sheet.getRange(targetRow, 17).setValue(student.paymentChannel || '');
-      sheet.getRange(targetRow, 18).setValue(student.staff || '');
-      sheet.getRange(targetRow, 20, 1, 15).setValues([[
-        student.payRound1_date || '',
-        parseFloat(student.payRound1_amount) || 0,
-        student.payRound1_channel || '',
-        student.payRound1_staff || '',
-        student.payRound1_time || '',
-        student.payRound2_date || '',
-        parseFloat(student.payRound2_amount) || 0,
-        student.payRound2_channel || '',
-        student.payRound2_staff || '',
-        student.payRound2_time || '',
-        student.payRound3_date || '',
-        parseFloat(student.payRound3_amount) || 0,
-        student.payRound3_channel || '',
-        student.payRound3_staff || '',
-        student.payRound3_time || ''
-      ]]);
-    } else {
-      sheet.getRange(targetRow, 1, 1, 10).setValues([[
-        student.grade, student.name, student.nickname, student.school, student.classSection,
-        student.contact, student.lineName, student.lineId, student.branchLearn, student.branchPay
-      ]]);
-      sheet.getRange(targetRow, 11).setValue(student.full || 0);
-      sheet.getRange(targetRow, 12).setValue(student.discount || 0);
-      sheet.getRange(targetRow, 13).setValue(student.outstanding !== undefined ? student.outstanding : ((student.full || 0) - (student.paid || 0)));
-      sheet.getRange(targetRow, 14).setValue(student.paid || 0);
-      sheet.getRange(targetRow, 15).setValue(student.isCard ? 1 : 0);
-      sheet.getRange(targetRow, 16).setValue(student.paymentDate || '');
-      sheet.getRange(targetRow, 17).setValue(student.paymentChannel || '');
-      sheet.getRange(targetRow, 18).setValue(student.staff || '');
-      sheet.getRange(targetRow, 20, 1, 15).setValues([[
-        student.payRound1_date || '',
-        parseFloat(student.payRound1_amount) || 0,
-        student.payRound1_channel || '',
-        student.payRound1_staff || '',
-        student.payRound1_time || '',
-        student.payRound2_date || '',
-        parseFloat(student.payRound2_amount) || 0,
-        student.payRound2_channel || '',
-        student.payRound2_staff || '',
-        student.payRound2_time || '',
-        student.payRound3_date || '',
-        parseFloat(student.payRound3_amount) || 0,
-        student.payRound3_channel || '',
-        student.payRound3_staff || '',
-        student.payRound3_time || ''
-      ]]);
     }
+    sheet.getRange(targetRow, 1, 1, 10).setValues([[
+      student.grade, student.name, student.nickname, student.school, student.classSection,
+      student.contact, student.lineName, student.lineId, student.branchLearn, student.branchPay
+    ]]);
 
-    
-
-    // Sync checked courses into columns 16+ in the grade sheet
+    // Financial details (paid, outstanding, installments) are stored solely in StatusDB.
+    // Group grade sheets store ONLY Student Info (Cols 1-10) and Course Enrollment Checkboxes (Col 11+).
 
     try {
-
       const selectedList = student.selectedCourses || [];
 
       if (selectedList.length > 0) {
-
         const lastCol = sheet.getLastColumn();
 
-        if (lastCol >= 19) {
+        if (lastCol >= COURSE_START_COL) {
 
           const header1 = sheet.getRange(1, COURSE_START_COL, 1, lastCol - (COURSE_START_COL - 1)).getValues()[0];
 
@@ -7194,7 +7130,7 @@ function getGradeSheetData(grade, branch, logUser, searchTerm) {
       const branchName = `สาขา${suffix}`;
       const sheetCourses = [];
 
-      if (lastCol >= 15) {
+      if (lastCol >= COURSE_START_COL) {
         const fullHeader = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
         let colOutstanding = -1, colPaid = -1;
         for (let c = 0; c < fullHeader.length; c++) {
@@ -7203,7 +7139,7 @@ function getGradeSheetData(grade, branch, logUser, searchTerm) {
             if (['ยอดจ่าย', 'จ่าย', 'ชำระแล้ว', 'ยอดชำระมา'].includes(val)) colPaid = c + 1;
         }
         let startCourseCol = COURSE_START_COL;
-        for (let c = 15; c <= lastCol; c++) {
+        for (let c = COURSE_START_COL; c <= lastCol; c++) {
             const val = fullHeader[c - 1] ? fullHeader[c - 1].toString().trim() : '';
             if (val && !['ยอดจ่าย', 'คงเหลือ', 'ราคาเต็ม', 'จ่าย', 'ชำระแล้ว'].includes(val) && val.length > 2) {
                 if (c > colOutstanding && c > colPaid) {
@@ -17095,3 +17031,42 @@ function organizeAndSortStaffDatabaseData() {
     return { success: false, error: e.message };
   }
 }
+
+function migrateGroupGradeSheetsColKToS() {
+  try {
+    const db = getDb();
+    const sheets = db.getSheets();
+    let count = 0;
+    const migratedSheets = [];
+
+    sheets.forEach(sheet => {
+      const name = sheet.getName();
+      if (name.match(/^(.+)\/([1-3])$/)) {
+        const lastCol = sheet.getLastColumn();
+        if (lastCol >= 11) {
+          const fullHeader = sheet.getRange(5, 1, 1, Math.min(lastCol, 20)).getValues()[0];
+          const headerK = fullHeader[10] ? fullHeader[10].toString().trim() : '';
+          
+          if (['ยอดรวม', 'ราคาเต็ม', 'ค่าเรียน', 'ส่วนลด', 'คงเหลือ'].includes(headerK)) {
+            sheet.deleteColumns(11, 9);
+            count++;
+            migratedSheets.push(name);
+          }
+        }
+      }
+    });
+
+    try {
+      const cache = CacheService.getScriptCache();
+      cache.remove('grade_sheet_cache_all');
+    } catch (eCache) {}
+
+    return {
+      success: true,
+      message: `ปรับโครงสร้างชีตกลุ่มหลักสำเร็จแล้วจำนวน ${count} ชีต (${migratedSheets.join(', ')})`
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
