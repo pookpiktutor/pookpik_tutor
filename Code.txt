@@ -17166,4 +17166,59 @@ function updateDataLearnMidtermToFinal() {
   }
 }
 
+function revertGradeHeadersFinalToMidterm() {
+  try {
+    const db = getDb();
+    let gradeHeadersReverted = 0;
+
+    const gradeSheetNames = [
+      'อนุบาล/1','ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1','ม.1/1','ม.2/1','ม.3/1','ม.4/1','ม.5/1','ม.6/1',
+      'อนุบาล/2','ป.1/2','ป.2/2','ป.3/2','ป.4/2','ป.5/2','ป.6/2','ม.1/2','ม.2/2','ม.3/2','ม.4/2','ม.5/2','ม.6/2',
+      'อนุบาล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3'
+    ];
+
+    gradeSheetNames.forEach(sn => {
+      const sheet = db.getSheetByName(sn);
+      if (sheet) {
+        const lastCol = sheet.getLastColumn();
+        if (lastCol >= 11) {
+          const row1Range = sheet.getRange(1, 1, 1, lastCol);
+          const row1Vals = row1Range.getValues()[0];
+          let changed = false;
+          for (let c = 0; c < row1Vals.length; c++) {
+            const h = row1Vals[c] ? row1Vals[c].toString() : '';
+            if (h && /FINAL/i.test(h)) {
+              const newH = h.replace(/FINAL\s*1\/2569/gi, 'MIDTERM 1/2569')
+                            .replace(/FINAL\s*1\/69/gi, 'MIDTERM 1/69');
+              if (newH !== h) {
+                row1Vals[c] = newH;
+                changed = true;
+                gradeHeadersReverted++;
+              }
+            }
+          }
+          if (changed) {
+            row1Range.setValues([row1Vals]);
+          }
+        }
+      }
+    });
+
+    clearGradeHeaderCache();
+    try {
+      const cache = CacheService.getScriptCache();
+      cache.remove('grade_sheet_cache_all');
+      cache.remove('grade_header_cache');
+    } catch (eCache) {}
+
+    return {
+      success: true,
+      gradeHeadersReverted: gradeHeadersReverted,
+      message: `คืนค่าหัวตารางทั้ง 39 ชีตจาก FINAL เป็น MIDTERM เรียบร้อยแล้ว (${gradeHeadersReverted} รายการ)`
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
 
