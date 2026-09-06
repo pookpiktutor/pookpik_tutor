@@ -1981,6 +1981,10 @@ function isTeacherUser(username, nickname) {
   if (cleanUsername === 'admin' || cleanUsername === 'staff') return false;
   if (!cleanUsername) return false;
 
+  if (cleanUsername.startsWith('tutor') || cleanUsername.startsWith('tu') || cleanUsername.includes('tutor') || cleanUsername.includes('ครู') || cleanUsername.includes('teacher')) {
+    return true;
+  }
+
   try {
     const db = getDb();
     const usersSheet = db.getSheetByName('UsersDB');

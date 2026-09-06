@@ -651,7 +651,7 @@ function handleLogin(e) {
     let role = 'Staff';
     if (cleanU.includes('admin') || cleanU.includes('ผจก') || cleanU.includes('พัช') || cleanU.includes('เพื่อน') || cleanU.includes('บีม')) {
       role = 'Administrator';
-    } else if (cleanU.includes('ครู') || cleanU.includes('teacher')) {
+    } else if (cleanU.includes('ครู') || cleanU.includes('teacher') || cleanU.includes('tutor') || cleanU.startsWith('tu')) {
       role = 'Teacher';
     }
 
@@ -676,6 +676,7 @@ function handleLogin(e) {
             if (res && res.success && res.user) {
               saveSessionData(res.user);
               if (window.state) window.state.currentUser = res.user;
+              if (typeof checkSession === 'function') checkSession();
             }
           })
           .verifyLogin(user, pass);
