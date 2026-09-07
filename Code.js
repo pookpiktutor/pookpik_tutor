@@ -10178,10 +10178,26 @@ function getClassLogs(filterDate, logUser) {
   if (filterDate === 'MIGRATE_FINAL_2569') {
     return updateDataLearnMainGroupFinal2569();
   }
+  if (filterDate === 'CLEAR_CACHE') {
+    clearClassLogsCache();
+    try { CacheService.getScriptCache().remove('grade_header_cache'); } catch (e) {}
+    for (let k in sheetValuesCache_) delete sheetValuesCache_[k];
+    return { success: true, message: 'ล้างแคช Data Learn เรียบร้อยแล้ว' };
+  }
+
+  const isForceRefresh = (filterDate === 'FORCE_REFRESH');
+  if (isForceRefresh) {
+    filterDate = '';
+    clearClassLogsCache();
+    for (let k in sheetValuesCache_) delete sheetValuesCache_[k];
+  }
+
   const cacheKey = filterDate ? 'class_logs_' + filterDate : 'class_logs_all';
-  const cachedData = getCacheObject(cacheKey);
-  if (cachedData && Array.isArray(cachedData)) {
-    return cachedData;
+  if (!isForceRefresh) {
+    const cachedData = getCacheObject(cacheKey);
+    if (cachedData && Array.isArray(cachedData)) {
+      return cachedData;
+    }
   }
   try {
 
