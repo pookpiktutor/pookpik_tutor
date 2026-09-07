@@ -461,6 +461,84 @@ function initIdleTimer() {
 
 
 
+let _sessionCheckInterval = null;
+let _isSessionAlertShowing = false;
+
+function startSingleSessionMonitor() {
+  if (_sessionCheckInterval) clearInterval(_sessionCheckInterval);
+  _sessionCheckInterval = setInterval(checkSingleSessionStatus, 10000);
+}
+
+function checkSingleSessionStatus() {
+  if (_isSessionAlertShowing) return;
+  const user = getSessionData();
+  if (!user || !user.username || !user.sessionId) return;
+  
+  try {
+    if (window.google && window.google.script && window.google.script.run) {
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res && res.valid === false && res.reason === 'LOGGED_IN_ELSEWHERE') {
+            handleSessionKickedOut(res.message);
+          }
+        })
+        .withFailureHandler(() => {})
+        .checkActiveSession(user.username, user.sessionId);
+    }
+  } catch (e) {}
+}
+
+function handleSessionKickedOut(message) {
+  if (_isSessionAlertShowing) return;
+  _isSessionAlertShowing = true;
+  
+  if (_sessionCheckInterval) {
+    clearInterval(_sessionCheckInterval);
+    _sessionCheckInterval = null;
+  }
+  
+  saveSessionData(null);
+  if (window.state) window.state.currentUser = null;
+  
+  showSessionConflictModal(message || 'มีการเข้าสู่ระบบบัญชีนี้จากอุปกรณ์อื่น');
+}
+
+function showSessionConflictModal(messageText) {
+  let modal = document.getElementById('session_conflict_modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'session_conflict_modal';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); font-family: var(--font-main, sans-serif);';
+    modal.innerHTML = `
+      <div style="background: #ffffff; border-radius: 16px; width: 90%; max-width: 420px; padding: 24px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1); border: 2px solid #ef4444; animation: popIn 0.3s ease;">
+        <div style="width: 64px; height: 64px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+          <span style="font-size: 32px; color: #dc2626;">⚠️</span>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: #991b1b; margin-bottom: 8px;">มีการเข้าสู่ระบบจากอุปกรณ์อื่น</h3>
+        <p style="font-size: 0.95rem; color: #4b5563; line-height: 1.5; margin-bottom: 20px;">
+          ${messageText}<br>
+          <span style="font-size: 0.85rem; color: #6b7280; display: block; margin-top: 6px;">ระบบจะทำการออกจากระบบบนอุปกรณ์นี้โดยอัตโนมัติ</span>
+        </p>
+        <button id="btn_session_conflict_ok" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; border: none; padding: 10px 24px; font-size: 0.95rem; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.4); transition: all 0.2s ease;">
+          ตกลง / เข้าสู่ระบบใหม่
+        </button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  } else {
+    modal.style.display = 'flex';
+  }
+
+  const btnOk = document.getElementById('btn_session_conflict_ok');
+  if (btnOk) {
+    btnOk.onclick = () => {
+      modal.style.display = 'none';
+      _isSessionAlertShowing = false;
+      window.location.reload();
+    };
+  }
+}
+
 function saveSessionData(user) {
   window._sessionUser = user;
   try {
@@ -497,6 +575,7 @@ function checkSession() {
 
   const sessionUser = getSessionData();
   if (sessionUser) {
+    startSingleSessionMonitor();
     try {
       state.currentUser = sessionUser;
 

@@ -2010,6 +2010,64 @@ function normalizeStr(str) {
   return (str || '').toString().replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
 }
 
+function registerActiveSession(username, sessionId) {
+  if (!username || !sessionId) return;
+  const cleanUser = username.toString().trim().toLowerCase();
+  try {
+    const cache = CacheService.getScriptCache();
+    cache.put('active_session_' + cleanUser, sessionId, 21600);
+  } catch (eCache) {
+    Logger.log('Error caching active session: ' + eCache.message);
+  }
+  try {
+    const props = PropertiesService.getScriptProperties();
+    props.setProperty('active_session_' + cleanUser, sessionId);
+  } catch (eProps) {
+    Logger.log('Error saving active session property: ' + eProps.message);
+  }
+}
+
+function checkActiveSession(username, sessionId) {
+  if (!username || !sessionId) return { valid: true };
+  const cleanUser = username.toString().trim().toLowerCase();
+  let activeSessionId = null;
+
+  try {
+    const cache = CacheService.getScriptCache();
+    activeSessionId = cache.get('active_session_' + cleanUser);
+  } catch (eCache) {}
+
+  if (!activeSessionId) {
+    try {
+      const props = PropertiesService.getScriptProperties();
+      activeSessionId = props.getProperty('active_session_' + cleanUser);
+    } catch (eProps) {}
+  }
+
+  if (activeSessionId && activeSessionId !== sessionId) {
+    return {
+      valid: false,
+      reason: 'LOGGED_IN_ELSEWHERE',
+      message: 'มีการเข้าสู่ระบบบัญชีนี้จากอุปกรณ์อื่น'
+    };
+  }
+
+  return { valid: true };
+}
+
+function clearActiveSession(username) {
+  if (!username) return;
+  const cleanUser = username.toString().trim().toLowerCase();
+  try {
+    const cache = CacheService.getScriptCache();
+    cache.remove('active_session_' + cleanUser);
+  } catch (e) {}
+  try {
+    const props = PropertiesService.getScriptProperties();
+    props.deleteProperty('active_session_' + cleanUser);
+  } catch (e) {}
+}
+
 function verifyLogin(username, password) {
   const db = getDb();
   const cleanUsername = normalizeStr(username);
@@ -2042,13 +2100,18 @@ function verifyLogin(username, password) {
           role = 'Teacher';
         }
         logActivity(dbUsername, 'เข้าสู่ระบบ', 'ผู้ใช้งานเข้าสู่ระบบสำเร็จ' + (role === 'Teacher' ? ' (จำกัดสิทธิ์ครูผู้สอน)' : ''));
+        
+        const sessionId = 'SESS-' + Date.now() + '-' + Math.floor(Math.random() * 1000000);
+        registerActiveSession(dbUsername, sessionId);
+
         return { 
           success: true, 
           user: { 
             username: dbUsername, 
             role: role,
             nickname: nickname,
-            profilePic: profilePic
+            profilePic: profilePic,
+            sessionId: sessionId
           } 
         };
       } else {
