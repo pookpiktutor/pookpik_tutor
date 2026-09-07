@@ -17052,6 +17052,154 @@ function getChatContactsWithUnread(reader) {
   return { success: true, contacts: contactsArray };
 }
 
+function updateDataLearnMainGroupFinal2569() {
+  const db = getDb();
+  const learnSheet = db.getSheetByName('Data Learn');
+  if (!learnSheet) return { success: false, error: 'ไม่พบชีต Data Learn' };
+
+  const lastRow = learnSheet.getLastRow();
+  if (lastRow <= 1) return { success: true, updatedCount: 0, message: 'ไม่มีข้อมูลใน Data Learn' };
+
+  const data = learnSheet.getDataRange().getValues();
+  const colAValues = [];
+  for (let r = 1; r < data.length; r++) {
+    colAValues.push([data[r][0]]);
+  }
+
+  // Pre-load all main group sheet headers
+  const mainSheets = [
+    'อนุบาล/1','ป.1/1','ป.2/1','ป.3/1','ป.4/1','ป.5/1','ป.6/1','ม.1/1','ม.2/1','ม.3/1','ม.4/1','ม.5/1','ม.6/1',
+    'อนุบาล/2','ป.1/2','ป.2/2','ป.3/2','ป.4/2','ป.5/2','ป.6/2','ม.1/2','ม.2/2','ม.3/2','ม.4/2','ม.5/2','ม.6/2',
+    'อนุบาล/3','ป.1/3','ป.2/3','ป.3/3','ป.4/3','ป.5/3','ป.6/3','ม.1/3','ม.2/3','ม.3/3','ม.4/3','ม.5/3','ม.6/3'
+  ];
+
+  const sheetHeaderMap = {};
+  for (let sName of mainSheets) {
+    const s = db.getSheetByName(sName);
+    if (s && s.getLastRow() >= 1) {
+      const row1 = s.getRange(1, 1, 1, s.getLastColumn()).getValues()[0];
+      sheetHeaderMap[sName] = row1.map(c => (c || '').toString().trim());
+    } else {
+      sheetHeaderMap[sName] = [];
+    }
+  }
+
+  const startDate = new Date(2026, 6, 20); // 20/07/2026 (20 ก.ค. 2569)
+  const THAI_DAYS = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+  const grades = ['อนุบาล', 'ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
+  const subjects = ['ภาษาไทย/สังคม', 'ไทย/สังคม', 'ภาษาไทย', 'อังกฤษ', 'คณิต', 'วิทย์', 'ฟิสิกส์', 'เคมี', 'ชีวะ', 'สังคม'];
+
+  let updatedCount = 0;
+  const sampleChanges = [];
+
+  for (let r = 1; r < data.length; r++) {
+    const oldColA = (data[r][0] || '').toString().trim();
+    if (!oldColA.includes('หลัก')) continue;
+
+    // Check date from Col M (index 12) or Col A
+    const dateCell = data[r][12];
+    let dObj = null;
+
+    if (dateCell instanceof Date) {
+      dObj = dateCell;
+    } else if (dateCell) {
+      const dStr = dateCell.toString().trim();
+      if (dStr.includes('/')) {
+        const parts = dStr.split('/');
+        if (parts.length === 3) {
+          let day = parseInt(parts[0], 10);
+          let month = parseInt(parts[1], 10) - 1;
+          let year = parseInt(parts[2], 10);
+          if (year > 2500) year -= 543;
+          dObj = new Date(year, month, day);
+        }
+      } else if (dStr.includes('-')) {
+        const parts = dStr.split('T')[0].split('-');
+        if (parts.length === 3) {
+          let year = parseInt(parts[0], 10);
+          if (year > 2500) year -= 543;
+          let month = parseInt(parts[1], 10) - 1;
+          let day = parseInt(parts[2], 10);
+          dObj = new Date(year, month, day);
+        }
+      }
+    }
+
+    if (!dObj || dObj < startDate) continue;
+
+    const roomBranch = (data[r][13] || '').toString().trim();
+    let branchNum = '';
+    let bMatch = roomBranch.match(/สาขา\s*([1-3])/i);
+    if (bMatch) branchNum = bMatch[1];
+
+    let grade = '';
+    for (let g of grades) {
+      if (oldColA.includes(g)) { grade = g; break; }
+    }
+
+    const dayName = THAI_DAYS[dObj.getDay()]; // e.g. "ศุกร์"
+    const dayShort = dayName.replace('วัน', ''); // "ศุกร์"
+
+    let targetSheetName = `${grade}/${branchNum}`;
+    let headers = sheetHeaderMap[targetSheetName] || [];
+
+    let newColA = '';
+
+    // Search headers for exact or best matching FINAL 1/2569 header
+    let subjKey = '';
+    for (let s of subjects) {
+      if (oldColA.includes(s)) { subjKey = s; break; }
+    }
+
+    let timeMatch = oldColA.match(/(\d{1,2}[\.:]\d{2}\s*-\s*\d{1,2}[\.:]\d{2})/);
+    let timeStr = timeMatch ? timeMatch[1].replace(':', '.') : '';
+
+    for (let h of headers) {
+      if (!h || !h.includes('FINAL')) continue;
+      if (subjKey && h.includes(subjKey) && (h.includes(dayShort) || h.includes(dayName))) {
+        if (timeStr) {
+          if (h.replace(':', '.').includes(timeStr)) {
+            newColA = h;
+            break;
+          }
+        } else {
+          newColA = h;
+          break;
+        }
+      }
+    }
+
+    // Fallback: If no header match, perform string replacement MIDTERM -> FINAL 1/2569
+    if (!newColA) {
+      if (/MIDTERM/i.test(oldColA)) {
+        newColA = oldColA.replace(/MIDTERM\s*1\/(2569|69)/gi, 'FINAL 1/2569');
+      } else if (!oldColA.includes('FINAL')) {
+        newColA = `${oldColA} FINAL 1/2569 ${dayShort}`;
+      }
+    }
+
+    if (newColA && newColA !== oldColA) {
+      colAValues[r - 1][0] = newColA;
+      updatedCount++;
+      if (sampleChanges.length < 15) {
+        sampleChanges.push({ row: r + 1, oldColA, newColA, sheet: targetSheetName });
+      }
+    }
+  }
+
+  if (updatedCount > 0) {
+    learnSheet.getRange(2, 1, colAValues.length, 1).setValues(colAValues);
+    clearCache_();
+  }
+
+  return {
+    success: true,
+    updatedCount: updatedCount,
+    sampleChanges: sampleChanges,
+    message: `อัปเดตชื่อคอร์สกลุ่มหลักเป็น FINAL 1/2569 สำเร็จทั้งหมด ${updatedCount} รายการ`
+  };
+}
+
 // ====================================================
 // AUTOMATIC DATABASE ORGANIZER & SORTER FOR STAFF DATA
 // ====================================================
