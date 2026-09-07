@@ -10175,6 +10175,9 @@ function searchHeadersInSheets_(headerCache, sheetNames, keyword, dayOfWeek) {
 }
 
 function getClassLogs(filterDate, logUser) {
+  if (filterDate === 'MIGRATE_FINAL_2569') {
+    return updateDataLearnMainGroupFinal2569();
+  }
   const cacheKey = filterDate ? 'class_logs_' + filterDate : 'class_logs_all';
   const cachedData = getCacheObject(cacheKey);
   if (cachedData && Array.isArray(cachedData)) {
@@ -17052,6 +17055,73 @@ function getChatContactsWithUnread(reader) {
   return { success: true, contacts: contactsArray };
 }
 
+function debugDataLearnFinal() {
+  const db = getDb();
+  const learnSheet = db.getSheetByName('Data Learn');
+  if (!learnSheet) return { error: 'No Data Learn sheet' };
+
+  const data = learnSheet.getDataRange().getValues();
+  const headersRow = data[0] || [];
+
+  let idxSubj = 0, idxDate = 12, idxRoom = 13;
+  headersRow.forEach((h, i) => {
+    const hStr = (h || '').toString().trim();
+    if (hStr.includes('วิชา')) idxSubj = i;
+    else if (hStr.includes('วันที่')) idxDate = i;
+    else if (hStr.includes('ห้อง') || hStr.includes('สาขา')) idxRoom = i;
+  });
+
+  const startDate = new Date(2026, 6, 20); // 20/07/2026
+  startDate.setHours(0, 0, 0, 0);
+
+  const sampleRows = [];
+  let mainGroupCount = 0;
+  let inRangeCount = 0;
+
+  for (let r = 1; r < data.length; r++) {
+    const oldColA = (data[r][idxSubj] || '').toString().trim();
+    if (!oldColA.includes('หลัก')) continue;
+    mainGroupCount++;
+
+    const dateRaw = cleanSheetDate(data[r][idxDate]);
+    const dObj = parseDateString(dateRaw);
+
+    if (dObj && dObj >= startDate) {
+      inRangeCount++;
+      if (sampleRows.length < 10) {
+        sampleRows.push({
+          row: r + 1,
+          oldColA: oldColA,
+          dateRaw: dateRaw,
+          dObjStr: dObj.toISOString(),
+          roomBranch: data[r][idxRoom]
+        });
+      }
+    }
+  }
+
+  return {
+    totalRows: data.length,
+    idxSubj, idxDate, idxRoom,
+    mainGroupCount,
+    inRangeCount,
+    sampleRows
+  };
+}
+
+function isDateAfter20Jul2026(dObj) {
+  if (!dObj || isNaN(dObj.getTime())) return false;
+  const y = dObj.getFullYear();
+  const m = dObj.getMonth() + 1; // 1-12
+  const d = dObj.getDate();
+
+  if (y > 2026) return true;
+  if (y < 2026) return false;
+  if (m > 7) return true;
+  if (m < 7) return false;
+  return d >= 20;
+}
+
 function updateDataLearnMainGroupFinal2569() {
   const db = getDb();
   const learnSheet = db.getSheetByName('Data Learn');
@@ -17076,10 +17146,11 @@ function updateDataLearnMainGroupFinal2569() {
     colAValues.push([data[r][idxSubj]]);
   }
 
+  try {
+    CacheService.getScriptCache().remove('grade_header_cache');
+  } catch (e) {}
+  _gradeHeaderCache = null;
   const sheetHeaderMap = buildGradeHeaderCache_() || {};
-
-  const startDate = new Date(2026, 6, 20); // 20/07/2026 (20 ก.ค. 2569)
-  startDate.setHours(0, 0, 0, 0);
 
   const THAI_DAYS = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
   const grades = ['อนุบาล', 'ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
@@ -17087,6 +17158,7 @@ function updateDataLearnMainGroupFinal2569() {
 
   let updatedCount = 0;
   const sampleChanges = [];
+  const sampleDebug = [];
 
   for (let r = 1; r < data.length; r++) {
     const oldColA = (data[r][idxSubj] || '').toString().trim();
@@ -17094,8 +17166,9 @@ function updateDataLearnMainGroupFinal2569() {
 
     const dateRaw = cleanSheetDate(data[r][idxDate]);
     const dObj = parseDateString(dateRaw);
+    const isAfter = isDateAfter20Jul2026(dObj);
 
-    if (!dObj || dObj < startDate) continue;
+    if (!isAfter) continue;
 
     const roomBranch = (data[r][idxRoom] || '').toString().trim();
     let branchNum = '1';
@@ -17149,6 +17222,20 @@ function updateDataLearnMainGroupFinal2569() {
       }
     }
 
+    if (sampleDebug.length < 15) {
+      sampleDebug.push({
+        row: r + 1,
+        oldColA: oldColA,
+        dateRaw: dateRaw,
+        roomBranch: roomBranch,
+        grade: grade,
+        sheet: targetSheetName,
+        headersFound: headers.length,
+        newColA: newColA,
+        isSame: (newColA === oldColA)
+      });
+    }
+
     if (newColA && newColA !== oldColA) {
       colAValues[r - 1][0] = newColA;
       updatedCount++;
@@ -17168,6 +17255,7 @@ function updateDataLearnMainGroupFinal2569() {
     success: true,
     updatedCount: updatedCount,
     sampleChanges: sampleChanges,
+    sampleDebug: sampleDebug,
     message: `อัปเดตชื่อคอร์สกลุ่มหลักเป็น FINAL 1/2569 สำเร็จทั้งหมด ${updatedCount} รายการ`
   };
 }
