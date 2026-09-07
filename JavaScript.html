@@ -19340,8 +19340,21 @@ function renderChatContacts(contacts) {
     return;
   }
   
+  // Sort contacts so teachers with recent messages appear at the top
+  const sortedContacts = [...contacts].sort((a, b) => {
+    const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+    const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+    if (timeB !== timeA) {
+      return timeB - timeA;
+    }
+    if ((b.unreadCount || 0) !== (a.unreadCount || 0)) {
+      return (b.unreadCount || 0) - (a.unreadCount || 0);
+    }
+    return (a.nickname || '').localeCompare(b.nickname || '', 'th');
+  });
+
   let htmlStr = '';
-  contacts.forEach(c => {
+  sortedContacts.forEach(c => {
     const timeDisplay = formatChatTime(c.lastMessageTime);
     let statusMeta = '';
     

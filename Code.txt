@@ -16994,16 +16994,21 @@ function getChatContactsWithUnread(reader) {
       const isStaff = readerRole === 'staff' || readerRole === 'admin' || readerRole === 'administrator' || readerRole === 'พนักงาน' || readerRole === 'ผู้บริหาร';
       
       for (let i = 1; i < msgData.length; i++) {
-        const s = (msgData[i][mColSender] || '').toString().toLowerCase();
-        const r = (msgData[i][mColReceiver] || '').toString().toLowerCase();
+        const s = (msgData[i][mColSender] || '').toString().trim().toLowerCase();
+        const r = (msgData[i][mColReceiver] || '').toString().trim().toLowerCase();
         const senderRaw = (msgData[i][mColSender] || '').toString().trim();
         const isRead = msgData[i][mColIsRead] === true;
         const readByVal = mColReadBy !== -1 ? (msgData[i][mColReadBy] || '').toString().trim() : '';
         const tsVal = msgData[i][mColTimestamp];
-        const ts = tsVal ? new Date(tsVal).getTime() : 0;
+        let ts = 0;
+        if (tsVal) {
+          const parsed = new Date(tsVal).getTime();
+          if (!isNaN(parsed)) ts = parsed;
+        }
         const senderNick = nicknameMap[s] || senderRaw;
         
-        if (contactsMap[s] && (r === readerLower || (isStaff && r === 'admin'))) {
+        // Message sent by teacher 's' to staff/admin
+        if (contactsMap[s]) {
           if (!isRead) {
             contactsMap[s].unreadCount++;
           }
@@ -17016,14 +17021,15 @@ function getChatContactsWithUnread(reader) {
           }
         }
         
-        if (contactsMap[r] && (s === readerLower || (isStaff && s === 'admin'))) {
-           if (ts > contactsMap[r].lastMessageTime) {
-             contactsMap[r].lastMessageTime = ts;
-             contactsMap[r].lastMessageSender = senderRaw;
-             contactsMap[r].lastMessageSenderNickname = senderNick;
-             contactsMap[r].lastMessageReadBy = readByVal;
-             contactsMap[r].lastMessageIsRead = isRead;
-           }
+        // Message sent by staff to teacher 'r'
+        if (contactsMap[r]) {
+          if (ts > contactsMap[r].lastMessageTime) {
+            contactsMap[r].lastMessageTime = ts;
+            contactsMap[r].lastMessageSender = senderRaw;
+            contactsMap[r].lastMessageSenderNickname = senderNick;
+            contactsMap[r].lastMessageReadBy = readByVal;
+            contactsMap[r].lastMessageIsRead = isRead;
+          }
         }
       }
     }
@@ -17031,10 +17037,16 @@ function getChatContactsWithUnread(reader) {
   
   const contactsArray = Object.values(contactsMap);
   contactsArray.sort((a, b) => {
+    // Primary sort: Most recent message time (lastMessageTime) descending
+    if (b.lastMessageTime !== a.lastMessageTime) {
+      return b.lastMessageTime - a.lastMessageTime;
+    }
+    // Secondary sort: Unread message count descending
     if (b.unreadCount !== a.unreadCount) {
       return b.unreadCount - a.unreadCount;
     }
-    return b.lastMessageTime - a.lastMessageTime;
+    // Tertiary sort: Alphabetical order by nickname
+    return (a.nickname || '').localeCompare(b.nickname || '', 'th');
   });
   
   return { success: true, contacts: contactsArray };
