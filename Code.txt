@@ -17189,7 +17189,8 @@ function updateDataLearnMainGroupFinal2569() {
 
   if (updatedCount > 0) {
     learnSheet.getRange(2, 1, colAValues.length, 1).setValues(colAValues);
-    clearCache_();
+    for (let k in sheetValuesCache_) delete sheetValuesCache_[k];
+    if (typeof clearCacheObject === 'function') clearCacheObject('class_logs_date_v3_all');
   }
 
   return {
