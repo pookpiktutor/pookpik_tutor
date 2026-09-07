@@ -3490,6 +3490,8 @@ function submitEvaluation(data, logUser) {
 
     
 
+    let resolvedTeacherName = resolveUserNickname(db, data.teacher) || resolveUserNickname(db, logUser) || data.teacher || logUser || '';
+
     sheet.appendRow([
 
       evalId,
@@ -3508,7 +3510,7 @@ function submitEvaluation(data, logUser) {
 
       data.subject || '',
 
-      data.teacher || '',
+      resolvedTeacherName,
 
       scoresJSON,
 
@@ -3654,6 +3656,12 @@ function updateEvaluation(evalData, logUser) {
 
 function getAdminEvalStats() {
 
+  try {
+    const cache = CacheService.getScriptCache();
+    cache.remove('evaluations_list_all');
+    cache.remove('evaluations_list');
+  } catch (eC) {}
+
   const evals = getEvaluationsList(null);
 
   const counts = {};
@@ -3748,7 +3756,22 @@ function getEvaluationsList(logUser) {
 
     const isTeacher = logUser ? isTeacherUser(logUser) : false;
 
-    
+    // Build userNicknameMap from UsersDB to resolve any teacher IDs/usernames to nicknames
+    const userNicknameMap = {};
+    try {
+      const usersSheet = db.getSheetByName('UsersDB');
+      if (usersSheet && usersSheet.getLastRow() > 1) {
+        const uRows = usersSheet.getRange(2, 1, usersSheet.getLastRow() - 1, 5).getValues();
+        for (let u = 0; u < uRows.length; u++) {
+          const uId = (uRows[u][0] || '').toString().trim().toLowerCase();
+          const uNick = (uRows[u][3] || '').toString().trim();
+          const uFullName = (uRows[u][4] || '').toString().trim();
+          const resolvedName = uNick || uFullName || (uRows[u][0] || '').toString().trim();
+          if (uId) userNicknameMap[uId] = resolvedName;
+          if (uNick) userNicknameMap[uNick.toLowerCase()] = resolvedName;
+        }
+      }
+    } catch (eUserMap) {}
 
     // Only resolve teacher aliases if needed
 
@@ -3906,6 +3929,15 @@ function getEvaluationsList(logUser) {
 
       
 
+      const rawTeacher = (rows[i][8] || '').toString().trim();
+      const rawEvalBy = (rows[i][13] || '').toString().trim();
+
+      let resolvedTeacher = userNicknameMap[rawTeacher.toLowerCase()] ||
+                            userNicknameMap[rawEvalBy.toLowerCase()] ||
+                            resolveUserNickname(db, rawTeacher) ||
+                            resolveUserNickname(db, rawEvalBy) ||
+                            rawTeacher || rawEvalBy;
+
       list.push({
 
         evalId: (rows[i][0] || '').toString(),
@@ -3924,7 +3956,7 @@ function getEvaluationsList(logUser) {
 
         subject: rows[i][7],
 
-        teacher: rows[i][8],
+        teacher: resolvedTeacher,
 
         scores: parsedScores,
 
@@ -3934,7 +3966,7 @@ function getEvaluationsList(logUser) {
 
         recommendations: rows[i][12] || '',
 
-        evaluatedBy: (rows[i][13] || '').toString().trim()
+        evaluatedBy: userNicknameMap[rawEvalBy.toLowerCase()] || rawEvalBy
 
       });
 

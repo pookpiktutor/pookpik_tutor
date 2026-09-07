@@ -17394,6 +17394,15 @@ function renderAdminEvaluationsDashboard(res) {
   const evals = Array.isArray(res) ? res : (res.evals || []);
   const counts = Array.isArray(res) ? {} : (res.counts || {});
 
+  function cleanTeacherDisplayName(teacherStr) {
+    if (!teacherStr) return '';
+    const str = teacherStr.toString().trim();
+    if (window.state && window.state.userMap && window.state.userMap[str.toLowerCase()]) {
+      return window.state.userMap[str.toLowerCase()];
+    }
+    return str;
+  }
+
   if (!evals || evals.length === 0) {
     container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--text-muted); background: white; border-radius: 8px;">ยังไม่มีการประเมินนักเรียน</div>';
     return;
@@ -17441,7 +17450,7 @@ function renderAdminEvaluationsDashboard(res) {
     const branchStyle = getBranchBadgeStyle(courseBranch);
     const branchBadgeHtml = courseBranch ? `<span style="${branchStyle} font-size: 0.68rem; padding: 2px 8px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">🏫 ${courseBranch}</span>` : '';
 
-    const teacherNames = [...new Set(grouped[course].map(e => e.teacher).filter(Boolean))].join(', ');
+    const teacherNames = [...new Set(grouped[course].map(e => cleanTeacherDisplayName(e.teacher)).filter(Boolean))].join(', ');
     const teacherBadgeHtml = teacherNames ? `<span style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; font-size: 0.68rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">👨‍🏫 ครู: ${teacherNames}</span>` : '';
 
     header.innerHTML = `<span style="font-size: 0.9rem;">📚</span> ${course} ${branchBadgeHtml} ${teacherBadgeHtml} ${badgeHtml}`;
@@ -17466,7 +17475,7 @@ function renderAdminEvaluationsDashboard(res) {
         <div>
           <div style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">${ev.studentName}</div>
           ${stuBranchHtml}
-          ${ev.teacher ? `<div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 4px;"><span>👨‍🏫 ครู:</span> <span style="font-weight: 600; color: #334155;">${ev.teacher}</span></div>` : ''}
+          ${ev.teacher ? `<div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 4px;"><span>👨‍🏫 ครู:</span> <span style="font-weight: 600; color: #334155;">${cleanTeacherDisplayName(ev.teacher)}</span></div>` : ''}
         </div>
         <div style="display: flex; gap: 4px; margin-top: 4px;">
           <button class="btn btn-secondary" style="flex: 1; padding: 4px 6px; font-size: 0.7rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไข</button>
