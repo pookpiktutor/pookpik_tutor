@@ -1232,23 +1232,18 @@ function loadTeacherDailySchedule() {
       
 
       filtered.sort((a, b) => {
-
         const partsA = a.date.split('/');
-
         const partsB = b.date.split('/');
-
-        const dateA = new Date(parseInt(partsA[2]), parseInt(partsA[1]) - 1, parseInt(partsA[0]));
-
-        const dateB = new Date(parseInt(partsB[2]), parseInt(partsB[1]) - 1, parseInt(partsB[0]));
-
+        let yA = parseInt(partsA[2]);
+        if (yA > 2400) yA -= 543;
+        let yB = parseInt(partsB[2]);
+        if (yB > 2400) yB -= 543;
+        const dateA = new Date(yA, parseInt(partsA[1]) - 1, parseInt(partsA[0]));
+        const dateB = new Date(yB, parseInt(partsB[1]) - 1, parseInt(partsB[0]));
         if (dateA.getTime() !== dateB.getTime()) {
-
-          return dateA - dateB; // Ascending order: earliest date first
-
+          return dateB - dateA; // Descending order: latest date first (วันที่ล่าสุดอยู่บนสุด)
         }
-
-        return a.timeStart.localeCompare(b.timeStart);
-
+        return (a.timeStart || '').localeCompare(b.timeStart || '');
       });
 
       
