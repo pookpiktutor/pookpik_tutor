@@ -3540,7 +3540,7 @@ h5, h6 { font-size: 0.85rem !important; }
                     <div>
                       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
                         <label class="form-label" style="margin-bottom: 0; font-weight: 600; font-size: 0.88rem; color: var(--color-primary-hover);">
-                          👍 จุดเด่นในการเรียนรู้ของนักเรียนที่ควรรักษาไว้ และส่งเสริมต่อไป (ตอบอย่างน้อย 4 ข้อขึ้นไป ข้อละ 60 ตัวอักษรขึ้นไป)
+                          👍 จุดเด่นในการเรียนรู้ของนักเรียนที่ควรรักษาไว้ และส่งเสริมต่อไป (ตอบอย่างน้อย 3 ข้อขึ้นไป ข้อละ 60 ตัวอักษรขึ้นไป)
                         </label>
                         <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                           <select onchange="onSubjectFilterChange('strength', '', this)" style="font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; border: 1px solid var(--color-primary); background: rgba(70,99,82,0.08); font-weight: 600; cursor: pointer;">
@@ -3630,7 +3630,7 @@ h5, h6 { font-size: 0.85rem !important; }
                     <div>
                       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
                         <label class="form-label" style="margin-bottom: 0; font-weight: 600; font-size: 0.88rem; color: var(--color-primary-hover);">
-                          🔧 ประเด็นที่ควรแก้ไข เพื่อให้ผลการเรียนดีขึ้น (ตอบอย่างน้อย 4 ข้อขึ้นไป ข้อละ 60 ตัวอักษรขึ้นไป)
+                          🔧 ประเด็นที่ควรแก้ไข เพื่อให้ผลการเรียนดีขึ้น (ตอบอย่างน้อย 3 ข้อขึ้นไป ข้อละ 60 ตัวอักษรขึ้นไป)
                         </label>
                         <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                           <select onchange="onSubjectFilterChange('improvement', '', this)" style="font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; border: 1px solid var(--color-primary); background: rgba(70,99,82,0.08); font-weight: 600; cursor: pointer;">
@@ -3720,7 +3720,7 @@ h5, h6 { font-size: 0.85rem !important; }
                     <div>
                       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
                         <label class="form-label" style="margin-bottom: 0; font-weight: 600; font-size: 0.88rem; color: var(--color-primary-hover);">
-                          💡 ข้อเสนอแนะอื่นๆ เพื่อส่งเสริมศักยภาพ (ตอบอย่างน้อย 4 ข้อขึ้นไป ข้อละ 60 ตัวอักษรขึ้นไป)
+                          💡 ข้อเสนอแนะอื่นๆ เพื่อส่งเสริมศักยภาพ (ตอบอย่างน้อย 3 ข้อขึ้นไป ข้อละ 60 ตัวอักษรขึ้นไป)
                         </label>
                         <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                           <select onchange="onSubjectFilterChange('recommendation', '', this)" style="font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; border: 1px solid var(--color-primary); background: rgba(70,99,82,0.08); font-weight: 600; cursor: pointer;">
@@ -5151,7 +5151,7 @@ function populateFeedbackPresetSelects() {
               items.forEach((itemText, idx) => {
                 const opt = document.createElement('option');
                 opt.value = itemText;
-                const shortText = itemText.length > 45 ? itemText.substring(0, 45) + '...' : itemText;
+                const shortText = itemText;
                 opt.textContent = (idx + 1) + '. ' + shortText;
                 optgroup.appendChild(opt);
               });
