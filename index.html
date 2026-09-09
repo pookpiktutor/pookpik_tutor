@@ -5998,7 +5998,7 @@ h5, h6 { font-size: 0.85rem !important; }
 
               <button type="button" class="btn btn-secondary" onclick="closeProfileModal()">ยกเลิก</button>
 
-              <button type="submit" class="btn btn-primary">💾 บันทึกการแก้ไข</button>
+              <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669); border: none; font-weight: 700; padding: 8px 20px; font-size: 0.9rem;">🚀 ยืนยันเผยแพร่ใบประเมิน</button>
 
             </div>
 
@@ -8030,7 +8030,7 @@ h5, h6 { font-size: 0.85rem !important; }
 
               <button type="button" class="btn btn-secondary" onclick="closeAdminEvaluationEditModal()">ยกเลิก</button>
 
-              <button type="submit" class="btn btn-primary">💾 บันทึกการแก้ไข</button>
+              <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669); border: none; font-weight: 700; padding: 8px 20px; font-size: 0.9rem;">🚀 ยืนยันเผยแพร่ใบประเมิน</button>
 
             </div>
 
@@ -45510,7 +45510,7 @@ function saveAdminEvaluationEdit(e) {
 
 
 
-        showToast('อัปเดตใบประเมินเรียบร้อยแล้ว!', 'success');
+        showToast('ยืนยันเผยแพร่ใบประเมินเรียบร้อยแล้ว! ผู้ปกครองสามารถค้นหาดูใบประเมินได้ทันที', 'success');
 
 
 
@@ -45892,11 +45892,17 @@ function renderAdminEvaluationsDashboard(res) {
 
         </div>
 
-        <div style="display: flex; gap: 4px; margin-top: 4px;">
+        <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
 
-          <button class="btn btn-secondary" style="flex: 1; padding: 4px 6px; font-size: 0.7rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดู/แก้ไข</button>
+          <button class="btn btn-primary" style="width: 100%; padding: 4px 6px; font-size: 0.72rem; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">🚀 ยืนยันเผยแพร่ / แก้ไข</button>
 
-          <button class="btn btn-danger" style="padding: 4px 6px; font-size: 0.7rem;" onclick="deleteAdminEvaluation('${ev.evalId}')"><i class="fas fa-trash"></i> ลบ</button>
+          <div style="display: flex; gap: 4px;">
+
+            <button class="btn btn-secondary" style="flex: 1; padding: 3px 6px; font-size: 0.68rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดูรายละเอียด</button>
+
+            <button class="btn btn-danger" style="padding: 3px 6px; font-size: 0.68rem;" onclick="deleteAdminEvaluation('${ev.evalId}')"><i class="fas fa-trash"></i></button>
+
+          </div>
 
         </div>
 
