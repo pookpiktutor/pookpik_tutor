@@ -7064,10 +7064,22 @@ h5, h6 { font-size: 0.85rem !important; }
 
                 <div class="glass-panel" style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
 
-                  <div class="section-title-group" style="margin-top: 0; margin-bottom: 0; display: flex; justify-content: space-between; align-items: center;">
-
-                    <div class="section-label" style="font-size: 1.1rem; font-weight: 600; color: var(--color-primary-hover);">💡 ความคิดเห็นและข้อเสนอแนะ</div>
-
+                  <div class="section-title-group" style="margin-top: 0; margin-bottom: 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                      <div class="section-label" style="font-size: 1.1rem; font-weight: 600; color: var(--color-primary-hover);">💡 ความคิดเห็นและข้อเสนอแนะ</div>
+                      <select id="teacher_main_subject_filter" onchange="onSubjectFilterChange('strength', '', this)" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px; border: 1.5px solid var(--color-primary); background: rgba(70,99,82,0.12); font-weight: 700; color: var(--color-primary-hover); cursor: pointer;">
+<option value="auto">📚 เลือกตามวิชาคอร์ส (อัตโนมัติ)</option>
+<option value="math">📐 คณิต</option>
+<option value="sci">🔬 วิทย์</option>
+<option value="physics">⚡ ฟิสิกส์</option>
+<option value="chem">🧪 เคมี</option>
+<option value="bio">🧬 ชีวะ</option>
+<option value="eng">🔤 อังกฤษ</option>
+<option value="thai">🇹🇭 ภาษาไทย</option>
+<option value="chinese">🇨🇳 ภาษาจีน</option>
+<option value="social">🗺️ สังคม</option>
+                      </select>
+                    </div>
                   </div>
 
                   
@@ -11905,10 +11917,27 @@ function updateCharCountBadge(inputEl, countSpanId) {
 
 
 function getSelectedSubjectKey(section, suffix) {
+  const suf = suffix || '';
+  const mainFlt = document.getElementById(suf ? 'admin_main_subject_filter' : 'teacher_main_subject_filter');
+  if (mainFlt && mainFlt.value && mainFlt.value !== 'auto') {
+    return mainFlt.value;
+  }
+
   const filterId = section + '_subject_filter' + (suffix ? '_' + suffix : '');
   const filterEl = document.getElementById(filterId);
   let subj = filterEl ? filterEl.value : 'auto';
   
+  if (subj === 'auto' || !subj) {
+    const secs = ['strength', 'improvement', 'recommendation'];
+    for (let s of secs) {
+      const el = document.getElementById(s + '_subject_filter' + (suf ? '_' + suf : ''));
+      if (el && el.value && el.value !== 'auto') {
+        subj = el.value;
+        break;
+      }
+    }
+  }
+
   if (subj === 'auto' || !subj) {
     let courseText = '';
     const evalSubjEl = document.getElementById('eval_subject');
@@ -12087,9 +12116,21 @@ function quickFillFeedbackSection(section, level, suffix) {
 
 
 function onSubjectFilterChange(section, suffix, selectEl) {
+  if (selectEl && selectEl.value) {
+    const val = selectEl.value;
+    const suf = suffix || '';
+    const secs = ['strength', 'improvement', 'recommendation'];
+    
+    const mainFlt = document.getElementById(suf ? 'admin_main_subject_filter' : 'teacher_main_subject_filter');
+    if (mainFlt) mainFlt.value = val;
 
+    secs.forEach(s => {
+      const fltId = s + '_subject_filter' + (suf ? '_' + suf : '');
+      const fltEl = document.getElementById(fltId);
+      if (fltEl) fltEl.value = val;
+    });
+  }
   populateFeedbackPresetSelects();
-
 }
 
 
