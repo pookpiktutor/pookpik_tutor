@@ -9984,9 +9984,16 @@ function clearSessionData() {
 
   if (window.state) window.state.currentUser = null;
 
-  try { sessionStorage.removeItem('pookpik_session'); } catch (e) {}
+  try { sessionStorage.clear(); } catch (e) {}
 
-  try { localStorage.removeItem('pookpik_session'); } catch (e) {}
+  try { localStorage.clear(); } catch (e) {}
+
+  // Remove URL query params if any
+  if (window.history && window.history.replaceState) {
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+  }
 
 }
 
@@ -10065,28 +10072,69 @@ function showCustomConfirm(message, onConfirm, title = 'ยืนยันกา
 
 function handleLogout() {
 
-  Swal.fire({
-    title: 'ออกจากระบบ',
-    text: 'คุณต้องการออกจากระบบใช่หรือไม่?',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#ef4444',
-    cancelButtonColor: '#64748b',
-    confirmButtonText: 'ออกจากระบบ',
-    cancelButtonText: 'ยกเลิก'
-  }).then((result) => {
-    if (!result.isConfirmed) return;
+  try {
 
-    if (window.state && window.state.heartbeatInterval) {
-      clearInterval(window.state.heartbeatInterval);
-      window.state.heartbeatInterval = null;
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+
+      Swal.fire({
+
+        title: 'ออกจากระบบ',
+
+        text: 'คุณต้องการออกจากระบบใช่หรือไม่?',
+
+        icon: 'question',
+
+        showCancelButton: true,
+
+        confirmButtonColor: '#ef4444',
+
+        cancelButtonColor: '#64748b',
+
+        confirmButtonText: 'ออกจากระบบ',
+
+        cancelButtonText: 'ยกเลิก'
+
+      }).then((result) => {
+
+        if (result && result.isConfirmed) {
+
+          performLogoutExecution();
+
+        }
+
+      });
+
+    } else if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+
+      performLogoutExecution();
+
     }
 
-    clearSessionData();
-    showLoginScreen();
-    if (typeof showToast === 'function') showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
-    window.location.reload();
-  });
+  } catch (e) {
+
+    performLogoutExecution();
+
+  }
+
+}
+
+
+
+function performLogoutExecution() {
+
+  if (window.state && window.state.heartbeatInterval) {
+
+    clearInterval(window.state.heartbeatInterval);
+
+    window.state.heartbeatInterval = null;
+
+  }
+
+  clearSessionData();
+
+  const baseUrl = window.location.href.split('?')[0].split('#')[0];
+
+  window.location.href = baseUrl;
 
 }
 
