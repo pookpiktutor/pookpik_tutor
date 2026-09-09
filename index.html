@@ -10040,29 +10040,53 @@ function forceHideLoginOverlay() {
 
 
 
+
+function showCustomConfirm(message, onConfirm, title = 'ยืนยันการทำรายการ') {
+  Swal.fire({
+    title: title,
+    html: message,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'ตกลง',
+    cancelButtonText: 'ยกเลิก',
+    reverseButtons: false,
+    customClass: {
+      popup: 'swal2-center-popup'
+    }
+  }).then((result) => {
+    if (result.isConfirmed && typeof onConfirm === 'function') {
+      onConfirm();
+    }
+  });
+}
+
+
 function handleLogout() {
 
-  if (!confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) return;
+  Swal.fire({
+    title: 'ออกจากระบบ',
+    text: 'คุณต้องการออกจากระบบใช่หรือไม่?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'ออกจากระบบ',
+    cancelButtonText: 'ยกเลิก'
+  }).then((result) => {
+    if (!result.isConfirmed) return;
 
+    if (window.state && window.state.heartbeatInterval) {
+      clearInterval(window.state.heartbeatInterval);
+      window.state.heartbeatInterval = null;
+    }
 
-
-  if (window.state && window.state.heartbeatInterval) {
-
-    clearInterval(window.state.heartbeatInterval);
-
-    window.state.heartbeatInterval = null;
-
-  }
-
-
-
-  clearSessionData();
-
-  showLoginScreen();
-
-  if (typeof showToast === 'function') showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
-
-  window.location.reload();
+    clearSessionData();
+    showLoginScreen();
+    if (typeof showToast === 'function') showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
+    window.location.reload();
+  });
 
 }
 
