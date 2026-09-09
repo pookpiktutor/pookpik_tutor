@@ -3662,6 +3662,10 @@ function updateEvaluation(evalData, logUser) {
 
     sheet.getRange(rowIndex, 13).setValue(evalData.comments || evalData.recommendations || '');
 
+    if (evalData.status || evalData.isPublished) {
+      sheet.getRange(rowIndex, 15).setValue(evalData.status || (evalData.isPublished ? 'published' : ''));
+    }
+
     
 
     // Update scores if provided
@@ -3806,7 +3810,7 @@ function getEvaluationsList(logUser) {
 
     if (!sheet || sheet.getLastRow() < 2) return [];
 
-    const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, Math.min(sheet.getLastColumn(), 14)).getValues();
+    const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, Math.min(sheet.getLastColumn(), 15)).getValues();
 
     const list = [];
 
@@ -4022,8 +4026,11 @@ function getEvaluationsList(logUser) {
 
         recommendations: rows[i][12] || '',
 
-        evaluatedBy: userNicknameMap[rawEvalBy.toLowerCase()] || rawEvalBy
+        evaluatedBy: userNicknameMap[rawEvalBy.toLowerCase()] || rawEvalBy,
 
+        status: rows[i][14] || '',
+
+        isPublished: (rows[i][14] === 'published' || rows[i][14] === 'เผยแพร่แล้ว' || rows[i][14] === 'Published')
       });
 
     }
