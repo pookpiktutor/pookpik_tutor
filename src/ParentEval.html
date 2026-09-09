@@ -486,17 +486,40 @@
 
         // Filter published evaluations matching name/nickname, grade, phone
         const matched = list.filter(item => {
-          // Check published status
-          const isPublished = (item.isPublished === true || item.published === true || String(item.status).toLowerCase() === 'published');
+          // Check published status: status === 'published' || status === 'เผยแพร่แล้ว' || isPublished === true
+          const isPublished = (item.isPublished === true || item.published === true || 
+                               String(item.status).toLowerCase() === 'published' || 
+                               String(item.status) === 'เผยแพร่แล้ว');
           if (!isPublished) return false;
 
+          // Check Grade match if user selected grade
+          if (inputGrade && inputGrade !== 'ทั้งหมด') {
+            const itemGrade = String(item.grade || item.gradeLevel || '').trim().toLowerCase();
+            const filterGrade = inputGrade.trim().toLowerCase();
+            if (itemGrade && !itemGrade.includes(filterGrade) && !filterGrade.includes(itemGrade)) {
+              // Extract number e.g. 'ม.1' vs 'มัธยมศึกษาปีที่ 1'
+              const num1 = (itemGrade.match(/\d+/) || [])[0];
+              const num2 = (filterGrade.match(/\d+/) || [])[0];
+              if (num1 && num2 && num1 !== num2) {
+                return false;
+              }
+            }
+          }
+
           // Check Name / Nickname match
-          const stdNameClean = cleanNick(item.studentName || item.student_name || item.name || '');
-          const stdNickClean = cleanNick(item.nickname || item.studentNickname || '');
+          const rawStdName = String(item.studentName || item.student_name || item.name || '');
+          const rawStdNick = String(item.nickname || item.studentNickname || '');
+          
+          const stdNameClean = cleanNick(rawStdName);
+          const stdNickClean = cleanNick(rawStdNick);
           
           const nameMatch = stdNameClean.includes(cleanedQuery) || 
+                            cleanedQuery.includes(stdNameClean) ||
                             stdNickClean.includes(cleanedQuery) || 
-                            (cleanedQuery.length >= 2 && stdNickClean.length >= 2 && cleanedQuery.includes(stdNickClean));
+                            cleanedQuery.includes(stdNickClean) ||
+                            (cleanedQuery.length >= 2 && stdNickClean.length >= 2 && cleanedQuery.includes(stdNickClean)) ||
+                            rawStdName.toLowerCase().includes(inputName.toLowerCase()) ||
+                            rawStdNick.toLowerCase().includes(inputName.toLowerCase());
 
           if (!nameMatch) return false;
 
@@ -520,87 +543,140 @@
 
       if (!evals || evals.length === 0) {
         container.innerHTML = `
-          <div class="status-box">
-            <i class="fa-solid fa-folder-open" style="font-size: 48px; color: #cbd5e0; margin-bottom: 15px;"></i>
-            <h3 style="font-size: 18px; color: #4a5568; margin-bottom: 8px;">ไม่พบใบประเมินผลการเรียนที่เผยแพร่แล้ว</h3>
-            <p style="color: #718096; font-size: 14px;">
-              ไม่พบข้อมูลของ "${queryName}" กรุณาตรวจสอบชื่อ-นามสกุล หรือลองค้นหาด้วยชื่อเล่น
+          <div class="status-box" style="padding: 45px 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+            <div style="width: 70px; height: 70px; background: #fff1f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px auto;">
+              <i class="fa-solid fa-folder-open" style="font-size: 32px; color: #ff6b8b;"></i>
+            </div>
+            <h3 style="font-size: 20px; font-weight: 700; color: #2d3748; margin-bottom: 10px;">ไม่พบใบประเมินผลการเรียนที่เผยแพร่แล้ว</h3>
+            <p style="color: #718096; font-size: 14.5px; max-width: 480px; margin: 0 auto; line-height: 1.6;">
+              ไม่พบใบประเมินที่ได้รับการยืนยันเผยแพร่ของ <strong style="color: #ff6b8b;">"${queryName}"</strong> ในระบบ<br>
+              <span style="font-size: 13px; color: #a0aec0; display: block; margin-top: 6px;">💡 คำแนะนำ: หากเพิ่งรับการประเมิน กรุณาแจ้งให้เจ้าหน้าที่กดยืนยันเผยแพร่ในระบบ หรือลองค้นหาด้วยชื่อเล่น/ชื่อจริงสั้นๆ</span>
             </p>
           </div>
         `;
         return;
       }
 
-      let html = `<h2 style="font-size:18px; font-weight:600; color:#2d3748; margin-bottom:15px; display:flex; align-items:center; gap:8px;">
-        <i class="fa-solid fa-file-signature" style="color:#ff6b8b;"></i>
-        พบใบประเมินผลการเรียนทั้งหมด (${evals.length} รายการ)
-      </h2>`;
+      let html = `
+        <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <h2 style="font-size: 18px; font-weight: 700; color: #2d3748; display: flex; align-items: center; gap: 10px;">
+            <span style="background: linear-gradient(135deg, #ff6b8b, #ff8e53); color: white; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; box-shadow: 0 4px 10px rgba(255,107,139,0.3);">
+              <i class="fa-solid fa-file-signature"></i>
+            </span>
+            ผลการประเมินการเรียนสำหรับผู้ปกครอง
+          </h2>
+          <span style="background: #e6fffa; color: #047857; font-size: 13.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; border: 1px solid #a7f3d0; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-circle-check" style="color: #10b981;"></i> พบ ${evals.length} รายการ (เผยแพร่แล้ว)
+          </span>
+        </div>
+      `;
 
       evals.forEach((ev, idx) => {
         const studentName = ev.studentName || ev.student_name || 'นักเรียน';
         const nickname = (ev.nickname || ev.studentNickname) ? `(${ev.nickname || ev.studentNickname})` : '';
-        const courseName = ev.courseName || ev.course || 'คอร์สเรียน';
-        const teacherName = ev.teacherName || ev.kruName || 'ครูผู้สอน';
-        const evalDate = ev.evalDate || ev.date || 'ล่าสุด';
-        const gradeLevel = ev.gradeLevel || ev.grade || '-';
+        const courseName = ev.subject || ev.courseName || ev.course || 'คอร์สเรียน';
+        const teacherName = ev.teacher || ev.teacherName || ev.kruName || 'ครูผู้สอน';
+        const evalDate = ev.date || ev.evalDate || 'ล่าสุด';
+        const gradeLevel = ev.grade || ev.gradeLevel || '-';
+        const branchName = ev.branch || 'บ้านครูปุ๊กปิ๊ก TUTOR';
 
-        // Rating scores
+        // Parse scores/ratings dynamically
+        const scores = ev.scores || {};
         const ratings = [
-          { title: 'การตรงต่อเวลา & แต่งกาย', val: ev.attirePrep || ev.rating1 || 'ดีมาก' },
-          { title: 'ความตั้งใจ & สมาธิ', val: ev.attentionFocus || ev.rating2 || 'ดีมาก' },
-          { title: 'ความเข้าใจเนื้อหา', val: ev.comprehension || ev.rating3 || 'ดีมาก' },
-          { title: 'การส่งงาน & แบบฝึกหัด', val: ev.workCompletion || ev.rating4 || 'เรียบร้อย' },
-          { title: 'การมีส่วนร่วมในห้อง', val: ev.behavior || ev.rating5 || 'สม่ำเสมอ' }
+          { title: 'ความตรงต่อเวลา & แต่งกาย', val: scores.attire || scores.attirePrep || ev.rating1 || 'ดีมาก', icon: 'fa-clock-rotate-left', color: '#ff6b8b' },
+          { title: 'ความตั้งใจ & สมาธิ', val: scores.attention || scores.attentionFocus || ev.rating2 || 'ดีมาก', icon: 'fa-brain', color: '#7d5fff' },
+          { title: 'ความเข้าใจเนื้อหา', val: scores.understanding || scores.comprehension || ev.rating3 || 'ดีมาก', icon: 'fa-book-open-reader', color: '#3b82f6' },
+          { title: 'การส่งงาน & แบบฝึกหัด', val: scores.homework || scores.workCompletion || ev.rating4 || 'เรียบร้อยดี', icon: 'fa-pen-to-square', color: '#10b981' },
+          { title: 'การมีส่วนร่วมในห้องเรียน', val: scores.behavior || ev.rating5 || 'สม่ำเสมอ', icon: 'fa-comments', color: '#f59e0b' }
         ];
 
-        const comments = ev.comments || ev.teacherComments || ev.feedback || 'นักเรียนมีความตั้งใจเรียนดี มีพัฒนาการอย่างต่อเนื่อง';
+        const strengths = ev.strengths || '';
+        const improvements = ev.improvements || '';
+        const recommendations = ev.recommendations || ev.comments || ev.teacherComments || ev.feedback || 'นักเรียนมีความตั้งใจเรียนดี พัฒนาทักษะได้ต่อเนื่อง';
 
         html += `
-          <div class="eval-card">
-            <div class="eval-card-header">
+          <div class="eval-card" style="position: relative; overflow: hidden;">
+            <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #ff6b8b 0%, #7d5fff 100%);"></div>
+
+            <div class="eval-card-header" style="margin-top: 5px;">
               <div>
-                <span class="course-badge"><i class="fa-solid fa-book-bookmark"></i> ${courseName}</span>
-                <h3 style="font-size: 18px; font-weight: 700; color: #2d3748; margin-top: 8px;">
-                  ใบประเมินผลการเรียน: ${studentName} ${nickname}
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
+                  <span class="course-badge" style="background: linear-gradient(135deg, #fff0f3, #ffe4e8); color: #e11d48; border: 1px solid #fecdd3; font-weight: 700;">
+                    <i class="fa-solid fa-book-bookmark"></i> วิชา: ${courseName}
+                  </span>
+                  <span style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                    🏫 ${branchName}
+                  </span>
+                </div>
+                <h3 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 4px 0 2px 0;">
+                  ใบประเมินผลการเรียน: ${studentName} <span style="color: #ff6b8b;">${nickname}</span>
                 </h3>
               </div>
-              <div style="text-align: right;">
-                <span style="font-size: 12px; color: #718096; display: block;">วันที่ประเมิน: ${evalDate}</span>
-                <span style="font-size: 13px; color: #28a745; font-weight: 600;">
-                  <i class="fa-solid fa-circle-check"></i> เผยแพร่ให้ผู้ปกครองแล้ว
+
+              <div style="text-align: right; background: #f8fafc; padding: 8px 14px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <span style="font-size: 12px; color: #64748b; display: block; margin-bottom: 2px;">
+                  <i class="fa-regular fa-calendar"></i> วันที่ประเมิน: <strong>${evalDate}</strong>
+                </span>
+                <span style="font-size: 12.5px; color: #16a34a; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fa-solid fa-circle-check"></i> เผยแพร่แล้ว
                 </span>
               </div>
             </div>
 
-            <div class="student-info-row">
+            <div class="student-info-row" style="background: #f8fafc; border: 1px solid #edf2f7;">
               <div class="info-item">
-                <span class="label">ระดับชั้น</span>
+                <span class="label"><i class="fa-solid fa-graduation-cap"></i> ระดับชั้น</span>
                 <span class="val">${gradeLevel}</span>
               </div>
               <div class="info-item">
-                <span class="label">ครูผู้สอน</span>
-                <span class="val">${teacherName}</span>
+                <span class="label"><i class="fa-solid fa-chalkboard-user"></i> ครูผู้สอน</span>
+                <span class="val" style="color: #4338ca;">${teacherName}</span>
               </div>
             </div>
 
-            <h4 style="font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 10px;">
-              <i class="fa-solid fa-star" style="color: #ffb703;"></i> หัวข้อการประเมิน
+            <h4 style="font-size: 15px; font-weight: 700; color: #334155; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-star" style="color: #f59e0b;"></i> สรุปผลการประเมินรายพฤติกรรม
             </h4>
+
             <div class="ratings-grid">
               ${ratings.map(r => `
-                <div class="rating-box">
-                  <div class="rating-title">${r.title}</div>
-                  <div class="rating-val">${r.val}</div>
+                <div class="rating-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; transition: all 0.2s ease;">
+                  <div class="rating-title" style="display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 12px; color: #64748b; margin-bottom: 8px;">
+                    <i class="fa-solid ${r.icon}" style="color: ${r.color};"></i> ${r.title}
+                  </div>
+                  <div class="rating-val" style="color: ${r.color}; font-size: 15.5px;">${r.val}</div>
                 </div>
               `).join('')}
             </div>
 
-            ${comments ? `
-              <div class="comments-box">
-                <div class="comments-title">
-                  <i class="fa-solid fa-comment-dots"></i> ความคิดเห็นและข้อเสนอแนะจากคุณครู
-                </div>
-                <div class="comments-text">${comments}</div>
+            ${(strengths || improvements || recommendations) ? `
+              <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+                ${strengths ? `
+                  <div class="comments-box" style="background: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 0 12px 12px 0;">
+                    <div class="comments-title" style="color: #15803d; font-size: 14px;">
+                      <i class="fa-solid fa-circle-check"></i> จุดเด่นในการเรียนรู้ที่ควรรักษาไว้และส่งเสริม
+                    </div>
+                    <div class="comments-text" style="color: #166534;">${strengths}</div>
+                  </div>
+                ` : ''}
+
+                ${improvements ? `
+                  <div class="comments-box" style="background: #fffbebf5; border-left: 4px solid #f59e0b; border-radius: 0 12px 12px 0;">
+                    <div class="comments-title" style="color: #b45309; font-size: 14px;">
+                      <i class="fa-solid fa-lightbulb"></i> จุดที่ควรพัฒนาเพิ่มเติม
+                    </div>
+                    <div class="comments-text" style="color: #92400e;">${improvements}</div>
+                  </div>
+                ` : ''}
+
+                ${recommendations ? `
+                  <div class="comments-box" style="background: #fff5f7; border-left: 4px solid #ff6b8b; border-radius: 0 12px 12px 0;">
+                    <div class="comments-title" style="color: #be123c; font-size: 14px;">
+                      <i class="fa-solid fa-comment-dots"></i> ความคิดเห็นและข้อเสนอแนะจากคุณครู
+                    </div>
+                    <div class="comments-text" style="color: #881337;">${recommendations}</div>
+                  </div>
+                ` : ''}
               </div>
             ` : ''}
           </div>

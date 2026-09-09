@@ -429,6 +429,20 @@ function doGet(e) {
   }
 
 
+  if (e && e.parameter && e.parameter.action === 'getEvaluationsList') {
+
+    const role = e.parameter.role || null;
+
+    const list = getEvaluationsList(role === 'parent' ? null : role);
+
+    return ContentService.createTextOutput(JSON.stringify({ success: true, evaluations: list }))
+
+      .setMimeType(ContentService.MimeType.JSON);
+
+  }
+
+
+
   if (e.parameter && e.parameter.export === 'true') {
 
     return ContentService.createTextOutput(exportAllDataToJson()).setMimeType(ContentService.MimeType.JSON);
