@@ -45940,6 +45940,8 @@ function renderAdminEvaluationsDashboard(res) {
 
   const counts = Array.isArray(res) ? {} : (res.counts || {});
 
+  window._adminEvalsCache = evals;
+
 
 
   function cleanTeacherDisplayName(teacherStr) {

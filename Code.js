@@ -3641,7 +3641,7 @@ function updateEvaluation(evalData, logUser) {
 
     for (let i = 1; i < rows.length; i++) {
 
-      if (rows[i][0] === evalData.evalId) {
+      if (rows[i][0] && String(rows[i][0]).trim() === String(evalData.evalId).trim()) {
 
         rowIndex = i + 1; // 1-indexed for SpreadsheetApp
 
