@@ -3647,21 +3647,14 @@ function updateEvaluation(evalData, logUser) {
 
     
 
-    // Update specific columns (1-indexed)
-
-    // 7 = Date
-
-    // 9 = Teacher
-
-    // 11 = Strengths
-
-    // 12 = Improvements
-
-    // 13 = Recommendations
-
-    sheet.getRange(rowIndex, 7).setValue(evalData.date || sheet.getRange(rowIndex, 7).getValue());
-
-    sheet.getRange(rowIndex, 9).setValue(evalData.teacher);
+    // Update columns (1-indexed)
+    // 3 = StudentName, 5 = Grade, 6 = Branch, 7 = Date, 8 = Subject, 9 = Teacher, 10 = Scores, 11 = Strengths, 12 = Improvements, 13 = Recommendations
+    if (evalData.studentName) sheet.getRange(rowIndex, 3).setValue(evalData.studentName);
+    if (evalData.grade) sheet.getRange(rowIndex, 5).setValue(evalData.grade);
+    if (evalData.branch) sheet.getRange(rowIndex, 6).setValue(evalData.branch);
+    if (evalData.date) sheet.getRange(rowIndex, 7).setValue(evalData.date);
+    if (evalData.subject || evalData.courseName) sheet.getRange(rowIndex, 8).setValue(evalData.subject || evalData.courseName);
+    if (evalData.teacher) sheet.getRange(rowIndex, 9).setValue(evalData.teacher);
 
     sheet.getRange(rowIndex, 11).setValue(evalData.strengths);
 
