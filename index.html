@@ -5123,8 +5123,38 @@ function updateCharCountBadge(inputEl, countSpanId) {
 function getSelectedSubjectKey(section, suffix) {
   const filterId = section + '_subject_filter' + (suffix ? '_' + suffix : '');
   const filterEl = document.getElementById(filterId);
-  let subj = filterEl ? filterEl.value : 'general';
-  if (subj === 'auto' || !subj) subj = 'general';
+  let subj = filterEl ? filterEl.value : 'auto';
+  
+  if (subj === 'auto' || !subj) {
+    let courseText = '';
+    const courseEl = document.getElementById('eval_course');
+    if (courseEl && courseEl.value !== '') {
+      const idx = parseInt(courseEl.value);
+      if (!isNaN(idx) && state._teacherCourses && state._teacherCourses[idx]) {
+        courseText = state._teacherCourses[idx].courseName || state._teacherCourses[idx].subject || '';
+      } else if (courseEl.options && courseEl.selectedIndex >= 0) {
+        courseText = courseEl.options[courseEl.selectedIndex].text || '';
+      }
+    }
+    
+    const evalSubjEl = document.getElementById('eval_subject');
+    if (evalSubjEl && evalSubjEl.value) {
+      courseText += ' ' + evalSubjEl.value;
+    }
+    
+    const lowerCourse = courseText.toLowerCase();
+    
+    if (lowerCourse.includes('อังกฤษ') || lowerCourse.includes('english') || lowerCourse.includes('eng')) subj = 'english';
+    else if (lowerCourse.includes('ไทย') || lowerCourse.includes('thai')) subj = 'thai';
+    else if (lowerCourse.includes('จีน') || lowerCourse.includes('chinese')) subj = 'chinese';
+    else if (lowerCourse.includes('คณิต') || lowerCourse.includes('math')) subj = 'math';
+    else if (lowerCourse.includes('ฟิสิกส์') || lowerCourse.includes('physics')) subj = 'physics';
+    else if (lowerCourse.includes('เคมี') || lowerCourse.includes('chemistry')) subj = 'chemistry';
+    else if (lowerCourse.includes('ชีวะ') || lowerCourse.includes('biology')) subj = 'biology';
+    else if (lowerCourse.includes('สังคม') || lowerCourse.includes('social')) subj = 'social';
+    else if (lowerCourse.includes('วิทย์') || lowerCourse.includes('science')) subj = 'science';
+    else subj = 'general';
+  }
   return subj;
 }
 
@@ -5151,7 +5181,7 @@ function populateFeedbackPresetSelects() {
               items.forEach((itemText, idx) => {
                 const opt = document.createElement('option');
                 opt.value = itemText;
-                const shortText = itemText.length > 45 ? itemText.substring(0, 45) + '...' : itemText;
+                const shortText = itemText;
                 opt.textContent = (idx + 1) + '. ' + shortText;
                 optgroup.appendChild(opt);
               });
@@ -20530,6 +20560,7 @@ function onEvalCourseChange() {
   
   const course = state._teacherCourses[courseIdx];
   subjectInput.value = course.courseName;
+  if (typeof populateFeedbackPresetSelects === "function") populateFeedbackPresetSelects();
   
   const selectedText = courseSelect.options[courseSelect.selectedIndex].text;
   const isSingleOrSubgroup = selectedText.includes('เดี่ยว') || selectedText.includes('ย่อย');
@@ -20852,6 +20883,7 @@ function handleEvalStudentChange() {
   gradeInput.value = student.grade || '';
 
   branchInput.value = student.branch || '';
+  if (typeof populateFeedbackPresetSelects === "function") populateFeedbackPresetSelects();
 
 }
 
