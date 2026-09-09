@@ -8342,26 +8342,42 @@ function publishSelectedAdminEvaluations() {
 
 
 
-      selectedIds.forEach(evalId => {
+      const cacheList = (window._adminEvalsCache && window._adminEvalsCache.length > 0) 
+        ? window._adminEvalsCache 
+        : (window.state && window.state.adminEvals ? window.state.adminEvals : []);
 
-        const ev = window._adminEvalsCache.find(e => e.evalId === evalId);
+      selectedIds.forEach(evalId => {
+        const ev = cacheList.find(e => String(e.evalId) === String(evalId));
 
         if (!ev) {
+          // If not in cache, fallback to direct payload with evalId and status
+          const payload = {
+            evalId: evalId,
+            status: 'published',
+            isPublished: true
+          };
 
-          completedCount++;
-
-          if (completedCount === selectedIds.length) {
-
-            showLoading(false);
-
-            showToast(`ยืนยันเผยแพร่ใบประเมินสำเร็จ ${selectedIds.length} รายการ`, 'success');
-
-            loadAdminEvaluationsDashboard();
-
-          }
+          google.script.run
+            .withSuccessHandler(res => {
+              completedCount++;
+              if (completedCount === selectedIds.length) {
+                showLoading(false);
+                showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จทั้งหมด ${selectedIds.length} รายการแล้ว`, 'success');
+                loadAdminEvaluationsDashboard();
+              }
+            })
+            .withFailureHandler(err => {
+              hasError = true;
+              completedCount++;
+              if (completedCount === selectedIds.length) {
+                showLoading(false);
+                showToast(`เกิดข้อผิดพลาดบางรายการ: ${err.message || err}`, 'error');
+                loadAdminEvaluationsDashboard();
+              }
+            })
+            .updateEvaluation(payload);
 
           return;
-
         }
 
 
