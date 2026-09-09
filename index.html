@@ -44850,149 +44850,44 @@ function loadEvaluationsList() {
 
 
 function deleteAdminEvaluation(evalId) {
-
-
-
-  const ev = window._adminEvalsCache.find(e => e.evalId === evalId);
-
-
-
-  if (!ev) return;
-
-
-
-  
-
-
+  const ev = (window._adminEvalsCache || []).find(e => e.evalId === evalId);
+  if (!ev) {
+    showToast('ไม่พบข้อมูลใบประเมินที่ต้องการลบ', 'error');
+    return;
+  }
 
   Swal.fire({
-
-
-
-    title: 'ยืนยันการลบใบประเมิน?',
-
-
-
-    html: `คุณต้องการลบใบประเมินของ <b>${ev.studentName}</b> ใช่หรือไม่?<br><br><span style="color:red; font-size:0.9em;">การกระทำนี้ไม่สามารถกู้คืนได้</span>`,
-
-
-
+    title: 'ยืนยันการลบใบประเมิน',
+    html: `คุณต้องการลบใบประเมินของ <b>${ev.studentName || ''}</b> ใช่หรือไม่?<br><small style="color:#ef4444;">การลบนี้จะไม่สามารถกู้คืนกลับมาได้</small>`,
     icon: 'warning',
-
-
-
     showCancelButton: true,
-
-
-
-    confirmButtonColor: '#d33',
-
-
-
-    cancelButtonColor: '#3085d6',
-
-
-
-    confirmButtonText: 'ลบข้อมูล',
-
-
-
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'ยืนยันลบ',
     cancelButtonText: 'ยกเลิก'
-
-
-
   }).then((result) => {
-
-
-
-    if (result.isConfirmed) {
-
-
-
-      Swal.fire({
-
-
-
-        title: 'กำลังลบข้อมูล...',
-
-
-
-        allowOutsideClick: false,
-
-
-
-        didOpen: () => Swal.showLoading()
-
-
-
-      });
-
-
-
-      
-
-
+    if (result && result.isConfirmed) {
+      showLoading(true, 'กำลังลบข้อมูลใบประเมิน...');
 
       google.script.run
-
-
-
         .withSuccessHandler(function(response) {
-
-
-
-          if (response.success) {
-
-
-
-            Swal.fire('สำเร็จ', 'ลบใบประเมินเรียบร้อยแล้ว', 'success');
-
-
-
-            loadAdminEvaluations(); // Reload the list
-
-
-
+          showLoading(false);
+          if (response && response.success) {
+            showToast('ลบใบประเมินเรียบร้อยแล้ว', 'success');
+            if (typeof loadAdminEvaluationsDashboard === 'function') {
+              loadAdminEvaluationsDashboard();
+            }
           } else {
-
-
-
-            Swal.fire('ข้อผิดพลาด', response.error, 'error');
-
-
-
+            showToast('เกิดข้อผิดพลาดในการลบ: ' + (response ? response.error : 'Unknown Error'), 'error');
           }
-
-
-
         })
-
-
-
         .withFailureHandler(function(error) {
-
-
-
-          Swal.fire('ข้อผิดพลาด', error.message, 'error');
-
-
-
+          showLoading(false);
+          showToast('เกิดข้อผิดพลาด: ' + (error.message || error), 'error');
         })
-
-
-
-        .deleteEvaluation(evalId, window.currentUser);
-
-
-
+        .deleteEvaluation(evalId, getLogUser());
     }
-
-
-
   });
-
-
-
 }
 
 
