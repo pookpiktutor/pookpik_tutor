@@ -7101,19 +7101,7 @@ h5, h6 { font-size: 0.85rem !important; }
 
                         <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
 
-                          <select id="strength_subject_filter" onchange="onSubjectFilterChange('strength', '', this)" style="font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; border: 1px solid var(--color-primary); background: rgba(70,99,82,0.08); font-weight: 600; cursor: pointer;">
-<option value="auto">📚 เลือกตามวิชาคอร์ส (อัตโนมัติ)</option>
-<option value="math">📐 คณิต</option>
-<option value="sci">🔬 วิทย์</option>
-<option value="physics">⚡ ฟิสิกส์</option>
-<option value="chem">🧪 เคมี</option>
-<option value="bio">🧬 ชีวะ</option>
-<option value="eng">🔤 อังกฤษ</option>
-<option value="thai">🇹🇭 ภาษาไทย</option>
-<option value="chinese">🇨🇳 ภาษาจีน</option>
-<option value="social">🗺️ สังคม</option>
-<option value="cs">💻 วิทยาการคำนวณ</option>
-</select>
+                          
 
                           <span style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted);">⚡ 1-Click:</span>
 
@@ -7269,19 +7257,7 @@ h5, h6 { font-size: 0.85rem !important; }
 
                         <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
 
-                          <select id="improvement_subject_filter" onchange="onSubjectFilterChange('improvement', '', this)" style="font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; border: 1px solid var(--color-primary); background: rgba(70,99,82,0.08); font-weight: 600; cursor: pointer;">
-<option value="auto">📚 เลือกตามวิชาคอร์ส (อัตโนมัติ)</option>
-<option value="math">📐 คณิต</option>
-<option value="sci">🔬 วิทย์</option>
-<option value="physics">⚡ ฟิสิกส์</option>
-<option value="chem">🧪 เคมี</option>
-<option value="bio">🧬 ชีวะ</option>
-<option value="eng">🔤 อังกฤษ</option>
-<option value="thai">🇹🇭 ภาษาไทย</option>
-<option value="chinese">🇨🇳 ภาษาจีน</option>
-<option value="social">🗺️ สังคม</option>
-<option value="cs">💻 วิทยาการคำนวณ</option>
-</select>
+                          
 
                           <span style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted);">⚡ 1-Click:</span>
 
@@ -7437,19 +7413,7 @@ h5, h6 { font-size: 0.85rem !important; }
 
                         <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
 
-                          <select id="recommendation_subject_filter" onchange="onSubjectFilterChange('recommendation', '', this)" style="font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; border: 1px solid var(--color-primary); background: rgba(70,99,82,0.08); font-weight: 600; cursor: pointer;">
-<option value="auto">📚 เลือกตามวิชาคอร์ส (อัตโนมัติ)</option>
-<option value="math">📐 คณิต</option>
-<option value="sci">🔬 วิทย์</option>
-<option value="physics">⚡ ฟิสิกส์</option>
-<option value="chem">🧪 เคมี</option>
-<option value="bio">🧬 ชีวะ</option>
-<option value="eng">🔤 อังกฤษ</option>
-<option value="thai">🇹🇭 ภาษาไทย</option>
-<option value="chinese">🇨🇳 ภาษาจีน</option>
-<option value="social">🗺️ สังคม</option>
-<option value="cs">💻 วิทยาการคำนวณ</option>
-</select>
+                          
 
                           <span style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted);">⚡ 1-Click:</span>
 
@@ -7841,10 +7805,23 @@ h5, h6 { font-size: 0.85rem !important; }
 
               <div class="glass-panel" style="padding: 20px; display: flex; flex-direction: column; gap: 15px; background: rgba(255,255,255,0.5);">
 
-                <div class="section-title-group" style="margin-top: 0; margin-bottom: 0;">
-
-                  <div class="section-label" style="font-size: 1.1rem; font-weight: 600; color: var(--color-primary-hover);">💡 ความคิดเห็นและข้อเสนอแนะ</div>
-
+                <div class="section-title-group" style="margin-top: 0; margin-bottom: 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="section-label" style="font-size: 1.1rem; font-weight: 600; color: var(--color-primary-hover);">💡 ความคิดเห็นและข้อเสนอแนะ</div>
+                    <select id="admin_main_subject_filter" onchange="onSubjectFilterChange('strength', 'admin', this)" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px; border: 1.5px solid var(--color-primary); background: rgba(70,99,82,0.12); font-weight: 700; color: var(--color-primary-hover); cursor: pointer;">
+<option value="auto">📚 เลือกตามวิชาคอร์ส (อัตโนมัติ)</option>
+<option value="math">📐 คณิต</option>
+<option value="sci">🔬 วิทย์</option>
+<option value="physics">⚡ ฟิสิกส์</option>
+<option value="chem">🧪 เคมี</option>
+<option value="bio">🧬 ชีวะ</option>
+<option value="eng">🔤 อังกฤษ</option>
+<option value="thai">🇹🇭 ภาษาไทย</option>
+<option value="chinese">🇨🇳 ภาษาจีน</option>
+<option value="social">🗺️ สังคม</option>
+<option value="cs">💻 วิทยาการคำนวณ</option>
+                    </select>
+                  </div>
                 </div>
 
                 
@@ -12281,25 +12258,8 @@ function updateCharCountBadge(inputEl, countSpanId) {
 function getSelectedSubjectKey(section, suffix) {
   const suf = suffix || '';
   const mainFlt = document.getElementById(suf ? 'admin_main_subject_filter' : 'teacher_main_subject_filter');
-  if (mainFlt && mainFlt.value && mainFlt.value !== 'auto') {
-    return mainFlt.value;
-  }
-
-  const filterId = section + '_subject_filter' + (suffix ? '_' + suffix : '');
-  const filterEl = document.getElementById(filterId);
-  let subj = filterEl ? filterEl.value : 'auto';
+  let subj = (mainFlt && mainFlt.value) ? mainFlt.value : 'auto';
   
-  if (subj === 'auto' || !subj) {
-    const secs = ['strength', 'improvement', 'recommendation'];
-    for (let s of secs) {
-      const el = document.getElementById(s + '_subject_filter' + (suf ? '_' + suf : ''));
-      if (el && el.value && el.value !== 'auto') {
-        subj = el.value;
-        break;
-      }
-    }
-  }
-
   if (subj === 'auto' || !subj) {
     let courseText = '';
     const evalSubjEl = document.getElementById('eval_subject');
