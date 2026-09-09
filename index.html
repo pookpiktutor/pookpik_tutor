@@ -10031,28 +10031,28 @@ function forceHideLoginOverlay() {
 
 
 function handleLogout() {
-
-  if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+  Swal.fire({
+    title: 'ออกจากระบบ',
+    text: 'คุณต้องการออกจากระบบใช่หรือไม่?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'ออกจากระบบ',
+    cancelButtonText: 'ยกเลิก'
+  }).then((result) => {
+    if (!result.isConfirmed) return;
 
     if (window.state && window.state.heartbeatInterval) {
-
       clearInterval(window.state.heartbeatInterval);
-
       window.state.heartbeatInterval = null;
-
     }
 
-
-
     clearSessionData();
-
     showLoginScreen();
-
     if (typeof showToast === 'function') showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
-
-  }
-
-}
+  });
+}}
 
 
 
