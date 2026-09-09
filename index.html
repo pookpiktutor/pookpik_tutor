@@ -2882,6 +2882,7 @@ h5, h6 { font-size: 0.85rem !important; }
 
               <div style="font-family: var(--font-heading); font-size: 1.1rem; font-weight: 500; white-space: nowrap;">📋 รายการนักเรียนที่ได้รับการประเมินแล้ว</div>
 
+              <button class="btn btn-success" style="white-space: nowrap; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none;" onclick="publishSelectedAdminEvaluations()"><i class="fas fa-paper-plane"></i> ยืนยันเผยแพร่ใบประเมิน (ที่เลือก)</button>
               <button class="btn btn-secondary" style="white-space: nowrap;" onclick="loadAdminEvaluationsDashboard()">🔄 รีเฟรช</button>
 
             </div>
@@ -5462,7 +5463,7 @@ h5, h6 { font-size: 0.85rem !important; }
 
     <div class="modal-backdrop" id="print_receipt_modal">
 
-      <div class="glass-panel modal-container modal-wide" style="max-width: 1100px; width: 95%;">
+      <div class="glass-panel modal-container modal-wide" style="max-width: 1400px; width: 98%;">
 
         <div class="modal-header">
 
@@ -7629,7 +7630,7 @@ h5, h6 { font-size: 0.85rem !important; }
 
     <div class="modal-backdrop" id="admin_evaluation_edit_modal">
 
-      <div class="glass-panel modal-container modal-wide" style="max-width: 1100px; width: 95%;">
+      <div class="glass-panel modal-container modal-wide" style="max-width: 1400px; width: 98%;">
 
         <div class="modal-header">
 
@@ -7801,7 +7802,7 @@ h5, h6 { font-size: 0.85rem !important; }
 
               
 
-              <!-- Right: Feedback (Strengths, Improvements, Recommendations) -->
+              <!-- Right: Feedback (Strengths, Improvements, Recommendations) with Full Presets & 1-Click Level Buttons for Admin -->
 
               <div class="glass-panel" style="padding: 20px; display: flex; flex-direction: column; gap: 15px; background: rgba(255,255,255,0.5);">
 
@@ -7809,219 +7810,281 @@ h5, h6 { font-size: 0.85rem !important; }
                   <div style="display: flex; align-items: center; gap: 12px;">
                     <div class="section-label" style="font-size: 1.1rem; font-weight: 600; color: var(--color-primary-hover);">💡 ความคิดเห็นและข้อเสนอแนะ</div>
                     <select id="admin_main_subject_filter" onchange="onSubjectFilterChange('strength', 'admin', this)" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px; border: 1.5px solid var(--color-primary); background: rgba(70,99,82,0.12); font-weight: 700; color: var(--color-primary-hover); cursor: pointer;">
-<option value="auto">📚 เลือกตามวิชาคอร์ส (อัตโนมัติ)</option>
+<option value="auto">✨ เลือกตามวิชาเรียน (อัตโนมัติ)</option>
 <option value="math">📐 คณิต</option>
-<option value="sci">🔬 วิทย์</option>
+<option value="sci">🧪 วิทย์</option>
 <option value="physics">⚡ ฟิสิกส์</option>
 <option value="chem">🧪 เคมี</option>
 <option value="bio">🧬 ชีวะ</option>
-<option value="eng">🔤 อังกฤษ</option>
+<option value="eng">🇬🇧 อังกฤษ</option>
 <option value="thai">🇹🇭 ภาษาไทย</option>
 <option value="chinese">🇨🇳 ภาษาจีน</option>
-<option value="social">🗺️ สังคม</option>
+<option value="social">🌏 สังคม</option>
 <option value="cs">💻 วิทยาการคำนวณ</option>
                     </select>
                   </div>
                 </div>
 
-                
+                <div style="display: flex; flex-direction: column; gap: 20px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
 
-                <div style="display: flex; flex-direction: column; gap: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-
+                  <!-- Section 1: Strengths -->
                   <div>
-
-                    <label class="form-label" style="display: block; width: 100%; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: var(--color-primary-hover);">
-
-                      👍 จุดเด่นในการเรียนรู้ของนักเรียนที่ควรรักษาไว้ และส่งเสริมต่อไป (กรอกอย่างน้อย 3 ข้อขึ้นไป และมี 50 ตัวอักษรขึ้นไปต่อข้อ)
-
-                    </label>
-
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">1.</span>
-
-                        <textarea id="admin_eval_strength_1" class="form-input admin-eval-strength-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุจุดเด่นข้อที่ 1 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                      <label class="form-label" style="margin-bottom: 0; font-weight: 600; font-size: 0.85rem; color: var(--color-primary-hover);">
+                        👍 จุดเด่นในการเรียนรู้ของนักเรียนที่ควรรักษาไว้ และส่งเสริมต่อไป (อย่างน้อย 3 ข้อขึ้นไป)
+                      </label>
+                      <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                        <span style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted);">⚡ 1-Click:</span>
+                        <button type="button" onclick="quickFillFeedbackSection('strength', 'advanced', 'admin')" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid #10b981; background: rgba(16,185,129,0.1); color: #047857; cursor: pointer; font-weight: 600;">⭐ เด็กเก่ง</button>
+                        <button type="button" onclick="quickFillFeedbackSection('strength', 'intermediate', 'admin')" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid #3b82f6; background: rgba(59,130,246,0.1); color: #1d4ed8; cursor: pointer; font-weight: 600;">📘 เด็กกลาง</button>
+                        <button type="button" onclick="quickFillFeedbackSection('strength', 'foundation', 'admin')" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #b45309; cursor: pointer; font-weight: 600;">🌱 เด็กอ่อน</button>
+                        <button type="button" onclick="clearFeedbackSection('strength', 'admin')" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid #94a3b8; background: rgba(148,163,184,0.1); color: #475569; cursor: pointer;">🧹 ล้าง</button>
                       </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">2.</span>
-
-                        <textarea id="admin_eval_strength_2" class="form-input admin-eval-strength-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุจุดเด่นข้อที่ 2 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">3.</span>
-
-                        <textarea id="admin_eval_strength_3" class="form-input admin-eval-strength-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุจุดเด่นข้อที่ 3 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">4.</span>
-
-                        <textarea id="admin_eval_strength_4" class="form-input admin-eval-strength-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุจุดเด่นข้อที่ 4 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">5.</span>
-
-                        <textarea id="admin_eval_strength_5" class="form-input admin-eval-strength-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุจุดเด่นข้อที่ 5" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">6.</span>
-
-                        <textarea id="admin_eval_strength_6" class="form-input admin-eval-strength-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุจุดเด่นข้อที่ 6" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
                     </div>
 
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      <!-- Strength Item 1 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 1.</span>
+                          <select id="strength_1_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_strength_1')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (จุดเด่นข้อที่ 1) --</option>
+                          </select>
+                          <span id="admin_strength_1_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0/50 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_strength_1" class="form-input admin-eval-strength-item" oninput="updateCharCountBadge(this, 'admin_strength_1_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุจุดเด่นข้อที่ 1 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Strength Item 2 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 2.</span>
+                          <select id="strength_2_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_strength_2')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (จุดเด่นข้อที่ 2) --</option>
+                          </select>
+                          <span id="admin_strength_2_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0/50 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_strength_2" class="form-input admin-eval-strength-item" oninput="updateCharCountBadge(this, 'admin_strength_2_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุจุดเด่นข้อที่ 2 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Strength Item 3 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 3.</span>
+                          <select id="strength_3_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_strength_3')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (จุดเด่นข้อที่ 3) --</option>
+                          </select>
+                          <span id="admin_strength_3_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0/50 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_strength_3" class="form-input admin-eval-strength-item" oninput="updateCharCountBadge(this, 'admin_strength_3_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุจุดเด่นข้อที่ 3 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Strength Item 4 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 4.</span>
+                          <select id="strength_4_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_strength_4')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (จุดเด่นข้อที่ 4) --</option>
+                          </select>
+                          <span id="admin_strength_4_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0/50 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_strength_4" class="form-input admin-eval-strength-item" oninput="updateCharCountBadge(this, 'admin_strength_4_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุจุดเด่นข้อที่ 4 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Strength Item 5 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 5.</span>
+                          <select id="strength_5_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_strength_5')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (จุดเด่นข้อที่ 5) --</option>
+                          </select>
+                          <span id="admin_strength_5_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0/50 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_strength_5" class="form-input admin-eval-strength-item" oninput="updateCharCountBadge(this, 'admin_strength_5_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุจุดเด่นข้อที่ 5" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Strength Item 6 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 6.</span>
+                          <select id="strength_6_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_strength_6')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (จุดเด่นข้อที่ 6) --</option>
+                          </select>
+                          <span id="admin_strength_6_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0/50 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_strength_6" class="form-input admin-eval-strength-item" oninput="updateCharCountBadge(this, 'admin_strength_6_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุจุดเด่นข้อที่ 6" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                    </div>
                   </div>
 
-                  
-
+                  <!-- Section 2: Improvements -->
                   <div>
-
-                    <label class="form-label" style="display: block; width: 100%; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: var(--color-primary-hover);">
-
-                      🔧 ประเด็นที่ควรแก้ไข เพื่อให้ผลการเรียนดีขึ้น (กรอกอย่างน้อย 3 ข้อขึ้นไป และมี 50 ตัวอักษรขึ้นไปต่อข้อ)
-
-                    </label>
-
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">1.</span>
-
-                        <textarea id="admin_eval_improvement_1" class="form-input admin-eval-improvement-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุประเด็นแก้ไขข้อที่ 1 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                      <label class="form-label" style="margin-bottom: 0; font-weight: 600; font-size: 0.85rem; color: var(--color-primary-hover);">
+                        📌 ประเด็นที่ควรพัฒนา และแนวทางพัฒนา (อย่างน้อย 3 ข้อขึ้นไป)
+                      </label>
+                      <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                        <span style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted);">⚡ 1-Click:</span>
+                        <button type="button" onclick="quickFillFeedbackSection('improvement', 'advanced', 'admin')" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid #10b981; background: rgba(16,185,129,0.1); color: #047857; cursor: pointer; font-weight: 600;">⭐ เด็กเก่ง</button>
+                        <button type="button" onclick="quickFillFeedbackSection('improvement', 'intermediate', 'admin')" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid #3b82f6; background: rgba(59,130,246,0.1); color: #1d4ed8; cursor: pointer; font-weight: 600;">📘 เด็กกลาง</button>
+                        <button type="button" onclick="quickFillFeedbackSection('improvement', 'foundation', 'admin')" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #b45309; cursor: pointer; font-weight: 600;">🌱 เด็กอ่อน</button>
+                        <button type="button" onclick="clearFeedbackSection('improvement', 'admin')" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid #94a3b8; background: rgba(148,163,184,0.1); color: #475569; cursor: pointer;">🧹 ล้าง</button>
                       </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">2.</span>
-
-                        <textarea id="admin_eval_improvement_2" class="form-input admin-eval-improvement-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุประเด็นแก้ไขข้อที่ 2 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">3.</span>
-
-                        <textarea id="admin_eval_improvement_3" class="form-input admin-eval-improvement-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุประเด็นแก้ไขข้อที่ 3 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">4.</span>
-
-                        <textarea id="admin_eval_improvement_4" class="form-input admin-eval-improvement-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุประเด็นแก้ไขข้อที่ 4 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">5.</span>
-
-                        <textarea id="admin_eval_improvement_5" class="form-input admin-eval-improvement-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุประเด็นแก้ไขข้อที่ 5" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">6.</span>
-
-                        <textarea id="admin_eval_improvement_6" class="form-input admin-eval-improvement-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุประเด็นแก้ไขข้อที่ 6" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
                     </div>
 
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      <!-- Improvement Item 1 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 1.</span>
+                          <select id="improvement_1_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_improvement_1')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (ประเด็นควรพัฒนาข้อที่ 1) --</option>
+                          </select>
+                          <span id="admin_improvement_1_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0/50 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_improvement_1" class="form-input admin-eval-improvement-item" oninput="updateCharCountBadge(this, 'admin_improvement_1_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุประเด็นควรพัฒนาข้อที่ 1 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Improvement Item 2 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 2.</span>
+                          <select id="improvement_2_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_improvement_2')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (ประเด็นควรพัฒนาข้อที่ 2) --</option>
+                          </select>
+                          <span id="admin_improvement_2_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0/50 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_improvement_2" class="form-input admin-eval-improvement-item" oninput="updateCharCountBadge(this, 'admin_improvement_2_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุประเด็นควรพัฒนาข้อที่ 2 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Improvement Item 3 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 3.</span>
+                          <select id="improvement_3_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_improvement_3')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (ประเด็นควรพัฒนาข้อที่ 3) --</option>
+                          </select>
+                          <span id="admin_improvement_3_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0/50 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_improvement_3" class="form-input admin-eval-improvement-item" oninput="updateCharCountBadge(this, 'admin_improvement_3_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุประเด็นควรพัฒนาข้อที่ 3 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Improvement Item 4 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 4.</span>
+                          <select id="improvement_4_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_improvement_4')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (ประเด็นควรพัฒนาข้อที่ 4) --</option>
+                          </select>
+                          <span id="admin_improvement_4_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0/50 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_improvement_4" class="form-input admin-eval-improvement-item" oninput="updateCharCountBadge(this, 'admin_improvement_4_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุประเด็นควรพัฒนาข้อที่ 4 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Improvement Item 5 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 5.</span>
+                          <select id="improvement_5_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_improvement_5')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (ประเด็นควรพัฒนาข้อที่ 5) --</option>
+                          </select>
+                          <span id="admin_improvement_5_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0/50 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_improvement_5" class="form-input admin-eval-improvement-item" oninput="updateCharCountBadge(this, 'admin_improvement_5_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุประเด็นควรพัฒนาข้อที่ 5" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Improvement Item 6 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 6.</span>
+                          <select id="improvement_6_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_improvement_6')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (ประเด็นควรพัฒนาข้อที่ 6) --</option>
+                          </select>
+                          <span id="admin_improvement_6_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0/50 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_improvement_6" class="form-input admin-eval-improvement-item" oninput="updateCharCountBadge(this, 'admin_improvement_6_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุประเด็นควรพัฒนาข้อที่ 6" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                    </div>
                   </div>
 
-                  
-
+                  <!-- Section 3: Recommendations -->
                   <div>
-
-                    <label class="form-label" style="display: block; width: 100%; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: var(--color-primary-hover);">
-
-                      💡 ข้อเสนอแนะอื่นๆ เพื่อส่งเสริมศักยภาพ (กรอกอย่างน้อย 3 ข้อขึ้นไป และมี 50 ตัวอักษรขึ้นไปต่อข้อ)
-
-                    </label>
-
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">1.</span>
-
-                        <textarea id="admin_eval_recommendation_1" class="form-input admin-eval-recommendation-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุข้อเสนอแนะข้อที่ 1 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                      <label class="form-label" style="margin-bottom: 0; font-weight: 600; font-size: 0.85rem; color: var(--color-primary-hover);">
+                        💬 ข้อเสนอแนะอื่นๆ สำหรับผู้ปกครองและนักเรียน
+                      </label>
+                      <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                        <span style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted);">⚡ 1-Click:</span>
+                        <button type="button" onclick="quickFillFeedbackSection('recommendation', 'advanced', 'admin')" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid #10b981; background: rgba(16,185,129,0.1); color: #047857; cursor: pointer; font-weight: 600;">⭐ เด็กเก่ง</button>
+                        <button type="button" onclick="quickFillFeedbackSection('recommendation', 'intermediate', 'admin')" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid #3b82f6; background: rgba(59,130,246,0.1); color: #1d4ed8; cursor: pointer; font-weight: 600;">📘 เด็กกลาง</button>
+                        <button type="button" onclick="quickFillFeedbackSection('recommendation', 'foundation', 'admin')" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #b45309; cursor: pointer; font-weight: 600;">🌱 เด็กอ่อน</button>
+                        <button type="button" onclick="clearFeedbackSection('recommendation', 'admin')" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; border: 1px solid #94a3b8; background: rgba(148,163,184,0.1); color: #475569; cursor: pointer;">🧹 ล้าง</button>
                       </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">2.</span>
-
-                        <textarea id="admin_eval_recommendation_2" class="form-input admin-eval-recommendation-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุข้อเสนอแนะข้อที่ 2 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">3.</span>
-
-                        <textarea id="admin_eval_recommendation_3" class="form-input admin-eval-recommendation-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุข้อเสนอแนะข้อที่ 3 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">4.</span>
-
-                        <textarea id="admin_eval_recommendation_4" class="form-input admin-eval-recommendation-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุข้อเสนอแนะข้อที่ 4 (ตัวอักษร 50 ตัวขึ้นไป)" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">5.</span>
-
-                        <textarea id="admin_eval_recommendation_5" class="form-input admin-eval-recommendation-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุข้อเสนอแนะข้อที่ 5" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
-                      <div style="display: flex; align-items: center; gap: 8px;">
-
-                        <span style="font-weight: 600; font-size: 0.8rem; min-width: 15px;">6.</span>
-
-                        <textarea id="admin_eval_recommendation_6" class="form-input admin-eval-recommendation-item" oninput="; this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ระบุข้อเสนอแนะข้อที่ 6" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
-
-                      </div>
-
                     </div>
 
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      <!-- Recommendation Item 1 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 1.</span>
+                          <select id="recommendation_1_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_recommendation_1')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (ข้อเสนอแนะข้อที่ 1) --</option>
+                          </select>
+                          <span id="admin_recommendation_1_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_recommendation_1" class="form-input admin-eval-recommendation-item" oninput="updateCharCountBadge(this, 'admin_recommendation_1_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ข้อเสนอแนะข้อที่ 1" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Recommendation Item 2 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 2.</span>
+                          <select id="recommendation_2_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_recommendation_2')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (ข้อเสนอแนะข้อที่ 2) --</option>
+                          </select>
+                          <span id="admin_recommendation_2_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_recommendation_2" class="form-input admin-eval-recommendation-item" oninput="updateCharCountBadge(this, 'admin_recommendation_2_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ข้อเสนอแนะข้อที่ 2" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Recommendation Item 3 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 3.</span>
+                          <select id="recommendation_3_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_recommendation_3')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (ข้อเสนอแนะข้อที่ 3) --</option>
+                          </select>
+                          <span id="admin_recommendation_3_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_recommendation_3" class="form-input admin-eval-recommendation-item" oninput="updateCharCountBadge(this, 'admin_recommendation_3_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ข้อเสนอแนะข้อที่ 3" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Recommendation Item 4 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 4.</span>
+                          <select id="recommendation_4_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_recommendation_4')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (ข้อเสนอแนะข้อที่ 4) --</option>
+                          </select>
+                          <span id="admin_recommendation_4_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_recommendation_4" class="form-input admin-eval-recommendation-item" oninput="updateCharCountBadge(this, 'admin_recommendation_4_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ข้อเสนอแนะข้อที่ 4" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Recommendation Item 5 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 5.</span>
+                          <select id="recommendation_5_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_recommendation_5')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (ข้อเสนอแนะข้อที่ 5) --</option>
+                          </select>
+                          <span id="admin_recommendation_5_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_recommendation_5" class="form-input admin-eval-recommendation-item" oninput="updateCharCountBadge(this, 'admin_recommendation_5_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ข้อเสนอแนะข้อที่ 5" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                      <!-- Recommendation Item 6 -->
+                      <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.4); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 0.82rem; color: var(--color-primary-hover); min-width: 45px;">ข้อ 6.</span>
+                          <select id="recommendation_6_select_admin" class="form-input feedback-preset-select" onchange="applyFeedbackPreset(this, 'admin_eval_recommendation_6')" style="font-size: 0.78rem; padding: 4px 8px; flex: 1; border-radius: 6px; background-color: #fff;">
+                            <option value="">-- เลือกข้อความสำเร็จรูป (ข้อเสนอแนะข้อที่ 6) --</option>
+                          </select>
+                          <span id="admin_recommendation_6_count" style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; min-width: 85px; text-align: right;">0 ตัวอักษร</span>
+                        </div>
+                        <textarea id="admin_eval_recommendation_6" class="form-input admin-eval-recommendation-item" oninput="updateCharCountBadge(this, 'admin_recommendation_6_count'); this.style.height='auto'; this.style.height=this.scrollHeight+'px';" placeholder="ข้อเสนอแนะข้อที่ 6" style="font-size: 0.85rem; width: 100%; min-height: 48px; resize: vertical; border-radius: 6px; padding: 6px 10px; line-height: 1.4; border: 1px solid var(--border-color); font-family: inherit;"></textarea>
+                      </div>
+                    </div>
                   </div>
 
                 </div>
 
               </div>
-
             </div>
 
             
@@ -45844,7 +45907,25 @@ function renderAdminEvaluationsDashboard(res) {
 
 
 
-    header.innerHTML = `<span style="font-size: 0.9rem;">📚</span> ${course} ${branchBadgeHtml} ${teacherBadgeHtml} ${badgeHtml}`;
+    header.innerHTML = `
+
+      <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+
+        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+
+          <span style="font-size: 0.9rem;">📚</span> ${course} ${branchBadgeHtml} ${teacherBadgeHtml} ${badgeHtml}
+
+        </div>
+
+        <label style="font-size: 0.72rem; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; background: rgba(255,255,255,0.7); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08);">
+
+          <input type="checkbox" onchange="toggleCourseAllCheckboxes(this, gridContainer)" style="cursor: pointer; accent-color: #10b981;"> เลือกทั้งหมดในกลุ่มนี้
+
+        </label>
+
+      </div>
+
+    `;
 
     section.appendChild(header);
 
@@ -45883,31 +45964,21 @@ function renderAdminEvaluationsDashboard(res) {
       card.innerHTML = `
 
         <div>
-
-          <div style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">${ev.studentName}</div>
-
-          ${stuBranchHtml}
-
-          ${ev.teacher ? `<div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 4px;"><span>👨‍🏫 ครู:</span> <span style="font-weight: 600; color: #334155;">${cleanTeacherDisplayName(ev.teacher)}</span></div>` : ''}
-
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
-
-          <button class="btn btn-primary" style="width: 100%; padding: 4px 6px; font-size: 0.72rem; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">🚀 ยืนยันเผยแพร่ / แก้ไข</button>
-
-          <div style="display: flex; gap: 4px;">
-
-            <button class="btn btn-secondary" style="flex: 1; padding: 3px 6px; font-size: 0.68rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ดูรายละเอียด</button>
-
-            <button class="btn btn-danger" style="padding: 3px 6px; font-size: 0.68rem;" onclick="deleteAdminEvaluation('${ev.evalId}')"><i class="fas fa-trash"></i></button>
-
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 6px;">
+            <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-main); line-height: 1.2;">${ev.studentName}</div>
+            <input type="checkbox" class="admin-eval-select-checkbox" data-eval-id="${ev.evalId}" style="width: 17px; height: 17px; cursor: pointer; accent-color: #10b981; flex-shrink: 0;" title="เลือกใบประเมินนี้เพื่อยืนยันเผยแพร่">
           </div>
-
+          ${stuBranchHtml}
+          ${ev.teacher ? `<div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 4px;"><span>ผู้สอน:</span> <span style="font-weight: 600; color: #334155;">${cleanTeacherDisplayName(ev.teacher)}</span></div>` : ''}
         </div>
-
+        <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
+          <button class="btn btn-primary" style="width: 100%; padding: 4px 6px; font-size: 0.72rem; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ตรวจประเมิน / แก้ไข</button>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn btn-secondary" style="flex: 1; padding: 3px 6px; font-size: 0.68rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">👁️ ดูรายละเอียด</button>
+            <button class="btn btn-danger" style="padding: 3px 6px; font-size: 0.68rem;" onclick="deleteAdminEvaluation('${ev.evalId}')"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
       `;
-
 
 
       gridContainer.appendChild(card);
@@ -50771,4 +50842,154 @@ function deleteStaffTeacherAdjustmentInSummary(adjId) {
 </body>
 
 </html>
+
+
+
+function toggleCourseAllCheckboxes(headerCb, containerEl) {
+
+  if (!containerEl) return;
+
+  const checkboxes = containerEl.querySelectorAll('.admin-eval-select-checkbox');
+
+  checkboxes.forEach(cb => {
+
+    cb.checked = headerCb.checked;
+
+  });
+
+}
+
+
+
+function publishSelectedAdminEvaluations() {
+
+  const checkedEls = document.querySelectorAll('.admin-eval-select-checkbox:checked');
+
+  const selectedIds = Array.from(checkedEls).map(el => el.getAttribute('data-eval-id')).filter(Boolean);
+
+
+
+  if (selectedIds.length === 0) {
+
+    showToast('กรุณาติ๊กเลือกใบประเมินที่ต้องการยืนยันเผยแพ่อย่างน้อย 1 รายการ', 'warning');
+
+    return;
+
+  }
+
+
+
+  showCustomConfirm(
+
+    `ยืนยันเผยแพร่ใบประเมินนักเรียนจำนวน <b>${selectedIds.length}</b> รายการพร้อมกันหรือไม่?<br><small style="color:var(--text-muted);">ใบประเมินที่เผยแพร่แล้ว ผู้ปกครองจะสามารถค้นหาและดูผ่านหน้าระบบผู้ปกครองได้ทันที</small>`,
+
+    function() {
+
+      showLoading(true, `กำลังบันทึกและเผยแพร่ใบประเมิน ${selectedIds.length} รายการ...`);
+
+      let completedCount = 0;
+
+      let hasError = false;
+
+
+
+      selectedIds.forEach(evalId => {
+
+        const ev = window._adminEvalsCache.find(e => e.evalId === evalId);
+
+        if (!ev) {
+
+          completedCount++;
+
+          if (completedCount === selectedIds.length) {
+
+            showLoading(false);
+
+            showToast(`ยืนยันเผยแพร่ใบประเมินสำเร็จ ${selectedIds.length} รายการ`, 'success');
+
+            loadAdminEvaluationsDashboard();
+
+          }
+
+          return;
+
+        }
+
+
+
+        // Send update to publish
+
+        const payload = {
+
+          evalId: ev.evalId,
+
+          subject: ev.subject || '',
+
+          studentName: ev.studentName || '',
+
+          grade: ev.grade || '',
+
+          branch: ev.branch || '',
+
+          date: ev.date || '',
+
+          teacher: ev.teacher || '',
+
+          scores: ev.scores || {},
+
+          strengths: ev.strengths || '',
+
+          improvements: ev.improvements || '',
+
+          recommendations: ev.recommendations || ''
+
+        };
+
+
+
+        google.script.run
+
+          .withSuccessHandler(res => {
+
+            completedCount++;
+
+            if (completedCount === selectedIds.length) {
+
+              showLoading(false);
+
+              showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จทั้งหมด ${selectedIds.length} รายการแล้ว`, 'success');
+
+              loadAdminEvaluationsDashboard();
+
+            }
+
+          })
+
+          .withFailureHandler(err => {
+
+            hasError = true;
+
+            completedCount++;
+
+            if (completedCount === selectedIds.length) {
+
+              showLoading(false);
+
+              showToast(`เกิดข้อผิดพลาดบางรายการ: ${err.message || err}`, 'error');
+
+              loadAdminEvaluationsDashboard();
+
+            }
+
+          })
+
+          .updateEvaluation(payload);
+
+      });
+
+    }
+
+  );
+
+}
 
