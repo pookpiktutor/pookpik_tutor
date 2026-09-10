@@ -224,7 +224,7 @@ const SHEET_REGISTRY = [
 
       'Date', 'Subject', 'Teacher', 'ScoresJSON',
 
-      'Strengths', 'Improvements', 'Recommendations', 'EvaluatedBy'
+      'Strengths', 'Improvements', 'Recommendations', 'EvaluatedBy', 'Status'
 
     ],
 
@@ -3739,6 +3739,10 @@ function batchPublishEvaluations(evalIds, logUser) {
       return { success: false, error: 'ไม่พบฐานข้อมูล EvaluationsDB' };
     }
 
+    if (sheet.getLastColumn() < 15 || sheet.getRange(1, 15).getValue() !== 'Status') {
+      sheet.getRange(1, 15).setValue('Status');
+    }
+
     const rows = sheet.getDataRange().getValues();
     const targetMap = {};
     evalIds.forEach(id => { targetMap[String(id).trim()] = true; });
@@ -3863,7 +3867,12 @@ function getEvaluationsList(logUser) {
 
     if (!sheet || sheet.getLastRow() < 2) return [];
 
-    const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, Math.min(sheet.getLastColumn(), 15)).getValues();
+    // Ensure Column O (15) header is 'Status' if missing
+    if (sheet.getLastColumn() < 15 || sheet.getRange(1, 15).getValue() !== 'Status') {
+      sheet.getRange(1, 15).setValue('Status');
+    }
+
+    const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 15).getValues();
 
     const list = [];
 
