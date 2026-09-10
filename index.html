@@ -8342,12 +8342,11 @@ function publishSelectedAdminEvaluations() {
     }
   }).then((result) => {
     if (result.isConfirmed) {
-      showLoading(true, `กำลังบันทึกและเผยแพร่ใบประเมิน ${selectedIds.length} รายการ...`);
+      showToast(`⏳ กำลังบันทึกและเผยแพร่ใบประเมิน ${selectedIds.length} รายการ...`, 'info');
 
       window._nextTaskTitle = `ยืนยันเผยแพร่ใบประเมิน ${selectedIds.length} รายการ`;
       google.script.run
         .withSuccessHandler(res => {
-          showLoading(false);
           if (res && res.success) {
             showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จทั้งหมด ${selectedIds.length} รายการแล้ว`, 'success');
             loadAdminEvaluationsDashboard();
@@ -8357,7 +8356,6 @@ function publishSelectedAdminEvaluations() {
           }
         })
         .withFailureHandler(err => {
-          showLoading(false);
           showToast(`เกิดข้อผิดพลาด: ${err.message || err}`, 'error');
           loadAdminEvaluationsDashboard();
         })
@@ -44792,11 +44790,10 @@ function deleteAdminEvaluation(evalId) {
     cancelButtonText: 'ยกเลิก'
   }).then((result) => {
     if (result && result.isConfirmed) {
-      showLoading(true, 'กำลังลบข้อมูลใบประเมิน...');
+      showToast('⏳ กำลังลบข้อมูลใบประเมิน...', 'info');
 
       google.script.run
         .withSuccessHandler(function(response) {
-          showLoading(false);
           if (response && response.success) {
             showToast('ลบใบประเมินเรียบร้อยแล้ว', 'success');
             if (typeof loadAdminEvaluationsDashboard === 'function') {
@@ -44807,7 +44804,6 @@ function deleteAdminEvaluation(evalId) {
           }
         })
         .withFailureHandler(function(error) {
-          showLoading(false);
           showToast('เกิดข้อผิดพลาด: ' + (error.message || error), 'error');
         })
         .deleteEvaluation(evalId, getLogUser());
