@@ -8347,9 +8347,39 @@ function publishSelectedAdminEvaluations() {
           }
         })
         .withFailureHandler(err => {
-          showToast(`เชื่อมต่อผิดพลาด: ${err.message || 'ไม่สามารถส่งข้อมูลได้'}`, 'error');
-          if (typeof loadAdminEvaluationsDashboard === 'function') {
-            loadAdminEvaluationsDashboard();
+          // Fallback if batchPublishEvaluations is not yet deployed on GAS deployment
+          if (err && err.message && err.message.includes('not defined')) {
+            let completed = 0;
+            let errs = 0;
+            const total = selectedIds.length;
+            const cache = window._adminEvalsCache || [];
+            selectedIds.forEach(evalId => {
+              const ev = cache.find(e => e.evalId === evalId) || { evalId: evalId };
+              const evalData = Object.assign({}, ev, { isPublished: true, status: 'published' });
+              google.script.run
+                .withSuccessHandler(r => {
+                  completed++;
+                  if (!r || !r.success) errs++;
+                  if (completed === total) {
+                    showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จ ${total - errs}/${total} รายการแล้ว`, 'success');
+                    if (typeof loadAdminEvaluationsDashboard === 'function') loadAdminEvaluationsDashboard();
+                  }
+                })
+                .withFailureHandler(() => {
+                  completed++;
+                  errs++;
+                  if (completed === total) {
+                    showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จ ${total - errs}/${total} รายการแล้ว`, 'success');
+                    if (typeof loadAdminEvaluationsDashboard === 'function') loadAdminEvaluationsDashboard();
+                  }
+                })
+                .updateEvaluation(evalData, typeof getLogUser === 'function' ? getLogUser() : null);
+            });
+          } else {
+            showToast(`เชื่อมต่อผิดพลาด: ${err.message || 'ไม่สามารถส่งข้อมูลได้'}`, 'error');
+            if (typeof loadAdminEvaluationsDashboard === 'function') {
+              loadAdminEvaluationsDashboard();
+            }
           }
         })
         .batchPublishEvaluations(selectedIds, typeof getLogUser === 'function' ? getLogUser() : null);
