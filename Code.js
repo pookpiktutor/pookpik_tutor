@@ -3731,6 +3731,8 @@ function updateEvaluation(evalData, logUser) {
 function getAdminEvalStats() {
 
   try {
+    clearCacheObject('evaluations_list_all');
+    clearCacheObject('evaluations_list');
     const cache = CacheService.getScriptCache();
     cache.remove('evaluations_list_all');
     cache.remove('evaluations_list');

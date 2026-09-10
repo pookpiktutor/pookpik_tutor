@@ -8349,64 +8349,29 @@ function publishSelectedAdminEvaluations() {
       selectedIds.forEach(evalId => {
         const ev = cacheList.find(e => String(e.evalId) === String(evalId));
 
-        if (!ev) {
-          // If not in cache, fallback to direct payload with evalId and status
-          const payload = {
-            evalId: evalId,
-            status: 'published',
-            isPublished: true
-          };
-
-          google.script.run
-            .withSuccessHandler(res => {
-              completedCount++;
-              if (completedCount === selectedIds.length) {
-                showLoading(false);
-                showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จทั้งหมด ${selectedIds.length} รายการแล้ว`, 'success');
-                loadAdminEvaluationsDashboard();
-              }
-            })
-            .withFailureHandler(err => {
-              hasError = true;
-              completedCount++;
-              if (completedCount === selectedIds.length) {
-                showLoading(false);
-                showToast(`เกิดข้อผิดพลาดบางรายการ: ${err.message || err}`, 'error');
-                loadAdminEvaluationsDashboard();
-              }
-            })
-            .updateEvaluation(payload);
-
-          return;
-        }
-
-
-
-        // Send update to publish
-
         const payload = {
 
-          evalId: ev.evalId,
+          evalId: ev ? ev.evalId : evalId,
 
-          subject: ev.subject || '',
+          subject: ev ? (ev.subject || '') : '',
 
-          studentName: ev.studentName || '',
+          studentName: ev ? (ev.studentName || '') : '',
 
-          grade: ev.grade || '',
+          grade: ev ? (ev.grade || '') : '',
 
-          branch: ev.branch || '',
+          branch: ev ? (ev.branch || '') : '',
 
-          date: ev.date || '',
+          date: ev ? (ev.date || '') : '',
 
-          teacher: ev.teacher || '',
+          teacher: ev ? (ev.teacher || '') : '',
 
-          scores: ev.scores || {},
+          scores: ev ? (ev.scores || {}) : {},
 
-          strengths: ev.strengths || '',
+          strengths: ev ? (ev.strengths || '') : '',
 
-          improvements: ev.improvements || '',
+          improvements: ev ? (ev.improvements || '') : '',
 
-          recommendations: ev.recommendations || '',
+          recommendations: ev ? (ev.recommendations || '') : '',
 
           status: 'published',
 
