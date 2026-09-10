@@ -8335,46 +8335,24 @@ function publishSelectedAdminEvaluations() {
     if (result && result.isConfirmed) {
       showToast(`⏳ กำลังบันทึกและเผยแพร่ใบประเมิน ${selectedIds.length} รายการ...`, 'info');
 
-      let completedCount = 0;
-      let errorCount = 0;
-      const total = selectedIds.length;
-
-      const cache = window._adminEvalsCache || [];
-
-      selectedIds.forEach(evalId => {
-        const ev = cache.find(e => e.evalId === evalId) || { evalId: evalId };
-        const evalData = Object.assign({}, ev, {
-          isPublished: true,
-          status: 'เผยแพร่แล้ว'
-        });
-
-        google.script.run
-          .withSuccessHandler(res => {
-            completedCount++;
-            if (!res || !res.success) errorCount++;
-            if (completedCount === total) {
-              if (errorCount === 0) {
-                showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จทั้งหมด ${total} รายการแล้ว`, 'success');
-              } else {
-                showToast(`เผยแพร่สำเร็จ ${total - errorCount}/${total} รายการ`, 'warning');
-              }
-              if (typeof loadAdminEvaluationsDashboard === 'function') {
-                loadAdminEvaluationsDashboard();
-              }
-            }
-          })
-          .withFailureHandler(err => {
-            completedCount++;
-            errorCount++;
-            if (completedCount === total) {
-              showToast(`เผยแพร่สำเร็จ ${total - errorCount}/${total} รายการ`, 'warning');
-              if (typeof loadAdminEvaluationsDashboard === 'function') {
-                loadAdminEvaluationsDashboard();
-              }
-            }
-          })
-          .updateEvaluation(evalData, typeof getLogUser === 'function' ? getLogUser() : null);
-      });
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res && res.success) {
+            showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จทั้งหมด ${res.count || selectedIds.length} รายการแล้ว`, 'success');
+          } else {
+            showToast(`พบข้อผิดพลาดในการเผยแพร่: ${(res && res.error) || 'ไม่ทราบสาเหตุ'}`, 'error');
+          }
+          if (typeof loadAdminEvaluationsDashboard === 'function') {
+            loadAdminEvaluationsDashboard();
+          }
+        })
+        .withFailureHandler(err => {
+          showToast(`เชื่อมต่อผิดพลาด: ${err.message || 'ไม่สามารถส่งข้อมูลได้'}`, 'error');
+          if (typeof loadAdminEvaluationsDashboard === 'function') {
+            loadAdminEvaluationsDashboard();
+          }
+        })
+        .batchPublishEvaluations(selectedIds, typeof getLogUser === 'function' ? getLogUser() : null);
     }
   });
 }
