@@ -4084,7 +4084,7 @@ function getEvaluationsList(logUser) {
 
       list.push({
 
-        evalId: (rows[i][0] || '').toString(),
+        evalId: (rows[i][0] ? String(rows[i][0]).trim() : 'EVAL-' + String(i).padStart(4, '0')),
 
         timestamp: rows[i][1],
 
