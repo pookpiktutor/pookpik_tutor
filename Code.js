@@ -3739,7 +3739,9 @@ function batchPublishEvaluations(evalIds, logUser) {
       return { success: false, error: 'ไม่พบฐานข้อมูล EvaluationsDB' };
     }
 
-    if (sheet.getLastColumn() < 15 || sheet.getRange(1, 15).getValue() !== 'Status') {
+    // Ensure Column O (Column 15) has 'Status' header
+    const currentHeaderO = sheet.getRange(1, 15).getValue();
+    if (!currentHeaderO || String(currentHeaderO).trim() !== 'Status') {
       sheet.getRange(1, 15).setValue('Status');
     }
 
@@ -3753,8 +3755,24 @@ function batchPublishEvaluations(evalIds, logUser) {
       const fallbackId = 'EVAL-' + String(i).padStart(4, '0');
       const studentName = rows[i][2] ? String(rows[i][2]).trim() : '';
 
-      if ((cellVal && targetMap[cellVal]) || targetMap[fallbackId] || (studentName && targetMap[studentName])) {
+      // Match by exact cellVal, fallbackId, studentName, or if evalIds contains row index string
+      let matched = (cellVal && targetMap[cellVal]) || targetMap[fallbackId] || (studentName && targetMap[studentName]);
+      if (!matched) {
+        // Also check if any target ID matches EVAL-format of i
+        for (let targetId in targetMap) {
+          if (targetId === cellVal || targetId === fallbackId || targetId === studentName || targetId === String(i)) {
+            matched = true;
+            break;
+          }
+        }
+      }
+
+      if (matched) {
         sheet.getRange(i + 1, 15).setValue('published');
+        // Also ensure cell A has EvalID if missing
+        if (!cellVal) {
+          sheet.getRange(i + 1, 1).setValue(fallbackId);
+        }
         updatedCount++;
       }
     }
