@@ -8328,12 +8328,20 @@ function publishSelectedAdminEvaluations() {
 
 
 
-  showCustomConfirm(
-
-    `ยืนยันเผยแพร่ใบประเมินนักเรียนจำนวน <b>${selectedIds.length}</b> รายการพร้อมกันหรือไม่?<br><small style="color:var(--text-muted);">ใบประเมินที่เผยแพร่แล้ว ผู้ปกครองจะสามารถค้นหาและดูผ่านหน้าระบบผู้ปกครองได้ทันที</small>`,
-
-    function() {
-
+  Swal.fire({
+    title: '🌐 ยืนยันการเผยแพร่ใบประเมิน',
+    html: `คุณต้องการยืนยันเผยแพร่ใบประเมินนักเรียนจำนวน <b style="color:#10b981; font-size:1.1rem;">${selectedIds.length}</b> รายการที่เลือกหรือไม่?<br><br><small style="color:#64748b;">* เมื่อยืนยันแล้ว ใบประเมินเหล่านี้จะมีสถานะ "เผยแพร่แล้ว" และผู้ปกครองจะสามารถดูรายงานผ่านระบบผู้ปกครองได้ทันที</small>`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: '🌐 ยืนยันเผยแพร่',
+    cancelButtonText: 'ยกเลิก',
+    customClass: {
+      popup: 'swal2-center-popup'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
       showLoading(true, `กำลังบันทึกและเผยแพร่ใบประเมิน ${selectedIds.length} รายการ...`);
 
       window._nextTaskTitle = `ยืนยันเผยแพร่ใบประเมิน ${selectedIds.length} รายการ`;
@@ -8354,10 +8362,8 @@ function publishSelectedAdminEvaluations() {
           loadAdminEvaluationsDashboard();
         })
         .batchPublishEvaluations(selectedIds);
-
     }
-
-  );
+  });
 
 }
 
