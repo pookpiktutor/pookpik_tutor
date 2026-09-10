@@ -3749,7 +3749,11 @@ function batchPublishEvaluations(evalIds, logUser) {
 
     let updatedCount = 0;
     for (let i = 1; i < rows.length; i++) {
-      if (rows[i][0] && targetMap[String(rows[i][0]).trim()]) {
+      const cellVal = rows[i][0] ? String(rows[i][0]).trim() : '';
+      const fallbackId = 'EVAL-' + String(i).padStart(4, '0');
+      const studentName = rows[i][2] ? String(rows[i][2]).trim() : '';
+
+      if ((cellVal && targetMap[cellVal]) || targetMap[fallbackId] || (studentName && targetMap[studentName])) {
         sheet.getRange(i + 1, 15).setValue('published');
         updatedCount++;
       }
