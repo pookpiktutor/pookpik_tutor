@@ -8311,22 +8311,13 @@ function toggleCourseAllCheckboxes(headerCb, containerEl) {
 
 
 function publishSelectedAdminEvaluations() {
-
   const checkedEls = document.querySelectorAll('.admin-eval-select-checkbox:checked');
-
   const selectedIds = Array.from(checkedEls).map(el => el.getAttribute('data-eval-id')).filter(Boolean);
 
-
-
   if (selectedIds.length === 0) {
-
     showToast('กรุณาติ๊กเลือกใบประเมินที่ต้องการยืนยันเผยแพ่อย่างน้อย 1 รายการ', 'warning');
-
     return;
-
   }
-
-
 
   Swal.fire({
     title: '🌐 ยืนยันการเผยแพร่ใบประเมิน',
@@ -8341,27 +8332,52 @@ function publishSelectedAdminEvaluations() {
       popup: 'swal2-center-popup'
     }
   }).then((result) => {
-    if (result.isConfirmed) {
+    if (result && result.isConfirmed) {
       showToast(`⏳ กำลังบันทึกและเผยแพร่ใบประเมิน ${selectedIds.length} รายการ...`, 'info');
 
-      window._nextTaskTitle = `ยืนยันเผยแพร่ใบประเมิน ${selectedIds.length} รายการ`;
-      google.script.run
-        .withSuccessHandler(res => {
-          if (res && res.success) {
-            showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จทั้งหมด ${selectedIds.length} รายการแล้ว`, 'success');
-            loadAdminEvaluationsDashboard();
-          } else {
-            showToast(`เกิดข้อผิดพลาด: ${res ? res.error : 'ไม่ทราบสาเหตุ'}`, 'error');
-            loadAdminEvaluationsDashboard();
-          }
-        })
-        .withFailureHandler(err => {
-          showToast(`เกิดข้อผิดพลาด: ${err.message || err}`, 'error');
-          loadAdminEvaluationsDashboard();
-        })
-        .batchPublishEvaluations(selectedIds);
+      let completedCount = 0;
+      let errorCount = 0;
+      const total = selectedIds.length;
+
+      const cache = window._adminEvalsCache || [];
+
+      selectedIds.forEach(evalId => {
+        const ev = cache.find(e => e.evalId === evalId) || { evalId: evalId };
+        const evalData = Object.assign({}, ev, {
+          isPublished: true,
+          status: 'เผยแพร่แล้ว'
+        });
+
+        google.script.run
+          .withSuccessHandler(res => {
+            completedCount++;
+            if (!res || !res.success) errorCount++;
+            if (completedCount === total) {
+              if (errorCount === 0) {
+                showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จทั้งหมด ${total} รายการแล้ว`, 'success');
+              } else {
+                showToast(`เผยแพร่สำเร็จ ${total - errorCount}/${total} รายการ`, 'warning');
+              }
+              if (typeof loadAdminEvaluationsDashboard === 'function') {
+                loadAdminEvaluationsDashboard();
+              }
+            }
+          })
+          .withFailureHandler(err => {
+            completedCount++;
+            errorCount++;
+            if (completedCount === total) {
+              showToast(`เผยแพร่สำเร็จ ${total - errorCount}/${total} รายการ`, 'warning');
+              if (typeof loadAdminEvaluationsDashboard === 'function') {
+                loadAdminEvaluationsDashboard();
+              }
+            }
+          })
+          .updateEvaluation(evalData, typeof getLogUser === 'function' ? getLogUser() : null);
+      });
     }
   });
+}
 
 }
 
