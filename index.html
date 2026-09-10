@@ -8336,90 +8336,24 @@ function publishSelectedAdminEvaluations() {
 
       showLoading(true, `กำลังบันทึกและเผยแพร่ใบประเมิน ${selectedIds.length} รายการ...`);
 
-      let completedCount = 0;
-
-      let hasError = false;
-
-
-
-      const cacheList = (window._adminEvalsCache && window._adminEvalsCache.length > 0) 
-        ? window._adminEvalsCache 
-        : (window.state && window.state.adminEvals ? window.state.adminEvals : []);
-
-      selectedIds.forEach(evalId => {
-        const ev = cacheList.find(e => String(e.evalId) === String(evalId));
-
-        const payload = {
-
-          evalId: ev ? ev.evalId : evalId,
-
-          subject: ev ? (ev.subject || '') : '',
-
-          studentName: ev ? (ev.studentName || '') : '',
-
-          grade: ev ? (ev.grade || '') : '',
-
-          branch: ev ? (ev.branch || '') : '',
-
-          date: ev ? (ev.date || '') : '',
-
-          teacher: ev ? (ev.teacher || '') : '',
-
-          scores: ev ? (ev.scores || {}) : {},
-
-          strengths: ev ? (ev.strengths || '') : '',
-
-          improvements: ev ? (ev.improvements || '') : '',
-
-          recommendations: ev ? (ev.recommendations || '') : '',
-
-          status: 'published',
-
-          isPublished: true
-
-        };
-
-
-
-        google.script.run
-
-          .withSuccessHandler(res => {
-
-            completedCount++;
-
-            if (completedCount === selectedIds.length) {
-
-              showLoading(false);
-
-              showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จทั้งหมด ${selectedIds.length} รายการแล้ว`, 'success');
-
-              loadAdminEvaluationsDashboard();
-
-            }
-
-          })
-
-          .withFailureHandler(err => {
-
-            hasError = true;
-
-            completedCount++;
-
-            if (completedCount === selectedIds.length) {
-
-              showLoading(false);
-
-              showToast(`เกิดข้อผิดพลาดบางรายการ: ${err.message || err}`, 'error');
-
-              loadAdminEvaluationsDashboard();
-
-            }
-
-          })
-
-          .updateEvaluation(payload);
-
-      });
+      window._nextTaskTitle = `ยืนยันเผยแพร่ใบประเมิน ${selectedIds.length} รายการ`;
+      google.script.run
+        .withSuccessHandler(res => {
+          showLoading(false);
+          if (res && res.success) {
+            showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จทั้งหมด ${selectedIds.length} รายการแล้ว`, 'success');
+            loadAdminEvaluationsDashboard();
+          } else {
+            showToast(`เกิดข้อผิดพลาด: ${res ? res.error : 'ไม่ทราบสาเหตุ'}`, 'error');
+            loadAdminEvaluationsDashboard();
+          }
+        })
+        .withFailureHandler(err => {
+          showLoading(false);
+          showToast(`เกิดข้อผิดพลาด: ${err.message || err}`, 'error');
+          loadAdminEvaluationsDashboard();
+        })
+        .batchPublishEvaluations(selectedIds);
 
     }
 

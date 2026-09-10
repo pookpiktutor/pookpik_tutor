@@ -3728,6 +3728,43 @@ function updateEvaluation(evalData, logUser) {
 
 }
 
+function batchPublishEvaluations(evalIds, logUser) {
+  try {
+    if (!Array.isArray(evalIds) || evalIds.length === 0) {
+      return { success: false, error: 'ไม่มีรายการใบประเมินที่เลือก' };
+    }
+    const db = getDb();
+    const sheet = db.getSheetByName('EvaluationsDB');
+    if (!sheet) {
+      return { success: false, error: 'ไม่พบฐานข้อมูล EvaluationsDB' };
+    }
+
+    const rows = sheet.getDataRange().getValues();
+    const targetMap = {};
+    evalIds.forEach(id => { targetMap[String(id).trim()] = true; });
+
+    let updatedCount = 0;
+    for (let i = 1; i < rows.length; i++) {
+      if (rows[i][0] && targetMap[String(rows[i][0]).trim()]) {
+        sheet.getRange(i + 1, 15).setValue('published');
+        updatedCount++;
+      }
+    }
+
+    clearCacheObject('evaluations_list');
+    clearCacheObject('evaluations_list_all');
+    try {
+      const cache = CacheService.getScriptCache();
+      cache.removeAll(['evaluations_list_all']);
+    } catch(ce) {}
+
+    logActivity(logUser, 'เผยแพร่ใบประเมิน', `เผยแพร่ใบประเมินแบบกลุ่มจำนวน ${updatedCount} รายการ`);
+    return { success: true, count: updatedCount };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
 function getAdminEvalStats() {
 
   try {
