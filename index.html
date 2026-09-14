@@ -6926,7 +6926,12 @@ h5, h6 { font-size: 0.85rem !important; }
 
                       <div>
 
-                        <label class="form-label">เลือกคอร์ส/รอบเรียนของคุณครู <span style="color:red;">*</span></label>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                          <label class="form-label" style="margin-bottom: 0;">เลือกคอร์ส/รอบเรียนของคุณครู <span style="color:red;">*</span></label>
+                          <button type="button" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem; border-radius: 4px; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;" onclick="forceRefreshTeacherCourses()" title="ดึงข้อมูลคอร์สเรียนล่าสุด">
+                            <i class="fas fa-sync-alt"></i> ดึงข้อมูล
+                          </button>
+                        </div>
 
                         <select id="eval_course" class="form-select" required style="width: 100%;" onchange="onEvalCourseChange()">
 
@@ -8312,16 +8317,19 @@ function toggleCourseAllCheckboxes(headerCb, containerEl) {
 
 function publishSelectedAdminEvaluations() {
   const checkedEls = document.querySelectorAll('.admin-eval-select-checkbox:checked');
-  const selectedIds = Array.from(checkedEls).map(el => el.getAttribute('data-eval-id')).filter(Boolean);
-
-  if (selectedIds.length === 0) {
+  
+  if (checkedEls.length === 0) {
     showToast('กรุณาติ๊กเลือกใบประเมินที่ต้องการยืนยันเผยแพ่อย่างน้อย 1 รายการ', 'warning');
     return;
   }
 
+  const selectedIds = Array.from(checkedEls).map(el => {
+    return el.getAttribute('data-eval-id') || el.getAttribute('data-student-name');
+  }).filter(Boolean);
+
   Swal.fire({
     title: '🌐 ยืนยันการเผยแพร่ใบประเมิน',
-    html: `คุณต้องการยืนยันเผยแพร่ใบประเมินนักเรียนจำนวน <b style="color:#10b981; font-size:1.1rem;">${selectedIds.length}</b> รายการที่เลือกหรือไม่?<br><br><small style="color:#64748b;">* เมื่อยืนยันแล้ว ใบประเมินเหล่านี้จะมีสถานะ "เผยแพร่แล้ว" และผู้ปกครองจะสามารถดูรายงานผ่านระบบผู้ปกครองได้ทันที</small>`,
+    html: `คุณต้องการยืนยันเผยแพร่ใบประเมินนักเรียนจำนวน <b style="color:#10b981; font-size:1.1rem;">${selectedIds.length}</b> รายการที่เลือกหรือไม่?<br><br><small style="color:#64748b;">* เมื่อยืนยันแล้ว ใบประเมินเหล่านี้จะมีสถานะ "เผยแพร่แล้ว" ในระบบและบันทึกสู่ Google Sheets ทันที</small>`,
     icon: 'question',
     showCancelButton: true,
     confirmButtonColor: '#10b981',
@@ -8335,45 +8343,59 @@ function publishSelectedAdminEvaluations() {
     if (result && result.isConfirmed) {
       showToast(`⏳ กำลังบันทึกและเผยแพร่ใบประเมิน ${selectedIds.length} รายการ...`, 'info');
 
+      // 1. INSTANT OPTIMISTIC UI UPDATE: Update local cache & badge elements immediately
+      if (window._adminEvalsCache && Array.isArray(window._adminEvalsCache)) {
+        selectedIds.forEach(targetId => {
+          const item = window._adminEvalsCache.find(e => e.evalId === targetId || e.studentName === targetId);
+          if (item) {
+            item.isPublished = true;
+            item.status = 'published';
+          }
+        });
+        // Re-render UI immediately so badges turn green right away
+        if (typeof renderAdminEvaluationsDashboard === 'function') {
+          renderAdminEvaluationsDashboard({ evals: window._adminEvalsCache, counts: window._adminEvalsCounts || {} });
+        }
+      }
+
+      // 2. BACKEND SYNC: Call Apps Script to save to Google Sheets column O
+      const doFallbackPublish = () => {
+        let completed = 0;
+        let errs = 0;
+        const total = selectedIds.length;
+        const cache = window._adminEvalsCache || [];
+        selectedIds.forEach(targetId => {
+          const ev = cache.find(e => e.evalId === targetId || e.studentName === targetId) || { evalId: targetId, studentName: targetId };
+          const evalData = Object.assign({}, ev, { evalId: ev.evalId || targetId, isPublished: true, status: 'published' });
+          google.script.run
+            .withSuccessHandler(r => {
+              completed++;
+              if (!r || !r.success) errs++;
+              if (completed === total) {
+                showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จ ${total - errs}/${total} รายการแล้ว`, 'success');
+              }
+            })
+            .withFailureHandler(() => {
+              completed++;
+              errs++;
+              if (completed === total) {
+                showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จ ${total - errs}/${total} รายการแล้ว`, 'success');
+              }
+            })
+            .updateEvaluation(evalData, typeof getLogUser === 'function' ? getLogUser() : null);
+        });
+      };
+
       google.script.run
         .withSuccessHandler(res => {
-          if (res && res.success) {
-            showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จทั้งหมด ${res.count || selectedIds.length} รายการแล้ว`, 'success');
+          if (res && res.success && res.count > 0) {
+            showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จทั้งหมด ${res.count} รายการแล้ว`, 'success');
           } else {
-            showToast(`พบข้อผิดพลาดในการเผยแพร่: ${(res && res.error) || 'ไม่ทราบสาเหตุ'}`, 'error');
-          }
-          if (typeof loadAdminEvaluationsDashboard === 'function') {
-            loadAdminEvaluationsDashboard();
+            doFallbackPublish();
           }
         })
         .withFailureHandler(err => {
-          // If batch call failed for any reason, perform direct update via updateEvaluation loop
-          let completed = 0;
-          let errs = 0;
-          const total = selectedIds.length;
-          const cache = window._adminEvalsCache || [];
-          selectedIds.forEach(evalId => {
-            const ev = cache.find(e => e.evalId === evalId) || { evalId: evalId };
-            const evalData = Object.assign({}, ev, { isPublished: true, status: 'published' });
-            google.script.run
-              .withSuccessHandler(r => {
-                completed++;
-                if (!r || !r.success) errs++;
-                if (completed === total) {
-                  showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จ ${total - errs}/${total} รายการแล้ว`, 'success');
-                  if (typeof loadAdminEvaluationsDashboard === 'function') loadAdminEvaluationsDashboard();
-                }
-              })
-              .withFailureHandler(() => {
-                completed++;
-                errs++;
-                if (completed === total) {
-                  showToast(`🎉 ยืนยันเผยแพร่ใบประเมินสำเร็จ ${total - errs}/${total} รายการแล้ว`, 'success');
-                  if (typeof loadAdminEvaluationsDashboard === 'function') loadAdminEvaluationsDashboard();
-                }
-              })
-              .updateEvaluation(evalData, typeof getLogUser === 'function' ? getLogUser() : null);
-          });
+          doFallbackPublish();
         })
         .batchPublishEvaluations(selectedIds, typeof getLogUser === 'function' ? getLogUser() : null);
     }
@@ -42951,6 +42973,50 @@ function populateTeacherCourseDropdown() {
 
 
 
+window.forceRefreshTeacherCourses = function() {
+  if (!state.currentUser) {
+    showToast('กรุณาเข้าสู่ระบบก่อน', 'warning');
+    return;
+  }
+  setLoading(true, 'กำลังดึงข้อมูลคอร์สเรียนล่าสุด...');
+  google.script.run
+    .withSuccessHandler(function(res) {
+      setLoading(false);
+      const courseSelect = document.getElementById('eval_course');
+      const studentSelect = document.getElementById('eval_student');
+      if (!courseSelect || !studentSelect) return;
+      
+      if (Array.isArray(res)) {
+        const seenSingleSubgroup = new Set();
+        const deduplicated = [];
+        res.forEach(function(c) {
+          let cleanName = (c.courseName || '').toString().trim();
+          if (cleanName.includes('เดี่ยว') || cleanName.includes('ย่อย')) {
+            cleanName = cleanName.replace(/\s+(ex|EX|รอบ|#)?\s*\d+$/gi, '').trim();
+          }
+          c.courseName = cleanName;
+          c.displayCourseName = cleanName;
+          const dedupeKey = cleanName.toLowerCase().replace(/\s+/g, '');
+          if (!seenSingleSubgroup.has(dedupeKey)) {
+            seenSingleSubgroup.add(dedupeKey);
+            deduplicated.push(c);
+          }
+        });
+        state._teacherCourses = deduplicated;
+        populateTeacherCourseDropdown();
+        showToast('ดึงข้อมูลคอร์สเรียนสำเร็จ', 'success');
+      } else {
+        showToast('ไม่พบตารางสอนคอร์สใดๆ ของคุณครู', 'warning');
+      }
+      renderEvalCriteriaGrid('math_sci');
+    })
+    .withFailureHandler(function(err) {
+      setLoading(false);
+      showToast('ไม่สามารถดึงข้อมูลคอร์สครู: ' + err.message, 'error');
+    })
+    .getTeacherCoursesAndStudents(state.currentUser.username + "|refresh");
+};
+
 function initEvaluationForm() {
 
 
@@ -43395,29 +43461,35 @@ function onEvalCourseChange() {
 
           
 
-          const hasEvaluated = evals.some(function(ev) {
+          // Check session-level tracking first (most reliable)
+          const sessionKey = normalizeThaiStudentName(data.studentName) + '|' + cleanCourseNameBase(course.courseName);
+          let hasEvaluated = window._evaluatedStudentKeys && window._evaluatedStudentKeys.has(sessionKey);
 
-            const cleanEvSub = (ev.subject || '').toString().trim();
+          if (!hasEvaluated) {
+            hasEvaluated = evals.some(function(ev) {
 
-            const cleanEvStuName = (ev.studentName || '').toString().trim().toLowerCase();
+              const cleanEvSub = (ev.subject || '').toString().trim();
 
-            const cleanEvNick = (ev.nickname || '').toString().trim().toLowerCase();
+              const cleanEvStuName = (ev.studentName || '').toString().trim().toLowerCase();
 
-            
+              const cleanEvNick = (ev.nickname || '').toString().trim().toLowerCase();
 
-            const isSubjectMatch = isCourseExactMatchFrontend(cleanCourseSub, cleanEvSub, course.dayTimeStr);
+              
 
-            const isStudentMatch = (
+              const isSubjectMatch = isCourseExactMatchFrontend(cleanCourseSub, cleanEvSub, course.dayTimeStr);
 
-              (cleanStuName !== '' && (cleanEvStuName === cleanStuName || cleanEvStuName.includes(cleanStuName) || cleanStuName.includes(cleanEvStuName))) ||
+              const isStudentMatch = (
 
-              (cleanStuNick !== '' && (cleanEvStuName.includes(cleanStuNick) || cleanEvNick === cleanStuNick || cleanEvNick.includes(cleanStuNick)))
+                (cleanStuName !== '' && (cleanEvStuName === cleanStuName || cleanEvStuName.includes(cleanStuName) || cleanStuName.includes(cleanEvStuName))) ||
 
-            );
+                (cleanStuNick !== '' && (cleanEvStuName.includes(cleanStuNick) || cleanEvNick === cleanStuNick || cleanEvNick.includes(cleanStuNick)))
 
-            return isSubjectMatch && isStudentMatch;
+              );
 
-          });
+              return isSubjectMatch && isStudentMatch;
+
+            });
+          }
 
 
 
@@ -43589,6 +43661,9 @@ function populateRegularStudents(courseObj) {
 
       let visibleCount = 0;
 
+      // Pre-compute normalized course base for session-level check
+      const normCourseBase = typeof cleanCourseNameBase === 'function' ? cleanCourseNameBase(courseObj.courseName) : (courseObj.courseName || '').toLowerCase().trim();
+
       courseObj.students.forEach(function(s, idx) {
 
         const normStuName = normalizeThaiStudentName(s.name);
@@ -43597,9 +43672,22 @@ function populateRegularStudents(courseObj) {
 
         const normStuId = normalizeThaiStudentName(s.studentId);
 
+        // Check session-level tracking first (most reliable within current session)
+        let hasEvaluated = false;
+        if (window._evaluatedStudentKeys && window._evaluatedStudentKeys.size > 0) {
+          const sessionKeyName = normStuName + '|' + normCourseBase;
+          const sessionKeyNick = normStuNick + '|' + normCourseBase;
+          const sessionKeyId = normStuId + '|' + normCourseBase;
+          if (window._evaluatedStudentKeys.has(sessionKeyName) ||
+              (normStuNick && window._evaluatedStudentKeys.has(sessionKeyNick)) ||
+              (normStuId && window._evaluatedStudentKeys.has(sessionKeyId))) {
+            hasEvaluated = true;
+          }
+        }
 
-
-        const hasEvaluated = evals.some(function(ev) {
+        // Fall back to state.evaluations check
+        if (!hasEvaluated) {
+          hasEvaluated = evals.some(function(ev) {
 
           const normEvName = normalizeThaiStudentName(ev.studentName);
 
@@ -43625,7 +43713,8 @@ function populateRegularStudents(courseObj) {
 
           return isSubjectMatch && isStudentMatch;
 
-        });
+          });
+        }
 
         
 
@@ -44547,7 +44636,7 @@ function submitStudentEvaluation(event) {
 
         state.evaluations.push({
 
-          evalId: res.id || ('EVAL_' + new Date().getTime()),
+          evalId: res.evalId || ('EVAL_' + new Date().getTime()),
 
           studentName: data.studentName,
 
@@ -44566,6 +44655,15 @@ function submitStudentEvaluation(event) {
         });
 
         
+
+        // Session-level tracking: reliably mark this student+course as evaluated
+        if (!window._evaluatedStudentKeys) window._evaluatedStudentKeys = new Set();
+        const normName = typeof normalizeThaiStudentName === 'function' ? normalizeThaiStudentName(data.studentName) : data.studentName.toLowerCase().trim();
+        const normNick = typeof normalizeThaiStudentName === 'function' ? normalizeThaiStudentName(data.nickname) : (data.nickname || '').toLowerCase().trim();
+        const normSubject = typeof cleanCourseNameBase === 'function' ? cleanCourseNameBase(data.subject) : data.subject.toLowerCase().trim();
+        window._evaluatedStudentKeys.add(normName + '|' + normSubject);
+        if (normNick) window._evaluatedStudentKeys.add(normNick + '|' + normSubject);
+        console.log('[EvalTracker] Marked evaluated:', normName, '|', normSubject, 'Set size:', window._evaluatedStudentKeys.size);
 
         populateTeacherCourseDropdown();
 
@@ -44788,6 +44886,50 @@ function loadEvaluationsList() {
 
 
 
+
+function publishSingleAdminEvaluation(evalId) {
+  const ev = (window._adminEvalsCache || []).find(e => e.evalId === evalId);
+  if (!ev) {
+    showToast('ไม่พบข้อมูลใบประเมินนี้', 'error');
+    return;
+  }
+
+  Swal.fire({
+    title: '🌐 ยืนยันการเผยแพร่ใบประเมิน',
+    html: `คุณต้องการยืนยันเผยแพร่ใบประเมินของ <b>${ev.studentName}</b> หรือไม่?<br><br><small style="color:#64748b;">* เมื่อยืนยันแล้ว ผู้ปกครองจะสามารถค้นหาดูรายงานใบประเมินนี้ได้ทันที</small>`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: '🌐 ยืนยันเผยแพร่ทันที',
+    cancelButtonText: 'ยกเลิก',
+    customClass: { popup: 'swal2-center-popup' }
+  }).then((result) => {
+    if (result && result.isConfirmed) {
+      // Instant Optimistic UI Update
+      ev.isPublished = true;
+      ev.status = 'published';
+      if (typeof renderAdminEvaluationsDashboard === 'function') {
+        renderAdminEvaluationsDashboard({ evals: window._adminEvalsCache, counts: window._adminEvalsCounts || {} });
+      }
+
+      showToast('⏳ กำลังบันทึกและเผยแพร่ใบประเมิน...', 'info');
+      const evalData = Object.assign({}, ev, { evalId: evalId, isPublished: true, status: 'published' });
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res && res.success) {
+            showToast(`🎉 เผยแพร่ใบประเมินของ ${ev.studentName} สำเร็จแล้ว!`, 'success');
+          } else {
+            showToast('พบข้อผิดพลาด: ' + ((res && res.error) || 'บันทึกล้มเหลว'), 'error');
+          }
+        })
+        .withFailureHandler(err => {
+          showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+        })
+        .updateEvaluation(evalData, typeof getLogUser === 'function' ? getLogUser() : null);
+    }
+  });
+}
 
 function deleteAdminEvaluation(evalId) {
   const ev = (window._adminEvalsCache || []).find(e => e.evalId === evalId);
@@ -45608,7 +45750,9 @@ function saveAdminEvaluationEdit(e) {
 
 
 
-    recommendations: recommendationsRes.value
+    recommendations: recommendationsRes.value,
+    isPublished: true,
+    status: 'published'
 
 
 
@@ -45857,6 +46001,7 @@ function renderAdminEvaluationsDashboard(res) {
   const evals = Array.isArray(res) ? res : (res.evals || []);
 
   const counts = Array.isArray(res) ? {} : (res.counts || {});
+  window._adminEvalsCounts = counts;
 
   window._adminEvalsCache = evals;
 
@@ -46046,12 +46191,13 @@ function renderAdminEvaluationsDashboard(res) {
               <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-main); line-height: 1.2;">${ev.studentName}</div>
               <div>${pubBadgeHtml}</div>
             </div>
-            <input type="checkbox" class="admin-eval-select-checkbox" data-eval-id="${ev.evalId}" style="width: 17px; height: 17px; cursor: pointer; accent-color: #10b981; flex-shrink: 0;" title="เลือกใบประเมินนี้เพื่อยืนยันเผยแพร่">
+            <input type="checkbox" class="admin-eval-select-checkbox" data-eval-id="${ev.evalId}" data-student-name="${ev.studentName}" style="width: 17px; height: 17px; cursor: pointer; accent-color: #10b981; flex-shrink: 0;" title="เลือกใบประเมินนี้เพื่อยืนยันเผยแพร่">
           </div>
           ${stuBranchHtml}
           ${ev.teacher ? `<div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 4px;"><span>ผู้สอน:</span> <span style="font-weight: 600; color: #334155;">${cleanTeacherDisplayName(ev.teacher)}</span></div>` : ''}
         <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
-          <button class="btn btn-primary" style="width: 100%; padding: 4px 6px; font-size: 0.72rem; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ตรวจประเมิน / แก้ไข</button>
+          ${!isPub ? `<button class="btn btn-success" style="width: 100%; padding: 4px 6px; font-size: 0.75rem; font-weight: 700; background: #10b981; color: white; border: none;" onclick="publishSingleAdminEvaluation('${ev.evalId}')">🚀 เผยแพร่ใบนี้ทันที</button>` : ''}
+          <button class="btn btn-primary" style="width: 100%; padding: 4px 6px; font-size: 0.72rem; font-weight: 700; background: linear-gradient(135deg, #3b82f6, #2563eb); border: none;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ตรวจประเมิน / แก้ไข</button>
           <div style="display: flex; gap: 4px;">
             <button class="btn btn-secondary" style="flex: 1; padding: 3px 6px; font-size: 0.68rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">👁️ ดูรายละเอียด</button>
             <button class="btn btn-danger" style="padding: 3px 6px; font-size: 0.68rem; background: #ef4444; color: white;" onclick="deleteAdminEvaluation('${ev.evalId}')" title="ลบใบประเมินนี้"><i class="fas fa-trash"></i> ลบ</button>
