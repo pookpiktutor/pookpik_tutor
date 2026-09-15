@@ -417,7 +417,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           .getEvaluationsList('parent');
       } else {
         // Fallback fetch to WebApp API for standalone GitHub Pages
-        const apiUrl = "https://script.google.com/macros/s/AKfycbyZHKlu_c263M9DdjpWlHpSDp5I5pjfu0IH3YglrfK6b8FhHse88DJ6QZRSp9-Qps2jnQ/exec?action=getEvaluationsList&role=parent&t=" + new Date().getTime();
+        const apiUrl = "https://script.google.com/macros/s/AKfycbyHw4MCZmepDEGiVhRaSYMCgzzQ4hJqwSO_ixi4wkbQ_9zBngYGCquDa6erf5CTFb48/exec?action=getEvaluationsList&role=parent&t=" + new Date().getTime();
         fetch(apiUrl)
           .then(res => res.json())
           .then(data => {
