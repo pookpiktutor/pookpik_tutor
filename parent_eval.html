@@ -70,7 +70,7 @@
     }
 
     .header-card {
-      padding: 30px;
+      padding: 20px;
       text-align: center;
     }
 
@@ -91,7 +91,7 @@
     }
 
     .header-title {
-      font-size: 26px;
+      font-size: 22px;
       font-weight: 700;
       background: var(--primary-gradient);
       -webkit-background-clip: text;
@@ -106,7 +106,7 @@
     }
 
     .search-card {
-      padding: 30px;
+      padding: 20px;
     }
     
     .status-box {
@@ -152,12 +152,12 @@
 
     .eval-header-bg {
       background: linear-gradient(135deg, rgba(255, 51, 102, 0.05) 0%, rgba(125, 95, 255, 0.05) 100%);
-      padding: 25px 30px;
+      padding: 15px 20px;
       border-bottom: 1px solid rgba(0,0,0,0.03);
     }
 
     .eval-body {
-      padding: 25px 30px;
+      padding: 15px 20px;
     }
 
     .course-badge {
@@ -205,7 +205,7 @@
     .ratings-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
+      gap: 10px;
       margin-bottom: 25px;
     }
 
@@ -523,7 +523,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
             <div style="width: 80px; height: 80px; background: rgba(255, 51, 102, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
               <i class="fa-solid fa-folder-open" style="font-size: 36px; color: var(--primary-color);"></i>
             </div>
-            <h3 style="font-size: 22px; font-weight: 700; color: #1e293b; margin-bottom: 12px;">ไม่พบใบประเมินผลการเรียนที่เผยแพร่แล้ว</h3>
+            <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 12px;">ไม่พบใบประเมินผลการเรียนที่เผยแพร่แล้ว</h3>
             <p style="color: #64748b; font-size: 15px; max-width: 500px; margin: 0 auto; line-height: 1.6;">
               ไม่พบใบประเมินที่ได้รับการยืนยันเผยแพร่ของ <strong style="color: var(--primary-color);">"${queryName}"</strong> ในระบบ
             </p>
@@ -533,8 +533,8 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       }
 
       let html = `
-        <div style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; animation: fadeIn 0.4s ease-out forwards;">
-          <h2 style="font-size: 22px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 12px;">
+        <div style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; animation: fadeIn 0.4s ease-out forwards;">
+          <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 12px;">
             <span style="background: var(--primary-gradient); color: white; width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: var(--shadow-glow);">
               <i class="fa-solid fa-award"></i>
             </span>
@@ -551,7 +551,13 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         const nickname = (ev.nickname || ev.studentNickname) ? `(${ev.nickname || ev.studentNickname})` : '';
         const courseName = ev.subject || ev.courseName || ev.course || 'คอร์สเรียน';
         const teacherName = ev.teacher || ev.teacherName || ev.kruName || 'ครูผู้สอน';
-        const evalDate = ev.date || ev.evalDate || 'ล่าสุด';
+        let evalDate = ev.date || ev.evalDate || 'ล่าสุด';
+        if (evalDate && evalDate.includes('T')) {
+          const d = new Date(evalDate);
+          if (!isNaN(d.getTime())) {
+            evalDate = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+          }
+        }
         const gradeLevel = ev.grade || ev.gradeLevel || '-';
         const branchName = ev.branch || 'บ้านครูปุ๊กปิ๊ก TUTOR';
 
@@ -572,17 +578,14 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         html += `
           <div class="eval-card" style="animation-delay: ${idx * 0.15}s;">
             <div class="eval-header-bg">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
                 <div>
                   <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
                     <span class="course-badge">
                       <i class="fa-solid fa-book-open"></i> ${courseName}
                     </span>
-                    <span style="background: white; color: #475569; padding: 6px 14px; border-radius: 30px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-sm);">
-                      <i class="fa-solid fa-school"></i> ${branchName}
-                    </span>
                   </div>
-                  <h3 style="font-size: 24px; font-weight: 700; color: #1e293b; margin: 0;">
+                  <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">
                     น้อง${studentName.replace(/^(ด\.ช\.|ด\.ญ\.|เด็กชาย|เด็กหญิง)\s*/, '')} <span style="color: var(--primary-color);">${nickname}</span>
                   </h3>
                 </div>
