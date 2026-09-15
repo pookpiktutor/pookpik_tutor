@@ -529,11 +529,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
               ไม่พบใบประเมินที่ได้รับการยืนยันเผยแพร่ของ <strong style="color: var(--primary-color);">"${queryName}"</strong> ในระบบ
             </p>
             <p style="color: red; font-size: 12px; margin-top: 10px;" id="debugError"></p>
-            <script>
-              if (window.apiFetchError) {
-                document.getElementById('debugError').innerText = "Error: " + window.apiFetchError + " (Please contact admin)";
-              }
-            </script>
+            
           </div>
         `;
         return;
