@@ -14756,11 +14756,7 @@ function printStaffSalarySummary() {
 
   printWindow.document.write('<div class="print-footer">พิมพ์เมื่อ: ' + new Date().toLocaleString('th-TH') + '</div>');
 
-  printWindow.document.write('
-
-}
-
-<script>
+  printWindow.document.write('<script>
 // Function to copy magic link to clipboard
 function copyMagicLink(studentName) {
   if (!studentName) {
@@ -24376,10 +24372,6 @@ function deleteStaffTeacherAdjustmentInSummary(adjId) {
     .deleteTeacherAdjustment(adjId, getLogUser());
 }
 </script>
-
-
-}
-
 <script>
 // Function to copy magic link to clipboard
 function copyMagicLink(studentName) {

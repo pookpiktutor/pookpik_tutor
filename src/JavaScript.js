@@ -36928,5 +36928,4 @@ function copyMagicLink(studentName) {
     Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถสร้างลิงก์ได้' });
   }
 }
-}
 
