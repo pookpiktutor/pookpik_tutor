@@ -475,8 +475,8 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           </div>
 
           <div class="form-group">
-            <label for="parentPhone">เบอร์โทรศัพท์ผู้ปกครอง</label>
-            <input type="tel" id="parentPhone" placeholder="เช่น 0812345678">
+            <label for="parentPhone">เบอร์โทรศัพท์ผู้ปกครอง <span style="color:red;">*</span></label>
+            <input type="tel" id="parentPhone" placeholder="เช่น 0812345678" required>
           </div>
         </div>
 
@@ -562,6 +562,16 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         return;
       }
 
+      if (!inputPhone || inputPhone.length < 8) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'กรุณากรอกเบอร์โทรศัพท์ผู้ปกครอง',
+          text: 'เพื่อความเป็นส่วนตัวของข้อมูล กรุณาระบุเบอร์โทรศัพท์ผู้ปกครอง (อย่างน้อย 8 หลัก) ที่ให้ไว้กับสถาบันเพื่อยืนยันตัวตน',
+          confirmButtonColor: '#ff6b8b'
+        });
+        return;
+      }
+
       const resultsDiv = document.getElementById('resultsContainer');
       resultsDiv.innerHTML = `
         <div class="status-box">
@@ -613,12 +623,11 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
 
           if (!nameMatch) return false;
 
-          // Check Phone match if user provided phone
-          if (inputPhone) {
-            const itemPhone = String(item.parentPhone || item.phone || '').replace(/\D/g, '');
-            if (itemPhone && !itemPhone.includes(inputPhone)) {
-              return false;
-            }
+          // Check Phone match (Strict requirement for privacy)
+          const itemPhone = String(item.parentPhone || item.phone || '').replace(/\D/g, '');
+          // itemPhone must exist in database, and must match the input phone
+          if (!itemPhone || !itemPhone.includes(inputPhone)) {
+            return false;
           }
 
           return true;
