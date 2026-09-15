@@ -417,7 +417,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           .getEvaluationsList('parent');
       } else {
         // Fallback fetch to WebApp API for standalone GitHub Pages
-        const apiUrl = "https://script.google.com/macros/s/AKfycbzK7sEShW6AGBqweRt20rpI8V8fyrJC3Dlv3uVwVFlhJvcJ2ciJmRXHXc05tL7Ft_5z/exec?action=getEvaluationsList&role=parent";
+        const apiUrl = "https://script.google.com/macros/s/AKfycbzK7sEShW6AGBqweRt20rpI8V8fyrJC3Dlv3uVwVFlhJvcJ2ciJmRXHXc05tL7Ft_5z/exec?action=getEvaluationsList&role=parent&t=" + new Date().getTime();
         fetch(apiUrl)
           .then(res => res.json())
           .then(data => {
@@ -426,6 +426,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           })
           .catch(err => {
             console.error('API fetch error:', err);
+            window.apiFetchError = err.toString();
             callback(err, []);
           });
       }
@@ -527,6 +528,12 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
             <p style="color: #64748b; font-size: 15px; max-width: 500px; margin: 0 auto; line-height: 1.6;">
               ไม่พบใบประเมินที่ได้รับการยืนยันเผยแพร่ของ <strong style="color: var(--primary-color);">"${queryName}"</strong> ในระบบ
             </p>
+            <p style="color: red; font-size: 12px; margin-top: 10px;" id="debugError"></p>
+            <script>
+              if (window.apiFetchError) {
+                document.getElementById('debugError').innerText = "Error: " + window.apiFetchError + " (Please contact admin)";
+              }
+            </script>
           </div>
         `;
         return;
