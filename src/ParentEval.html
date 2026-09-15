@@ -775,6 +775,43 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
 
       container.innerHTML = html;
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get('ref');
+      const searchCard = document.querySelector('.search-card');
+      const resultsDiv = document.getElementById('resultsContainer');
+      
+      if (ref) {
+        if (searchCard) searchCard.style.display = 'none';
+        try {
+          // Decode Base64 string to original student name
+          const studentName = decodeURIComponent(escape(atob(ref)));
+          document.getElementById('studentName').value = studentName;
+          
+          // Trigger search automatically
+          const fakeEvent = { preventDefault: () => {} };
+          handleSearch(fakeEvent);
+        } catch (e) {
+          console.error("Invalid magic link ref", e);
+          Swal.fire({
+            icon: 'error',
+            title: 'ลิงก์ไม่ถูกต้อง',
+            text: 'ลิงก์ส่วนตัวที่คุณเปิดไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง'
+          });
+        }
+      } else {
+        // No ref -> Hide search form entirely for privacy
+        if (searchCard) searchCard.style.display = 'none';
+        resultsDiv.innerHTML = `
+          <div class="status-box" style="margin-top: 30px;">
+            <i class="fa-solid fa-lock" style="font-size: 40px; color: #cbd5e1; margin-bottom: 15px; display: block;"></i>
+            <h3 style="color: #475569; margin-bottom: 8px;">ข้อมูลส่วนตัว</h3>
+            <p style="color: #64748b; font-size: 15px; line-height: 1.5;">กรุณาเปิดลิงก์ส่วนตัว (Magic Link) ที่ได้รับจากแอดมิน เพื่อเข้าดูใบประเมิน<br>หากท่านยังไม่มีลิงก์ กรุณาติดต่อทีมงานค่ะ</p>
+          </div>
+        `;
+      }
+    });
   </script>
 </body>
 </html>

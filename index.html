@@ -46287,7 +46287,7 @@ function renderAdminEvaluationsDashboard(res) {
           ${stuBranchHtml}
           ${ev.teacher ? `<div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 4px;"><span>ผู้สอน:</span> <span style="font-weight: 600; color: #334155;">${cleanTeacherDisplayName(ev.teacher)}</span></div>` : ''}
         <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
-          ${!isPub ? `<button class="btn btn-success" style="width: 100%; padding: 4px 6px; font-size: 0.75rem; font-weight: 700; background: #10b981; color: white; border: none;" onclick="publishSingleAdminEvaluation('${ev.evalId}')">🚀 เผยแพร่ใบนี้ทันที</button>` : ''}
+          ${!isPub ? `<button class="btn btn-success" style="width: 100%; padding: 4px 6px; font-size: 0.75rem; font-weight: 700; background: #10b981; color: white; border: none;" onclick="publishSingleAdminEvaluation('${ev.evalId}')">🚀 เผยแพร่ใบนี้ทันที</button>` : `<button class="btn btn-info" style="width: 100%; padding: 4px 6px; font-size: 0.72rem; font-weight: 700; background: #8b5cf6; color: white; border: none;" onclick="copyMagicLink('${(ev.studentName||'').replace(/'/g, "\\'")}')">📋 คัดลอกลิงก์ส่งผู้ปกครอง</button>`}
           <button class="btn btn-primary" style="width: 100%; padding: 4px 6px; font-size: 0.72rem; font-weight: 700; background: linear-gradient(135deg, #3b82f6, #2563eb); border: none;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ตรวจประเมิน / แก้ไข</button>
           <div style="display: flex; gap: 4px;">
             <button class="btn btn-secondary" style="flex: 1; padding: 3px 6px; font-size: 0.68rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">👁️ ดูรายละเอียด</button>
