@@ -51167,7 +51167,7 @@ function copyMagicLink(studentName) {
     const encoded = btoa(unescape(encodeURIComponent(studentName)));
     let baseUrl = window.location.href.split('?')[0];
     baseUrl = baseUrl.replace(/index\.html$/, '').replace(/\/$/, '');
-    const link = baseUrl + '/parent_eval.html?ref=' + encoded;
+    const link = baseUrl + '/parent_eval.html?ref=' + encodeURIComponent(encoded);
     
     const fallbackCopy = () => {
       Swal.fire({
