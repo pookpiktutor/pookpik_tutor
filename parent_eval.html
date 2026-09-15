@@ -15,19 +15,22 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
+    
     :root {
-      --primary-color: #ff6b8b;
-      --primary-gradient: linear-gradient(135deg, #ff6b8b 0%, #ff8e53 100%);
-      --secondary-gradient: linear-gradient(135deg, #6b11ff 0%, #7d5fff 100%);
-      --bg-color: #f7f9fc;
-      --card-bg: #ffffff;
-      --text-main: #2d3748;
-      --text-muted: #718096;
-      --border-color: #edf2f7;
-      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-      --shadow-md: 0 10px 25px -5px rgba(255, 107, 139, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-      --radius-lg: 20px;
-      --radius-md: 12px;
+      --primary-color: #ff3366;
+      --primary-gradient: linear-gradient(135deg, #ff3366 0%, #ff7b54 100%);
+      --secondary-gradient: linear-gradient(135deg, #7d5fff 0%, #00d2ff 100%);
+      --bg-color: #f0f4f8;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --card-blur: blur(16px);
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: rgba(255, 255, 255, 0.4);
+      --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.03);
+      --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.08);
+      --shadow-glow: 0 10px 30px rgba(255, 51, 102, 0.2);
+      --radius-lg: 24px;
+      --radius-md: 16px;
     }
 
     * {
@@ -41,10 +44,11 @@
       background-color: var(--bg-color);
       color: var(--text-main);
       min-height: 100vh;
-      padding: 20px 15px;
+      padding: 30px 15px;
       background-image: 
-        radial-gradient(circle at 10% 20%, rgba(255, 107, 139, 0.05) 0%, transparent 20%),
-        radial-gradient(circle at 90% 80%, rgba(125, 95, 255, 0.05) 0%, transparent 20%);
+        radial-gradient(circle at 10% 20%, rgba(255, 51, 102, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(125, 95, 255, 0.08) 0%, transparent 40%);
+      background-attachment: fixed;
     }
 
     .container {
@@ -52,17 +56,22 @@
       margin: 0 auto;
     }
 
-    /* Header Card */
-    .header-card {
+    /* Glassmorphism Cards */
+    .header-card, .search-card, .eval-card, .status-box {
       background: var(--card-bg);
+      backdrop-filter: var(--card-blur);
+      -webkit-backdrop-filter: var(--card-blur);
       border-radius: var(--radius-lg);
-      padding: 25px 30px;
-      text-align: center;
       box-shadow: var(--shadow-md);
-      margin-bottom: 25px;
+      border: 1px solid var(--border-color);
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(255, 107, 139, 0.1);
+      margin-bottom: 25px;
+    }
+
+    .header-card {
+      padding: 30px;
+      text-align: center;
     }
 
     .header-card::before {
@@ -76,132 +85,43 @@
     }
 
     .logo-img {
-      max-height: 85px;
-      width: auto;
-      margin-bottom: 12px;
-      object-fit: contain;
+      max-height: 90px;
+      margin-bottom: 15px;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
     }
 
     .header-title {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 700;
-      color: #2b2d42;
-      margin-bottom: 4px;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 5px;
     }
 
     .header-subtitle {
-      font-size: 15px;
+      font-size: 16px;
       color: var(--text-muted);
       font-weight: 400;
     }
 
-    /* Search Box Card */
     .search-card {
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-      box-shadow: var(--shadow-md);
-      margin-bottom: 30px;
-      border: 1px solid var(--border-color);
+      padding: 30px;
     }
-
-    .search-card-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .search-card-title i {
-      color: var(--primary-color);
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 18px;
-      margin-bottom: 22px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .form-group label {
-      font-size: 14px;
-      font-weight: 500;
-      color: #4a5568;
-    }
-
-    .form-group input,
-    .form-group select {
-      width: 100%;
-      padding: 12px 16px;
-      border: 1.5px solid #e2e8f0;
-      border-radius: var(--radius-md);
-      font-size: 15px;
-      outline: none;
-      transition: all 0.2s ease;
-      background-color: #f8fafc;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus {
-      border-color: #ff6b8b;
-      background-color: #fff;
-      box-shadow: 0 0 0 3px rgba(255, 107, 139, 0.15);
-    }
-
-    .btn-search {
-      width: 100%;
-      padding: 14px;
-      background: var(--primary-gradient);
-      color: white;
-      border: none;
-      border-radius: var(--radius-md);
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(255, 107, 139, 0.3);
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .btn-search:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 107, 139, 0.4);
-    }
-
-    .btn-search:active {
-      transform: translateY(0);
-    }
-
-    /* Loading & Status States */
+    
     .status-box {
       text-align: center;
-      padding: 40px 20px;
-      background: white;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-sm);
-      margin-top: 20px;
+      padding: 50px 20px;
     }
 
     .spinner {
-      width: 45px;
-      height: 45px;
-      border: 4px solid #fff5f7;
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 51, 102, 0.1);
       border-top: 4px solid var(--primary-color);
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin: 0 auto 15px auto;
+      margin: 0 auto 20px auto;
     }
 
     @keyframes spin {
@@ -209,45 +129,59 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* Evaluation Result Card */
+    /* Premium Eval Card */
     .eval-card {
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      padding: 25px;
-      box-shadow: var(--shadow-md);
-      margin-bottom: 25px;
-      border: 1px solid var(--border-color);
-      transition: transform 0.2s ease;
+      padding: 0;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: fadeIn 0.6s ease-out forwards;
+      opacity: 0;
+      transform: translateY(20px);
     }
 
-    .eval-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      gap: 12px;
-      border-bottom: 2px dashed #edf2f7;
-      padding-bottom: 16px;
-      margin-bottom: 20px;
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .eval-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .eval-header-bg {
+      background: linear-gradient(135deg, rgba(255, 51, 102, 0.05) 0%, rgba(125, 95, 255, 0.05) 100%);
+      padding: 25px 30px;
+      border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .eval-body {
+      padding: 25px 30px;
     }
 
     .course-badge {
-      background: #fff0f3;
-      color: #ff3366;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
+      background: var(--primary-gradient);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 14px;
       font-weight: 600;
+      box-shadow: 0 4px 10px rgba(255, 51, 102, 0.2);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .student-info-row {
       display: flex;
       gap: 20px;
       flex-wrap: wrap;
-      margin-bottom: 20px;
-      background: #f8fafc;
-      padding: 15px 20px;
+      margin-bottom: 25px;
+      background: rgba(255,255,255,0.6);
+      padding: 18px 24px;
       border-radius: var(--radius-md);
+      border: 1px solid rgba(0,0,0,0.03);
     }
 
     .info-item {
@@ -256,86 +190,86 @@
     }
 
     .info-item .label {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-muted);
+      font-weight: 500;
     }
 
     .info-item .val {
-      font-size: 15px;
-      font-weight: 600;
-      color: #2d3748;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
     }
 
-    /* Evaluation Grid & Criteria */
+    /* Ratings */
     .ratings-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
     }
 
     .rating-box {
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 12px 15px;
+      background: white;
+      border: 1px solid #edf2f7;
+      border-radius: var(--radius-md);
+      padding: 16px;
       text-align: center;
+      transition: transform 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .rating-box:hover {
+      transform: scale(1.03);
     }
 
     .rating-box .rating-title {
-      font-size: 12px;
-      color: #718096;
-      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      font-weight: 500;
     }
 
     .rating-box .rating-val {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 700;
-      color: #ff6b8b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-direction: column;
     }
 
     .comments-box {
-      background: #fff9fa;
-      border-left: 4px solid #ff6b8b;
-      padding: 16px;
-      border-radius: 0 10px 10px 0;
+      background: white;
+      padding: 20px;
+      border-radius: var(--radius-md);
       margin-top: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      border-left: 5px solid;
     }
 
     .comments-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #d63384;
-      margin-bottom: 6px;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .comments-text {
-      font-size: 14px;
-      color: #4a5568;
-      line-height: 1.6;
+      font-size: 15px;
+      color: #475569;
+      line-height: 1.7;
       white-space: pre-line;
     }
 
-    .footer-note {
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 13px;
-      margin-top: 30px;
-      padding-bottom: 20px;
+    /* Hide the old search UI since this page is mostly for magic links */
+    .search-card {
+      display: none;
     }
-
-    @media (max-width: 600px) {
-      .header-card {
-        padding: 20px 15px;
-      }
-      .header-title {
-        font-size: 20px;
-      }
-      .search-card {
-        padding: 20px 15px;
-      }
-    }
-  </style>
+</style>
 
 <style>
 /* Global fix for mobile horizontal scroll overflow */
@@ -437,55 +371,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       <p class="header-subtitle">ค้นหาและดูใบประเมินผลการเรียนสำหรับผู้ปกครอง</p>
     </div>
 
-    <!-- Search Form Card -->
-    <div class="search-card">
-      <div class="search-card-title">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <span>กรอกข้อมูลเพื่อค้นหาใบประเมิน</span>
-      </div>
 
-      <form id="searchForm" onsubmit="handleSearch(event)">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="studentName">ชื่อ-นามสกุล หรือ ชื่อเล่นนักเรียน <span style="color:red">*</span></label>
-            <input type="text" id="studentName" placeholder="เช่น น้องปุ๊กปิ๊ก หรือ กิตติพงษ์" required>
-          </div>
-
-          <div class="form-group">
-            <label for="gradeLevel">ระดับชั้น</label>
-            <select id="gradeLevel">
-              <option value="">-- ทุกระดับชั้น --</option>
-              <option value="อนุบาล 1">อนุบาล 1</option>
-              <option value="อนุบาล 2">อนุบาล 2</option>
-              <option value="อนุบาล 3">อนุบาล 3</option>
-              <option value="ประถมศึกษาปีที่ 1">ประถมศึกษาปีที่ 1 (ป.1)</option>
-              <option value="ประถมศึกษาปีที่ 2">ประถมศึกษาปีที่ 2 (ป.2)</option>
-              <option value="ประถมศึกษาปีที่ 3">ประถมศึกษาปีที่ 3 (ป.3)</option>
-              <option value="ประถมศึกษาปีที่ 4">ประถมศึกษาปีที่ 4 (ป.4)</option>
-              <option value="ประถมศึกษาปีที่ 5">ประถมศึกษาปีที่ 5 (ป.5)</option>
-              <option value="ประถมศึกษาปีที่ 6">ประถมศึกษาปีที่ 6 (ป.6)</option>
-              <option value="มัธยมศึกษาปีที่ 1">มัธยมศึกษาปีที่ 1 (ม.1)</option>
-              <option value="มัธยมศึกษาปีที่ 2">มัธยมศึกษาปีที่ 2 (ม.2)</option>
-              <option value="มัธยมศึกษาปีที่ 3">มัธยมศึกษาปีที่ 3 (ม.3)</option>
-              <option value="มัธยมศึกษาปีที่ 4">มัธยมศึกษาปีที่ 4 (ม.4)</option>
-              <option value="มัธยมศึกษาปีที่ 5">มัธยมศึกษาปีที่ 5 (ม.5)</option>
-              <option value="มัธยมศึกษาปีที่ 6">มัธยมศึกษาปีที่ 6 (ม.6)</option>
-              <option value="อื่นๆ">อื่นๆ</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="parentPhone">เบอร์โทรศัพท์ผู้ปกครอง</label>
-            <input type="tel" id="parentPhone" placeholder="เช่น 0812345678">
-          </div>
-        </div>
-
-        <button type="submit" class="btn-search">
-          <i class="fa-solid fa-search"></i>
-          <span>ค้นหาใบประเมินผล</span>
-        </button>
-      </form>
-    </div>
 
     <!-- Results Area -->
     <div id="resultsContainer"></div>
@@ -545,18 +431,12 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       }
     }
 
-    function handleSearch(e) {
-      e.preventDefault();
-
-      const inputName = document.getElementById('studentName').value.trim();
-      const inputGrade = document.getElementById('gradeLevel').value.trim();
-      const inputPhone = document.getElementById('parentPhone').value.trim().replace(/\D/g, '');
-
-      if (!inputName) {
+    function handleSearch(studentName) {
+      if (!studentName) {
         Swal.fire({
           icon: 'warning',
-          title: 'กรุณากรอกชื่อนักเรียน',
-          text: 'กรุณาระบุชื่อ-นามสกุล หรือชื่อเล่น เพื่อค้นหา',
+          title: 'ไม่พบชื่อนักเรียน',
+          text: 'ลิงก์ไม่สมบูรณ์',
           confirmButtonColor: '#ff6b8b'
         });
         return;
@@ -566,35 +446,21 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       resultsDiv.innerHTML = `
         <div class="status-box">
           <div class="spinner"></div>
-          <p style="color:#718096; font-size:15px;">กำลังค้นหาใบประเมินผลการเรียน...</p>
+          <p style="color:#718096; font-size:15px;">กำลังโหลดใบประเมินผลการเรียน...</p>
         </div>
       `;
 
       fetchAllEvaluations(function(err, allEvals) {
         const list = allEvals || [];
-        const cleanedQuery = cleanNick(inputName);
+        const cleanedQuery = cleanNick(studentName);
 
-        // Filter published evaluations matching name/nickname, grade, phone
+        // Filter published evaluations matching name/nickname
         const matched = list.filter(item => {
-          // Check published status: status === 'published' || status === 'เผยแพร่แล้ว' || isPublished === true
+          // Check published status
           const isPublished = (item.isPublished === true || item.published === true || 
                                String(item.status).toLowerCase() === 'published' || 
                                String(item.status) === 'เผยแพร่แล้ว');
           if (!isPublished) return false;
-
-          // Check Grade match if user selected grade
-          if (inputGrade && inputGrade !== 'ทั้งหมด') {
-            const itemGrade = String(item.grade || item.gradeLevel || '').trim().toLowerCase();
-            const filterGrade = inputGrade.trim().toLowerCase();
-            if (itemGrade && !itemGrade.includes(filterGrade) && !filterGrade.includes(itemGrade)) {
-              // Extract number e.g. 'ม.1' vs 'มัธยมศึกษาปีที่ 1'
-              const num1 = (itemGrade.match(/\d+/) || [])[0];
-              const num2 = (filterGrade.match(/\d+/) || [])[0];
-              if (num1 && num2 && num1 !== num2) {
-                return false;
-              }
-            }
-          }
 
           // Check Name / Nickname match
           const rawStdName = String(item.studentName || item.student_name || item.name || '');
@@ -608,24 +474,44 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                             stdNickClean.includes(cleanedQuery) || 
                             cleanedQuery.includes(stdNickClean) ||
                             (cleanedQuery.length >= 2 && stdNickClean.length >= 2 && cleanedQuery.includes(stdNickClean)) ||
-                            rawStdName.toLowerCase().includes(inputName.toLowerCase()) ||
-                            rawStdNick.toLowerCase().includes(inputName.toLowerCase());
+                            rawStdName.toLowerCase().includes(studentName.toLowerCase()) ||
+                            rawStdNick.toLowerCase().includes(studentName.toLowerCase());
 
-          if (!nameMatch) return false;
-
-          // Check Phone match if user provided phone
-          if (inputPhone) {
-            const itemPhone = String(item.parentPhone || item.phone || '').replace(/\D/g, '');
-            if (itemPhone && !itemPhone.includes(inputPhone)) {
-              return false;
-            }
-          }
-
-          return true;
+          return nameMatch;
         });
 
-        renderResults(matched, inputName);
+        renderResults(matched, studentName);
       });
+    }
+
+    
+    function getRatingBadge(val, color) {
+      // Determine level from text or val
+      let stars = 3;
+      let badgeColor = color;
+      
+      if (val.includes('ดีมาก') || val.includes('ยอดเยี่ยม') || val.includes('สม่ำเสมอ')) {
+        stars = 5;
+      } else if (val.includes('ดี') || val.includes('เรียบร้อย') || val.includes('ปานกลาง')) {
+        stars = 4;
+      } else if (val.includes('ควรปรับปรุง') || val.includes('ไม่สม่ำเสมอ') || val.includes('พอใช้')) {
+        stars = 2;
+        badgeColor = '#ef4444';
+      }
+      
+      let starsHtml = '';
+      for (let i = 0; i < 5; i++) {
+        if (i < stars) {
+          starsHtml += `<i class="fa-solid fa-star" style="color: #fbbf24; font-size: 14px;"></i>`;
+        } else {
+          starsHtml += `<i class="fa-regular fa-star" style="color: #e2e8f0; font-size: 14px;"></i>`;
+        }
+      }
+
+      return `
+        <div style="color: ${badgeColor};">${val}</div>
+        <div style="margin-top: 6px; display: flex; gap: 4px; justify-content: center;">${starsHtml}</div>
+      `;
     }
 
     function renderResults(evals, queryName) {
@@ -633,14 +519,13 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
 
       if (!evals || evals.length === 0) {
         container.innerHTML = `
-          <div class="status-box" style="padding: 45px 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
-            <div style="width: 70px; height: 70px; background: #fff1f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px auto;">
-              <i class="fa-solid fa-folder-open" style="font-size: 32px; color: #ff6b8b;"></i>
+          <div class="status-box">
+            <div style="width: 80px; height: 80px; background: rgba(255, 51, 102, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
+              <i class="fa-solid fa-folder-open" style="font-size: 36px; color: var(--primary-color);"></i>
             </div>
-            <h3 style="font-size: 20px; font-weight: 700; color: #2d3748; margin-bottom: 10px;">ไม่พบใบประเมินผลการเรียนที่เผยแพร่แล้ว</h3>
-            <p style="color: #718096; font-size: 14.5px; max-width: 480px; margin: 0 auto; line-height: 1.6;">
-              ไม่พบใบประเมินที่ได้รับการยืนยันเผยแพร่ของ <strong style="color: #ff6b8b;">"${queryName}"</strong> ในระบบ<br>
-              <span style="font-size: 13px; color: #a0aec0; display: block; margin-top: 6px;">💡 คำแนะนำ: หากเพิ่งรับการประเมิน กรุณาแจ้งให้เจ้าหน้าที่กดยืนยันเผยแพร่ในระบบ หรือลองค้นหาด้วยชื่อเล่น/ชื่อจริงสั้นๆ</span>
+            <h3 style="font-size: 22px; font-weight: 700; color: #1e293b; margin-bottom: 12px;">ไม่พบใบประเมินผลการเรียนที่เผยแพร่แล้ว</h3>
+            <p style="color: #64748b; font-size: 15px; max-width: 500px; margin: 0 auto; line-height: 1.6;">
+              ไม่พบใบประเมินที่ได้รับการยืนยันเผยแพร่ของ <strong style="color: var(--primary-color);">"${queryName}"</strong> ในระบบ
             </p>
           </div>
         `;
@@ -648,15 +533,15 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       }
 
       let html = `
-        <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-          <h2 style="font-size: 18px; font-weight: 700; color: #2d3748; display: flex; align-items: center; gap: 10px;">
-            <span style="background: linear-gradient(135deg, #ff6b8b, #ff8e53); color: white; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; box-shadow: 0 4px 10px rgba(255,107,139,0.3);">
-              <i class="fa-solid fa-file-signature"></i>
+        <div style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; animation: fadeIn 0.4s ease-out forwards;">
+          <h2 style="font-size: 22px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 12px;">
+            <span style="background: var(--primary-gradient); color: white; width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: var(--shadow-glow);">
+              <i class="fa-solid fa-award"></i>
             </span>
-            ผลการประเมินการเรียนสำหรับผู้ปกครอง
+            รายงานผลการเรียน
           </h2>
-          <span style="background: #e6fffa; color: #047857; font-size: 13.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; border: 1px solid #a7f3d0; display: inline-flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-circle-check" style="color: #10b981;"></i> พบ ${evals.length} รายการ (เผยแพร่แล้ว)
+          <span style="background: rgba(16, 185, 129, 0.1); color: #059669; font-size: 14px; font-weight: 600; padding: 8px 16px; border-radius: 30px; border: 1px solid rgba(16, 185, 129, 0.2); display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-circle-check"></i> พบ ${evals.length} รายการ (เผยแพร่แล้ว)
           </span>
         </div>
       `;
@@ -673,102 +558,106 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         // Parse scores/ratings dynamically
         const scores = ev.scores || {};
         const ratings = [
-          { title: 'ความตรงต่อเวลา & แต่งกาย', val: scores.attire || scores.attirePrep || ev.rating1 || 'ดีมาก', icon: 'fa-clock-rotate-left', color: '#ff6b8b' },
+          { title: 'ความตรงต่อเวลา & แต่งกาย', val: scores.attire || scores.attirePrep || ev.rating1 || 'ดีมาก', icon: 'fa-clock-rotate-left', color: '#ff3366' },
           { title: 'ความตั้งใจ & สมาธิ', val: scores.attention || scores.attentionFocus || ev.rating2 || 'ดีมาก', icon: 'fa-brain', color: '#7d5fff' },
-          { title: 'ความเข้าใจเนื้อหา', val: scores.understanding || scores.comprehension || ev.rating3 || 'ดีมาก', icon: 'fa-book-open-reader', color: '#3b82f6' },
+          { title: 'ความเข้าใจเนื้อหา', val: scores.understanding || scores.comprehension || ev.rating3 || 'ดีมาก', icon: 'fa-lightbulb', color: '#0ea5e9' },
           { title: 'การส่งงาน & แบบฝึกหัด', val: scores.homework || scores.workCompletion || ev.rating4 || 'เรียบร้อยดี', icon: 'fa-pen-to-square', color: '#10b981' },
-          { title: 'การมีส่วนร่วมในห้องเรียน', val: scores.behavior || ev.rating5 || 'สม่ำเสมอ', icon: 'fa-comments', color: '#f59e0b' }
+          { title: 'การมีส่วนร่วมในห้องเรียน', val: scores.behavior || ev.rating5 || 'สม่ำเสมอ', icon: 'fa-users', color: '#f59e0b' }
         ];
 
         const strengths = ev.strengths || '';
         const improvements = ev.improvements || '';
-        const recommendations = ev.recommendations || ev.comments || ev.teacherComments || ev.feedback || 'นักเรียนมีความตั้งใจเรียนดี พัฒนาทักษะได้ต่อเนื่อง';
+        const recommendations = ev.recommendations || ev.comments || ev.teacherComments || ev.feedback || '';
 
         html += `
-          <div class="eval-card" style="position: relative; overflow: hidden;">
-            <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #ff6b8b 0%, #7d5fff 100%);"></div>
-
-            <div class="eval-card-header" style="margin-top: 5px;">
-              <div>
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
-                  <span class="course-badge" style="background: linear-gradient(135deg, #fff0f3, #ffe4e8); color: #e11d48; border: 1px solid #fecdd3; font-weight: 700;">
-                    <i class="fa-solid fa-book-bookmark"></i> วิชา: ${courseName}
+          <div class="eval-card" style="animation-delay: ${idx * 0.15}s;">
+            <div class="eval-header-bg">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <span class="course-badge">
+                      <i class="fa-solid fa-book-open"></i> ${courseName}
+                    </span>
+                    <span style="background: white; color: #475569; padding: 6px 14px; border-radius: 30px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-sm);">
+                      <i class="fa-solid fa-school"></i> ${branchName}
+                    </span>
+                  </div>
+                  <h3 style="font-size: 24px; font-weight: 700; color: #1e293b; margin: 0;">
+                    น้อง${studentName.replace(/^(ด\.ช\.|ด\.ญ\.|เด็กชาย|เด็กหญิง)\s*/, '')} <span style="color: var(--primary-color);">${nickname}</span>
+                  </h3>
+                </div>
+                
+                <div style="text-align: right; background: white; padding: 10px 16px; border-radius: 12px; box-shadow: var(--shadow-sm);">
+                  <span style="font-size: 13px; color: #64748b; display: block; margin-bottom: 4px;">
+                    <i class="fa-regular fa-calendar"></i> ประเมินเมื่อ: <strong>${evalDate}</strong>
                   </span>
-                  <span style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
-                    🏫 ${branchName}
+                  <span style="font-size: 13px; color: #059669; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                    <i class="fa-solid fa-shield-check"></i> รับรองผลแล้ว
                   </span>
                 </div>
-                <h3 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 4px 0 2px 0;">
-                  ใบประเมินผลการเรียน: ${studentName} <span style="color: #ff6b8b;">${nickname}</span>
-                </h3>
-              </div>
-
-              <div style="text-align: right; background: #f8fafc; padding: 8px 14px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                <span style="font-size: 12px; color: #64748b; display: block; margin-bottom: 2px;">
-                  <i class="fa-regular fa-calendar"></i> วันที่ประเมิน: <strong>${evalDate}</strong>
-                </span>
-                <span style="font-size: 12.5px; color: #16a34a; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
-                  <i class="fa-solid fa-circle-check"></i> เผยแพร่แล้ว
-                </span>
               </div>
             </div>
 
-            <div class="student-info-row" style="background: #f8fafc; border: 1px solid #edf2f7;">
-              <div class="info-item">
-                <span class="label"><i class="fa-solid fa-graduation-cap"></i> ระดับชั้น</span>
-                <span class="val">${gradeLevel}</span>
-              </div>
-              <div class="info-item">
-                <span class="label"><i class="fa-solid fa-chalkboard-user"></i> ครูผู้สอน</span>
-                <span class="val" style="color: #4338ca;">${teacherName}</span>
-              </div>
-            </div>
-
-            <h4 style="font-size: 15px; font-weight: 700; color: #334155; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-              <i class="fa-solid fa-star" style="color: #f59e0b;"></i> สรุปผลการประเมินรายพฤติกรรม
-            </h4>
-
-            <div class="ratings-grid">
-              ${ratings.map(r => `
-                <div class="rating-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; transition: all 0.2s ease;">
-                  <div class="rating-title" style="display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 12px; color: #64748b; margin-bottom: 8px;">
-                    <i class="fa-solid ${r.icon}" style="color: ${r.color};"></i> ${r.title}
-                  </div>
-                  <div class="rating-val" style="color: ${r.color}; font-size: 15.5px;">${r.val}</div>
+            <div class="eval-body">
+              <div class="student-info-row">
+                <div class="info-item" style="flex: 1; min-width: 120px;">
+                  <span class="label"><i class="fa-solid fa-graduation-cap"></i> ระดับชั้น</span>
+                  <span class="val">${gradeLevel}</span>
                 </div>
-              `).join('')}
-            </div>
-
-            ${(strengths || improvements || recommendations) ? `
-              <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
-                ${strengths ? `
-                  <div class="comments-box" style="background: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 0 12px 12px 0;">
-                    <div class="comments-title" style="color: #15803d; font-size: 14px;">
-                      <i class="fa-solid fa-circle-check"></i> จุดเด่นในการเรียนรู้ที่ควรรักษาไว้และส่งเสริม
-                    </div>
-                    <div class="comments-text" style="color: #166534;">${strengths}</div>
-                  </div>
-                ` : ''}
-
-                ${improvements ? `
-                  <div class="comments-box" style="background: #fffbebf5; border-left: 4px solid #f59e0b; border-radius: 0 12px 12px 0;">
-                    <div class="comments-title" style="color: #b45309; font-size: 14px;">
-                      <i class="fa-solid fa-lightbulb"></i> จุดที่ควรพัฒนาเพิ่มเติม
-                    </div>
-                    <div class="comments-text" style="color: #92400e;">${improvements}</div>
-                  </div>
-                ` : ''}
-
-                ${recommendations ? `
-                  <div class="comments-box" style="background: #fff5f7; border-left: 4px solid #ff6b8b; border-radius: 0 12px 12px 0;">
-                    <div class="comments-title" style="color: #be123c; font-size: 14px;">
-                      <i class="fa-solid fa-comment-dots"></i> ความคิดเห็นและข้อเสนอแนะจากคุณครู
-                    </div>
-                    <div class="comments-text" style="color: #881337;">${recommendations}</div>
-                  </div>
-                ` : ''}
+                <div class="info-item" style="flex: 1; min-width: 120px;">
+                  <span class="label"><i class="fa-solid fa-chalkboard-user"></i> ครูผู้สอน</span>
+                  <span class="val" style="color: #7d5fff;">${teacherName}</span>
+                </div>
               </div>
-            ` : ''}
+
+              <h4 style="font-size: 16px; font-weight: 700; color: #334155; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-chart-pie" style="color: var(--primary-color);"></i> สรุปผลการประเมินรายพฤติกรรม
+              </h4>
+
+              <div class="ratings-grid">
+                ${ratings.map(r => `
+                  <div class="rating-box">
+                    <div class="rating-title">
+                      <i class="fa-solid ${r.icon}" style="color: ${r.color}; margin-right: 4px;"></i> ${r.title}
+                    </div>
+                    <div class="rating-val">
+                      ${getRatingBadge(r.val, r.color)}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+
+              ${(strengths || improvements || recommendations) ? `
+                <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 16px;">
+                  ${strengths ? `
+                    <div class="comments-box" style="border-color: #10b981; background: linear-gradient(to right, rgba(16,185,129,0.05), transparent);">
+                      <div class="comments-title" style="color: #059669;">
+                        <i class="fa-solid fa-arrow-trend-up"></i> จุดเด่นที่ควรส่งเสริม
+                      </div>
+                      <div class="comments-text">${strengths}</div>
+                    </div>
+                  ` : ''}
+
+                  ${improvements ? `
+                    <div class="comments-box" style="border-color: #f59e0b; background: linear-gradient(to right, rgba(245,158,11,0.05), transparent);">
+                      <div class="comments-title" style="color: #d97706;">
+                        <i class="fa-solid fa-bullseye"></i> สิ่งที่ควรพัฒนา
+                      </div>
+                      <div class="comments-text">${improvements}</div>
+                    </div>
+                  ` : ''}
+
+                  ${recommendations ? `
+                    <div class="comments-box" style="border-color: var(--primary-color); background: linear-gradient(to right, rgba(255,51,102,0.05), transparent);">
+                      <div class="comments-title" style="color: var(--primary-color);">
+                        <i class="fa-solid fa-comment-dots"></i> ข้อเสนอแนะจากคุณครู
+                      </div>
+                      <div class="comments-text">${recommendations}</div>
+                    </div>
+                  ` : ''}
+                </div>
+              ` : ''}
+            </div>
           </div>
         `;
       });
@@ -776,22 +665,19 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       container.innerHTML = html;
     }
 
+
     document.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       const ref = urlParams.get('ref');
-      const searchCard = document.querySelector('.search-card');
       const resultsDiv = document.getElementById('resultsContainer');
       
       if (ref) {
-        if (searchCard) searchCard.style.display = 'none';
         try {
           // Decode Base64 string to original student name
           const studentName = decodeURIComponent(escape(atob(ref)));
-          document.getElementById('studentName').value = studentName;
           
           // Trigger search automatically
-          const fakeEvent = { preventDefault: () => {} };
-          handleSearch(fakeEvent);
+          handleSearch(studentName);
         } catch (e) {
           console.error("Invalid magic link ref", e);
           Swal.fire({
@@ -801,8 +687,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           });
         }
       } else {
-        // No ref -> Hide search form entirely for privacy
-        if (searchCard) searchCard.style.display = 'none';
+        // No ref -> Display lock message
         resultsDiv.innerHTML = `
           <div class="status-box" style="margin-top: 30px;">
             <i class="fa-solid fa-lock" style="font-size: 40px; color: #cbd5e1; margin-bottom: 15px; display: block;"></i>

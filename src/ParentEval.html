@@ -437,55 +437,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       <p class="header-subtitle">ค้นหาและดูใบประเมินผลการเรียนสำหรับผู้ปกครอง</p>
     </div>
 
-    <!-- Search Form Card -->
-    <div class="search-card">
-      <div class="search-card-title">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <span>กรอกข้อมูลเพื่อค้นหาใบประเมิน</span>
-      </div>
 
-      <form id="searchForm" onsubmit="handleSearch(event)">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="studentName">ชื่อ-นามสกุล หรือ ชื่อเล่นนักเรียน <span style="color:red">*</span></label>
-            <input type="text" id="studentName" placeholder="เช่น น้องปุ๊กปิ๊ก หรือ กิตติพงษ์" required>
-          </div>
-
-          <div class="form-group">
-            <label for="gradeLevel">ระดับชั้น</label>
-            <select id="gradeLevel">
-              <option value="">-- ทุกระดับชั้น --</option>
-              <option value="อนุบาล 1">อนุบาล 1</option>
-              <option value="อนุบาล 2">อนุบาล 2</option>
-              <option value="อนุบาล 3">อนุบาล 3</option>
-              <option value="ประถมศึกษาปีที่ 1">ประถมศึกษาปีที่ 1 (ป.1)</option>
-              <option value="ประถมศึกษาปีที่ 2">ประถมศึกษาปีที่ 2 (ป.2)</option>
-              <option value="ประถมศึกษาปีที่ 3">ประถมศึกษาปีที่ 3 (ป.3)</option>
-              <option value="ประถมศึกษาปีที่ 4">ประถมศึกษาปีที่ 4 (ป.4)</option>
-              <option value="ประถมศึกษาปีที่ 5">ประถมศึกษาปีที่ 5 (ป.5)</option>
-              <option value="ประถมศึกษาปีที่ 6">ประถมศึกษาปีที่ 6 (ป.6)</option>
-              <option value="มัธยมศึกษาปีที่ 1">มัธยมศึกษาปีที่ 1 (ม.1)</option>
-              <option value="มัธยมศึกษาปีที่ 2">มัธยมศึกษาปีที่ 2 (ม.2)</option>
-              <option value="มัธยมศึกษาปีที่ 3">มัธยมศึกษาปีที่ 3 (ม.3)</option>
-              <option value="มัธยมศึกษาปีที่ 4">มัธยมศึกษาปีที่ 4 (ม.4)</option>
-              <option value="มัธยมศึกษาปีที่ 5">มัธยมศึกษาปีที่ 5 (ม.5)</option>
-              <option value="มัธยมศึกษาปีที่ 6">มัธยมศึกษาปีที่ 6 (ม.6)</option>
-              <option value="อื่นๆ">อื่นๆ</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="parentPhone">เบอร์โทรศัพท์ผู้ปกครอง</label>
-            <input type="tel" id="parentPhone" placeholder="เช่น 0812345678">
-          </div>
-        </div>
-
-        <button type="submit" class="btn-search">
-          <i class="fa-solid fa-search"></i>
-          <span>ค้นหาใบประเมินผล</span>
-        </button>
-      </form>
-    </div>
 
     <!-- Results Area -->
     <div id="resultsContainer"></div>
@@ -545,18 +497,12 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       }
     }
 
-    function handleSearch(e) {
-      e.preventDefault();
-
-      const inputName = document.getElementById('studentName').value.trim();
-      const inputGrade = document.getElementById('gradeLevel').value.trim();
-      const inputPhone = document.getElementById('parentPhone').value.trim().replace(/\D/g, '');
-
-      if (!inputName) {
+    function handleSearch(studentName) {
+      if (!studentName) {
         Swal.fire({
           icon: 'warning',
-          title: 'กรุณากรอกชื่อนักเรียน',
-          text: 'กรุณาระบุชื่อ-นามสกุล หรือชื่อเล่น เพื่อค้นหา',
+          title: 'ไม่พบชื่อนักเรียน',
+          text: 'ลิงก์ไม่สมบูรณ์',
           confirmButtonColor: '#ff6b8b'
         });
         return;
@@ -566,35 +512,21 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       resultsDiv.innerHTML = `
         <div class="status-box">
           <div class="spinner"></div>
-          <p style="color:#718096; font-size:15px;">กำลังค้นหาใบประเมินผลการเรียน...</p>
+          <p style="color:#718096; font-size:15px;">กำลังโหลดใบประเมินผลการเรียน...</p>
         </div>
       `;
 
       fetchAllEvaluations(function(err, allEvals) {
         const list = allEvals || [];
-        const cleanedQuery = cleanNick(inputName);
+        const cleanedQuery = cleanNick(studentName);
 
-        // Filter published evaluations matching name/nickname, grade, phone
+        // Filter published evaluations matching name/nickname
         const matched = list.filter(item => {
-          // Check published status: status === 'published' || status === 'เผยแพร่แล้ว' || isPublished === true
+          // Check published status
           const isPublished = (item.isPublished === true || item.published === true || 
                                String(item.status).toLowerCase() === 'published' || 
                                String(item.status) === 'เผยแพร่แล้ว');
           if (!isPublished) return false;
-
-          // Check Grade match if user selected grade
-          if (inputGrade && inputGrade !== 'ทั้งหมด') {
-            const itemGrade = String(item.grade || item.gradeLevel || '').trim().toLowerCase();
-            const filterGrade = inputGrade.trim().toLowerCase();
-            if (itemGrade && !itemGrade.includes(filterGrade) && !filterGrade.includes(itemGrade)) {
-              // Extract number e.g. 'ม.1' vs 'มัธยมศึกษาปีที่ 1'
-              const num1 = (itemGrade.match(/\d+/) || [])[0];
-              const num2 = (filterGrade.match(/\d+/) || [])[0];
-              if (num1 && num2 && num1 !== num2) {
-                return false;
-              }
-            }
-          }
 
           // Check Name / Nickname match
           const rawStdName = String(item.studentName || item.student_name || item.name || '');
@@ -608,23 +540,13 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                             stdNickClean.includes(cleanedQuery) || 
                             cleanedQuery.includes(stdNickClean) ||
                             (cleanedQuery.length >= 2 && stdNickClean.length >= 2 && cleanedQuery.includes(stdNickClean)) ||
-                            rawStdName.toLowerCase().includes(inputName.toLowerCase()) ||
-                            rawStdNick.toLowerCase().includes(inputName.toLowerCase());
+                            rawStdName.toLowerCase().includes(studentName.toLowerCase()) ||
+                            rawStdNick.toLowerCase().includes(studentName.toLowerCase());
 
-          if (!nameMatch) return false;
-
-          // Check Phone match if user provided phone
-          if (inputPhone) {
-            const itemPhone = String(item.parentPhone || item.phone || '').replace(/\D/g, '');
-            if (itemPhone && !itemPhone.includes(inputPhone)) {
-              return false;
-            }
-          }
-
-          return true;
+          return nameMatch;
         });
 
-        renderResults(matched, inputName);
+        renderResults(matched, studentName);
       });
     }
 
@@ -779,19 +701,15 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
     document.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       const ref = urlParams.get('ref');
-      const searchCard = document.querySelector('.search-card');
       const resultsDiv = document.getElementById('resultsContainer');
       
       if (ref) {
-        if (searchCard) searchCard.style.display = 'none';
         try {
           // Decode Base64 string to original student name
           const studentName = decodeURIComponent(escape(atob(ref)));
-          document.getElementById('studentName').value = studentName;
           
           // Trigger search automatically
-          const fakeEvent = { preventDefault: () => {} };
-          handleSearch(fakeEvent);
+          handleSearch(studentName);
         } catch (e) {
           console.error("Invalid magic link ref", e);
           Swal.fire({
@@ -801,8 +719,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           });
         }
       } else {
-        // No ref -> Hide search form entirely for privacy
-        if (searchCard) searchCard.style.display = 'none';
+        // No ref -> Display lock message
         resultsDiv.innerHTML = `
           <div class="status-box" style="margin-top: 30px;">
             <i class="fa-solid fa-lock" style="font-size: 40px; color: #cbd5e1; margin-bottom: 15px; display: block;"></i>
