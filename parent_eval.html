@@ -528,7 +528,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
             <p style="color: #64748b; font-size: 15px; max-width: 500px; margin: 0 auto; line-height: 1.6;">
               ไม่พบใบประเมินที่ได้รับการยืนยันเผยแพร่ของ <strong style="color: var(--primary-color);">"${queryName}"</strong> ในระบบ
             </p>
-            <p style="color: red; font-size: 12px; margin-top: 10px;" id="debugError"></p>
+            ${window.apiFetchError ? `<p style="color: red; font-size: 12px; margin-top: 10px; margin-bottom: 30px; text-align: center; border: 1px solid red; padding: 10px; border-radius: 5px; max-width: 500px;" id="debugError"><b>ระบบตรวจพบข้อผิดพลาด:</b> ${window.apiFetchError}<br><br><b>วิธีแก้ไขสำหรับแอดมิน:</b><br>กรุณากลับไปที่ Apps Script แล้วกด "Deploy" (การทำให้ใช้งานได้) -> "New Deployment" (การทำให้ใช้งานได้รายการใหม่)<br>ตรง <b>"Who has access" (ผู้ที่มีสิทธิ์เข้าถึง)</b> จะต้องเลือกเป็น <b>"Anyone" (ทุกคน)</b> เท่านั้นครับ!</p>` : ''}
             
           </div>
         `;
