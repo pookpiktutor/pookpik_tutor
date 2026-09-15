@@ -36880,9 +36880,7 @@ function populateAllEvaluationPresetDropdowns() {
 
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(populateAllEvaluationPresetDropdowns, 500);
-});
-
-// Function to copy magic link to clipboard
+});\n// Function to copy magic link to clipboard
 function copyMagicLink(studentName) {
   if (!studentName) {
      Swal.fire('เกิดข้อผิดพลาด', 'ไม่พบชื่อนักเรียน', 'error');
@@ -36927,5 +36925,4 @@ function copyMagicLink(studentName) {
     console.error('Error creating magic link', e);
     Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถสร้างลิงก์ได้' });
   }
-}
-
+}\n
