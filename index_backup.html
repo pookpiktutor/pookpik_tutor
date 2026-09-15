@@ -44,6 +44,24 @@ textarea, input, select {
   box-sizing: border-box !important;
 }
 </style>
+
+<style>
+/* Specific mobile UI fixes */
+@media (max-width: 768px) {
+  /* Fix chat button overlapping menu */
+  #floating_chat_btn {
+    bottom: 90px !important; 
+    right: 20px !important;
+  }
+  #chat_widget {
+    bottom: 150px !important;
+  }
+  /* Fix grid column squishing on mobile */
+  .grid-cols-2-mobile-1 {
+    grid-template-columns: 1fr !important;
+  }
+}
+</style>
 </head>
   <body>
     <!-- LOGIN OVERLAY -->

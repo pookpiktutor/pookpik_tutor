@@ -287,6 +287,24 @@ textarea, input, select {
   box-sizing: border-box !important;
 }
 </style>
+
+<style>
+/* Specific mobile UI fixes */
+@media (max-width: 768px) {
+  /* Fix chat button overlapping menu */
+  #floating_chat_btn {
+    bottom: 90px !important; 
+    right: 20px !important;
+  }
+  #chat_widget {
+    bottom: 150px !important;
+  }
+  /* Fix grid column squishing on mobile */
+  .grid-cols-2-mobile-1 {
+    grid-template-columns: 1fr !important;
+  }
+}
+</style>
 </head>
 
   <body>
@@ -6948,11 +6966,11 @@ textarea, input, select {
 
                     
 
-                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;" class="grid-cols-2-mobile-1">
 
                       <div>
 
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 8px;">
                           <label class="form-label" style="margin-bottom: 0;">เลือกคอร์ส/รอบเรียนของคุณครู <span style="color:red;">*</span></label>
                           <button type="button" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem; border-radius: 4px; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;" onclick="forceRefreshTeacherCourses()" title="ดึงข้อมูลคอร์สเรียนล่าสุด">
                             <i class="fas fa-sync-alt"></i> ดึงข้อมูล
@@ -7702,7 +7720,7 @@ textarea, input, select {
 
                 <div style="display: flex; flex-direction: column; gap: 14px;">
 
-                  <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;">
+                  <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px;" class="grid-cols-2-mobile-1">
 
                     <div>
 
