@@ -129,7 +129,7 @@ function processBgTaskQueue() {
 
   } else {
 
-     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA/exec';
+     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbz3O7i5vtnmOUZZv2iITeE6kftxH5JeYeB0VlDtzV5Of3rRGGq4HKJ2ZV41JTU7UOcNCQ/exec';
 
      fetch(GAS_API_URL, {
 
@@ -255,7 +255,7 @@ window.google.script.run = new Proxy({}, {
 
         } else {
 
-          const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA/exec';
+          const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbz3O7i5vtnmOUZZv2iITeE6kftxH5JeYeB0VlDtzV5Of3rRGGq4HKJ2ZV41JTU7UOcNCQ/exec';
 
           fetch(GAS_API_URL, {
 
