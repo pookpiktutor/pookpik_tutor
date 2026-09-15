@@ -433,7 +433,7 @@ function doGet(e) {
 
     const role = e.parameter.role || null;
 
-    const list = getEvaluationsList(role === 'parent' ? null : role);
+    const list = getEvaluationsList(role || null);
 
     return ContentService.createTextOutput(JSON.stringify({ success: true, evaluations: list }))
 
@@ -3456,7 +3456,7 @@ function submitEvaluation(data, logUser) {
 
         'Date', 'Subject', 'Teacher', 'ScoresJSON',
 
-        'Strengths', 'Improvements', 'Recommendations', 'EvaluatedBy'
+        'Strengths', 'Improvements', 'Recommendations', 'EvaluatedBy', 'Status'
 
       ]);
 
@@ -3597,15 +3597,15 @@ function submitEvaluation(data, logUser) {
 
       data.recommendations || data.feedback || '', // fallback
 
-      teacherId
+      teacherId,
+
+      'published'  // Column O: Status - auto-publish on teacher submit
 
     ]);
 
     
 
-    clearCacheObject('evaluations_list');
-
-    clearCacheObject('evaluations_list_all');
+    clearAllEvaluationCaches();
 
     logActivity(logUser || 'System', 'ส่งใบประเมินนักเรียน', `[${evalId}] ประเมินนักเรียน: ${data.studentName} (${data.nickname}) วิชา: ${data.subject}`);
 
@@ -3620,49 +3620,28 @@ function submitEvaluation(data, logUser) {
 }
 
 function updateEvaluation(evalData, logUser) {
-
   try {
-
     const db = getDb();
-
     let sheet = db.getSheetByName('EvaluationsDB');
-
     if (!sheet) {
-
       return { success: false, error: 'ไม่พบฐานข้อมูล EvaluationsDB' };
-
     }
-
     
-
     const rows = sheet.getDataRange().getValues();
-
     let rowIndex = -1;
-
     for (let i = 1; i < rows.length; i++) {
-
-      if (rows[i][0] && String(rows[i][0]).trim() === String(evalData.evalId).trim()) {
-
-        rowIndex = i + 1; // 1-indexed for SpreadsheetApp
-
+      const rowId = rows[i][0] ? String(rows[i][0]).trim() : '';
+      const fallbackId = 'EVAL-' + String(i).padStart(4, '0');
+      if (rowId === String(evalData.evalId).trim() || fallbackId === String(evalData.evalId).trim()) {
+        rowIndex = i + 1;
         break;
-
       }
-
     }
-
     
-
     if (rowIndex === -1) {
-
-      return { success: false, error: 'ไม่พบ ID การประเมินในระบบ' };
-
+      return { success: false, error: 'ไม่พบ ID ใบประเมินในระบบ' };
     }
-
     
-
-    // Update columns (1-indexed)
-    // 3 = StudentName, 5 = Grade, 6 = Branch, 7 = Date, 8 = Subject, 9 = Teacher, 10 = Scores, 11 = Strengths, 12 = Improvements, 13 = Recommendations
     if (evalData.studentName) sheet.getRange(rowIndex, 3).setValue(evalData.studentName);
     if (evalData.grade) sheet.getRange(rowIndex, 5).setValue(evalData.grade);
     if (evalData.branch) sheet.getRange(rowIndex, 6).setValue(evalData.branch);
@@ -3670,62 +3649,27 @@ function updateEvaluation(evalData, logUser) {
     if (evalData.subject || evalData.courseName) sheet.getRange(rowIndex, 8).setValue(evalData.subject || evalData.courseName);
     if (evalData.teacher) sheet.getRange(rowIndex, 9).setValue(evalData.teacher);
 
-    sheet.getRange(rowIndex, 11).setValue(evalData.strengths);
-
-    sheet.getRange(rowIndex, 12).setValue(evalData.improvements);
-
+    sheet.getRange(rowIndex, 11).setValue(evalData.strengths || '');
+    sheet.getRange(rowIndex, 12).setValue(evalData.improvements || '');
     sheet.getRange(rowIndex, 13).setValue(evalData.comments || evalData.recommendations || '');
 
-    if (evalData.status || evalData.isPublished) {
-      sheet.getRange(rowIndex, 15).setValue(evalData.status || (evalData.isPublished ? 'published' : ''));
-    }
-
-    
-
-    // Update scores if provided
+    // Set Column O (15) Status
+    sheet.getRange(rowIndex, 15).setValue('published');
 
     if (evalData.scores) {
-
-      const scoresJSON = JSON.stringify(evalData.scores);
-
-      sheet.getRange(rowIndex, 10).setValue(scoresJSON);
-
+      sheet.getRange(rowIndex, 10).setValue(JSON.stringify(evalData.scores));
     } else if (evalData.score) {
-
-      const scoresJSON = JSON.stringify({ overall: evalData.score });
-
-      sheet.getRange(rowIndex, 10).setValue(scoresJSON);
-
+      sheet.getRange(rowIndex, 10).setValue(JSON.stringify({ overall: evalData.score }));
     }
-
     
-
-    clearCacheObject('evaluations_list');
-
-    clearCacheObject('evaluations_list_all');
-
-    // Clear teacher-specific caches too
-
-    try {
-
-      const cache = CacheService.getScriptCache();
-
-      cache.removeAll(['evaluations_list_all']);
-
-    } catch(ce) {}
-
+    SpreadsheetApp.flush();
+    clearAllEvaluationCaches();
     
-
-    logActivity(logUser, 'แก้ไขใบประเมิน', `อัปเดตการประเมินนักเรียน: ${rows[rowIndex-1][2]}`);
-
+    logActivity(logUser, 'ใบประเมิน', `อัปเดตใบประเมินนักเรียน: ${rows[rowIndex-1][2]}`);
     return { success: true };
-
   } catch (e) {
-
     return { success: false, error: e.message };
-
   }
-
 }
 
 function batchPublishEvaluations(evalIds, logUser) {
@@ -3739,52 +3683,58 @@ function batchPublishEvaluations(evalIds, logUser) {
       return { success: false, error: 'ไม่พบฐานข้อมูล EvaluationsDB' };
     }
 
-    // Ensure Column O (Column 15) has 'Status' header
-    const currentHeaderO = sheet.getRange(1, 15).getValue();
-    if (!currentHeaderO || String(currentHeaderO).trim() !== 'Status') {
-      sheet.getRange(1, 15).setValue('Status');
-    }
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return { success: true, count: 0 };
 
-    const rows = sheet.getDataRange().getValues();
-    const targetMap = {};
-    evalIds.forEach(id => { targetMap[String(id).trim()] = true; });
+    // Ensure Column O (Column 15) header is 'Status'
+    sheet.getRange(1, 15).setValue('Status');
+
+    const dataRange = sheet.getRange(2, 1, lastRow - 1, 15);
+    const rows = dataRange.getValues();
+
+    const targetList = evalIds.map(id => (id || '').toString().trim().toLowerCase()).filter(Boolean);
 
     let updatedCount = 0;
-    for (let i = 1; i < rows.length; i++) {
-      const cellVal = rows[i][0] ? String(rows[i][0]).trim() : '';
-      const fallbackId = 'EVAL-' + String(i).padStart(4, '0');
-      const studentName = rows[i][2] ? String(rows[i][2]).trim() : '';
 
-      // Match by exact cellVal, fallbackId, studentName, or if evalIds contains row index string
-      let matched = (cellVal && targetMap[cellVal]) || targetMap[fallbackId] || (studentName && targetMap[studentName]);
-      if (!matched) {
-        // Also check if any target ID matches EVAL-format of i
-        for (let targetId in targetMap) {
-          if (targetId === cellVal || targetId === fallbackId || targetId === studentName || targetId === String(i)) {
-            matched = true;
-            break;
-          }
+    for (let i = 0; i < rows.length; i++) {
+      const evalIdVal = rows[i][0] ? String(rows[i][0]).trim().toLowerCase() : '';
+      const fallbackId = ('eval-' + String(i + 1).padStart(4, '0')).toLowerCase();
+      const studentName = rows[i][2] ? String(rows[i][2]).trim().toLowerCase() : '';
+      const nickname = rows[i][3] ? String(rows[i][3]).trim().toLowerCase() : '';
+      const fullNameWithNick = (studentName + (nickname ? ' (' + nickname + ')' : '')).toLowerCase();
+
+      let matched = false;
+      for (let t = 0; t < targetList.length; t++) {
+        const target = targetList[t];
+        if (!target) continue;
+        if (target === evalIdVal || 
+            target === fallbackId || 
+            target === studentName || 
+            target === fullNameWithNick || 
+            target === String(i + 1) ||
+            (studentName && target.indexOf(studentName) !== -1) ||
+            (studentName && studentName.indexOf(target) !== -1)) {
+          matched = true;
+          break;
         }
       }
 
       if (matched) {
-        sheet.getRange(i + 1, 15).setValue('published');
-        // Also ensure cell A has EvalID if missing
-        if (!cellVal) {
-          sheet.getRange(i + 1, 1).setValue(fallbackId);
+        // Direct cell update to Column O (15) for row (i + 2)
+        sheet.getRange(i + 2, 15).setValue('published');
+        // Ensure EvalID is filled if empty
+        if (!rows[i][0]) {
+          sheet.getRange(i + 2, 1).setValue('EVAL-' + String(i + 1).padStart(4, '0'));
         }
         updatedCount++;
       }
     }
 
-    clearCacheObject('evaluations_list');
-    clearCacheObject('evaluations_list_all');
-    try {
-      const cache = CacheService.getScriptCache();
-      cache.removeAll(['evaluations_list_all']);
-    } catch(ce) {}
+    SpreadsheetApp.flush();
+    clearAllEvaluationCaches();
+    Logger.log('batchPublishEvaluations: Updated ' + updatedCount + ' rows, targetList=' + JSON.stringify(targetList));
 
-    logActivity(logUser, 'เผยแพร่ใบประเมิน', `เผยแพร่ใบประเมินแบบกลุ่มจำนวน ${updatedCount} รายการ`);
+    logActivity(logUser, 'ใบประเมิน', `เผยแพร่ใบประเมินแบบกลุ่มจำนวน ${updatedCount} รายการ`);
     return { success: true, count: updatedCount };
   } catch (e) {
     return { success: false, error: e.message };
@@ -3792,101 +3742,123 @@ function batchPublishEvaluations(evalIds, logUser) {
 }
 
 function getAdminEvalStats() {
-
   try {
-    clearCacheObject('evaluations_list_all');
-    clearCacheObject('evaluations_list');
-    const cache = CacheService.getScriptCache();
-    cache.remove('evaluations_list_all');
-    cache.remove('evaluations_list');
+    clearAllEvaluationCaches();
   } catch (eC) {}
 
-  const evals = getEvaluationsList(null);
+  // Force bypass cache by passing false/null clean query
+  const db = getDb();
+  const sheet = db.getSheetByName('EvaluationsDB');
+  if (!sheet || sheet.getLastRow() < 2) return { evals: [], counts: {} };
 
-  const counts = {};
+  // Ensure Column O (15) header is 'Status' if missing
+  if (sheet.getLastColumn() < 15 || sheet.getRange(1, 15).getValue() !== 'Status') {
+    sheet.getRange(1, 15).setValue('Status');
+  }
 
+  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 15).getValues();
+  const evals = [];
+
+  const userNicknameMap = {};
   try {
-
-    const db = getDb();
-
-    const statusSheet = db.getSheetByName('StatusDB');
-
-    if (statusSheet) {
-
-      const data = statusSheet.getDataRange().getValues();
-
-      const subjects = [...new Set(evals.map(e => e.subject))];
-
-      subjects.forEach(s => counts[s] = 0);
-
-      
-
-      const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
-
-      for (let i = 1; i < data.length; i++) {
-
-        const student = data[i][1];
-
-        const course = data[i][15];
-
-        const timeNote = data[i][7];
-
-        if (!student || !course) continue;
-
-        
-
-        subjects.forEach(subj => {
-
-          if (subj.indexOf(course.toString().trim()) !== -1) {
-
-            let subjDay = '';
-
-            days.forEach(d => { if (subj.indexOf(d) !== -1) subjDay = d; });
-
-            let timeDay = '';
-
-            days.forEach(d => { if ((timeNote||'').indexOf(d) !== -1) timeDay = d; });
-
-            
-
-            if (!subjDay || !timeDay || subjDay === timeDay) {
-
-              counts[subj]++;
-
-            }
-
-          }
-
-        });
-
+    const usersSheet = db.getSheetByName('UsersDB');
+    if (usersSheet && usersSheet.getLastRow() > 1) {
+      const uRows = usersSheet.getRange(2, 1, usersSheet.getLastRow() - 1, 5).getValues();
+      for (let u = 0; u < uRows.length; u++) {
+        const uId = (uRows[u][0] || '').toString().trim().toLowerCase();
+        const uNick = (uRows[u][3] || '').toString().trim();
+        const uFullName = (uRows[u][4] || '').toString().trim();
+        const resolvedName = uNick || uFullName || (uRows[u][0] || '').toString().trim();
+        if (uId) userNicknameMap[uId] = resolvedName;
+        if (uNick) userNicknameMap[uNick.toLowerCase()] = resolvedName;
       }
+    }
+  } catch (eUserMap) {}
 
+  for (let i = 0; i < rows.length; i++) {
+    if (!rows[i][0]) continue;
+    let parsedScores = {};
+    try {
+      parsedScores = JSON.parse(rows[i][9]);
+    } catch (err) {
+      parsedScores = { attention: rows[i][9] || '5', understanding: '5', homework: '5' };
     }
 
+    const rawTeacher = (rows[i][8] || '').toString().trim();
+    const rawEvalBy = (rows[i][13] || '').toString().trim();
+    let resolvedTeacher = userNicknameMap[rawTeacher.toLowerCase()] ||
+                          userNicknameMap[rawEvalBy.toLowerCase()] ||
+                          resolveUserNickname(db, rawTeacher) ||
+                          resolveUserNickname(db, rawEvalBy) ||
+                          rawTeacher || rawEvalBy;
+
+    const statusVal = rows[i][14] ? String(rows[i][14]).trim() : '';
+
+    evals.push({
+      evalId: (rows[i][0] ? String(rows[i][0]).trim() : 'EVAL-' + String(i + 1).padStart(4, '0')),
+      timestamp: rows[i][1],
+      studentName: rows[i][2],
+      nickname: rows[i][3],
+      grade: rows[i][4],
+      branch: rows[i][5],
+      date: rows[i][6],
+      subject: rows[i][7],
+      teacher: resolvedTeacher,
+      scores: parsedScores,
+      strengths: rows[i][10] || '',
+      improvements: rows[i][11] || '',
+      recommendations: rows[i][12] || '',
+      evaluatedBy: userNicknameMap[rawEvalBy.toLowerCase()] || rawEvalBy,
+      status: statusVal,
+      isPublished: (statusVal.toLowerCase() === 'published' || statusVal === 'เผยแพร่แล้ว')
+    });
+  }
+
+  const counts = {};
+  try {
+    const statusSheet = db.getSheetByName('StatusDB');
+    if (statusSheet) {
+      const data = statusSheet.getDataRange().getValues();
+      const subjects = [...new Set(evals.map(e => e.subject))];
+      subjects.forEach(s => counts[s] = 0);
+      
+      const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+      for (let i = 1; i < data.length; i++) {
+        const student = data[i][1];
+        const course = data[i][15];
+        const timeNote = data[i][7];
+        if (!student || !course) continue;
+        
+        subjects.forEach(subj => {
+          if (subj.indexOf(course.toString().trim()) !== -1) {
+            let subjDay = '';
+            days.forEach(d => { if (subj.indexOf(d) !== -1) subjDay = d; });
+            let timeDay = '';
+            days.forEach(d => { if ((timeNote||'').indexOf(d) !== -1) timeDay = d; });
+            if (!subjDay || !timeDay || subjDay === timeDay) {
+              counts[subj]++;
+            }
+          }
+        });
+      }
+    }
   } catch (e) {
-
     Logger.log('Error calculating admin eval stats: ' + e.message);
-
   }
 
   return { evals: evals, counts: counts };
-
 }
 
 function getEvaluationsList(logUser) {
-
+  const isParentQuery = (logUser === 'parent' || logUser === 'ผู้ปกครอง');
   const cacheKey = logUser ? 'evaluations_list_' + logUser : 'evaluations_list_all';
 
   const cached = getCacheObject(cacheKey);
-
-  if (cached) return cached;
+  if (cached && !isParentQuery) return cached;
 
   try {
-
     const db = getDb();
-
     const sheet = db.getSheetByName('EvaluationsDB');
-
     if (!sheet || sheet.getLastRow() < 2) return [];
 
     // Ensure Column O (15) header is 'Status' if missing
@@ -3895,13 +3867,15 @@ function getEvaluationsList(logUser) {
     }
 
     const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 15).getValues();
-
     const list = [];
+    const isTeacher = logUser && !isParentQuery ? isTeacherUser(logUser) : false;
 
-    const isTeacher = logUser ? isTeacherUser(logUser) : false;
-
-    // Build userNicknameMap from UsersDB to resolve any teacher IDs/usernames to nicknames
+    // Build userNicknameMap AND resolve teacher aliases from a SINGLE UsersDB read
     const userNicknameMap = {};
+    let teacherNicknames = null;
+    const teacherLogId = isTeacher ? logUser.toString().trim().toLowerCase() : null;
+    if (isTeacher) teacherNicknames = [teacherLogId];
+    
     try {
       const usersSheet = db.getSheetByName('UsersDB');
       if (usersSheet && usersSheet.getLastRow() > 1) {
@@ -3913,165 +3887,86 @@ function getEvaluationsList(logUser) {
           const resolvedName = uNick || uFullName || (uRows[u][0] || '').toString().trim();
           if (uId) userNicknameMap[uId] = resolvedName;
           if (uNick) userNicknameMap[uNick.toLowerCase()] = resolvedName;
-        }
-      }
-    } catch (eUserMap) {}
-
-    // Only resolve teacher aliases if needed
-
-    let teacherNicknames = null;
-
-    if (isTeacher) {
-
-      const teacherLogId = logUser.toString().trim().toLowerCase();
-
-      teacherNicknames = [teacherLogId];
-
-      try {
-        const usersSheet = db.getSheetByName('UsersDB');
-        if (usersSheet && usersSheet.getLastRow() > 1) {
-          const tRows = usersSheet.getRange(2, 1, usersSheet.getLastRow() - 1, 5).getValues();
-          for (let j = 0; j < tRows.length; j++) {
-            const tId = (tRows[j][0] || '').toString().trim().toLowerCase();
-            const tNick = (tRows[j][3] || '').toString().trim().toLowerCase();
-            const tFullName = (tRows[j][4] || '').toString().trim().toLowerCase();
-            
-            if (tId === teacherLogId || tNick === teacherLogId || tFullName === teacherLogId) {
-              if (tId && teacherNicknames.indexOf(tId) === -1) teacherNicknames.push(tId);
-              if (tNick && teacherNicknames.indexOf(tNick) === -1) teacherNicknames.push(tNick);
-              if (tFullName && teacherNicknames.indexOf(tFullName) === -1) teacherNicknames.push(tFullName);
+          
+          // Also resolve teacher aliases in the same pass
+          if (teacherLogId) {
+            const uNickLower = uNick.toLowerCase();
+            const uFullNameLower = uFullName.toLowerCase();
+            if (uId === teacherLogId || uNickLower === teacherLogId || uFullNameLower === teacherLogId) {
+              if (uId && teacherNicknames.indexOf(uId) === -1) teacherNicknames.push(uId);
+              if (uNickLower && teacherNicknames.indexOf(uNickLower) === -1) teacherNicknames.push(uNickLower);
+              if (uFullNameLower && teacherNicknames.indexOf(uFullNameLower) === -1) teacherNicknames.push(uFullNameLower);
             }
           }
         }
-      } catch (err) {
-
-        Logger.log("Error pre-resolving teacher aliases: " + err.message);
-
       }
-
+    } catch (eUserMap) {
+      if (isTeacher) Logger.log("Error resolving user data: " + eUserMap.message);
     }
 
-    
+    // Pre-build teacher's subject-date set ONCE (outside loop for performance)
+    let teacherSubjectDates = null;
+    if (teacherNicknames) {
+      try {
+        const dlSheet = db.getSheetByName('Data Learn');
+        if (dlSheet && dlSheet.getLastRow() > 1) {
+          teacherSubjectDates = new Set();
+          const dlData = dlSheet.getRange(2, 1, dlSheet.getLastRow() - 1, 15).getValues();
+          dlData.forEach(dlRow => {
+            const dlSubj = (dlRow[0] || '').toString().trim();
+            const dlTeacher = (dlRow[1] || '').toString().trim().toLowerCase();
+            const dlTeacherSub = (dlRow[2] || '').toString().trim().toLowerCase();
+            const dlDate = cleanSheetDate(dlRow[12]);
+            const isTeacherMatch = teacherNicknames.some(alias =>
+              dlTeacher === alias || dlTeacher.indexOf(alias) !== -1 || alias.indexOf(dlTeacher) !== -1 ||
+              dlTeacherSub === alias || dlTeacherSub.indexOf(alias) !== -1 || alias.indexOf(dlTeacherSub) !== -1
+            );
+            if (isTeacherMatch && dlSubj && dlDate) {
+              teacherSubjectDates.add(dlSubj.toLowerCase() + '|' + dlDate);
+            }
+          });
+        }
+      } catch(e) {}
+    }
 
     for (let i = 0; i < rows.length; i++) {
-
       if (!rows[i][0]) continue;
 
-      
+      const rawStatus = rows[i][14] ? String(rows[i][14]).trim().toLowerCase() : '';
+      const isPublished = (rawStatus === 'published' || rawStatus === 'เผยแพร่แล้ว');
 
-    // Teacher filtering: match by evaluatedBy OR by teacher who teaches this subject on this date
-
-    if (teacherNicknames) {
-
-      // Build a set of "subject|date" combinations taught by this teacher from Data Learn
-
-      let teacherSubjectDates = null;
-
-      try {
-
-        const dlSheet = db.getSheetByName('Data Learn');
-
-        if (dlSheet && dlSheet.getLastRow() > 1) {
-
-          teacherSubjectDates = new Set();
-
-          const dlData = dlSheet.getRange(2, 1, dlSheet.getLastRow() - 1, 15).getValues();
-
-          dlData.forEach(dlRow => {
-
-            const dlSubj = (dlRow[0] || '').toString().trim();
-
-            const dlTeacher = (dlRow[1] || '').toString().trim().toLowerCase();
-
-            const dlTeacherSub = (dlRow[2] || '').toString().trim().toLowerCase();
-
-            const dlDate = cleanSheetDate(dlRow[12]);
-
-            const isTeacherMatch = teacherNicknames.some(alias =>
-
-              dlTeacher === alias || dlTeacher.indexOf(alias) !== -1 || alias.indexOf(dlTeacher) !== -1 ||
-
-              dlTeacherSub === alias || dlTeacherSub.indexOf(alias) !== -1 || alias.indexOf(dlTeacherSub) !== -1
-
-            );
-
-            if (isTeacherMatch && dlSubj && dlDate) {
-
-              teacherSubjectDates.add(dlSubj.toLowerCase() + '|' + dlDate);
-
-            }
-
-          });
-
-        }
-
-      } catch(e) {}
-
-      
-
-      const cleanEvalBy = (rows[i][13] || '').toString().trim().toLowerCase();
-
-      const evalSubj = (rows[i][7] || '').toString().trim().toLowerCase();
-
-      const evalDate = cleanSheetDate(rows[i][6]);
-
-      
-
-      let matches = false;
-
-      // Check EvaluatedBy field
-
-      for (let a = 0; a < teacherNicknames.length; a++) {
-
-        const alias = teacherNicknames[a];
-
-        if (cleanEvalBy === alias || cleanEvalBy.indexOf(alias) !== -1 || alias.indexOf(cleanEvalBy) !== -1) {
-
-          matches = true;
-
-          break;
-
-        }
-
+      // CRITICAL: If queried by parent, ONLY return published evaluations!
+      if (isParentQuery && !isPublished) {
+        continue;
       }
 
-      // Also check if teacher teaches this subject on this date
+      // Teacher filtering logic
+      if (teacherNicknames) {
+        const cleanEvalBy = (rows[i][13] || '').toString().trim().toLowerCase();
+        const evalSubj = (rows[i][7] || '').toString().trim().toLowerCase();
+        const evalDate = cleanSheetDate(rows[i][6]);
 
-      if (!matches && teacherSubjectDates && evalSubj && evalDate) {
-
-        const key = evalSubj + '|' + evalDate;
-
-        if (teacherSubjectDates.has(key)) matches = true;
-
+        let matches = false;
+        for (let a = 0; a < teacherNicknames.length; a++) {
+          const alias = teacherNicknames[a];
+          if (cleanEvalBy === alias || cleanEvalBy.indexOf(alias) !== -1 || alias.indexOf(cleanEvalBy) !== -1) {
+            matches = true;
+            break;
+          }
+        }
+        if (!matches && teacherSubjectDates && evalSubj && evalDate) {
+          const key = evalSubj + '|' + evalDate;
+          if (teacherSubjectDates.has(key)) matches = true;
+        }
+        if (!matches) continue;
       }
-
-      if (!matches) continue;
-
-    }
-
-      
 
       let parsedScores = {};
-
       try {
-
         parsedScores = JSON.parse(rows[i][9]);
-
       } catch (err) {
-
-        parsedScores = {
-
-          attention: rows[i][9] || '5',
-
-          understanding: '5',
-
-          homework: '5'
-
-        };
-
+        parsedScores = { attention: rows[i][9] || '5', understanding: '5', homework: '5' };
       }
-
-      
 
       const rawTeacher = (rows[i][8] || '').toString().trim();
       const rawEvalBy = (rows[i][13] || '').toString().trim();
@@ -4083,67 +3978,33 @@ function getEvaluationsList(logUser) {
                             rawTeacher || rawEvalBy;
 
       list.push({
-
-        evalId: (rows[i][0] ? String(rows[i][0]).trim() : 'EVAL-' + String(i).padStart(4, '0')),
-
+        evalId: (rows[i][0] ? String(rows[i][0]).trim() : 'EVAL-' + String(i + 1).padStart(4, '0')),
         timestamp: rows[i][1],
-
         studentName: rows[i][2],
-
         nickname: rows[i][3],
-
         grade: rows[i][4],
-
         branch: rows[i][5],
-
         date: rows[i][6],
-
         subject: rows[i][7],
-
         teacher: resolvedTeacher,
-
         scores: parsedScores,
-
         strengths: rows[i][10] || '',
-
         improvements: rows[i][11] || '',
-
         recommendations: rows[i][12] || '',
-
         evaluatedBy: userNicknameMap[rawEvalBy.toLowerCase()] || rawEvalBy,
-
         status: rows[i][14] || '',
-
-        isPublished: (rows[i][14] === 'published' || rows[i][14] === 'เผยแพร่แล้ว' || rows[i][14] === 'Published')
+        isPublished: isPublished
       });
-
     }
 
-    setCacheObject(cacheKey, list, 300);
-
+    if (!isParentQuery) {
+      setCacheObject(cacheKey, list, 300);
+    }
     return list;
-
   } catch (e) {
-
     return [];
-
   }
-
 }
-
-/**
-
- * getMonthlyGridData: ดึงข้อมูลตารางเรียนรายเดือน แยกตามวันในสัปดาห์
-
- * @param {number} year - ปี ค.ศ. (เช่น 2026)
-
- * @param {number} month - เดือน 1-12
-
- * @param {number} dayOfWeek - วันในสัปดาห์ 0=อาทิตย์, 1=จันทร์ ... 6=เสาร์
-
- * @param {string} logUser - ผู้ใช้งาน
-
- */
 
 function getMonthlyGridData(year, month, dayOfWeek, logUser) {
 
@@ -5737,8 +5598,8 @@ function isCourseExactMatch(targetCourse, cellText, dayTimeStr) {
 
 function isTeacherAssigned(rawTeacherName, cleanLogUser, teachersList) {
   if (!rawTeacherName || !cleanLogUser) return false;
-  const raw = rawTeacherName.toLowerCase().trim();
-  const cleanLog = cleanLogUser.toLowerCase().trim();
+  const raw = rawTeacherName.toString().trim().toLowerCase();
+  const cleanLog = (cleanLogUser || "").toString().split("|")[0].trim().toLowerCase();
 
   if (raw === cleanLog) return true;
 
@@ -5779,7 +5640,7 @@ function isTeacherAssigned(rawTeacherName, cleanLogUser, teachersList) {
 function getTeacherCoursesAndStudents(logUser) {
   try {
     // Dynamic cache key & bypass stale cache
-    const cleanLogUser = (logUser || '').toString().toLowerCase().trim();
+    const cleanLogUser = (logUser || "").toString().split("|")[0].trim().toLowerCase();
     const db = getDb();
 
     // 1. Get all teachers from UsersDB
@@ -5792,10 +5653,12 @@ function getTeacherCoursesAndStudents(logUser) {
     if (Array.isArray(classLogs)) {
       classLogs.forEach(c => {
         const rawTeacherRegular = (c.teacherRegular || '').toString().trim();
+        const rawTeacherSub = (c.teacherSub || '').toString().trim();
 
         const isRegular = isTeacherAssigned(rawTeacherRegular, cleanLogUser, teachersList);
+        const isSub = isTeacherAssigned(rawTeacherSub, cleanLogUser, teachersList);
 
-        if (isRegular && c.subject) {
+        if ((isRegular || isSub) && c.subject) {
           const courseKey = c.subject.trim();
           const dayName = c.dayOfWeek || '';
           const timeStart = c.timeStart || '';
@@ -5829,6 +5692,12 @@ function getTeacherCoursesAndStudents(logUser) {
           };
         }
       });
+    } else if (classLogs && classLogs.error) {
+       return [{ courseName: "ERR_CLASSLOGS: " + classLogs.error, displayCourseName: "ERR_CLASSLOGS: " + classLogs.error, students: [] }];
+    }
+
+    if (teachersList && teachersList.error) {
+       return [{ courseName: "ERR_TEACHERS: " + teachersList.error, displayCourseName: "ERR_TEACHERS: " + teachersList.error, students: [] }];
     }
 
     const courseKeys = Object.keys(teacherCoursesMap);
@@ -5992,7 +5861,7 @@ function getTeacherCoursesAndStudents(logUser) {
     return result;
 
   } catch (err) {
-    return [];
+    return [{ courseName: "ERR_CATCH: " + err.message, displayCourseName: "ERR_CATCH: " + err.message, students: [] }];
   }
 }
 function getStudentDetailedCourses(studentName, nickname, grade, branchLearn, classType, logUser) {
@@ -10394,8 +10263,9 @@ function getClassLogs(filterDate, logUser) {
 }
 
 function debugGetClassLogs() {
-  const logs = getClassLogs('');
-  return logs ? logs.slice(0, 5) : null;
+  const result = getTeacherCoursesAndStudents('pookpik');
+  console.log(JSON.stringify(result, null, 2));
+  return result;
 }
 
 function getClassLogByRow(rowIndex) {
@@ -14482,6 +14352,32 @@ function clearCacheObject(key) {
       cache.remove(key);
     }
   } catch (e) {}
+}
+
+function clearAllEvaluationCaches() {
+  try {
+    // Clear all known evaluation cache keys
+    clearCacheObject('evaluations_list');
+    clearCacheObject('evaluations_list_all');
+    // Clear user-specific evaluation caches
+    const db = getDb();
+    const usersSheet = db.getSheetByName('UsersDB');
+    if (usersSheet && usersSheet.getLastRow() > 1) {
+      const uRows = usersSheet.getRange(2, 1, usersSheet.getLastRow() - 1, 1).getValues();
+      for (let i = 0; i < uRows.length; i++) {
+        const userId = (uRows[i][0] || '').toString().trim();
+        if (userId) {
+          clearCacheObject('evaluations_list_' + userId);
+        }
+      }
+    }
+    clearCacheObject('evaluations_list_parent');
+    // Also try direct CacheService removal
+    const cache = CacheService.getScriptCache();
+    cache.removeAll(['evaluations_list', 'evaluations_list_all', 'evaluations_list_parent']);
+  } catch (e) {
+    Logger.log('clearAllEvaluationCaches error: ' + e.message);
+  }
 }
 
 function deleteCacheObject(key) {

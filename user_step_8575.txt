@@ -1,0 +1,862 @@
+# Resuming from a compaction
+
+You are continuing work on the task described above, but you have lost access to the full conversation history, and need to resume work efficiently using the progress summary below:
+
+# User Requests
+The following were user requests from the truncated conversation in chronological order:
+1. ทำต่อ
+2. ทำต่อ
+3. ข้อความสำเร็จยังไม่เน้นแยกตามวิชาที่เคยแจ้งไว้ แก้ไขให้แสดงตรงตามที่ต้องการ
+4. ทำต่อ
+
+{"step_index":8553,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-09-09T08:35:38Z","content":"ข้อมูล EVAL_PRESETS ถูกต้อง — English มีเนื้อหาเกี่ยวกับ listening, speaking, reading, writing, grammar ตอนนี้ต้องตรวจสอบว่า **ทำไม UI ยังแสดง general presets** — ตรวจ `getSelectedSubjectKey` กับ HTML dropdown:","tool_calls":[{"name":"run_command","args":{"CommandLine":"\"python -c \\\"\\nimport sys, re\\nsys.stdout.reconfigure(encoding='utf-8')\\nwith open('index.html','r',encoding='utf-8') as f:\\n    html = f.read()\\n\\n# Find all subject filter select elements\\nfor m in re.finditer(r'<select[^>]*subject_filter[^>]*>', html):\\\n<truncated 351 bytes>","Cwd":"\"g:\\\\My Drive\\\\0.งานสถาบัน\\\\data_PookPik_Tutor\"","WaitMsBeforeAsync":"5000","toolAction":"\"Checking subject filter HTML elements\"","toolSummary":"\"Check HTML filter elements\""}}],"truncated_fields":["tool_calls"]}
+{"step_index":8556,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-09-09T08:38:11Z","tool_calls":[{"name":"grep_search","args":{"MatchPerLine":"true","Query":"\"subject_filter\"","SearchPath":"\"g:\\\\My Drive\\\\0.งานสถาบัน\\\\data_PookPik_Tutor\\\\index.html\"","toolAction":"\"Searching subject_filter in HTML\"","toolSummary":"\"Search subject_filter\""}}]}
+{"step_index":8558,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-09-09T08:38:18Z","content":"มีแค่ 1 ที่ — อยู่ใน `getSelectedSubjectKey` function เท่านั้น **ไม่มี `<select>` element ชื่อ `subject_filter` ใน HTML เลย!** หมายความว่าตอนนี้ `filterEl` จะเป็น `null` เสมอ → `subj = 'auto'` → ต้องไป auto-detect\n\nดูว่า auto-detect ทำงานถูกหรือเปล่า — ตรวจ `getSelectedSubjectKey` ทั้งหมด:","tool_calls":[{"name":"grep_search","args":{"MatchPerLine":"true","Query":"\"getSelectedSubjectKey\"","SearchPath":"\"g:\\\\My Drive\\\\0.งานสถาบัน\\\\data_PookPik_Tutor\\\\index.html\"","toolAction":"\"Searching getSelectedSubjectKey calls\"","toolSummary":"\"Search getSelectedSubjectKey\""}}]}
+{"step_index":8560,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-09-09T08:38:26Z","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"g:\\\\My Drive\\\\0.งานสถาบัน\\\\data_PookPik_Tutor\\\\index.html\"","EndLine":"5220","StartLine":"5123","toolAction":"\"Viewing getSelectedSubjectKey and populateFeedbackPresetSelects\"","toolSummary":"\"View preset functions\""}}]}
+{"step_index":8562,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-09-09T08:38:31Z","content":"Logic ดูถูกต้อง — auto-detect จาก `eval_course` text. ปัญหาอาจอยู่ที่ **`eval_course` ไม่มี value ตอนที่ `populateFeedbackPresetSelects()` ถูกเรียก** หรือ **`state._teacherCourses` ไม่มี `courseName`**\n\nตรวจ trigger ที่เรียก `populateFeedbackPresetSelects`:","tool_calls":[{"name":"grep_search","args":{"MatchPerLine":"true","Query":"\"populateFeedbackPresetSelects\"","SearchPath":"\"g:\\\\My Drive\\\\0.งานสถาบัน\\\\data_PookPik_Tutor\\\\index.html\"","toolAction":"\"Finding all populateFeedbackPresetSelects calls\"","toolSummary":"\"Find preset function calls\""}}]}
+{"step_index":8564,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-09-09T08:38:41Z","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"g:\\\\My Drive\\\\0.งานสถาบัน\\\\data_PookPik_Tutor\\\\index.html\"","EndLine":"5260","StartLine":"5225","toolAction":"\"Viewing context around populateFeedbackPresetSelects calls\"","toolSummary":"\"View preset call context\""}}]}
+{"step_index":8566,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-09-09T08:38:47Z","content":"ตอนนี้เห็นปัญหาชัดแล้ว! `setTimeout` ที่ line 5253-5259 เรียก `populateFeedbackPresetSelects()` ตอน page load หลัง 1 วินาที — ตอนนั้น `eval_course` ยังไม่ได้เลือก → `courseText` ว่าง → fallback เป็น `general`\n\n**และที่สำคัญกว่า**: ตรวจดูว่า trigger ที่ line 20563 (ใน `onEvalCourseChange`) ทำงานถูกหรือไม่:","tool_calls":[{"name":"view_file","args":{"AbsolutePath":"\"g:\\\\My Drive\\\\0.งานสถาบัน\\\\data_PookPik_Tutor\\\\index.html\"","EndLine":"20570","StartLine":"20555","toolAction":"\"Viewing trigger at onEvalCourseChange\"","toolSummary":"\"View onEvalCourseChange trigger\""}}]}
+{"step_index":8568,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-09-09T08:38:56Z"}
+{"step_index":8570,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-09-09T08:38:58Z"}
+{"step_index":8572,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-09-09T08:39:00Z"}
+{"step_index":8574,"source":"USER_EXPLICIT","type":"USER_INPUT","status":"DONE","created_at":"2026-09-09T08:39:19Z","content":"<USER_REQUEST>\nทำต่อ\n</USER_REQUEST>\n<ADDITIONAL_METADATA>\nThe current local time is: 2026-09-09T15:39:19+07:00.\n</ADDITIONAL_METADATA>\n<USER_SETTINGS_CHANGE>\nThe user changed setting `Model Selection` from Claude Opus 4.6 (Thinking) to Gemini 3.6 Flash (Low). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.\n</USER_SETTINGS_CHANGE>"}
+
+You have the 411 following artifacts written to the artifacts directory:
+
+[ARTIFACT: media__1788429391863]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788429391863.png
+Last Edited: 2026-09-03T09:57:53Z
+
+[ARTIFACT: media__1788430961127]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788430961127.png
+Last Edited: 2026-09-03T10:27:55Z
+
+[ARTIFACT: media__1788436579039]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788436579039.png
+Last Edited: 2026-09-03T11:57:39Z
+
+[ARTIFACT: media__1788440388870]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788440388870.png
+Last Edited: 2026-09-03T13:00:28Z
+
+[ARTIFACT: media__1788501938364]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788501938364.png
+Last Edited: 2026-09-04T06:06:14Z
+
+[ARTIFACT: media__1788519569761]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788519569761.png
+Last Edited: 2026-09-04T10:59:56Z
+
+[ARTIFACT: media__1788520991939]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788520991939.png
+Last Edited: 2026-09-04T11:23:29Z
+
+[ARTIFACT: media__1788521460908]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788521460908.png
+Last Edited: 2026-09-04T11:42:27Z
+
+[ARTIFACT: media__1788525310467]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788525310467.png
+Last Edited: 2026-09-04T12:35:31Z
+
+[ARTIFACT: media__1788573144093]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788573144093.png
+Last Edited: 2026-09-05T01:53:15Z
+
+[ARTIFACT: media__1788585571284]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788585571284.png
+Last Edited: 2026-09-05T05:20:22Z
+
+[ARTIFACT: media__1788591897304]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788591897304.png
+Last Edited: 2026-09-05T07:05:31Z
+
+[ARTIFACT: media__1788600995889]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788600995889.png
+Last Edited: 2026-09-05T09:36:56Z
+
+[ARTIFACT: media__1788607069323]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788607069323.png
+Last Edited: 2026-09-05T11:18:37Z
+
+[ARTIFACT: media__1788608296192]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788608296192.png
+Last Edited: 2026-09-05T11:38:56Z
+
+[ARTIFACT: media__1788675881058]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788675881058.png
+Last Edited: 2026-09-06T06:25:12Z
+
+[ARTIFACT: media__1788702842910]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788702842910.png
+Last Edited: 2026-09-06T13:56:21Z
+
+[ARTIFACT: media__1788763258952]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788763258952.png
+Last Edited: 2026-09-07T06:41:49Z
+
+[ARTIFACT: media__1788784040054]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788784040054.png
+Last Edited: 2026-09-07T12:32:49Z
+
+[ARTIFACT: media__1788786997928]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788786997928.png
+Last Edited: 2026-09-07T13:23:57Z
+
+[ARTIFACT: media__1788837268775]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788837268775.png
+Last Edited: 2026-09-08T03:23:05Z
+
+[ARTIFACT: media__1788837849468]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788837849468.png
+Last Edited: 2026-09-08T03:25:06Z
+
+[ARTIFACT: media__1788837935610]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788837935610.png
+Last Edited: 2026-09-08T03:27:00Z
+
+[ARTIFACT: media__1788839181535]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788839181535.png
+Last Edited: 2026-09-08T03:56:52Z
+
+[ARTIFACT: media__1788839321163]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788839321163.png
+Last Edited: 2026-09-08T03:56:52Z
+
+[ARTIFACT: media__1788851795002]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788851795002.png
+Last Edited: 2026-09-08T07:19:36Z
+
+[ARTIFACT: media__1788852117810]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788852117810.png
+Last Edited: 2026-09-08T07:26:47Z
+
+[ARTIFACT: media__1788852435822]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788852435822.png
+Last Edited: 2026-09-08T07:31:54Z
+
+[ARTIFACT: media__1788852567045]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788852567045.png
+Last Edited: 2026-09-08T07:31:54Z
+
+[ARTIFACT: media__1788852749996]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788852749996.png
+Last Edited: 2026-09-08T07:36:15Z
+
+[ARTIFACT: media__1788852895363]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788852895363.png
+Last Edited: 2026-09-08T07:36:15Z
+
+[ARTIFACT: media__1788853651127]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788853651127.png
+Last Edited: 2026-09-08T07:47:46Z
+
+[ARTIFACT: media__1788853838503]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788853838503.png
+Last Edited: 2026-09-08T08:17:07Z
+
+[ARTIFACT: media__1788856493012]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788856493012.png
+Last Edited: 2026-09-08T08:35:09Z
+
+[ARTIFACT: media__1788856860622]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788856860622.png
+Last Edited: 2026-09-08T08:41:27Z
+
+[ARTIFACT: media__1788860838294]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788860838294.png
+Last Edited: 2026-09-08T09:47:43Z
+
+[ARTIFACT: media__1788864415920]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788864415920.png
+Last Edited: 2026-09-08T10:47:04Z
+
+[ARTIFACT: media__1788867318952]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788867318952.png
+Last Edited: 2026-09-08T11:36:01Z
+
+[ARTIFACT: media__1788873612475]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788873612475.png
+Last Edited: 2026-09-08T13:21:28Z
+
+[ARTIFACT: media__1788874409873]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788874409873.png
+Last Edited: 2026-09-08T13:34:09Z
+
+[ARTIFACT: media__1788874698224]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788874698224.png
+Last Edited: 2026-09-08T14:02:44Z
+
+[ARTIFACT: media__1788876716501]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788876716501.png
+Last Edited: 2026-09-08T14:12:34Z
+
+[ARTIFACT: media__1788879832208]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788879832208.png
+Last Edited: 2026-09-08T15:05:34Z
+
+[ARTIFACT: media__1788880010840]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788880010840.png
+Last Edited: 2026-09-08T15:35:45Z
+
+[ARTIFACT: media__1788880198635]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788880198635.png
+Last Edited: 2026-09-08T15:35:45Z
+
+[ARTIFACT: media__1788883125089]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788883125089.png
+Last Edited: 2026-09-08T16:12:45Z
+
+[ARTIFACT: media__1788884808798]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788884808798.png
+Last Edited: 2026-09-08T16:26:50Z
+
+[ARTIFACT: media__1788885834205]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788885834205.png
+Last Edited: 2026-09-08T16:44:10Z
+
+[ARTIFACT: media__1788886162163]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788886162163.png
+Last Edited: 2026-09-08T16:54:07Z
+
+[ARTIFACT: media__1788886296170]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788886296170.png
+Last Edited: 2026-09-08T16:54:07Z
+
+[ARTIFACT: media__1788886578201]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788886578201.png
+Last Edited: 2026-09-08T16:57:58Z
+
+[ARTIFACT: media__1788888812049]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788888812049.png
+Last Edited: 2026-09-08T17:33:54Z
+
+[ARTIFACT: media__1788889148875]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788889148875.png
+Last Edited: 2026-09-08T17:39:10Z
+
+[ARTIFACT: media__1788889422534]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788889422534.png
+Last Edited: 2026-09-08T17:43:59Z
+
+[ARTIFACT: media__1788891446958]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788891446958.png
+Last Edited: 2026-09-08T18:17:58Z
+
+[ARTIFACT: media__1788891881919]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788891881919.png
+Last Edited: 2026-09-08T18:25:25Z
+
+[ARTIFACT: media__1788921699530]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788921699530.png
+Last Edited: 2026-09-09T02:42:15Z
+
+[ARTIFACT: media__1788922579696]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788922579696.png
+Last Edited: 2026-09-09T02:56:20Z
+
+[ARTIFACT: media__1788922950641]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788922950641.png
+Last Edited: 2026-09-09T03:02:46Z
+
+[ARTIFACT: media__1788923453090]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788923453090.png
+Last Edited: 2026-09-09T03:11:02Z
+
+[ARTIFACT: media__1788923711300]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788923711300.png
+Last Edited: 2026-09-09T03:15:26Z
+
+[ARTIFACT: media__1788924001164]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788924001164.png
+Last Edited: 2026-09-09T03:20:30Z
+
+[ARTIFACT: media__1788924619847]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788924619847.png
+Last Edited: 2026-09-09T03:30:42Z
+
+[ARTIFACT: media__1788925415618]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788925415618.png
+Last Edited: 2026-09-09T03:44:23Z
+
+[ARTIFACT: media__1788926485176]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788926485176.png
+Last Edited: 2026-09-09T04:01:32Z
+
+[ARTIFACT: media__1788931166959]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788931166959.png
+Last Edited: 2026-09-09T05:19:33Z
+
+[ARTIFACT: media__1788931447157]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788931447157.png
+Last Edited: 2026-09-09T05:26:00Z
+
+[ARTIFACT: media__1788931896409]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788931896409.png
+Last Edited: 2026-09-09T05:31:57Z
+
+[ARTIFACT: media__1788932929692]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788932929692.png
+Last Edited: 2026-09-09T05:50:16Z
+
+[ARTIFACT: media__1788936926736]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788936926736.png
+Last Edited: 2026-09-09T06:55:41Z
+
+[ARTIFACT: media__1788937126695]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788937126695.png
+Last Edited: 2026-09-09T06:58:47Z
+
+[ARTIFACT: media__1788938437503]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788938437503.png
+Last Edited: 2026-09-09T07:21:19Z
+
+[ARTIFACT: media__1788940469472]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788940469472.png
+Last Edited: 2026-09-09T07:56:09Z
+
+[ARTIFACT: media__1788940557994]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788940557994.png
+Last Edited: 2026-09-09T07:56:09Z
+
+[ARTIFACT: media__1788940834966]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788940834966.png
+Last Edited: 2026-09-09T08:00:59Z
+
+[ARTIFACT: media__1788942801969]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/.user_uploaded/media__1788942801969.png
+Last Edited: 2026-09-09T08:33:53Z
+
+[ARTIFACT: current_language_presets_report]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/current_language_presets_report.md
+Last Edited: 2026-09-09T07:50:25Z
+
+[ARTIFACT: eval_presets_clean]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/eval_presets_clean.md
+Last Edited: 2026-09-09T07:09:18Z
+
+[ARTIFACT: eval_presets_languages_clean]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/eval_presets_languages_clean.md
+Last Edited: 2026-09-09T07:19:46Z
+
+[ARTIFACT: eval_presets_languages_tailored_report]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/eval_presets_languages_tailored_report.md
+Last Edited: 2026-09-09T07:50:16Z
+
+[ARTIFACT: eval_presets_list]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/eval_presets_list.md
+Last Edited: 2026-09-08T10:24:08Z
+
+[ARTIFACT: implementation_plan]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/implementation_plan.md
+Last Edited: 2026-09-08T08:19:56Z
+
+[ARTIFACT: add_css_hider]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/add_css_hider.py
+Last Edited: 2026-09-08T18:33:50Z
+
+[ARTIFACT: append_missing_closing_tags]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/append_missing_closing_tags.py
+Last Edited: 2026-09-08T18:00:09Z
+
+[ARTIFACT: append_presets_js]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/append_presets_js.py
+Last Edited: 2026-09-07T13:27:30Z
+
+[ARTIFACT: apply_adjustments_fix]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_adjustments_fix.py
+Last Edited: 2026-09-05T01:54:39Z
+
+[ARTIFACT: apply_all_backend_fixes]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_all_backend_fixes.py
+Last Edited: 2026-09-08T09:39:07Z
+
+[ARTIFACT: apply_bulk_publish_feature]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_bulk_publish_feature.py
+Last Edited: 2026-09-08T14:08:32Z
+
+[ARTIFACT: apply_button_fix]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_button_fix.py
+Last Edited: 2026-09-08T14:05:13Z
+
+[ARTIFACT: apply_clean_custom_modal_hide]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_clean_custom_modal_hide.py
+Last Edited: 2026-09-09T05:10:28Z
+
+[ARTIFACT: apply_custom_modal]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_custom_modal.py
+Last Edited: 2026-09-08T13:23:56Z
+
+[ARTIFACT: apply_deterministic_body_state]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_deterministic_body_state.py
+Last Edited: 2026-09-09T03:06:44Z
+
+[ARTIFACT: apply_evaluation_presets_upgrade]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_evaluation_presets_upgrade.py
+Last Edited: 2026-09-07T13:25:45Z
+
+[ARTIFACT: apply_footers]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_footers.py
+Last Edited: 2026-09-08T14:13:43Z
+
+[ARTIFACT: apply_footers_fix]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_footers_fix.py
+Last Edited: 2026-09-08T15:45:49Z
+
+[ARTIFACT: apply_frontend_fixes]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_frontend_fixes.py
+Last Edited: 2026-09-08T05:09:03Z
+
+[ARTIFACT: apply_full_untruncated_presets]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_full_untruncated_presets.py
+Last Edited: 2026-09-08T13:08:19Z
+
+[ARTIFACT: apply_kru_fixes]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_kru_fixes.py
+Last Edited: 2026-09-03T10:20:55Z
+
+[ARTIFACT: apply_parent_eval_fix]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_parent_eval_fix.py
+Last Edited: 2026-09-08T13:41:32Z
+
+[ARTIFACT: apply_presets_fix]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_presets_fix.py
+Last Edited: 2026-09-08T15:31:16Z
+
+[ARTIFACT: apply_pub_btn]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_pub_btn.py
+Last Edited: 2026-09-08T07:27:58Z
+
+[ARTIFACT: apply_publish_via_update_eval]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_publish_via_update_eval.py
+Last Edited: 2026-09-08T09:44:26Z
+
+[ARTIFACT: apply_pure_css_body_class_system]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_pure_css_body_class_system.py
+Last Edited: 2026-09-09T03:11:34Z
+
+[ARTIFACT: apply_subject_presets_upgrade]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_subject_presets_upgrade.py
+Last Edited: 2026-09-07T13:57:21Z
+
+[ARTIFACT: apply_teacher_fixes]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_teacher_fixes.py
+Last Edited: 2026-09-08T07:34:40Z
+
+[ARTIFACT: apply_teacher_footer_precise]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_teacher_footer_precise.py
+Last Edited: 2026-09-08T15:47:23Z
+
+[ARTIFACT: apply_ultimate_bulletproof_login_system]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/apply_ultimate_bulletproof_login_system.py
+Last Edited: 2026-09-09T03:21:13Z
+
+[ARTIFACT: audit_datalearn_migration]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/audit_datalearn_migration.mjs
+Last Edited: 2026-09-07T12:56:26Z
+
+[ARTIFACT: audit_kru]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/audit_kru.py
+Last Edited: 2026-09-03T10:07:56Z
+
+[ARTIFACT: audit_results]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/audit_results.txt
+Last Edited: 2026-09-03T10:12:40Z
+
+[ARTIFACT: bind_latest_version]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/bind_latest_version.py
+Last Edited: 2026-09-08T16:03:18Z
+
+[ARTIFACT: build_150char_15presets]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/build_150char_15presets.py
+Last Edited: 2026-09-08T10:13:02Z
+
+[ARTIFACT: build_40_presets]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/build_40_presets.py
+Last Edited: 2026-09-07T15:32:37Z
+
+[ARTIFACT: build_clean_150char_presets]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/build_clean_150char_presets.py
+Last Edited: 2026-09-08T13:07:57Z
+
+[ARTIFACT: build_parent_eval_complete]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/build_parent_eval_complete.py
+Last Edited: 2026-09-08T08:39:03Z
+
+[ARTIFACT: build_presets_summary_and_fix]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/build_presets_summary_and_fix.py
+Last Edited: 2026-09-08T09:52:10Z
+
+[ARTIFACT: check_admin_eval_items_html]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_admin_eval_items_html.py
+Last Edited: 2026-09-08T15:29:45Z
+
+[ARTIFACT: check_all_eval_items_html]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_all_eval_items_html.py
+Last Edited: 2026-09-08T15:29:29Z
+
+[ARTIFACT: check_all_published]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_all_published.mjs
+Last Edited: 2026-09-08T13:40:27Z
+
+[ARTIFACT: check_app_shells]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_app_shells.py
+Last Edited: 2026-09-08T18:18:35Z
+
+[ARTIFACT: check_clasprc]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_clasprc.py
+Last Edited: 2026-09-08T13:10:02Z
+
+[ARTIFACT: check_date_range_matches]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_date_range_matches.mjs
+Last Edited: 2026-09-06T07:28:30Z
+
+[ARTIFACT: check_deployments]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_deployments.py
+Last Edited: 2026-09-08T08:01:08Z
+
+[ARTIFACT: check_eval_headers]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_eval_headers.mjs
+Last Edited: 2026-09-08T13:46:31Z
+
+[ARTIFACT: check_html_hashes]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_html_hashes.py
+Last Edited: 2026-09-08T15:28:33Z
+
+[ARTIFACT: check_html_syntax]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_html_syntax.py
+Last Edited: 2026-09-08T17:50:45Z
+
+[ARTIFACT: check_initial_option_counts]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_initial_option_counts.py
+Last Edited: 2026-09-08T15:28:13Z
+
+[ARTIFACT: check_js_hashes]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_js_hashes.py
+Last Edited: 2026-09-08T15:28:24Z
+
+[ARTIFACT: check_kru_prepends]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_kru_prepends.txt
+Last Edited: 2026-09-03T10:17:03Z
+
+[ARTIFACT: check_live_commit]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_live_commit.py
+Last Edited: 2026-09-09T04:00:24Z
+
+[ARTIFACT: check_main_script]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_main_script.py
+Last Edited: 2026-09-08T17:52:24Z
+
+[ARTIFACT: check_presets_structure]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_presets_structure.py
+Last Edited: 2026-09-08T15:08:45Z
+
+[ARTIFACT: check_select_ids]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_select_ids.py
+Last Edited: 2026-09-08T15:09:09Z
+
+[ARTIFACT: check_truncation]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_truncation.js
+Last Edited: 2026-09-08T13:04:30Z
+
+[ARTIFACT: check_versions]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/check_versions.mjs
+Last Edited: 2026-09-07T12:52:38Z
+
+[ARTIFACT: clean_git_desktop_ini]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/clean_git_desktop_ini.py
+Last Edited: 2026-09-04T06:54:19Z
+
+[ARTIFACT: cleanup_and_publish_new_version]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/cleanup_and_publish_new_version.py
+Last Edited: 2026-09-08T16:02:17Z
+
+[ARTIFACT: clear_rebase]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/clear_rebase.py
+Last Edited: 2026-09-04T08:02:04Z
+
+[ARTIFACT: convert_all_confirms_to_custom_modals]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/convert_all_confirms_to_custom_modals.py
+Last Edited: 2026-09-09T03:46:33Z
+
+[ARTIFACT: create_head_deployment]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/create_head_deployment.py
+Last Edited: 2026-09-08T08:05:18Z
+
+[ARTIFACT: create_new_deployment]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/create_new_deployment.py
+Last Edited: 2026-09-08T16:29:48Z
+
+[ARTIFACT: debug_js_execution_flow]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/debug_js_execution_flow.py
+Last Edited: 2026-09-09T03:11:11Z
+
+[ARTIFACT: delete_and_publish]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/delete_and_publish.py
+Last Edited: 2026-09-08T16:03:49Z
+
+[ARTIFACT: delete_old_versions]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/delete_old_versions.py
+Last Edited: 2026-09-08T08:04:08Z
+
+[ARTIFACT: deploy_and_publish_gas]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/deploy_and_publish_gas.py
+Last Edited: 2026-09-08T15:48:34Z
+
+[ARTIFACT: extract_all_presets_text]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/extract_all_presets_text.py
+Last Edited: 2026-09-08T09:55:13Z
+
+[ARTIFACT: extract_and_generate_artifact]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/extract_and_generate_artifact.py
+Last Edited: 2026-09-08T10:23:30Z
+
+[ARTIFACT: fast_deploy]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fast_deploy.py
+Last Edited: 2026-09-08T07:57:49Z
+
+[ARTIFACT: fast_find_syntax]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fast_find_syntax.js
+Last Edited: 2026-09-08T12:00:26Z
+
+[ARTIFACT: find_admin_eval_items]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_admin_eval_items.py
+Last Edited: 2026-09-08T15:23:17Z
+
+[ARTIFACT: find_all_alerts_and_confirm_calls]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_all_alerts_and_confirm_calls.py
+Last Edited: 2026-09-09T03:44:32Z
+
+[ARTIFACT: find_all_app_container_rules]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_all_app_container_rules.py
+Last Edited: 2026-09-09T03:04:35Z
+
+[ARTIFACT: find_all_login_overlay_css]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_all_login_overlay_css.py
+Last Edited: 2026-09-08T18:26:07Z
+
+[ARTIFACT: find_all_login_selectors]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_all_login_selectors.py
+Last Edited: 2026-09-08T18:27:21Z
+
+[ARTIFACT: find_all_prepends]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_all_prepends.py
+Last Edited: 2026-09-03T10:12:55Z
+
+[ARTIFACT: find_all_state_decls]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_all_state_decls.py
+Last Edited: 2026-09-08T18:28:58Z
+
+[ARTIFACT: find_app_container_css]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_app_container_css.py
+Last Edited: 2026-09-09T02:57:18Z
+
+[ARTIFACT: find_body_css]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_body_css.py
+Last Edited: 2026-09-09T03:03:18Z
+
+[ARTIFACT: find_container_css]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_container_css.py
+Last Edited: 2026-09-09T02:46:51Z
+
+[ARTIFACT: find_copyrights_html]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_copyrights_html.py
+Last Edited: 2026-09-08T15:42:39Z
+
+[ARTIFACT: find_course_handlers]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_course_handlers.py
+Last Edited: 2026-09-08T15:19:27Z
+
+[ARTIFACT: find_display_none_js]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_display_none_js.py
+Last Edited: 2026-09-09T03:03:38Z
+
+[ARTIFACT: find_eval_lifecycle]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_eval_lifecycle.py
+Last Edited: 2026-09-08T15:14:05Z
+
+[ARTIFACT: find_eval_page_containers]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_eval_page_containers.py
+Last Edited: 2026-09-08T15:17:19Z
+
+[ARTIFACT: find_eval_student_html]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_eval_student_html.py
+Last Edited: 2026-09-08T15:21:07Z
+
+[ARTIFACT: find_eval_subject]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_eval_subject.py
+Last Edited: 2026-09-08T15:15:58Z
+
+[ARTIFACT: find_gsr_lines]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_gsr_lines.py
+Last Edited: 2026-09-08T17:27:59Z
+
+[ARTIFACT: find_handle_login]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_handle_login.py
+Last Edited: 2026-09-08T16:59:51Z
+
+[ARTIFACT: find_imp1_rec1]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_imp1_rec1.py
+Last Edited: 2026-09-08T15:26:52Z
+
+[ARTIFACT: find_login_overlay_css]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_login_overlay_css.py
+Last Edited: 2026-09-08T18:18:47Z
+
+[ARTIFACT: find_modal_load_fns]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_modal_load_fns.py
+Last Edited: 2026-09-08T15:23:45Z
+
+[ARTIFACT: find_opening_form]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_opening_form.py
+Last Edited: 2026-09-08T18:19:14Z
+
+[ARTIFACT: find_panel_inits]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_panel_inits.py
+Last Edited: 2026-09-08T15:30:04Z
+
+[ARTIFACT: find_panel_switchers]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_panel_switchers.py
+Last Edited: 2026-09-09T02:47:58Z
+
+[ARTIFACT: find_parent_eval_backend]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_parent_eval_backend.py
+Last Edited: 2026-09-08T15:37:53Z
+
+[ARTIFACT: find_pe_functions]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_pe_functions.py
+Last Edited: 2026-09-08T15:42:12Z
+
+[ARTIFACT: find_preset_calls]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_preset_calls.py
+Last Edited: 2026-09-08T15:09:43Z
+
+[ARTIFACT: find_preset_functions_range]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_preset_functions_range.py
+Last Edited: 2026-09-08T15:31:04Z
+
+[ARTIFACT: find_role_layout_fns]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_role_layout_fns.py
+Last Edited: 2026-09-08T15:45:08Z
+
+[ARTIFACT: find_school_name]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_school_name.py
+Last Edited: 2026-09-08T15:43:09Z
+
+[ARTIFACT: find_select_listeners]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_select_listeners.py
+Last Edited: 2026-09-08T15:16:08Z
+
+[ARTIFACT: find_session_clearance]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_session_clearance.py
+Last Edited: 2026-09-09T03:31:33Z
+
+[ARTIFACT: find_state_declarations]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_state_declarations.py
+Last Edited: 2026-09-08T18:28:40Z
+
+[ARTIFACT: find_strength1]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_strength1.py
+Last Edited: 2026-09-08T15:27:00Z
+
+[ARTIFACT: find_strength_occurrences]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_strength_occurrences.py
+Last Edited: 2026-09-08T15:14:45Z
+
+[ARTIFACT: find_syntax_err_line]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_syntax_err_line.py
+Last Edited: 2026-09-08T12:00:10Z
+
+[ARTIFACT: find_teacher_app_shell_end]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_teacher_app_shell_end.py
+Last Edited: 2026-09-08T15:46:49Z
+
+[ARTIFACT: find_teacher_app_shell_js_lines]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_teacher_app_shell_js_lines.py
+Last Edited: 2026-09-09T03:06:12Z
+
+[ARTIFACT: find_teacher_ids]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_teacher_ids.py
+Last Edited: 2026-09-09T02:49:52Z
+
+[ARTIFACT: find_teacher_panels]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_teacher_panels.py
+Last Edited: 2026-09-09T02:49:35Z
+
+[ARTIFACT: find_teacher_role]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/find_teacher_role.py
+Last Edited: 2026-09-08T15:45:19Z
+
+[ARTIFACT: fix_boot_app_and_check_session]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_boot_app_and_check_session.py
+Last Edited: 2026-09-09T03:34:24Z
+
+[ARTIFACT: fix_custom_confirm_modal_hidden_default]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_custom_confirm_modal_hidden_default.py
+Last Edited: 2026-09-09T04:01:42Z
+
+[ARTIFACT: fix_duplicate_evals]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_duplicate_evals.py
+Last Edited: 2026-09-08T14:09:41Z
+
+[ARTIFACT: fix_eval_cache_and_pub]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_eval_cache_and_pub.py
+Last Edited: 2026-09-08T14:03:06Z
+
+[ARTIFACT: fix_evaluation_courses_fetching]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_evaluation_courses_fetching.py
+Last Edited: 2026-09-05T05:25:31Z
+
+[ARTIFACT: fix_evaluations_system_all]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_evaluations_system_all.py
+Last Edited: 2026-09-08T03:38:32Z
+
+[ARTIFACT: fix_extra_brace]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_extra_brace.py
+Last Edited: 2026-09-08T18:32:24Z
+
+[ARTIFACT: fix_global_state_and_login]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_global_state_and_login.py
+Last Edited: 2026-09-08T18:29:26Z
+
+[ARTIFACT: fix_guarantee_and_filter]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_guarantee_and_filter.py
+Last Edited: 2026-09-04T12:39:47Z
+
+[ARTIFACT: fix_horizontal_syntax]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_horizontal_syntax.py
+Last Edited: 2026-09-08T12:01:01Z
+
+[ARTIFACT: fix_inline_onclick_and_handle_login]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_inline_onclick_and_handle_login.py
+Last Edited: 2026-09-09T03:16:07Z
+
+[ARTIFACT: fix_junk_css]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_junk_css.py
+Last Edited: 2026-09-08T18:02:22Z
+
+[ARTIFACT: fix_login_and_blank_screen_permanent]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_login_and_blank_screen_permanent.py
+Last Edited: 2026-09-09T02:58:01Z
+
+[ARTIFACT: fix_login_system]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_login_system.py
+Last Edited: 2026-09-08T11:15:09Z
+
+[ARTIFACT: fix_object_assign_syntax]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_object_assign_syntax.py
+Last Edited: 2026-09-08T18:31:11Z
+
+[ARTIFACT: fix_print_staff_salary]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_print_staff_salary.py
+Last Edited: 2026-09-08T18:04:37Z
+
+[ARTIFACT: fix_print_syntax]
+Path: file:///C:/Users/Windows%2011/.gemini/antigravity/brain/d543c19c-753e-425b-a6d5-428fa3b9ba2d/scratch/fix_print_syntax.py
+Last Edited: 2026-09-08T17:53:50Z
+
+[ARTIFACT: fix_script_placement]
+Path: file:///C:/
+<truncated 13985 bytes>
+
+NOTE: The output was truncated because it was too long. Use a more targeted query or a smaller range to get the information you need.

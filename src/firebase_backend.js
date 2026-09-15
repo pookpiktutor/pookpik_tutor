@@ -1435,7 +1435,7 @@ export async function calculateTeacherYearlyPay(teacher, year, logUser) {
 
 export async function getTeacherCoursesAndStudents(teacherName) {
     try {
-        const cleanName = (teacherName || '').toString().trim().toLowerCase();
+        const cleanName = (teacherName || "").toString().split("|")[0].trim().toLowerCase();
         if (!cleanName) return [];
 
         const classLogsRef = collection(db, 'ClassLogs');
