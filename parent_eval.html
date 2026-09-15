@@ -580,12 +580,18 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
             <div class="eval-header-bg">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
                 <div>
-                  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
                     <span class="course-badge">
                       <i class="fa-solid fa-book-open"></i> ${courseName}
                     </span>
                     <span style="background: white; color: #475569; padding: 6px 14px; border-radius: 30px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-sm);">
-                      <i class="fa-solid fa-school"></i> ${branchName.replace(/ipad/gi, '').replace(/jiped/gi, '').replace(/ห้องเรียน/g, 'ห้อง').trim()}
+                      <i class="fa-solid fa-school"></i> ${branchName.match(/สาขา\s*\d+/) ? branchName.match(/สาขา\s*\d+/)[0] : branchName.replace(/ipad/gi, '').replace(/jiped/gi, '').replace(/ห้องเรียน/g, 'ห้อง').trim()}
+                    </span>
+                    <span style="background: white; color: #475569; padding: 6px 14px; border-radius: 30px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-sm);">
+                      <i class="fa-solid fa-graduation-cap"></i> ระดับชั้น: ${gradeLevel}
+                    </span>
+                    <span style="background: white; color: #7d5fff; padding: 6px 14px; border-radius: 30px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-sm);">
+                      <i class="fa-solid fa-chalkboard-user"></i> ครูผู้สอน: ${teacherName}
                     </span>
                   </div>
                   <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">
@@ -605,16 +611,8 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
             </div>
 
             <div class="eval-body">
-              <div class="student-info-row">
-                <div class="info-item" style="flex: 1; min-width: 120px;">
-                  <span class="label"><i class="fa-solid fa-graduation-cap"></i> ระดับชั้น</span>
-                  <span class="val">${gradeLevel}</span>
-                </div>
-                <div class="info-item" style="flex: 1; min-width: 120px;">
-                  <span class="label"><i class="fa-solid fa-chalkboard-user"></i> ครูผู้สอน</span>
-                  <span class="val" style="color: #7d5fff;">${teacherName}</span>
-                </div>
-              </div>
+
+
 
               <h4 style="font-size: 16px; font-weight: 700; color: #334155; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-chart-pie" style="color: var(--primary-color);"></i> สรุปผลการประเมินรายพฤติกรรม
@@ -653,7 +651,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                   ${strengths ? `
                     <div class="comments-box" style="border-color: #10b981; background: linear-gradient(to right, rgba(16,185,129,0.05), transparent);">
                       <div class="comments-title" style="color: #059669;">
-                        <i class="fa-solid fa-arrow-trend-up"></i> จุดเด่นที่ควรส่งเสริม
+                        <i class="fa-solid fa-arrow-trend-up"></i> จุดเด่นในการเรียนรู้ของนักเรียนที่ควรรักษาไว้ และส่งเสริมต่อไป
                       </div>
                       <div class="comments-text">${strengths}</div>
                     </div>
@@ -662,7 +660,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                   ${improvements ? `
                     <div class="comments-box" style="border-color: #f59e0b; background: linear-gradient(to right, rgba(245,158,11,0.05), transparent);">
                       <div class="comments-title" style="color: #d97706;">
-                        <i class="fa-solid fa-bullseye"></i> สิ่งที่ควรพัฒนา
+                        <i class="fa-solid fa-bullseye"></i> สิ่งที่นักเรียนควรพัฒนาเพิ่มเติม
                       </div>
                       <div class="comments-text">${improvements}</div>
                     </div>
@@ -671,7 +669,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                   ${recommendations ? `
                     <div class="comments-box" style="border-color: var(--primary-color); background: linear-gradient(to right, rgba(255,51,102,0.05), transparent);">
                       <div class="comments-title" style="color: var(--primary-color);">
-                        <i class="fa-solid fa-comment-dots"></i> ข้อเสนอแนะจากคุณครู
+                        <i class="fa-solid fa-comment-dots"></i> ข้อเสนอแนะเพิ่มเติมจากครูผู้สอน / วิธีการช่วยเหลือจากผู้ปกครองที่บ้าน
                       </div>
                       <div class="comments-text">${recommendations}</div>
                     </div>
