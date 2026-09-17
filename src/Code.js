@@ -992,7 +992,8 @@ function onOpen() {
   ui.createMenu('🤖 ระบบครูปุ๊กปิ๊ก')
       .addItem('🧹 จัดเรียงข้อมูลที่พนักงานลงเองเข้าสู่ระบบ UI', 'organizeAndSortStaffDatabaseData')
       .addItem('🚀 ล้าง/เซ็ตฐานข้อมูลตารางเรียน', 'initAllDatabases')
-      .addItem('🔄 แปลงข้อมูลนักเรียน (กลุ่มหลัก/เด็กเดี่ยว/กลุ่มย่อย) เข้าสู่ StatusDB', 'syncMissingStudentsToStatusDB')\n      .addItem('🧹 ลบแถวว่างชีตเดี่ยว/กลุ่มย่อย + ซิงค์เข้า StatusDB', 'cleanEmptyRowsAndSyncPrivateSheets')
+      .addItem('🔄 แปลงข้อมูลนักเรียน (กลุ่มหลัก/เด็กเดี่ยว/กลุ่มย่อย) เข้าสู่ StatusDB', 'syncMissingStudentsToStatusDB')
+      .addItem('🧹 ลบแถวว่างชีตเดี่ยว/กลุ่มย่อย + ซิงค์เข้า StatusDB', 'cleanEmptyRowsAndSyncPrivateSheets')
       .addItem('🌐 เปิดเว็บไซต์ระบบเรียน', 'openWebAppUrl')
       .addToUi();
 }
