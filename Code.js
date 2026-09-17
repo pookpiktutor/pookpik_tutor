@@ -1484,7 +1484,7 @@ function getOrCreateSheet(sheetName) {
 
     const headers = ['ชื่อ', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'โรงเรียน', 'คอร์ส', 'เบอร์ติดต่อ', 'เบอร์ผู้ปกครอง/เบอร์ติดต่อ', 'ID LINE', 'สาขาเรียน(สาขา)', 'สาขาเงิน(สาขา)', 'รอบเรียน', 'หมายเหตุ', 'เรียนจริง(รอบ)', 'เรียน', 'จ่าย', 'คงเหลือ', 'วันที่รับเงิน', 'ช่องทางการรับเงิน', 'ผู้รับเงิน', 'ใบเสร็จ', 'ตรวจสอบ'];
 
-    sheet.getRange(11, 1, 1, 21).setValues([headers]);
+    sheet.getRange(1, 1, 1, 21).setValues([headers]);
 
     return sheet;
 
@@ -1502,7 +1502,7 @@ function getOrCreateSheet(sheetName) {
 
     const headers = ['ชื่อ', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'โรงเรียน', 'คอร์ส', 'เบอร์ติดต่อ', 'เบอร์ผู้ปกครอง/เบอร์ติดต่อ', 'ID LINE', 'สาขาเรียน(สาขา)', 'สาขาเงิน(สาขา)', 'รอบเรียน', 'หมายเหตุ', 'เรียนจริง(รอบ)', 'เรียน', 'จ่าย', 'คงเหลือ', 'วันที่รับเงิน', 'ช่องทางการรับเงิน', 'ผู้รับเงิน', 'ใบเสร็จ', 'ตรวจสอบ'];
 
-    sheet.getRange(11, 1, 1, 21).setValues([headers]);
+    sheet.getRange(1, 1, 1, 21).setValues([headers]);
 
     return sheet;
 
@@ -11888,7 +11888,7 @@ function initAllGradeSheets() {
 
     }
 
-    if (sheet.getLastRow() < 11) {
+    if (sheet.getLastRow() < 2) {
 
       sheet.clear();
 
@@ -11938,7 +11938,7 @@ function initAllGradeSheets() {
 
       ];
 
-      sheet.getRange(11, 1, 1, 21).setValues([headers]);
+      sheet.getRange(1, 1, 1, 21).setValues([headers]);
 
     }
 
@@ -11960,7 +11960,7 @@ function initAllGradeSheets() {
 
     }
 
-    if (sheet.getLastRow() < 11) {
+    if (sheet.getLastRow() < 2) {
 
       sheet.clear();
 
@@ -12010,7 +12010,7 @@ function initAllGradeSheets() {
 
       ];
 
-      sheet.getRange(11, 1, 1, 21).setValues([headers]);
+      sheet.getRange(1, 1, 1, 21).setValues([headers]);
 
     }
 
@@ -17538,4 +17538,28 @@ function deleteMultipleEvaluations(evalIds, logUser) {
     Logger.log("Error in deleteMultipleEvaluations: " + err.message);
     return { success: false, error: err.message };
   }
+}
+
+
+function forceUpdatePrivateHeadersRow1() {
+  const db = getDb();
+  const grades = ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+  const subgroups = ['ย่อย 2-3', 'ย่อย 4-5', 'ย่อย 6-10'];
+  
+  const headers = [
+    'ประเภทคอร์ส', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'โรงเรียน', 'ห้อง', 'เบอร์ติดต่อ',
+    'ชื่อไลน์/กลุ่มติดต่อ', 'ID LINE', 'เรียน(สาขา)', 'เก็บเงิน(สาขา)', 'คอร์สเรียน',
+    'หมายเหตุ', 'ค่าเรียนยกมา', 'ค่าเรียน', 'จ่ายมา', 'คงเหลือ', 'วันที่ชำระเงิน',
+    'ช่องทางชำระเงิน', 'ผู้รับเงิน', 'ชั่วโมงเรียน', 'ชั่วโมงคงเหลือ'
+  ];
+
+  grades.forEach(grade => {
+    const sheet = db.getSheetByName('เดี่ยว ' + grade);
+    if (sheet) sheet.getRange(1, 1, 1, 21).setValues([headers]);
+  });
+  
+  subgroups.forEach(name => {
+    const sheet = db.getSheetByName(name);
+    if (sheet) sheet.getRange(1, 1, 1, 21).setValues([headers]);
+  });
 }
