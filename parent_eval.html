@@ -393,6 +393,18 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         .toLowerCase();
     }
 
+    function getGradeIndex(val) {
+      if (!val) return 0;
+      const v = String(val).trim().toLowerCase();
+      if (v.includes('เกียรตินิยม') || v.includes('honors') || v.includes('ยอดเยี่ยม')) return 6;
+      if (v.includes('เกรด 4') || v === '4' || v.includes('grade 4') || v.includes('ดีมาก')) return 5;
+      if (v.includes('เกรด 3') || v === '3' || v.includes('grade 3') || v.includes('ดี')) return 4;
+      if (v.includes('เกรด 2') || v === '2' || v.includes('grade 2') || v.includes('พอใช้') || v.includes('ปานกลาง')) return 3;
+      if (v.includes('เกรด 1') || v === '1' || v.includes('grade 1') || v.includes('ควรปรับปรุง')) return 2;
+      if (v.includes('ไม่ผ่าน') || v.includes('fail') || v === '0' || v.includes('ตก')) return 1;
+      return 0;
+    }
+
     function fetchAllEvaluations(callback) {
       if (cachedEvaluations) {
         callback(null, cachedEvaluations);

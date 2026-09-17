@@ -1,0 +1,4 @@
+import re
+content = open('g:/My Drive/0.งานสถาบัน/data_PookPik_Tutor/parent_eval.html', 'r', encoding='utf-8').read()
+content = content.replace('<p style="color: red; font-size: 12px; margin-top: 10px;" id="debugError"></p>', '${window.apiFetchError ? `<p style="color: red; font-size: 12px; margin-top: 10px; margin-bottom: 30px; text-align: center; border: 1px solid red; padding: 10px; border-radius: 5px; max-width: 500px;" id="debugError"><b>ระบบตรวจพบข้อผิดพลาด:</b> ${window.apiFetchError}<br><br><b>วิธีแก้ไขสำหรับแอดมิน:</b><br>กรุณากลับไปที่ Apps Script แล้วกด "Deploy" (การทำให้ใช้งานได้) -> "New Deployment" (การทำให้ใช้งานได้รายการใหม่)<br>ตรง <b>"Who has access" (ผู้ที่มีสิทธิ์เข้าถึง)</b> จะต้องเลือกเป็น <b>"Anyone" (ทุกคน)</b> เท่านั้นครับ!</p>` : \'\'}')
+open('g:/My Drive/0.งานสถาบัน/data_PookPik_Tutor/parent_eval.html', 'w', encoding='utf-8').write(content)
