@@ -2975,6 +2975,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
               <div style="font-family: var(--font-heading); font-size: 1.1rem; font-weight: 500; white-space: nowrap;">📋 รายการนักเรียนที่ได้รับการประเมินแล้ว</div>
               <input type="text" id="admin_eval_search" class="form-input" style="flex: 1; min-width: 200px;" placeholder="ค้นหาชื่อนักเรียน, ชื่อเล่น, หรือวิชา..." onkeyup="filterAdminEvaluations()">
               <button class="btn btn-success" style="white-space: nowrap; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none;" onclick="publishSelectedAdminEvaluations()"><i class="fas fa-paper-plane"></i> ยืนยันเผยแพร่ใบประเมิน (ที่เลือก)</button>
+              <button class="btn btn-danger" style="white-space: nowrap;" onclick="deleteSelectedAdminEvaluations()">🗑️ ลบที่เลือก</button>
 
               <button class="btn btn-secondary" style="white-space: nowrap;" onclick="loadAdminEvaluationsDashboard()">🔄 รีเฟรช</button>
 
@@ -45035,6 +45036,52 @@ function deleteAdminEvaluation(evalId) {
           showToast('เกิดข้อผิดพลาด: ' + (error.message || error), 'error');
         })
         .deleteEvaluation(evalId, getLogUser());
+    }
+  });
+}
+
+function deleteSelectedAdminEvaluations() {
+  const containerEl = document.getElementById('admin_evaluation_dashboard_container');
+  if (!containerEl) return;
+
+  const checkedEls = containerEl.querySelectorAll('.admin-eval-select-checkbox:checked');
+  if (checkedEls.length === 0) {
+    Swal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกข้อมูล', text: 'กรุณาติ๊กเลือกใบประเมินที่ต้องการลบ' });
+    return;
+  }
+  
+  const selectedCount = checkedEls.length;
+  
+  Swal.fire({
+    title: 'ยืนยันการลบใบประเมิน',
+    html: `คุณต้องการลบใบประเมินจำนวน <b>${selectedCount}</b> ใบ ใช่หรือไม่?<br><small style="color:#ef4444;">การลบนี้จะไม่สามารถกู้คืนกลับมาได้</small>`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'ยืนยันลบทั้งหมดที่เลือก',
+    cancelButtonText: 'ยกเลิก'
+  }).then((result) => {
+    if (result && result.isConfirmed) {
+      showToast('⏳ กำลังลบข้อมูลใบประเมิน...', 'info');
+      
+      const evalIds = Array.from(checkedEls).map(el => el.getAttribute('data-eval-id'));
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response && response.success) {
+            showToast(`ลบใบประเมินไปแล้ว ${response.deletedCount} รายการ`, 'success');
+            if (typeof loadAdminEvaluationsDashboard === 'function') {
+              loadAdminEvaluationsDashboard();
+            }
+          } else {
+            showToast('เกิดข้อผิดพลาดในการลบ: ' + (response ? response.error : 'Unknown Error'), 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          showToast('เกิดข้อผิดพลาด: ' + (error.message || error), 'error');
+        })
+        .deleteMultipleEvaluations(evalIds, getLogUser());
     }
   });
 }

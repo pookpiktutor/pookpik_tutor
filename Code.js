@@ -17515,3 +17515,27 @@ function deleteEvaluation(evalId, logUser) {
     return { success: false, error: e.message };
   }
 }
+
+
+function deleteMultipleEvaluations(evalIds, logUser) {
+  try {
+    const sheet = connectToSheet('Evaluations');
+    const data = sheet.getDataRange().getValues();
+    
+    // We iterate backwards to safely delete rows
+    let deletedCount = 0;
+    for (let i = data.length - 1; i > 0; i--) {
+      const rowEvalId = data[i][0];
+      if (evalIds.includes(rowEvalId)) {
+        sheet.deleteRow(i + 1);
+        deletedCount++;
+      }
+    }
+    
+    logActivity('System', 'ลบใบประเมิน (หลายรายการ)', `Deleted ${deletedCount} evaluations by ${logUser}`);
+    return { success: true, deletedCount: deletedCount };
+  } catch (err) {
+    Logger.log("Error in deleteMultipleEvaluations: " + err.message);
+    return { success: false, error: err.message };
+  }
+}
