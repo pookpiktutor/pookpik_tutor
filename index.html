@@ -43078,31 +43078,5050 @@ window.forceRefreshTeacherCourses = function() {
       if (!courseSelect || !studentSelect) return;
       
       if (Array.isArray(res)) {
-                const deduplicatedMap = {};
+        const seenSingleSubgroup = new Set();
+        const deduplicated = [];
         res.forEach(function(c) {
           let cleanName = (c.courseName || '').toString().trim();
           if (cleanName.includes('เดี่ยว') || cleanName.includes('ย่อย')) {
-            // Strip trailing indicators like " 1", " 2", "ex1", " รอบ 1", "ครั้งที่ 1", etc.
-            cleanName = cleanName.replace(/\s*(ex|EX|รอบ|ครั้งที่|ครั้ง|#|-)?\s*\d+(\.\d+)?\s*$/gi, '').trim();
+            cleanName = cleanName.replace(/\s+(ex|EX|รอบ|#)?\s*\d+$/gi, '').trim();
           }
           c.courseName = cleanName;
           c.displayCourseName = cleanName;
           const dedupeKey = cleanName.toLowerCase().replace(/\s+/g, '');
-          
-          if (!deduplicatedMap[dedupeKey]) {
-            deduplicatedMap[dedupeKey] = c;
-            if (!deduplicatedMap[dedupeKey].students) {
-                deduplicatedMap[dedupeKey].students = {};
-            }
-          } else {
-            // Merge students from duplicate courses so we don't lose anyone
-            if (c.students) {
-              if (!deduplicatedMap[dedupeKey].students) deduplicatedMap[dedupeKey].students = {};
-              Object.assign(deduplicatedMap[dedupeKey].students, c.students);
-            }
+          if (!seenSingleSubgroup.has(dedupeKey)) {
+            seenSingleSubgroup.add(dedupeKey);
+            deduplicated.push(c);
           }
         });
-        const deduplicated = Object.values(deduplicatedMap);
+        state._teacherCourses = deduplicated;
+        populateTeacherCourseDropdown();
+        showToast('ดึงข้อมูลคอร์สเรียนสำเร็จ', 'success');
+      } else {
+        showToast('ไม่พบตารางสอนคอร์สใดๆ ของคุณครู', 'warning');
+      }
+      renderEvalCriteriaGrid('math_sci');
+    })
+    .withFailureHandler(function(err) {
+      setLoading(false);
+      showToast('ไม่สามารถดึงข้อมูลคอร์สครู: ' + err.message, 'error');
+    })
+    .getTeacherCoursesAndStudents((state.currentUser ? state.currentUser.username : getLogUser()).split("|")[0]);
+};
+
+function initEvaluationForm() {
+
+
+
+  setLoading(true, 'กำลังโหลดข้อมูลคอร์สของคุณครู...');
+
+
+
+  
+
+
+
+  // Set default date to today
+
+
+
+  const today = new Date();
+
+
+
+  const dateStr = today.getFullYear() + '-' + 
+
+
+
+    String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+
+
+
+    String(today.getDate()).padStart(2, '0');
+
+
+
+  const evalDateEl = document.getElementById('eval_date');
+
+
+
+  if (evalDateEl) evalDateEl.value = dateStr || new Date().toISOString().split('T')[0];
+
+
+
+  
+
+
+
+  // Set teacher name
+
+
+
+  const teacherInput = document.getElementById('eval_teacher');
+
+
+
+  if (teacherInput) {
+
+
+
+    teacherInput.value = state.currentUser ? (state.currentUser.nickname || state.currentUser.username || '') : '';
+
+
+
+  }
+
+
+
+  
+
+
+
+  // Clean form fields
+
+
+
+  document.getElementById('eval_grade').value = '';
+
+
+
+  document.getElementById('eval_branch').value = '';
+
+
+
+  document.getElementById('eval_subject').value = '';
+
+
+
+  
+
+
+
+  // Load evaluation history first to know who is already evaluated
+
+
+
+  google.script.run
+
+
+
+    .withSuccessHandler(function(list) {
+
+
+
+      if (Array.isArray(list)) {
+
+
+
+        state.evaluations = list;
+
+
+
+      } else {
+
+
+
+        state.evaluations = [];
+
+
+
+      }
+
+
+
+      
+
+
+
+      // Fetch courses and students specific to this teacher
+
+
+
+      google.script.run
+
+
+
+        .withSuccessHandler(function(res) {
+
+
+
+          setLoading(false);
+
+
+
+          const courseSelect = document.getElementById('eval_course');
+
+
+
+          const studentSelect = document.getElementById('eval_student');
+
+
+
+          if (!courseSelect || !studentSelect) return;
+
+
+
+          
+
+
+
+          if (Array.isArray(res)) {
+
+
+
+            const seenSingleSubgroup = new Set();
+
+
+
+            const deduplicated = [];
+
+
+
+            res.forEach(function(c) {
+
+
+
+              let cleanName = (c.courseName || '').toString().trim();
+
+
+
+              if (cleanName.includes('เดี่ยว') || cleanName.includes('ย่อย')) {
+
+
+
+                // Strip trailing round numbers / session indicators e.g. " 1", " 2", " ex1", " ex2", " รอบ1"
+
+
+
+                cleanName = cleanName.replace(/\s+(ex|EX|รอบ|#)?\s*\d+$/gi, '').trim();
+
+
+
+              }
+
+
+
+              c.courseName = cleanName;
+
+
+
+              c.displayCourseName = cleanName;
+
+
+
+              const dedupeKey = cleanName.toLowerCase().replace(/\s+/g, '');
+
+
+
+              if (!seenSingleSubgroup.has(dedupeKey)) {
+
+
+
+                seenSingleSubgroup.add(dedupeKey);
+
+
+
+                deduplicated.push(c);
+
+
+
+              }
+
+
+
+            });
+
+
+
+            state._teacherCourses = deduplicated; // Store globally
+
+
+
+            populateTeacherCourseDropdown();
+
+
+
+          } else {
+
+
+
+            showToast('ไม่พบตารางสอนคอร์สใดๆ ของคุณครู', 'warning');
+
+
+
+          }
+
+
+
+          
+
+
+
+          // Default to Math/Science criteria grid at first
+
+
+
+          renderEvalCriteriaGrid('math_sci');
+
+
+
+        })
+
+
+
+        .withFailureHandler(function(err) {
+
+
+
+          setLoading(false);
+
+
+
+          showToast('ไม่สามารถดึงข้อมูลคอร์สครู: ' + err.message, 'error');
+
+
+
+        })
+
+
+
+        .getTeacherCoursesAndStudents(state.currentUser ? state.currentUser.username : getLogUser());
+
+
+
+    })
+
+
+
+    .withFailureHandler(function(err) {
+
+
+
+      console.error('Failed to load evaluations list:', err);
+
+
+
+      state.evaluations = [];
+
+
+
+      setLoading(false);
+
+
+
+    })
+
+
+
+    .getEvaluationsList(getLogUser());
+
+
+
+}
+
+
+
+
+
+
+
+function isCourseExactMatchFrontend(targetCourse, cellText, dayTimeStr) {
+
+  if (!targetCourse || !cellText) return false;
+
+
+
+  const cleanT = targetCourse.toString().toLowerCase().replace(/\s+/g, ' ').trim();
+
+  const cleanC = cellText.toString().toLowerCase().replace(/\s+/g, ' ').trim();
+
+
+
+  if (cleanT === cleanC) return true;
+
+
+
+  const noSpaceT = cleanT.replace(/\s+/g, '');
+
+  const noSpaceC = cleanC.replace(/\s+/g, '');
+
+  if (noSpaceT === noSpaceC) return true;
+
+
+
+  if (dayTimeStr) {
+
+    const cleanDayTime = dayTimeStr.toString().toLowerCase().replace(/\s+/g, '').trim();
+
+    const tBase = noSpaceT.replace(cleanDayTime, '');
+
+    const cBase = noSpaceC.replace(cleanDayTime, '');
+
+    if (tBase === cBase && tBase.length > 0) return true;
+
+  }
+
+
+
+  return false;
+
+}
+
+
+
+function onEvalCourseChange() {
+
+  const courseSelect = document.getElementById('eval_course');
+
+  const studentSelect = document.getElementById('eval_student');
+
+  const subjectInput = document.getElementById('eval_subject');
+
+  const gradeInput = document.getElementById('eval_grade');
+
+  const branchInput = document.getElementById('eval_branch');
+
+  
+
+  if (!courseSelect || !studentSelect) return;
+
+  
+
+  const courseIdx = courseSelect.value;
+
+  studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
+
+  gradeInput.value = '';
+
+  branchInput.value = '';
+
+  subjectInput.value = '';
+
+  
+
+  if (courseIdx === '' || !state._teacherCourses || !state._teacherCourses[courseIdx]) {
+
+    renderEvalCriteriaGrid('math_sci'); // default fallback
+
+    if (typeof populateFeedbackPresetSelects === "function") populateFeedbackPresetSelects();
+
+    return;
+
+  }
+
+  
+
+  const course = state._teacherCourses[courseIdx];
+
+  subjectInput.value = course.courseName;
+
+  if (typeof populateFeedbackPresetSelects === "function") populateFeedbackPresetSelects();
+
+  
+
+  const selectedText = courseSelect.options[courseSelect.selectedIndex].text;
+
+  const isSingleOrSubgroup = selectedText.includes('เดี่ยว') || selectedText.includes('ย่อย');
+
+  
+
+  if (isSingleOrSubgroup) {
+
+    setLoading(true, 'กำลังค้นหารายละเอียดคอร์สเดี่ยว/ย่อย...');
+
+    google.script.run
+
+      .withSuccessHandler(function(res) {
+
+        setLoading(false);
+
+        if (res && res.success && res.data) {
+
+          const data = res.data;
+
+          
+
+          // Check if already evaluated in state.evaluations
+
+          const evals = state.evaluations || [];
+
+          const cleanCourseSub = (course.courseName || '').toString().trim();
+
+          const cleanStuName = (data.studentName || '').toString().trim().toLowerCase();
+
+          const cleanStuNick = (data.nickname || '').toString().trim().toLowerCase();
+
+          
+
+          // Check session-level tracking first (most reliable)
+          const sessionKey = normalizeThaiStudentName(data.studentName) + '|' + cleanCourseNameBase(course.courseName);
+          let hasEvaluated = window._evaluatedStudentKeys && window._evaluatedStudentKeys.has(sessionKey);
+
+          if (!hasEvaluated) {
+            hasEvaluated = evals.some(function(ev) {
+
+              const cleanEvSub = (ev.subject || '').toString().trim();
+
+              const cleanEvStuName = (ev.studentName || '').toString().trim().toLowerCase();
+
+              const cleanEvNick = (ev.nickname || '').toString().trim().toLowerCase();
+
+              
+
+              const isSubjectMatch = isCourseExactMatchFrontend(cleanCourseSub, cleanEvSub, course.dayTimeStr);
+
+              const isStudentMatch = (
+
+                (cleanStuName !== '' && (cleanEvStuName === cleanStuName || cleanEvStuName.includes(cleanStuName) || cleanStuName.includes(cleanEvStuName))) ||
+
+                (cleanStuNick !== '' && (cleanEvStuName.includes(cleanStuNick) || cleanEvNick === cleanStuNick || cleanEvNick.includes(cleanStuNick)))
+
+              );
+
+              return isSubjectMatch && isStudentMatch;
+
+            });
+          }
+
+
+
+          studentSelect.innerHTML = '';
+
+          if (hasEvaluated) {
+
+            const opt = document.createElement('option');
+
+            opt.value = '';
+
+            opt.disabled = true;
+
+            opt.selected = true;
+
+            opt.textContent = '-- ประเมินนักเรียนคนนี้แล้ว --';
+
+            studentSelect.appendChild(opt);
+
+            gradeInput.value = '';
+
+            branchInput.value = '';
+
+            subjectInput.value = '';
+
+          } else {
+
+            const opt = document.createElement('option');
+
+            opt.value = data.studentName;
+
+            opt.textContent = data.studentName;
+
+            opt.selected = true;
+
+            studentSelect.appendChild(opt);
+
+            
+
+            gradeInput.value = data.grade || '';
+
+            branchInput.value = data.branch || '';
+
+            subjectInput.value = data.subject || course.courseName;
+
+            if (typeof populateFeedbackPresetSelects === "function") populateFeedbackPresetSelects();
+
+          }
+
+        } else {
+
+          populateRegularStudents(course);
+
+        }
+
+      })
+
+      .withFailureHandler(function(err) {
+
+        setLoading(false);
+
+        populateRegularStudents(course);
+
+      })
+
+      .getLatestSingleOrSubgroupDetails(selectedText);
+
+  } else {
+
+    populateRegularStudents(course);
+
+  }
+
+  
+
+  function normalizeThaiStudentName(str) {
+
+  if (!str) return '';
+
+  return str.toString()
+
+    .replace(/^(เด็กชาย|เด็กหญิง|นาย|นางสาว|ด\.ช\.|ด\.ญ\.|ดช\.|ดญ\.|น\.ส\.)/gi, '')
+
+    .replace(/\([^)]*\)/g, '')
+
+    .replace(/\s+/g, '')
+
+    .trim()
+
+    .toLowerCase();
+
+}
+
+
+
+function cleanCourseNameBase(str) {
+
+  if (!str) return '';
+
+  let cleaned = str.toString().trim();
+
+  if (cleaned.includes('เดี่ยว') || cleaned.includes('ย่อย')) {
+
+    cleaned = cleaned.replace(/\s+(ex|EX|รอบ|#)?\s*\d+$/gi, '').trim();
+
+  }
+
+  return cleaned.toLowerCase().replace(/\s+/g, '');
+
+}
+
+
+
+function isSubjectMatchForEval(courseObj, evSubject) {
+
+  if (!courseObj || !evSubject) return false;
+
+  const cNameClean = cleanCourseNameBase(courseObj.courseName);
+
+  const evSubClean = cleanCourseNameBase(evSubject);
+
+
+
+  if (cNameClean !== '' && evSubClean !== '' && cNameClean === evSubClean) return true;
+
+
+
+  const cName = (courseObj.courseName || '').toString().toLowerCase().replace(/\s+/g, '').trim();
+
+  const cDisplay = (courseObj.displayCourseName || '').toString().toLowerCase().replace(/\s+/g, '').trim();
+
+  const evSub = (evSubject || '').toString().toLowerCase().replace(/\s+/g, '').trim();
+
+
+
+  if (cName === evSub || cDisplay === evSub) return true;
+
+  if (cName.length > 3 && evSub.length > 3 && (cName.includes(evSub) || evSub.includes(cName))) return true;
+
+  if (cDisplay.length > 3 && evSub.length > 3 && (cDisplay.includes(evSub) || evSub.includes(cDisplay))) return true;
+
+
+
+  const dayTimeRegex = /(จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์|\d+[:.]\d+)/gi;
+
+  const cBase = cName.replace(dayTimeRegex, '');
+
+  const evBase = evSub.replace(dayTimeRegex, '');
+
+  if (cBase.length > 2 && evBase.length > 2 && (cBase === evBase || cBase.includes(evBase) || evBase.includes(cBase))) return true;
+
+
+
+  return isCourseExactMatchFrontend(courseObj.courseName, evSubject, courseObj.dayTimeStr);
+
+}
+
+
+
+function populateRegularStudents(courseObj) {
+
+    if (Array.isArray(courseObj.students)) {
+
+      const evals = state.evaluations || [];
+
+      studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
+
+
+
+      let visibleCount = 0;
+
+      // Pre-compute normalized course base for session-level check
+      const normCourseBase = typeof cleanCourseNameBase === 'function' ? cleanCourseNameBase(courseObj.courseName) : (courseObj.courseName || '').toLowerCase().trim();
+
+      courseObj.students.forEach(function(s, idx) {
+
+        const normStuName = normalizeThaiStudentName(s.name);
+
+        const normStuNick = normalizeThaiStudentName(s.nickname);
+
+        const normStuId = normalizeThaiStudentName(s.studentId);
+
+        // Check session-level tracking first (most reliable within current session)
+        let hasEvaluated = false;
+        if (window._evaluatedStudentKeys && window._evaluatedStudentKeys.size > 0) {
+          const sessionKeyName = normStuName + '|' + normCourseBase;
+          const sessionKeyNick = normStuNick + '|' + normCourseBase;
+          const sessionKeyId = normStuId + '|' + normCourseBase;
+          if (window._evaluatedStudentKeys.has(sessionKeyName) ||
+              (normStuNick && window._evaluatedStudentKeys.has(sessionKeyNick)) ||
+              (normStuId && window._evaluatedStudentKeys.has(sessionKeyId))) {
+            hasEvaluated = true;
+          }
+        }
+
+        // Fall back to state.evaluations check
+        if (!hasEvaluated) {
+          hasEvaluated = evals.some(function(ev) {
+
+          const normEvName = normalizeThaiStudentName(ev.studentName);
+
+          const normEvNick = normalizeThaiStudentName(ev.nickname);
+
+
+
+          const isSubjectMatch = isSubjectMatchForEval(courseObj, ev.subject);
+
+          
+
+          const isStudentMatch = (
+
+            (normStuName !== '' && normEvName !== '' && (normEvName === normStuName || normEvName.includes(normStuName) || normStuName.includes(normEvName))) ||
+
+            (normStuId !== '' && normEvName !== '' && (normEvName === normStuId || normEvName.includes(normStuId) || normStuId.includes(normEvName))) ||
+
+            (normStuNick !== '' && normEvNick !== '' && normEvNick === normStuNick)
+
+          );
+
+          
+
+          return isSubjectMatch && isStudentMatch;
+
+          });
+        }
+
+        
+
+        if (!hasEvaluated) {
+
+          visibleCount++;
+
+          const opt = document.createElement('option');
+
+          opt.value = idx;
+
+          opt.textContent = s.nickname ? (s.name + ' (' + s.nickname + ')') : s.name;
+
+          studentSelect.appendChild(opt);
+
+        }
+
+      });
+
+      
+
+      if (visibleCount === 0) {
+
+        studentSelect.innerHTML = '<option value="" disabled selected>-- ประเมินครบทุกคนแล้ว --</option>';
+
+      }
+
+    }
+
+  }
+
+
+
+  // Determine template based on subject keywords
+
+
+
+  const subjectLower = course.courseName.toLowerCase();
+
+
+
+  let templateType = 'math'; // default fallback
+
+
+
+  
+
+
+
+  if (subjectLower.includes('วิทย์') || subjectLower.includes('science') || 
+
+
+
+      subjectLower.includes('เคมี') || subjectLower.includes('chemistry') || subjectLower.includes('chem') ||
+
+
+
+      subjectLower.includes('ฟิสิกส์') || subjectLower.includes('physics') || subjectLower.includes('phy') ||
+
+
+
+      subjectLower.includes('ชีวะ') || subjectLower.includes('biology') || subjectLower.includes('bio')) {
+
+
+
+    templateType = 'sci';
+
+
+
+  } else if (subjectLower.includes('คณิต') || subjectLower.includes('math')) {
+
+
+
+    templateType = 'math';
+
+
+
+  } else if (subjectLower.includes('อังกฤษ') || subjectLower.includes('english') || subjectLower.includes('eng') ||
+
+
+
+             subjectLower.includes('ไทย') || subjectLower.includes('thai') || 
+
+
+
+             subjectLower.includes('สังคม') || subjectLower.includes('social')) {
+
+
+
+    templateType = 'lang_social';
+
+
+
+  }
+
+
+
+  
+
+
+
+  renderEvalCriteriaGrid(templateType);
+
+  if (typeof populateFeedbackPresetSelects === "function") populateFeedbackPresetSelects();
+
+  
+
+  if(document.getElementById('split_feedback_container')) document.getElementById('split_feedback_container').style.display = 'flex';
+
+  const singleFb = document.getElementById('single_feedback_container');
+
+  if (singleFb) singleFb.style.display = 'none';
+
+}
+
+
+
+ 
+
+
+
+function renderEvalCriteriaGrid(type) {
+
+
+
+  const tbody = document.getElementById('eval_criteria_tbody');
+
+
+
+  const label = document.getElementById('eval_template_label');
+
+
+
+  if (!tbody) return;
+
+
+
+  
+
+
+
+  tbody.innerHTML = '';
+
+
+
+  let criteria;
+
+
+
+  let labelText = '';
+
+
+
+  let badgeClass = '';
+
+
+
+  
+
+
+
+  if (type === 'sci') {
+
+
+
+    criteria = evalSciCriteria;
+
+
+
+    labelText = 'หมวดวิทยาศาสตร์/ฟิสิกส์/เคมี/ชีววิทยา';
+
+
+
+    badgeClass = 'badge-success';
+
+
+
+  } else if (type === 'math') {
+
+
+
+    criteria = evalMathCriteria;
+
+
+
+    labelText = 'หมวดคณิตศาสตร์/คำนวณ';
+
+
+
+    badgeClass = 'badge-info';
+
+
+
+  } else {
+
+
+
+    criteria = evalLangSocialCriteria;
+
+
+
+    labelText = 'หมวดอังกฤษ/ไทย/สังคม/ภาษา';
+
+
+
+    badgeClass = 'badge-primary';
+
+
+
+  }
+
+
+
+  
+
+
+
+  if (label) {
+
+
+
+    label.textContent = labelText;
+
+
+
+    label.className = 'badge ' + badgeClass;
+
+
+
+  }
+
+
+
+  
+
+
+
+  criteria.forEach(function(item, idx) {
+
+
+
+    const tr = document.createElement('tr');
+
+
+
+    tr.innerHTML = 
+
+
+
+      `<td style="padding: 6px; font-weight: 500; font-size: 0.76rem;">${item}</td>` +
+
+
+
+      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="ไม่ผ่าน" required style="width:16px; height:16px; cursor:pointer;"></td>` +
+
+
+
+      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เกรด 1" required style="width:16px; height:16px; cursor:pointer;"></td>` +
+
+
+
+      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เกรด 2" required style="width:16px; height:16px; cursor:pointer;"></td>` +
+
+
+
+      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เกรด 3" required style="width:16px; height:16px; cursor:pointer;"></td>` +
+
+
+
+      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เกรด 4" required style="width:16px; height:16px; cursor:pointer;" checked></td>` +
+
+
+
+      `<td style="text-align: center; padding: 6px;"><input type="radio" name="score_${idx}" value="เกียรตินิยม" required style="width:16px; height:16px; cursor:pointer;"></td>`;
+
+
+
+    tbody.appendChild(tr);
+
+
+
+  });
+
+
+
+}
+
+
+
+
+
+
+
+function handleEvalStudentChange() {
+
+
+
+  const courseSelect = document.getElementById('eval_course');
+
+
+
+  const studentSelect = document.getElementById('eval_student');
+
+
+
+  const gradeInput = document.getElementById('eval_grade');
+
+
+
+  const branchInput = document.getElementById('eval_branch');
+
+
+
+  
+
+
+
+  if (!courseSelect || !studentSelect || !gradeInput || !branchInput) return;
+
+
+
+  
+
+
+
+  const courseIdx = courseSelect.value;
+
+
+
+  const studentIdx = studentSelect.value;
+
+
+
+  
+
+
+
+  if (courseIdx === '' || studentIdx === '' || !state._teacherCourses[courseIdx] || !state._teacherCourses[courseIdx].students[studentIdx]) {
+
+
+
+    gradeInput.value = '';
+
+
+
+    branchInput.value = '';
+
+
+
+    return;
+
+
+
+  }
+
+
+
+  
+
+
+
+  const student = state._teacherCourses[courseIdx].students[studentIdx];
+
+
+
+  gradeInput.value = student.grade || '';
+
+
+
+  branchInput.value = student.branch || '';
+
+  if (typeof populateFeedbackPresetSelects === "function") populateFeedbackPresetSelects();
+
+
+
+}
+
+
+
+
+
+
+
+function submitStudentEvaluation(event) {
+
+
+
+  event.preventDefault();
+
+
+
+  
+
+
+
+  const courseSelect = document.getElementById('eval_course');
+
+
+
+  const studentSelect = document.getElementById('eval_student');
+
+
+
+  
+
+
+
+  const cIdx = courseSelect ? courseSelect.value : '';
+
+
+
+  const sIdx = studentSelect ? studentSelect.value : '';
+
+
+
+  
+
+
+
+  if (cIdx === '' || sIdx === '' || !state._teacherCourses || !state._teacherCourses[cIdx]) {
+
+
+
+    showToast('กรุณาเลือกคอร์สและนักเรียนก่อนส่งใบประเมิน', 'error');
+
+
+
+    return;
+
+
+
+  }
+
+
+
+  
+
+
+
+  const course = state._teacherCourses[cIdx];
+
+
+
+  let student = null;
+
+
+
+  
+
+
+
+  const isPrivateOrSubgroup = isNaN(sIdx) || sIdx === '' || !course.students || !course.students[sIdx];
+
+
+
+  if (isPrivateOrSubgroup) {
+
+
+
+    let namePart = studentSelect.value;
+
+
+
+    let nickPart = '';
+
+
+
+    const matchParen = namePart.match(/(.+?)\((.+?)\)/);
+
+
+
+    if (matchParen) {
+
+
+
+      namePart = matchParen[1].trim();
+
+
+
+      nickPart = matchParen[2].trim();
+
+
+
+    }
+
+
+
+    student = {
+
+
+
+      name: namePart,
+
+
+
+      nickname: nickPart,
+
+
+
+      grade: document.getElementById('eval_grade').value || '',
+
+
+
+      branch: document.getElementById('eval_branch').value || ''
+
+
+
+    };
+
+
+
+  } else {
+
+
+
+    student = course.students[sIdx];
+
+
+
+  }
+
+
+
+
+
+
+
+  
+
+
+
+  // Validate and gather the 6 sub-items for Strengths, Improvements, and Recommendations
+
+
+
+  const validateAndGetFeedbackItems = (className, nameTh) => {
+
+
+
+    const items = [];
+
+
+
+    const inputs = document.querySelectorAll('.' + className);
+
+
+
+    let filledCount = 0;
+
+
+
+    let invalidLength = false;
+
+
+
+    
+
+
+
+    inputs.forEach(input => {
+
+
+
+      const val = input.value.trim();
+
+
+
+      if (val) {
+
+
+
+        filledCount++;
+
+
+
+        if (val.length < 50) {
+
+
+
+          invalidLength = true;
+
+
+
+        }
+
+
+
+        items.push(val);
+
+
+
+      }
+
+
+
+    });
+
+
+
+    
+
+
+
+    if (filledCount < 3) {
+
+
+
+      return { valid: false, error: `หัวข้อ "${nameTh}" ต้องตอบอย่างน้อย 3 ข้อขึ้นไป` };
+
+
+
+    }
+
+
+
+    if (invalidLength) {
+
+
+
+      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาว 50 ตัวอักษรขึ้นไป` };
+
+
+
+    }
+
+
+
+    
+
+
+
+    const formattedStr = items.map((val, idx) => `${idx + 1}. ${val}`).join('\n');
+
+
+
+    return { valid: true, value: formattedStr };
+
+
+
+  };
+
+
+
+
+
+
+
+  const strengthsRes = validateAndGetFeedbackItems('eval-strength-item', 'จุดเด่นในการเรียนรู้ของนักเรียนที่ควรรักษาไว้ และส่งเสริมต่อไป');
+
+
+
+  if (!strengthsRes.valid) {
+
+
+
+    showToast(strengthsRes.error, 'error');
+
+
+
+    return;
+
+
+
+  }
+
+
+
+
+
+
+
+  const improvementsRes = validateAndGetFeedbackItems('eval-improvement-item', 'ประเด็นที่ควรแก้ไข เพื่อให้ผลการเรียนดีขึ้น');
+
+
+
+  if (!improvementsRes.valid) {
+
+
+
+    showToast(improvementsRes.error, 'error');
+
+
+
+    return;
+
+
+
+  }
+
+
+
+
+
+
+
+  const recommendationsRes = validateAndGetFeedbackItems('eval-recommendation-item', 'ข้อเสนอแนะอื่นๆ เพื่อส่งเสริมศักยภาพ');
+
+
+
+  if (!recommendationsRes.valid) {
+
+
+
+    showToast(recommendationsRes.error, 'error');
+
+
+
+    return;
+
+
+
+  }
+
+
+
+
+
+
+
+  // Gather dynamic table ratings
+
+
+
+  const ratings = {};
+
+
+
+  const templateLabelText = document.getElementById('eval_template_label').textContent;
+
+
+
+  let criteria;
+
+
+
+  if (templateLabelText.includes('วิทยาศาสตร์')) {
+
+
+
+    criteria = evalSciCriteria;
+
+
+
+  } else if (templateLabelText.includes('คณิตศาสตร์')) {
+
+
+
+    criteria = evalMathCriteria;
+
+
+
+  } else {
+
+
+
+    criteria = evalLangSocialCriteria;
+
+
+
+  }
+
+
+
+  
+
+
+
+  for (let i = 0; i < criteria.length; i++) {
+
+
+
+    const radioGroup = document.getElementsByName('score_' + i);
+
+
+
+    let selectedVal = 'เกรด 4'; // default
+
+
+
+    for (let r = 0; r < radioGroup.length; r++) {
+
+
+
+      if (radioGroup[r].checked) {
+
+
+
+        selectedVal = radioGroup[r].value;
+
+
+
+        break;
+
+
+
+      }
+
+
+
+    }
+
+
+
+    ratings[criteria[i]] = selectedVal;
+
+
+
+  }
+
+
+
+  
+
+
+
+  const data = {
+
+
+
+    studentName: student.name || '',
+
+
+
+    nickname: student.nickname || '',
+
+
+
+    grade: document.getElementById('eval_grade').value || '',
+
+
+
+    branch: document.getElementById('eval_branch').value || '',
+
+
+
+    date: document.getElementById('eval_date').value || '',
+
+
+
+    subject: course.courseName || '',
+
+
+
+    teacher: document.getElementById('eval_teacher').value || '',
+
+
+
+    scores: ratings,
+
+
+
+    strengths: strengthsRes.value,
+
+
+
+    improvements: improvementsRes.value,
+
+
+
+    recommendations: recommendationsRes.value
+
+
+
+  };
+
+
+
+  
+
+
+
+  if (!data.date || !data.subject || !data.teacher) {
+
+
+
+    showToast('กรุณากรอกข้อมูลให้ครบถ้วน (วันที่, วิชา, ครูผู้ประเมิน)', 'error');
+
+
+
+    return;
+
+
+
+  }
+
+
+
+  
+
+
+
+  setLoading(true, 'กำลังบันทึกใบประเมินลงฐานข้อมูล...');
+
+
+
+  google.script.run
+
+
+
+    .withSuccessHandler(function(res) {
+
+
+
+      setLoading(false);
+
+
+
+      if (res && res.success) {
+
+
+
+        showToast('บันทึกใบประเมินนักเรียนสำเร็จเรียบร้อย ✓', 'success');
+
+
+
+        // Push new evaluation to local state so evaluated student disappears immediately
+
+        if (!state.evaluations) state.evaluations = [];
+
+        state.evaluations.push({
+
+          evalId: res.evalId || ('EVAL_' + new Date().getTime()),
+
+          studentName: data.studentName,
+
+          nickname: data.nickname,
+
+          grade: data.grade,
+
+          branch: data.branch,
+
+          date: data.date,
+
+          subject: data.subject,
+
+          teacher: data.teacher
+
+        });
+
+        
+
+        // Session-level tracking: reliably mark this student+course as evaluated
+        if (!window._evaluatedStudentKeys) window._evaluatedStudentKeys = new Set();
+        const normName = typeof normalizeThaiStudentName === 'function' ? normalizeThaiStudentName(data.studentName) : data.studentName.toLowerCase().trim();
+        const normNick = typeof normalizeThaiStudentName === 'function' ? normalizeThaiStudentName(data.nickname) : (data.nickname || '').toLowerCase().trim();
+        const normSubject = typeof cleanCourseNameBase === 'function' ? cleanCourseNameBase(data.subject) : data.subject.toLowerCase().trim();
+        window._evaluatedStudentKeys.add(normName + '|' + normSubject);
+        if (normNick) window._evaluatedStudentKeys.add(normNick + '|' + normSubject);
+        console.log('[EvalTracker] Marked evaluated:', normName, '|', normSubject, 'Set size:', window._evaluatedStudentKeys.size);
+
+        populateTeacherCourseDropdown();
+
+        onEvalCourseChange();
+
+
+
+        
+
+
+
+        // Reset inputs
+
+
+
+        studentSelect.value = '';
+
+
+
+        document.getElementById('eval_grade').value = '';
+
+
+
+        document.getElementById('eval_branch').value = '';
+
+
+
+        
+
+
+
+        // Reset all 18 input fields
+
+
+
+        document.querySelectorAll('.eval-strength-item, .eval-improvement-item, .eval-recommendation-item').forEach(input => {
+
+
+
+          input.value = '';
+
+
+
+        });
+
+
+
+        
+
+
+
+        // Reset radios back to "Grade 4" default
+
+
+
+        for (let i = 0; i < criteria.length; i++) {
+
+
+
+          const radioGroup = document.getElementsByName('score_' + i);
+
+
+
+          if (radioGroup.length >= 6) {
+
+
+
+            radioGroup[4].checked = true; // เกรด 4
+
+
+
+          }
+
+
+
+        }
+
+
+
+        
+
+
+
+        // Refresh history
+
+
+
+        loadEvaluationsList();
+
+
+
+      } else {
+
+
+
+        showToast('บันทึกใบประเมินล้มเหลว: ' + (res ? res.error : 'unknown'), 'error');
+
+
+
+      }
+
+
+
+    })
+
+
+
+    .withFailureHandler(function(err) {
+
+
+
+      setLoading(false);
+
+
+
+      showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+
+
+
+    })
+
+
+
+    .submitEvaluation(data, getLogUser());
+
+
+
+}
+
+
+
+
+
+
+
+function loadEvaluationsList() {
+
+
+
+  google.script.run
+
+
+
+    .withSuccessHandler(function(list) {
+
+
+
+      if (Array.isArray(list)) {
+
+
+
+        state.evaluations = list;
+
+
+
+      } else {
+
+
+
+        state.evaluations = [];
+
+
+
+      }
+
+
+
+      
+
+
+
+      // Re-trigger course change if a course is already selected to refresh the filtered student list
+
+
+
+      const courseSelect = document.getElementById('eval_course');
+
+
+
+      if (courseSelect && courseSelect.value !== '') {
+
+
+
+        onEvalCourseChange();
+
+
+
+      }
+
+
+
+    })
+
+
+
+    .withFailureHandler(function(err) {
+
+
+
+      console.error('Failed to load evaluations list:', err);
+
+
+
+      state.evaluations = [];
+
+
+
+    })
+
+
+
+    .getEvaluationsList(getLogUser());
+
+
+
+}
+
+
+
+
+
+
+
+function publishSingleAdminEvaluation(evalId) {
+  const ev = (window._adminEvalsCache || []).find(e => e.evalId === evalId);
+  if (!ev) {
+    showToast('ไม่พบข้อมูลใบประเมินนี้', 'error');
+    return;
+  }
+
+  Swal.fire({
+    title: '🌐 ยืนยันการเผยแพร่ใบประเมิน',
+    html: `คุณต้องการยืนยันเผยแพร่ใบประเมินของ <b>${ev.studentName}</b> หรือไม่?<br><br><small style="color:#64748b;">* เมื่อยืนยันแล้ว ผู้ปกครองจะสามารถค้นหาดูรายงานใบประเมินนี้ได้ทันที</small>`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: '🌐 ยืนยันเผยแพร่ทันที',
+    cancelButtonText: 'ยกเลิก',
+    customClass: { popup: 'swal2-center-popup' }
+  }).then((result) => {
+    if (result && result.isConfirmed) {
+      // Instant Optimistic UI Update
+      ev.isPublished = true;
+      ev.status = 'published';
+      if (typeof renderAdminEvaluationsDashboard === 'function') {
+        renderAdminEvaluationsDashboard({ evals: window._adminEvalsCache, counts: window._adminEvalsCounts || {} });
+      }
+
+      showToast('⏳ กำลังบันทึกและเผยแพร่ใบประเมิน...', 'info');
+      const evalData = Object.assign({}, ev, { evalId: evalId, isPublished: true, status: 'published' });
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res && res.success) {
+            showToast(`🎉 เผยแพร่ใบประเมินของ ${ev.studentName} สำเร็จแล้ว!`, 'success');
+          } else {
+            showToast('พบข้อผิดพลาด: ' + ((res && res.error) || 'บันทึกล้มเหลว'), 'error');
+          }
+        })
+        .withFailureHandler(err => {
+          showToast('เชื่อมต่อล้มเหลว: ' + err.message, 'error');
+        })
+        .updateEvaluation(evalData, typeof getLogUser === 'function' ? getLogUser() : null);
+    }
+  });
+}
+
+function deleteAdminEvaluation(evalId) {
+  const ev = (window._adminEvalsCache || []).find(e => e.evalId === evalId);
+  if (!ev) {
+    showToast('ไม่พบข้อมูลใบประเมินที่ต้องการลบ', 'error');
+    return;
+  }
+
+  Swal.fire({
+    title: 'ยืนยันการลบใบประเมิน',
+    html: `คุณต้องการลบใบประเมินของ <b>${ev.studentName || ''}</b> ใช่หรือไม่?<br><small style="color:#ef4444;">การลบนี้จะไม่สามารถกู้คืนกลับมาได้</small>`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'ยืนยันลบ',
+    cancelButtonText: 'ยกเลิก'
+  }).then((result) => {
+    if (result && result.isConfirmed) {
+      showToast('⏳ กำลังลบข้อมูลใบประเมิน...', 'info');
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response && response.success) {
+            showToast('ลบใบประเมินเรียบร้อยแล้ว', 'success');
+            if (typeof loadAdminEvaluationsDashboard === 'function') {
+              loadAdminEvaluationsDashboard();
+            }
+          } else {
+            showToast('เกิดข้อผิดพลาดในการลบ: ' + (response ? response.error : 'Unknown Error'), 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          showToast('เกิดข้อผิดพลาด: ' + (error.message || error), 'error');
+        })
+        .deleteEvaluation(evalId, getLogUser());
+    }
+  });
+}
+
+
+
+
+
+
+
+function openAdminEvaluationEditModal(evalId) {
+
+
+
+  // Find the evaluation in cache
+
+
+
+  const ev = window._adminEvalsCache.find(e => e.evalId === evalId);
+
+
+
+  if (!ev) {
+
+
+
+    showToast('ไม่พบข้อมูลใบประเมินนี้', 'error');
+
+
+
+    return;
+
+
+
+  }
+
+
+
+  
+
+
+
+  document.getElementById('admin_eval_id').value = ev.evalId;
+
+
+
+  document.getElementById('admin_eval_course').value = ev.subject || '';
+
+
+
+  document.getElementById('admin_eval_student').value = ev.studentName + (ev.nickname ? ' (' + ev.nickname + ')' : '');
+
+
+
+  document.getElementById('admin_eval_grade').value = ev.grade || '';
+
+
+
+  document.getElementById('admin_eval_branch').value = ev.branch || '';
+
+
+
+  const sheetDate = convertDateFromSheet(ev.date); document.getElementById('admin_eval_date').value = sheetDate || new Date().toISOString().split('T')[0];
+
+
+
+  document.getElementById('admin_eval_subject').value = ev.subject || '';
+
+
+
+  document.getElementById('admin_eval_teacher_name').value = ev.teacher;
+
+
+
+  
+
+
+
+  // Parse criteria ratings
+
+
+
+  const subjectLower = (ev.subject || '').toLowerCase();
+
+
+
+  let templateType = 'lang_social';
+
+
+
+  if (subjectLower.includes('วิทย์') || subjectLower.includes('science') || subjectLower.includes('เคมี') || subjectLower.includes('chem') ||
+
+
+
+      subjectLower.includes('ฟิสิกส์') || subjectLower.includes('physics') || subjectLower.includes('phy') ||
+
+
+
+      subjectLower.includes('ชีวะ') || subjectLower.includes('biology') || subjectLower.includes('bio')) {
+
+
+
+    templateType = 'sci';
+
+
+
+  } else if (subjectLower.includes('คณิต') || subjectLower.includes('math')) {
+
+
+
+    templateType = 'math';
+
+
+
+  }
+
+
+
+  
+
+
+
+  const tbody = document.getElementById('admin_eval_criteria_tbody');
+
+
+
+  const label = document.getElementById('admin_eval_template_label');
+
+
+
+  if (tbody) {
+
+
+
+    tbody.innerHTML = '';
+
+
+
+    let criteria;
+
+
+
+    let labelText = '';
+
+
+
+    let badgeClass = '';
+
+
+
+    
+
+
+
+    if (templateType === 'sci') {
+
+
+
+      criteria = evalSciCriteria;
+
+
+
+      labelText = 'หมวดวิทยาศาสตร์/ฟิสิกส์/เคมี/ชีววิทยา';
+
+
+
+      badgeClass = 'badge-success';
+
+
+
+    } else if (templateType === 'math') {
+
+
+
+      criteria = evalMathCriteria;
+
+
+
+      labelText = 'หมวดคณิตศาสตร์/คำนวณ';
+
+
+
+      badgeClass = 'badge-info';
+
+
+
+    } else {
+
+
+
+      criteria = evalLangSocialCriteria;
+
+
+
+      labelText = 'หมวดอังกฤษ/ไทย/สังคม/ภาษา';
+
+
+
+      badgeClass = 'badge-primary';
+
+
+
+    }
+
+
+
+    
+
+
+
+    if (label) {
+
+
+
+      label.textContent = labelText;
+
+
+
+      label.className = 'badge ' + badgeClass;
+
+
+
+    }
+
+
+
+    
+
+
+
+    criteria.forEach(function(item, idx) {
+
+
+
+      const savedVal = ev.scores ? ev.scores[item] : 'เกรด 4';
+
+
+
+      
+
+
+
+      const tr = document.createElement('tr');
+
+
+
+      tr.innerHTML = 
+
+
+
+        `<td style="padding: 6px; font-weight: 500; font-size: 0.76rem;">${item}</td>` +
+
+
+
+        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="ไม่ผ่าน" ${savedVal === 'ไม่ผ่าน' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
+
+
+
+        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เกรด 1" ${savedVal === 'เกรด 1' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
+
+
+
+        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เกรด 2" ${savedVal === 'เกรด 2' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
+
+
+
+        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เกรด 3" ${savedVal === 'เกรด 3' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
+
+
+
+        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เกรด 4" ${savedVal === 'เกรด 4' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>` +
+
+
+
+        `<td style="text-align: center; padding: 6px;"><input type="radio" name="admin_score_${idx}" value="เกียรตินิยม" ${savedVal === 'เกียรตินิยม' ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>`;
+
+
+
+      tbody.appendChild(tr);
+
+
+
+    });
+
+
+
+  }
+
+
+
+  
+
+
+
+  // Helper to parse newline feedback
+
+
+
+  function parseFeedbackItems(feedbackStr) {
+
+
+
+    const items = Array(6).fill('');
+
+
+
+    if (feedbackStr) {
+
+
+
+      const lines = feedbackStr.split('\n');
+
+
+
+      lines.forEach(line => {
+
+
+
+        const match = line.match(/^\d+\s*\.\s*(.*)$/);
+
+
+
+        if (match) {
+
+
+
+          const numStr = line.match(/^(\d+)/);
+
+
+
+          if (numStr) {
+
+
+
+            const idx = parseInt(numStr[1]) - 1;
+
+
+
+            if (idx >= 0 && idx < 6) {
+
+
+
+              items[idx] = match[1].trim();
+
+
+
+            }
+
+
+
+          }
+
+
+
+        } else if (line.trim() !== '') {
+
+
+
+          const emptyIdx = items.indexOf('');
+
+
+
+          if (emptyIdx !== -1) {
+
+
+
+            items[emptyIdx] = line.trim();
+
+
+
+          }
+
+
+
+        }
+
+
+
+      });
+
+
+
+    }
+
+
+
+    return items;
+
+
+
+  }
+
+
+
+  
+
+
+
+  const strengths = parseFeedbackItems(ev.strengths);
+
+
+
+  const improvements = parseFeedbackItems(ev.improvements);
+
+
+
+  const recommendations = parseFeedbackItems(ev.recommendations);
+
+
+
+  
+
+
+
+  for (let i = 1; i <= 6; i++) {
+
+    document.getElementById(`admin_eval_strength_${i}`).value = strengths[i - 1];
+
+    document.getElementById(`admin_eval_improvement_${i}`).value = improvements[i - 1];
+
+    document.getElementById(`admin_eval_recommendation_${i}`).value = recommendations[i - 1];
+
+  }
+
+
+
+  if (typeof populateFeedbackPresetSelects === "function") populateFeedbackPresetSelects();
+
+
+
+  document.getElementById('admin_evaluation_edit_modal').classList.add('active');
+
+}
+
+
+
+
+
+
+
+function closeAdminEvaluationEditModal() {
+
+
+
+  document.getElementById('admin_evaluation_edit_modal').classList.remove('active');
+
+
+
+}
+
+
+
+
+
+
+
+function saveAdminEvaluationEdit(e) {
+
+
+
+  e.preventDefault();
+
+
+
+  
+
+
+
+  // Gather dynamic table ratings
+
+
+
+  const ratings = {};
+
+
+
+  const templateLabelText = document.getElementById('admin_eval_template_label').textContent;
+
+
+
+  let criteria;
+
+
+
+  if (templateLabelText.includes('วิทยาศาสตร์')) {
+
+
+
+    criteria = evalSciCriteria;
+
+
+
+  } else if (templateLabelText.includes('คณิตศาสตร์')) {
+
+
+
+    criteria = evalMathCriteria;
+
+
+
+  } else {
+
+
+
+    criteria = evalLangSocialCriteria;
+
+
+
+  }
+
+
+
+  
+
+
+
+  for (let i = 0; i < criteria.length; i++) {
+
+
+
+    const radioGroup = document.getElementsByName('admin_score_' + i);
+
+
+
+    let selectedVal = 'เกรด 4';
+
+
+
+    for (let r = 0; r < radioGroup.length; r++) {
+
+
+
+      if (radioGroup[r].checked) {
+
+
+
+        selectedVal = radioGroup[r].value;
+
+
+
+        break;
+
+
+
+      }
+
+
+
+    }
+
+
+
+    ratings[criteria[i]] = selectedVal;
+
+
+
+  }
+
+
+
+  
+
+
+
+  // Helper to validate and serialize feedback inputs
+
+
+
+  const getFeedbackItems = (className, nameTh) => {
+
+
+
+    const inputs = document.querySelectorAll('.' + className);
+
+
+
+    const items = [];
+
+
+
+    let emptyCount = 0;
+
+
+
+    let invalidLength = false;
+
+
+
+    
+
+
+
+    inputs.forEach(input => {
+
+
+
+      const val = input.value.trim();
+
+
+
+      if (val) {
+
+
+
+        items.push(val);
+
+
+
+        if (val.length < 50) {
+
+
+
+          invalidLength = true;
+
+
+
+        }
+
+
+
+      } else {
+
+
+
+        emptyCount++;
+
+
+
+      }
+
+
+
+    });
+
+
+
+    
+
+
+
+    if (items.length < 3) {
+
+
+
+      return { valid: false, error: `หัวข้อ "${nameTh}" ต้องตอบอย่างน้อย 3 ข้อขึ้นไป` };
+
+
+
+    }
+
+
+
+    if (invalidLength) {
+
+
+
+      return { valid: false, error: `หัวข้อ "${nameTh}" แต่ละข้อที่ตอบจะต้องมีความยาว 50 ตัวอักษรขึ้นไป` };
+
+
+
+    }
+
+
+
+    
+
+
+
+    const formattedStr = items.map((val, idx) => `${idx + 1}. ${val}`).join('\n');
+
+
+
+    return { valid: true, value: formattedStr };
+
+
+
+  };
+
+
+
+  
+
+
+
+  const strengthsRes = getFeedbackItems('admin-eval-strength-item', 'จุดเด่นในการเรียนรู้ของนักเรียนที่ควรรักษาไว้ และส่งเสริมต่อไป');
+
+
+
+  if (!strengthsRes.valid) {
+
+
+
+    showToast(strengthsRes.error, 'error');
+
+
+
+    return;
+
+
+
+  }
+
+
+
+  
+
+
+
+  const improvementsRes = getFeedbackItems('admin-eval-improvement-item', 'ประเด็นที่ควรแก้ไข เพื่อให้ผลการเรียนดีขึ้น');
+
+
+
+  if (!improvementsRes.valid) {
+
+
+
+    showToast(improvementsRes.error, 'error');
+
+
+
+    return;
+
+
+
+  }
+
+
+
+  
+
+
+
+  const recommendationsRes = getFeedbackItems('admin-eval-recommendation-item', 'ข้อเสนอแนะอื่นๆ เพื่อส่งเสริมศักยภาพ');
+
+
+
+  if (!recommendationsRes.valid) {
+
+
+
+    showToast(recommendationsRes.error, 'error');
+
+
+
+    return;
+
+
+
+  }
+
+
+
+  
+
+
+
+  const evalData = {
+
+
+
+    evalId: document.getElementById('admin_eval_id').value,
+
+
+
+    date: convertDateToSheet(document.getElementById('admin_eval_date').value),
+
+
+
+    teacher: document.getElementById('admin_eval_teacher_name').value.trim(),
+
+
+
+    scores: ratings,
+
+
+
+    strengths: strengthsRes.value,
+
+
+
+    improvements: improvementsRes.value,
+
+
+
+    recommendations: recommendationsRes.value,
+    isPublished: true,
+    status: 'published'
+
+
+
+  };
+
+
+
+  
+
+
+
+  setLoading(true, 'กำลังบันทึกการแก้ไข...');
+
+
+
+  
+
+
+
+  google.script.run
+
+
+
+    .withSuccessHandler(res => {
+
+
+
+      setLoading(false);
+
+
+
+      if (res && res.success) {
+
+
+
+        showToast('ยืนยันเผยแพร่ใบประเมินเรียบร้อยแล้ว! ผู้ปกครองสามารถค้นหาดูใบประเมินได้ทันที', 'success');
+
+
+
+        closeAdminEvaluationEditModal();
+
+
+
+        loadAdminEvaluationsDashboard();
+
+
+
+      } else {
+
+
+
+        showToast('ไม่สามารถอัปเดตได้: ' + res.error, 'error');
+
+
+
+      }
+
+
+
+    })
+
+
+
+    .withFailureHandler(err => {
+
+
+
+      setLoading(false);
+
+
+
+      showToast('เชื่อมต่อผิดพลาด: ' + err.message, 'error');
+
+
+
+    })
+
+
+
+    .updateEvaluation(evalData, getLogUser());
+
+
+
+}
+
+
+
+
+
+
+
+// ----------------------------------------------------
+
+
+
+// 15. Admin Evaluations Dashboard
+
+
+
+// ----------------------------------------------------
+
+
+
+window._adminEvalsCache = [];
+
+
+
+function loadAdminEvaluationsDashboard(isSilent = false) {
+
+
+
+  const container = document.getElementById('admin_evaluation_dashboard_container');
+
+
+
+  if (!isSilent || !window._adminEvalsCache || window._adminEvalsCache.length === 0) {
+
+
+
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">กำลังโหลดข้อมูลใบประเมิน...</div>';
+
+
+
+  }
+
+
+
+  
+
+
+
+  google.script.run
+
+
+
+    .withSuccessHandler(res => {
+
+
+
+      if (res && res.error) {
+
+
+
+        if (!isSilent) {
+
+
+
+          container.innerHTML = `<div style="color:red; text-align:center; padding: 20px;">พบข้อผิดพลาด: ${res.error}</div>`;
+
+
+
+        }
+
+
+
+        return;
+
+
+
+      }
+
+
+
+      
+
+
+
+      window._adminEvalsCache = res.evals || res || [];
+
+
+
+      renderAdminEvaluationsDashboard(res);
+
+
+
+    })
+
+
+
+    .withFailureHandler(err => {
+
+
+
+      if (!isSilent) {
+
+
+
+        container.innerHTML = `<div style="color:red; text-align:center; padding: 20px;">พบข้อผิดพลาด: ${err.message}</div>`;
+
+
+
+      }
+
+
+
+    })
+
+
+
+    .getAdminEvalStats(); // Fetch evaluations and course enrollment counts
+
+
+
+}
+
+
+
+
+
+
+
+function getBranchBadgeStyle(branchStr) {
+
+  const b = (branchStr || '').toString().trim();
+
+  if (b.includes('1') || b.includes('สาขา 1') || b.includes('สาขา1')) {
+
+    return 'background: #2563eb; color: #ffffff; border: 1px solid #1d4ed8;'; // สาขา 1 = สีน้ำเงิน
+
+  } else if (b.includes('2') || b.includes('สาขา 2') || b.includes('สาขา2')) {
+
+    return 'background: #facc15; color: #1e293b; border: 1px solid #eab308; font-weight: 700;'; // สาขา 2 = สีเหลืองสดใส
+
+  } else if (b.includes('3') || b.includes('สาขา 3') || b.includes('สาขา3')) {
+
+    return 'background: #7c3aed; color: #ffffff; border: 1px solid #6d28d9;'; // สาขา 3 = สีม่วง
+
+  }
+
+  return 'background: #475569; color: #ffffff;';
+
+}
+
+
+
+function renderAdminEvaluationsDashboard(res) {
+
+  const container = document.getElementById('admin_evaluation_dashboard_container');
+
+  if (!container) return;
+
+  container.innerHTML = '';
+
+
+
+  const evals = Array.isArray(res) ? res : (res.evals || []);
+
+  const counts = Array.isArray(res) ? {} : (res.counts || {});
+  window._adminEvalsCounts = counts;
+
+  window._adminEvalsCache = evals;
+
+
+
+  function cleanTeacherDisplayName(teacherStr) {
+
+    if (!teacherStr) return '';
+
+    const str = teacherStr.toString().trim();
+
+    if (window.state && window.state.userMap && window.state.userMap[str.toLowerCase()]) {
+
+      return window.state.userMap[str.toLowerCase()];
+
+    }
+
+    return str;
+
+  }
+
+
+
+  if (!evals || evals.length === 0) {
+
+    container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--text-muted); background: white; border-radius: 8px;">ยังไม่มีการประเมินนักเรียน</div>';
+
+    return;
+
+  }
+
+
+
+  // Group by Course
+
+  const grouped = {};
+
+  evals.forEach(ev => {
+
+    const subj = ev.subject || 'ไม่ระบุวิชา';
+
+    if (!grouped[subj]) {
+
+      grouped[subj] = [];
+
+    }
+
+    grouped[subj].push(ev);
+
+  });
+
+
+
+  const courses = Object.keys(grouped).sort();
+
+
+
+  courses.forEach(course => {
+
+    // Create course section (Compact scaled-down layout)
+
+    const section = document.createElement('div');
+
+    section.className = 'glass-panel';
+
+    section.style.cssText = 'padding: 12px 16px; margin-bottom: 12px; border-radius: 10px;';
+
+
+
+    // Course Header (Smaller font size & compact padding)
+
+    const header = document.createElement('div');
+
+    header.style.cssText = 'font-family: var(--font-heading); font-size: 0.95rem; font-weight: 700; color: var(--color-primary-hover); margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;';
+
+
+
+    const totalStudents = counts[course] || 0;
+
+    const evaluated = grouped[course].length;
+
+    let badgeHtml = '';
+
+
+
+    if (totalStudents > 0) {
+
+      if (evaluated >= totalStudents) {
+
+        badgeHtml = `<span class="badge badge-success" style="font-size: 0.68rem; padding: 2px 6px;">ครบแล้ว (${evaluated} คน)</span>`;
+
+      } else {
+
+        badgeHtml = `<span class="badge badge-warning" style="font-size: 0.68rem; padding: 2px 6px;">เหลือ ${totalStudents - evaluated} คน (ทำแล้ว ${evaluated}/${totalStudents})</span>`;
+
+      }
+
+    } else {
+
+      badgeHtml = `<span class="badge badge-info" style="font-size: 0.68rem; padding: 2px 6px;">ประเมินแล้ว ${evaluated} คน</span>`;
+
+    }
+
+
+
+    // Extract Branch Name for Course Header with distinct colors
+
+    const firstEv = grouped[course][0];
+
+    const courseBranch = (firstEv && firstEv.branch) ? firstEv.branch.toString().trim() : '';
+
+    const branchStyle = getBranchBadgeStyle(courseBranch);
+
+    const branchBadgeHtml = courseBranch ? `<span style="${branchStyle} font-size: 0.68rem; padding: 2px 8px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.08);">🏫 ${courseBranch}</span>` : '';
+
+
+
+    const teacherNames = [...new Set(grouped[course].map(e => cleanTeacherDisplayName(e.teacher)).filter(Boolean))].join(', ');
+
+    const teacherBadgeHtml = teacherNames ? `<span style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; font-size: 0.68rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">👨‍🏫 ครู: ${teacherNames}</span>` : '';
+
+
+
+    header.innerHTML = `
+
+      <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+
+        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+
+          <span style="font-size: 0.9rem;">📚</span> ${course} ${branchBadgeHtml} ${teacherBadgeHtml} ${badgeHtml}
+
+        </div>
+
+        <label style="font-size: 0.72rem; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; background: rgba(255,255,255,0.7); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08);">
+
+          <input type="checkbox" onchange="toggleCourseAllCheckboxes(this, gridContainer)" style="cursor: pointer; accent-color: #10b981;"> เลือกทั้งหมดในกลุ่มนี้
+
+        </label>
+
+      </div>
+
+    `;
+
+    section.appendChild(header);
+
+
+
+    // Compact Grid Container (minmax 180px)
+
+    const gridContainer = document.createElement('div');
+
+    gridContainer.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-top: 8px;';
+
+
+
+    grouped[course].forEach(ev => {
+
+      const card = document.createElement('div');
+
+      card.style.cssText = 'background: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: all 0.2s ease;';
+
+
+
+      card.onmouseover = () => { card.style.boxShadow = '0 3px 6px rgba(0,0,0,0.08)'; card.style.transform = 'translateY(-1px)'; };
+
+      card.onmouseout = () => { card.style.boxShadow = '0 1px 3px rgba(0,0,0,0.02)'; card.style.transform = 'translateY(0)'; };
+
+
+
+      const stuBranchStr = ev.branch ? ev.branch.toString().trim() : '';
+
+      const stuBranchStyle = getBranchBadgeStyle(stuBranchStr);
+
+      const stuBranchHtml = stuBranchStr ? `<div style="font-size: 0.68rem; margin-top: 2px; display: flex; align-items: center; gap: 4px; color: var(--text-muted);"><span>🏫 สาขา:</span> <span style="${stuBranchStyle} padding: 1px 6px; border-radius: 8px; font-weight: 700; font-size: 0.65rem;">${stuBranchStr}</span></div>` : '';
+
+      const isPub = (ev.isPublished || ev.status === 'published' || ev.status === 'เผยแพร่แล้ว' || ev.status === 'Published');
+
+      const pubBadgeHtml = isPub 
+        ? `<span class="badge badge-success" style="font-size: 0.62rem; padding: 2px 6px; border-radius: 6px; font-weight: 700; background: #dcfce7; color: #15803d; border: 1px solid #86efac; display: inline-flex; align-items: center; gap: 3px;">🌐 เผยแพร่แล้ว</span>`
+        : `<span class="badge badge-secondary" style="font-size: 0.62rem; padding: 2px 6px; border-radius: 6px; font-weight: 600; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; display: inline-flex; align-items: center; gap: 3px;">📝 รอยืนยัน</span>`;
+
+      card.innerHTML = `
+
+        <div>
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 6px;">
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-main); line-height: 1.2;">${ev.studentName}</div>
+              <div>${pubBadgeHtml}</div>
+            </div>
+            <input type="checkbox" class="admin-eval-select-checkbox" data-eval-id="${ev.evalId}" data-student-name="${ev.studentName}" style="width: 17px; height: 17px; cursor: pointer; accent-color: #10b981; flex-shrink: 0;" title="เลือกใบประเมินนี้เพื่อยืนยันเผยแพร่">
+          </div>
+          ${stuBranchHtml}
+          ${ev.teacher ? `<div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 4px;"><span>ผู้สอน:</span> <span style="font-weight: 600; color: #334155;">${cleanTeacherDisplayName(ev.teacher)}</span></div>` : ''}
+        <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
+          ${!isPub ? `<button class="btn btn-success" style="width: 100%; padding: 4px 6px; font-size: 0.75rem; font-weight: 700; background: #10b981; color: white; border: none;" onclick="publishSingleAdminEvaluation('${ev.evalId}')">🚀 เผยแพร่ใบนี้ทันที</button>` : `<button class="btn btn-info" style="width: 100%; padding: 4px 6px; font-size: 0.72rem; font-weight: 700; background: #8b5cf6; color: white; border: none;" onclick="copyMagicLink('${(ev.studentName||'').replace(/'/g, "\\'")}')">📋 คัดลอกลิงก์ส่งผู้ปกครอง</button>`}
+          <button class="btn btn-primary" style="width: 100%; padding: 4px 6px; font-size: 0.72rem; font-weight: 700; background: linear-gradient(135deg, #3b82f6, #2563eb); border: none;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">✏️ ตรวจประเมิน / แก้ไข</button>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn btn-secondary" style="flex: 1; padding: 3px 6px; font-size: 0.68rem;" onclick="openAdminEvaluationEditModal('${ev.evalId}')">👁️ ดูรายละเอียด</button>
+            <button class="btn btn-danger" style="padding: 3px 6px; font-size: 0.68rem; background: #ef4444; color: white;" onclick="deleteAdminEvaluation('${ev.evalId}')" title="ลบใบประเมินนี้"><i class="fas fa-trash"></i> ลบ</button>
+          </div>
+        </div>
+      `;
+
+
+      gridContainer.appendChild(card);
+
+    });
+
+
+
+    section.appendChild(gridContainer);
+
+    container.appendChild(section);
+
+  });
+
+}
+
+
+
+// --- DYNAMIC REGISTRATION LOGIC ---
+
+
+
+
+
+
+
+const PAYMENT_CHANNELS = [
+
+
+
+  "กรุงไทย พีปิ๊ก",
+
+
+
+  "กรุงเทพ พีปิ๊ก",
+
+
+
+  "SCB พี่ปิ๊ก",
+
+
+
+  "กรุงศรี พี่ปิ๊ก",
+
+
+
+  "TTB",
+
+
+
+  "กสิกร พี่ปิ๊ก",
+
+
+
+  "SCB คุณยาย",
+
+
+
+  "กรุงศรี คุณตา",
+
+
+
+  "กรุงศรี บัญชีบริษัท",
+
+
+
+  "กสิกร บัญชีบริษัท(กด)",
+
+
+
+  "กสิกร บัญชีบริษัท(สแกน)",
+
+
+
+  "TTB บัญชีบริษัท(กด)",
+
+
+
+  "TTB บัญชีบริษัท(สแกน)",
+
+
+
+  "เงินสด",
+
+
+
+  "พี่ปิ๊ก โอน",
+
+
+
+  "พี่ต้น โอน"
+
+
+
+];
+
+
+
+
+
+
+
+function generateStudentBlock(idx) {
+
+
+
+  const channelOptions = PAYMENT_CHANNELS.map(c => `<option value="${c}">${c}</option>`).join('');
+
+
+
+  
+
+
+
+  return `
+
+
+
+    <div class="student-block" data-idx="${idx}" style="border: 2px solid var(--border-color); padding: 15px; margin-bottom: 20px; border-radius: 8px; background: #fff;">
+
+
+
+      <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; color: var(--color-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+
+
+
+        นักเรียนคนที่ ${idx + 1}
+
+
+
+      </div>
+
+
+
+      
+
+
+
+      <div class="section-title-group">
+
+
+
+        <div class="section-label">ข้อมูลส่วนตัวนักเรียน & ติดต่อ</div>
+
+
+
+      </div>
+
+
+
+      <div class="form-grid-3" style="margin-bottom: 20px;">
+
+
+
+        <div class="form-group">
+
+
+
+          <label class="form-label">ชื่อ-นามสกุลนักเรียน</label>
+
+
+
+          <input type="text" id="student_name_${idx}" class="form-input" placeholder="ชื่อจริง นามสกุลจริง" required>
+
+
+
+        </div>
+
+
+
+        <div class="form-group">
+
+
+
+          <label class="form-label">ชื่อเล่น</label>
+
+
+
+          <input type="text" id="student_nickname_${idx}" class="form-input" placeholder="ชื่อเล่น" required>
+
+
+
+        </div>
+
+
+
+        <div class="form-group">
+
+
+
+          <label class="form-label">ชื่อโรงเรียน</label>
+
+
+
+          <input type="text" id="student_school_${idx}" class="form-input" list="student_school_list" placeholder="พิมพ์ชื่อโรงเรียน..." required>
+
+
+
+        </div>
+
+
+
+        <div class="form-group">
+
+
+
+          <label class="form-label">ทับ (Section)</label>
+
+
+
+          <input type="text" id="student_class_section_${idx}" class="form-input" placeholder="เช่น ป.2/69, ม.5ex1" required>
+
+
+
+        </div>
+
+
+
+        <div class="form-group">
+
+
+
+          <label class="form-label">เบอร์ติดต่อผู้ปกครอง</label>
+
+
+
+          <input type="text" id="student_contact_${idx}" class="form-input" placeholder="เบอร์โทรศัพท์" required oninput="formatPhoneAsYouType(this)">
+
+
+
+        </div>
+
+
+
+        <div class="form-group">
+
+
+
+          <label class="form-label">ชื่อโปรไฟล์ไลน์ (Line Name)</label>
+
+
+
+          <input type="text" id="student_line_name_${idx}" class="form-input" placeholder="เช่น แม่ ณดา ป.2/69">
+
+
+
+        </div>
+
+
+
+        <div class="form-group">
+
+
+
+          <label class="form-label">ID Line</label>
+
+
+
+          <input type="text" id="student_line_id_${idx}" class="form-input" placeholder="ไอดีไลน์">
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+
+
+
+
+      <div class="section-title-group">
+
+
+
+        <div class="section-label">ข้อมูลการชำระเงิน & ชั่วโมงเรียน</div>
+
+
+
+      </div>
+
+
+
+      
+
+
+
+      <div class="form-grid-3" style="margin-bottom: 20px;">
+
+
+
+        <div class="form-group form-group-full-3">
+
+
+
+          <label class="form-label">รูปแบบการชำระเงิน</label>
+
+
+
+          <div style="display: flex; gap: 20px; align-items: center; background: #f8fafc; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+
+
+
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+
+
+
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_cash_${idx}" value="cash" checked onchange="calculateBlockOutstanding(${idx})"> สด
+
+
+
+            </label>
+
+
+
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+
+
+
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_transfer_${idx}" value="transfer" onchange="calculateBlockOutstanding(${idx})"> โอน
+
+
+
+            </label>
+
+
+
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+
+
+
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_card_${idx}" value="card" onchange="calculateBlockOutstanding(${idx})"> บัตรเครดิต
+
+
+
+            </label>
+
+
+
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+
+
+
+              <input type="radio" name="pay_mode_${idx}" id="pay_mode_unpaid_${idx}" value="unpaid" onchange="calculateBlockOutstanding(${idx})"> ยังไม่ชำระ
+
+
+
+            </label>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+        
+
+
+
+        <div class="form-group">
+
+
+
+          <label class="form-label">ยอดจริง (ค่าเรียนเต็ม)</label>
+
+
+
+          <input type="number" id="student_full_${idx}" class="form-input" placeholder="0" oninput="calculateBlockOutstanding(${idx})" required>
+
+
+
+        </div>
+
+
+
+        <div class="form-group">
+
+
+
+          <label class="form-label">ยอดจ่ายรวม (บาท)</label>
+
+
+
+          <input type="number" id="student_paid_${idx}" class="form-input highlight-input" placeholder="0" readonly>
+
+
+
+        </div>
+
+
+
+        <div class="form-group">
+
+
+
+          <label class="form-label">ยอดคงค้าง (บาท)</label>
+
+
+
+          <input type="number" id="student_outstanding_${idx}" class="form-input" placeholder="0" readonly style="background-color: #fee2e2; border-color: #fca5a5; font-weight: bold; color: #b91c1c;">
+
+
+
+        </div>
+
+
+
+        <div class="form-group" id="card_fee_group_${idx}" style="display:none;">
+
+
+
+          <label class="form-label" style="color:var(--color-primary);">ค่าธรรมเนียมรูดบัตร (3%)</label>
+
+
+
+          <input type="number" id="student_card_fee_${idx}" class="form-input" placeholder="0" readonly style="background-color: #f0fdf4; border-color: #bbf7d0; color: #15803d; font-weight:bold;">
+
+
+
+        </div>
+
+
+
+        <div class="form-group" id="total_with_card_group_${idx}" style="display:none;">
+
+
+
+          <label class="form-label" style="color:var(--color-primary);">ยอดรวมค่ารูดบัตร</label>
+
+
+
+          <input type="number" id="student_total_with_card_${idx}" class="form-input" placeholder="0" readonly style="background-color: #f0fdf4; border-color: #bbf7d0; color: #15803d; font-weight:bold;">
+
+
+
+        </div>
+
+
+
+        
+
+
+
+        <div class="form-group">
+
+
+
+          <label class="form-label">หมายเหตุการชำระเงิน/เวลา</label>
+
+
+
+          <input type="text" id="student_time_note_${idx}" class="form-input" placeholder="เช่น ชำระสิ้นเดือน, เรียน 17.00-19.00">
+
+
+
+        </div>
+
+
+
+        <div class="form-group">
+
+
+
+          <label class="form-label">หมายเหตุอื่นๆ (Admin)</label>
+
+
+
+          <input type="text" id="student_extra_note_${idx}" class="form-input" placeholder="เช่น ขอใบเสร็จ, ย้ายรอบ">
+
+
+
+        </div>
+
+
+
+        
+
+
+
+        <div class="form-group form-group-full-3" style="background: rgba(245, 158, 11, 0.05); padding: 12px; border-radius: var(--radius-md); border: 1px dashed #f59e0b; margin-top: 10px;">
+
+
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+
+
+
+            <label class="form-label" style="color: #d97706; margin-bottom: 0;">มียอดยกมา (ย้ายคอร์ส / เรียนไม่ครบ)</label>
+
+
+
+            <label class="switch">
+
+
+
+              <input type="checkbox" id="has_carried_forward_${idx}" onchange="toggleCarriedForwardBlock(${idx})">
+
+
+
+              <span class="slider round"></span>
+
+
+
+            </label>
+
+
+
+          </div>
+
+
+
+          <div id="carried_forward_group_${idx}" style="display: none; grid-template-columns: 1fr; gap: 15px;">
+
+
+
+            <div>
+
+
+
+              <label class="form-label" style="font-size: 0.8rem;">จำนวนเงินที่ยกมา (นำไปหักลบกับยอดจริง)</label>
+
+
+
+              <input type="number" id="student_carried_forward_${idx}" class="form-input" placeholder="0" oninput="calculateBlockOutstanding(${idx})" value="0">
+
+
+
+            </div>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div class="form-group" style="margin-top: 10px;">
+
+
+
+          <label class="form-label">ชั่วโมงเรียนทั้งหมด</label>
+
+
+
+          <input type="text" id="student_hours_${idx}" class="form-input" placeholder="เช่น 20 ชม.">
+
+
+
+        </div>
+
+
+
+        <div class="form-group" style="margin-top: 10px;">
+
+
+
+          <label class="form-label">ชั่วโมงเรียนคงเหลือ</label>
+
+
+
+          <input type="text" id="student_hours_left_${idx}" class="form-input" placeholder="เช่น 15 ชม.">
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+
+
+
+
+      <div style="margin-top: 10px; margin-bottom: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+
+
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+
+
+
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--color-primary);">บันทึกแบ่งชำระ (กรอกเฉพาะรอบที่จ่ายแล้ว)</h4>
+
+
+
+        </div>
+
+
+
+        
+
+
+
+        ${[1, 2, 3].map(r => `
+
+
+
+        <div class="installment-row" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; background: rgba(0,0,0,0.02); padding: 10px; border-radius: 6px;">
+
+
+
+          <div>
+
+
+
+            <label style="font-size: 0.7rem; color: #64748b;">ครั้งที่ ${r}: วันที่ชำระ</label>
+
+
+
+            <input type="date" id="pay_r${r}_date_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;">
+
+
+
+          </div>
+
+
+
+          <div>
+
+
+
+            <label style="font-size: 0.7rem; color: #64748b;">จำนวนเงิน</label>
+
+
+
+            <input type="number" id="pay_r${r}_amount_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;" placeholder="0" oninput="calculateBlockOutstanding(${idx})">
+
+
+
+          </div>
+
+
+
+          <div>
+
+
+
+            <label style="font-size: 0.7rem; color: #64748b;">ช่องทาง</label>
+
+
+
+            <select id="pay_r${r}_channel_${idx}" class="form-select" style="padding: 4px; font-size: 0.8rem;">
+
+
+
+              <option value="">- เลือก -</option>
+
+
+
+              ${channelOptions}
+
+
+
+            </select>
+
+
+
+          </div>
+
+
+
+          <div>
+
+
+
+            <label style="font-size: 0.7rem; color: #64748b;">พนักงานที่รับเงิน</label>
+
+
+
+            <input type="text" id="pay_r${r}_staff_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;" placeholder="ชื่อพนักงาน">
+
+
+
+          </div>
+
+
+
+          <div>
+
+
+
+            <label style="font-size: 0.7rem; color: #64748b;">เวลา (Time)</label>
+
+
+
+            <input type="time" id="pay_r${r}_time_${idx}" class="form-input" style="padding: 4px; font-size: 0.8rem;">
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+        `).join('')}
+
+
+
+      </div>
+
+
+
+    </div>
+
+
+
+  `;
+
+
+
+}
+
+
+
+
+
+
+
+window.handleClassTypeChange = function() {
+
+
+
+  const classType = document.getElementById('student_class_type').value;
+
+
+
+  const sizeGroup = document.getElementById('subgroup_size_group');
+
+
+
+  const checkboxGroup = document.getElementById('course_checkboxes_wrapper');
+
+
+
+  
+
+
+
+  // Reset
+
+
+
+  sizeGroup.style.display = 'none';
+
+
+
+  if(checkboxGroup) checkboxGroup.style.display = 'none';
+
+
+
+  
+
+
+
+  let numBlocks = 1;
+
+
+
+  
+
+
+
+  if (classType === 'กลุ่มหลัก') {
+
+
+
+    if(checkboxGroup) checkboxGroup.style.display = 'grid';
+
+
+
+    numBlocks = 1;
+
+
+
+  } else if (classType === 'กลุ่มย่อย') {
+
+
+
+    sizeGroup.style.display = 'block';
+
+
+
+    const size = document.getElementById('student_subgroup_size').value;
+
+
+
+    if (size.includes('2-3')) numBlocks = 3;
+
+
+
+    else if (size.includes('4-5')) numBlocks = 5;
+
+
+
+    else if (size.includes('6-10')) numBlocks = 10;
+
+
+
+  } else if (classType === 'เดี่ยว') {
+
+
+
+    numBlocks = 1;
+
+
+
+  }
+
+
+
+  
+
+
+
+    const isEditing = !!document.getElementById('student_id').value;
+
+
+
+  if (!isEditing) {
+
+
+
+    renderStudentBlocks(numBlocks);
+
+
+
+  } else {
+
+
+
+    // Even if we are editing, we might need to show/hide the subgroup size dropdown
+
+
+
+    // but we don't need to re-render the block, because it clears inputs.
+
+
+
+  }
+
+
+
+  handleGradeBranchChange();
+
+
+
+};
+
+
+
+
+
+
+
+window.renderStudentBlocks = function(numBlocks) {
+
+
+
+  const container = document.getElementById('dynamic_students_container');
+
+
+
+  let html = '';
+
+
+
+  for(let i=0; i<numBlocks; i++) {
+
+
+
+    html += generateStudentBlock(i);
+
+
+
+  }
+
+
+
+  container.innerHTML = html;
+
+
+
+};
+
+
+
+
+
+
+
+window.toggleCarriedForwardBlock = function(idx) {
+
+
+
+  const checked = document.getElementById(`has_carried_forward_${idx}`).checked;
+
+
+
+  const group = document.getElementById(`carried_forward_group_${idx}`);
+
+
+
+  if(checked) {
+
+
+
+    group.style.display = 'grid';
+
+
+
+  } else {
+
+
+
+    group.style.display = 'none';
+
+
+
+    document.getElementById(`student_carried_forward_${idx}`).value = 0;
+
+
+
+    calculateBlockOutstanding(idx);
+
+
+
+  }
+
+
+
+};
+
+
+
+
+
+
+
+window.calculateBlockOutstanding = function(idx) {
+
+
+
+  const fullEl = document.getElementById(`student_full_${idx}`);
+
+
+
+  const r1El = document.getElementById(`pay_r1_amount_${idx}`);
+
+
+
+  const r2El = document.getElementById(`pay_r2_amount_${idx}`);
+
+
+
+  const r3El = document.getElementById(`pay_r3_amount_${idx}`);
+
+
+
+  const paidEl = document.getElementById(`student_paid_${idx}`);
+
+
+
+  const outstandingEl = document.getElementById(`student_outstanding_${idx}`);
+
+
+
+  const carriedForwardEl = document.getElementById(`student_carried_forward_${idx}`);
+
+
+
+  
+
+
+
+  const isCard = document.getElementById(`pay_mode_card_${idx}`).checked;
+
+
+
+  
+
+
+
+  const cardFeeGroup = document.getElementById(`card_fee_group_${idx}`);
+
+
+
+  const totalWithCardGroup = document.getElementById(`total_with_card_group_${idx}`);
+
+
+
+  const cardFeeEl = document.getElementById(`student_card_fee_${idx}`);
+
+
+
+  const totalWithCardEl = document.getElementById(`student_total_with_card_${idx}`);
+
+
+
+  
+
+
+
+  if(!fullEl) return;
+
+
+
+  
+
+
+
+  const full = parseFloat(fullEl.value) || 0;
+
+
+
+  const r1 = parseFloat(r1El.value) || 0;
+
+
+
+  const r2 = parseFloat(r2El.value) || 0;
+
+
+
+  const r3 = parseFloat(r3El.value) || 0;
+
+
+
+  const carriedForward = parseFloat(carriedForwardEl.value) || 0;
+
+
+
+  
+
+
+
+  let targetAmount = full - carriedForward;
+
+
+
+  let totalPaid = r1 + r2 + r3;
+
+
+
+  let outstanding = 0;
+
+
+
+  
+
+
+
+  if (isCard) {
+
+
+
+    const fee = targetAmount * 0.03;
+
+
+
+    const totalWithCard = targetAmount + fee;
+
+
+
+    outstanding = totalWithCard - totalPaid;
+
+
+
+    
+
+
+
+    cardFeeGroup.style.display = 'block';
+
+
+
+    totalWithCardGroup.style.display = 'block';
+
+
+
+    cardFeeEl.value = fee.toFixed(2);
+
+
+
+    totalWithCardEl.value = totalWithCard.toFixed(2);
+
+
+
+  } else {
+
+
+
+    outstanding = targetAmount - totalPaid;
+
+
+
+    cardFeeGroup.style.display = 'none';
+
+
+
+    totalWithCardGroup.style.display = 'none';
+
+
+
+    cardFeeEl.value = '';
+
+
+
+    totalWithCardEl.value = '';
+
+
+
+  }
+
+
+
+  
+
+
+
+  paidEl.value = totalPaid;
+
+
+
+  outstandingEl.value = outstanding;
+
+
+
+};
+
+
+
+
+
+
+
+// Replace original saveStudent
+
+
+
+
+
+
+
+// Background registration queue system
+
+
+
+let saveStudentQueue = [];
+
+
+
+let isSavingStudent = false;
+
+
+
+
+
+
+
+function updateBackgroundQueueIndicator() {
+
+
+
+  let indicator = document.getElementById('bg_queue_indicator');
+
+
+
+  if (saveStudentQueue.length > 0 || isSavingStudent) {
+
+
+
+    if (!indicator) {
+
+
+
+      indicator = document.createElement('div');
+
+
+
+      indicator.id = 'bg_queue_indicator';
+
+
+
+      indicator.style.position = 'fixed';
+
+
+
+      indicator.style.bottom = '20px';
+
+
+
+      indicator.style.right = '20px';
+
+
+
+      indicator.style.background = 'rgba(15, 23, 42, 0.95)';
+
+
+
+      indicator.style.color = '#fff';
+
+
+
+      indicator.style.padding = '12px 18px';
+
+
+
+      indicator.style.borderRadius = '30px';
+
+
+
+      indicator.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.4)';
+
+
+
+      indicator.style.zIndex = '9999';
+
+
+
+      indicator.style.fontSize = '0.85rem';
+
+
+
+      indicator.style.display = 'flex';
+
+
+
+      indicator.style.alignItems = 'center';
+
+
+
+      indicator.style.gap = '10px';
+
+
+
+      indicator.style.fontWeight = '500';
+
+
+
+      indicator.style.backdropFilter = 'blur(10px)';
+
+
+
+      indicator.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+
+
+
+      indicator.style.transition = 'all 0.3s ease';
+
+
+
+      document.body.appendChild(indicator);
+
+
+
+    }
+
+
+
+    const currentTask = isSavingStudent ? 1 : 0;
+
+
+
+    const remaining = saveStudentQueue.length - currentTask;
+
+
+
+    const countText = (remaining > 0) ? ` (กำลังบันทึก 1 รายการ, เหลือในคิว ${remaining} รายการ)` : " (กำลังบันทึกรายการสุดท้าย)";
+
+
+
+    indicator.innerHTML = `
+
+
+
+      <span style="width: 14px; height: 14px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin 1s linear infinite;"></span>
+
+
+
+      <span>กำลังบันทึกข้อมูลนักเรียนในเบื้องหลัง${countText}</span>
+
+
+
+    `;
+
+
+
+    
+
+
+
+    if (!document.getElementById('spin_style')) {
+
+
+
+      const style = document.createElement('style');
+
+
+
+      style.id = 'spin_style';
+
+
+
+      style.innerHTML = '@keyframes spin { to { transform: rotate(360deg); } }';
+
+
+
+      document.head.appendChild(style);
+
+
+
+    }
+
+
+
+  } else {
+
+
+
+    if (indicator) {
+
+
+
+      indicator.remove();
+
+
+
+    }
+
+
+
+  }
+
+
+
+}
+
+
+
+
+
+
+
+function processSaveStudentQueue() {
+
+
+
+  if (isSavingStudent) return;
+
+
+
+  if (saveStudentQueue.length === 0) {
+
+
+
+    updateBackgroundQueueIndicator();
+
+
+
+    return;
+
+
+
+  }
+
+
+
+  
+
+
+
+  isSavingStudent = true;
+
+
+
+  updateBackgroundQueueIndicator();
+
+
+
+  
+
+
+
+  const item = saveStudentQueue[0];
+
+
+
+  
+
+
+
+  google.script.run
+
+
+
+    .withSuccessHandler(res => {
+
+
+
+      isSavingStudent = false;
+
+
+
+      if (res && res.success) {
+
+
+
+        showToast(`บันทึกข้อมูลของ ${item.studentData.StudentName} สำเร็จ!`, 'success');
+
+
+
+        saveStudentQueue.shift(); // Remove the completed task
+
+
+
+        if (typeof window.loadGridData === 'function') {
+
+
+
+          window.loadGridData();
+
+
+
+        }
+
+
+
+      } else {
+
+
+
+        showToast(`เกิดข้อผิดพลาดในการบันทึกของ ${item.studentData.StudentName}: ` + (res ? res.message : 'ไม่ทราบสาเหตุ'), 'error');
+
+
+
+        saveStudentQueue.shift();
+
+
+
+      }
+
+
+
+      processSaveStudentQueue();
+
+
+
+    })
+
+
+
+    .withFailureHandler(err => {
+
+
+
+      isSavingStudent = false;
+
+
+
+      showToast(`การเชื่อมต่อขัดข้องในการบันทึกของ ${item.studentData.StudentName}: ${err.message}`, 'error');
+
+
+
+      saveStudentQueue.shift();
+
+
+
+      processSaveStudentQueue();
+
+
+
+    })
+
+
+
+    .addStudentRegistration(item.studentData, item.logUser);
+
+
+
+}
+
+
+
+
+
+
+
+window.saveStudent = function(e) {
+
+
+
+  e.preventDefault();
+
+
+
+  
+
+
+
+  const blocks = document.querySelectorAll('.student-block');
+
+
+
+  if(blocks.length === 0) return;
+
+
+
+  
+
+
+
+  const classType = document.getElementById('student_class_type').value;
+
+
+
+  const subgroupSize = classType === 'กลุ่มย่อย' ? document.getElementById('student_subgroup_size').value : '';
+
+
+
+  const grade = document.getElementById('student_grade').value;
+
+
+
+  const branchLearn = document.getElementById('student_branch_learn').value;
+
+
+
+  const branchPay = document.getElementById('student_branch_pay').value;
+
+
+
+  
+
+
+
+  // Shared course logic
+
+
+
+  let courseStr = "";
+
+
+
+  if (classType === 'กลุ่มหลัก') {
+
+
+
+    const selectedCheckboxes = document.querySelectorAll('.course-checkbox:checked');
+
+
+
+    if (selectedCheckboxes.length > 0) {
+
+
+
+      courseStr = Array.from(selectedCheckboxes).map(cb => cb.value).join(', ');
+
+
+
+    } else {
+
+
+
+      showToast('กรุณาเลือกวิชาเรียนอย่างน้อย 1 วิชา (กลุ่มหลัก)', 'error');
+
+
+
+      return;
+
+
+
+    }
+
+
+
+  } else {
+
+
+
+    courseStr = document.getElementById('shared_course_name').value.trim();
+
+
+
+    if(!courseStr) {
+
+
+
+      showToast('กรุณาระบุชื่อคอร์ส', 'error');
+
+
+
+      return;
+
+
+
+    }
+
+
+
+  }
+
+
+
+  
+
+
+
+  const studentDataArray = [];
+
+
+
+  
+
+
+
+  blocks.forEach(block => {
+
+
+
+    const idx = block.getAttribute('data-idx');
+
+
+
+    const name = document.getElementById(`student_name_${idx}`).value.trim();
+
+
+
+    if(!name) return; // skip empty slots in a subgroup
+
+
+
+    
+
+
+
+    // Check if Edit mode (we only edit 1 student at a time, so student_id is shared but only valid for blocks.length=1)
+
+
+
+    const studentId = document.getElementById('student_id') ? document.getElementById('student_id').value : '';
+
+
+
+    
+
+
+
+    const obj = {
+
+      id: studentId,
+
+      date: new Date().toISOString().split('T')[0],
+
+      grade: grade,
+
+      name: name,
+
+      nickname: document.getElementById(`student_nickname_${idx}`).value.trim(),
+
+      school: document.getElementById(`student_school_${idx}`).value.trim(),
+
+      classSection: document.getElementById(`student_class_section_${idx}`).value.trim(),
+
+      contact: document.getElementById(`student_contact_${idx}`).value.trim(),
+
+      lineName: document.getElementById(`student_line_name_${idx}`).value.trim(),
+
+      lineId: document.getElementById(`student_line_id_${idx}`).value.trim(),
+
+      branchLearn: branchLearn,
+
+      branchPay: branchPay,
+
+      classType: classType,
+
+      subgroupCoursesSize: subgroupSize,
+
+      
+
+      round: courseStr,
+
+      subgroupCourses: courseStr.split(',').map(s => s.trim()).filter(s => s),
+
+      
+
+      paymentChannel: document.getElementById(`pay_mode_unpaid_${idx}`) && document.getElementById(`pay_mode_unpaid_${idx}`).checked ? 'unpaid' : (document.getElementById(`pay_mode_card_${idx}`).checked ? 'card' : (document.getElementById(`pay_mode_transfer_${idx}`).checked ? 'transfer' : 'cash')),
+
+      full: parseFloat(document.getElementById(`student_full_${idx}`).value) || 0,
+
+      paid: parseFloat(document.getElementById(`student_paid_${idx}`).value) || 0,
+
+      outstanding: parseFloat(document.getElementById(`student_outstanding_${idx}`).value) || 0,
+
+      carriedForwardFee: document.getElementById(`has_carried_forward_${idx}`).checked ? (parseFloat(document.getElementById(`student_carried_forward_${idx}`).value) || 0) : 0,
+
+      
+
+      paymentTimeNote: document.getElementById(`student_time_note_${idx}`).value.trim(),
+
+      extraNote: document.getElementById(`student_extra_note_${idx}`).value.trim(),
+
+      classHours: document.getElementById(`student_hours_${idx}`).value.trim(),
+
+      classHoursLeft: document.getElementById(`student_hours_left_${idx}`).value.trim(),
+
+      
+
+      payRound1_date: document.getElementById(`pay_r1_date_${idx}`).value,
+
+      payRound1_amount: document.getElementById(`pay_r1_amount_${idx}`).value,
+
+      payRound1_channel: document.getElementById(`pay_r1_channel_${idx}`).value,
+
+      payRound1_staff: document.getElementById(`pay_r1_staff_${idx}`).value,
+
+      payRound1_time: document.getElementById(`pay_r1_time_${idx}`).value,
+
+      
+
+      payRound2_date: document.getElementById(`pay_r2_date_${idx}`).value,
+
+      payRound2_amount: document.getElementById(`pay_r2_amount_${idx}`).value,
+
+      payRound2_channel: document.getElementById(`pay_r2_channel_${idx}`).value,
+
+      payRound2_staff: document.getElementById(`pay_r2_staff_${idx}`).value,
+
+      payRound2_time: document.getElementById(`pay_r2_time_${idx}`).value,
+
+      
+
+      payRound3_date: document.getElementById(`pay_r3_date_${idx}`).value,
+
+      payRound3_amount: document.getElementById(`pay_r3_amount_${idx}`).value,
+
+      payRound3_channel: document.getElementById(`pay_r3_channel_${idx}`).value,
+
+      payRound3_staff: document.getElementById(`pay_r3_staff_${idx}`).value,
+
+      payRound3_time: document.getElementById(`pay_r3_time_${idx}`).value,
+
+      
+
+      paymentDate: new Date().toISOString().split('T')[0],
+
+      staff: getLogUser()
+
+    };
+
+
+
+    studentDataArray.push(obj);
+
+
+
+  });
+
+
+
+  
+
+
+
+  if (studentDataArray.length === 0) {
+
+
+
+    showToast('กรุณากรอกข้อมูลนักเรียนอย่างน้อย 1 คน', 'error');
+
+
+
+    return;
+
+
+
+  }
+
+
+
+  
+
+
+
+  // Add to background queue
+
+
+
+  studentDataArray.forEach(studentData => {
+
+
+
+    saveStudentQueue.push({
+
+
+
+      studentData: studentData,
+
+
+
+      logUser: getLogUser()
+
+
+
+    });
+
+
+
+  });
 
 
 
