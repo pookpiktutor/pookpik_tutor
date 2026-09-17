@@ -832,25 +832,66 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           
            <!-- 5.5 DEBTORS PANEL (นักเรียนค้างจ่าย) -->
           
-          <!-- Camps Panel -->
+                    <!-- Camps Panel -->
           <div class="view-panel" id="camps_panel" style="display: none;">
-            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-              <h2>🏕️ ระบบค่าย/กิจกรรม</h2>
+            <div class="toolbar" style="padding: 8px 12px; margin-bottom: 15px;">
+              <div class="filter-actions" style="flex-grow: 1; justify-content: flex-start; gap: 6px; flex-wrap: wrap; align-items: center;">
+                <div class="d-flex align-items-center" style="gap: 5px;">
+                  <label for="camps_year_select" style="margin-bottom:0; font-size: 0.85rem;">ปีการศึกษา:</label>
+                  <select id="camps_year_select" class="form-select form-select-sm" style="width: 120px;" onchange="loadCampsData()">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="2569">2569</option>
+                    <option value="2570">2570</option>
+                    <option value="2571">2571</option>
+                    <option value="2572">2572</option>
+                    <option value="2573">2573</option>
+                  </select>
+                </div>
+                
+                <div class="d-flex align-items-center" style="gap: 5px; margin-left: 10px;">
+                  <label for="camps_name_select" style="margin-bottom:0; font-size: 0.85rem;">ชื่อค่าย:</label>
+                  <select id="camps_name_select" class="form-select form-select-sm" style="width: 180px;" onchange="loadCampsData()">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="ค่ายปิดเทอมตุลาคม">ค่ายปิดเทอมตุลาคม</option>
+                    <option value="ค่ายห้องพิเศษ">ค่ายห้องพิเศษ</option>
+                    <option value="ค่ายห้องปกติ">ค่ายห้องปกติ</option>
+                    <option value="ค่ายเมษายน">ค่ายเมษายน</option>
+                  </select>
+                </div>
+                
+                <button class="btn btn-primary btn-sm ms-2" onclick="loadCampsData()" style="padding: 4px 10px; font-size: 0.8rem;">
+                  🔄 รีเฟรชข้อมูล
+                </button>
+              </div>
+              
               <div class="panel-actions">
-                <a href="register.html" target="_blank" class="btn" style="text-decoration: none; background: #0084ff; color: white; padding: 10px 16px; border-radius: 8px;">📋 เปิดหน้าแบบฟอร์มลงทะเบียน</a>
+                <a href="register.html" target="_blank" class="btn btn-success btn-sm" style="text-decoration: none; padding: 4px 10px; font-size: 0.8rem;">
+                  📋 เปิดหน้าลงทะเบียนค่าย
+                </a>
               </div>
             </div>
             
-            <div class="card mt-4" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-              <div class="card-header">
-                <h3>รายชื่อนักเรียนที่สมัครค่าย (ข้อมูลจำลอง)</h3>
-              </div>
-              <div class="card-body">
-                <p style="color: #64748b;">ระบบหลังบ้านสำหรับการดูข้อมูลค่ายกำลังอยู่ในช่วงพัฒนา... <br><br>คุณครูสามารถเข้าไปดูข้อมูลที่นักเรียนกรอกเข้ามาได้ที่ Google Sheets แท็บ <b>"ลงทะเบียนค่าย"</b> ครับ</p>
-              </div>
+            <div class="table-container" style="max-height: calc(100vh - 180px); overflow-y: auto;">
+              <table class="table table-bordered table-hover custom-table" style="width: 100%;">
+                <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                  <tr>
+                    <th style="width: 120px;">วันที่สมัคร</th>
+                    <th style="width: 150px;">ชื่อค่าย</th>
+                    <th style="width: 80px;">ปีการศึกษา</th>
+                    <th style="width: 100px;">ระดับชั้น</th>
+                    <th style="width: 100px;">ห้องเรียน</th>
+                    <th style="width: 180px;">ชื่อ-นามสกุล</th>
+                    <th style="width: 80px;">ชื่อเล่น</th>
+                    <th style="width: 120px;">เบอร์โทรศัพท์</th>
+                  </tr>
+                </thead>
+                <tbody id="camps_table_body">
+                  <tr><td colspan="8" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
-          
+
           <div class="view-panel" id="debtors_panel">
             <div class="toolbar" style="margin-bottom: 15px;">
               <div style="font-weight: 600; font-size: 1.2rem; color: var(--text-main);">🪙 ตรวจสอบและบันทึกค้างชำระเงินค่าเรียน</div>

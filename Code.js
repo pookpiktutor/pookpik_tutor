@@ -17658,3 +17658,50 @@ function saveCampStudentData(campData) {
     return { success: false, error: e.message };
   }
 }
+
+
+function getCampsData(academicYear, campName) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return [];
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return [];
+    
+    const headers = data[0];
+    const results = [];
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const item = {
+        timestamp: row[0],
+        camp_name: row[1],
+        camp_year: row[2],
+        std_grade: row[3],
+        class_section: row[4],
+        std_name: row[5],
+        std_nickname: row[6],
+        parent_phone: row[7],
+        status: row[8]
+      };
+      
+      let match = true;
+      if (academicYear && academicYear !== 'all' && String(item.camp_year) !== String(academicYear)) {
+        match = false;
+      }
+      if (campName && campName !== 'all' && String(item.camp_name) !== String(campName)) {
+        match = false;
+      }
+      
+      if (match) {
+        results.push(item);
+      }
+    }
+    
+    return results;
+  } catch (e) {
+    Logger.log('ERROR in getCampsData: ' + e.message);
+    return {error: e.message};
+  }
+}

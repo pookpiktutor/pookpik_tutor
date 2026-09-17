@@ -1574,6 +1574,66 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
 
            <!-- 5.5 DEBTORS PANEL (นักเรียนค้างจ่าย) -->
 
+          <!-- Camps Panel -->
+          <div class="view-panel" id="camps_panel" style="display: none;">
+            <div class="toolbar" style="padding: 8px 12px; margin-bottom: 15px;">
+              <div class="filter-actions" style="flex-grow: 1; justify-content: flex-start; gap: 6px; flex-wrap: wrap; align-items: center;">
+                <div class="d-flex align-items-center" style="gap: 5px;">
+                  <label for="camps_year_select" style="margin-bottom:0; font-size: 0.85rem;">ปีการศึกษา:</label>
+                  <select id="camps_year_select" class="form-select form-select-sm" style="width: 120px;" onchange="loadCampsData()">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="2569">2569</option>
+                    <option value="2570">2570</option>
+                    <option value="2571">2571</option>
+                    <option value="2572">2572</option>
+                    <option value="2573">2573</option>
+                  </select>
+                </div>
+                
+                <div class="d-flex align-items-center" style="gap: 5px; margin-left: 10px;">
+                  <label for="camps_name_select" style="margin-bottom:0; font-size: 0.85rem;">ชื่อค่าย:</label>
+                  <select id="camps_name_select" class="form-select form-select-sm" style="width: 180px;" onchange="loadCampsData()">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="ค่ายปิดเทอมตุลาคม">ค่ายปิดเทอมตุลาคม</option>
+                    <option value="ค่ายห้องพิเศษ">ค่ายห้องพิเศษ</option>
+                    <option value="ค่ายห้องปกติ">ค่ายห้องปกติ</option>
+                    <option value="ค่ายเมษายน">ค่ายเมษายน</option>
+                  </select>
+                </div>
+                
+                <button class="btn btn-primary btn-sm ms-2" onclick="loadCampsData()" style="padding: 4px 10px; font-size: 0.8rem;">
+                  🔄 รีเฟรชข้อมูล
+                </button>
+              </div>
+              
+              <div class="panel-actions">
+                <a href="register.html" target="_blank" class="btn btn-success btn-sm" style="text-decoration: none; padding: 4px 10px; font-size: 0.8rem;">
+                  📋 เปิดหน้าลงทะเบียนค่าย
+                </a>
+              </div>
+            </div>
+            
+            <div class="table-container" style="max-height: calc(100vh - 180px); overflow-y: auto;">
+              <table class="table table-bordered table-hover custom-table" style="width: 100%;">
+                <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                  <tr>
+                    <th style="width: 120px;">วันที่สมัคร</th>
+                    <th style="width: 150px;">ชื่อค่าย</th>
+                    <th style="width: 80px;">ปีการศึกษา</th>
+                    <th style="width: 100px;">ระดับชั้น</th>
+                    <th style="width: 100px;">ห้องเรียน</th>
+                    <th style="width: 180px;">ชื่อ-นามสกุล</th>
+                    <th style="width: 80px;">ชื่อเล่น</th>
+                    <th style="width: 120px;">เบอร์โทรศัพท์</th>
+                  </tr>
+                </thead>
+                <tbody id="camps_table_body">
+                  <tr><td colspan="8" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <div class="view-panel" id="debtors_panel">
 
             <div class="toolbar" style="margin-bottom: 15px;">
@@ -20607,6 +20667,49 @@ function makeSelectSearchable(selectId) {
 
 
 
+
+// Camps Dashboard Feature
+function loadCampsData() {
+  var yearEl = document.getElementById('camps_year_select');
+  var nameEl = document.getElementById('camps_name_select');
+  var year = yearEl ? yearEl.value : 'all';
+  var name = nameEl ? nameEl.value : 'all';
+  
+  var tbody = document.getElementById('camps_table_body');
+  if (!tbody) return;
+  
+  tbody.innerHTML = '<tr><td colspan="8" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
+  
+  google.script.run.withSuccessHandler(function(data) {
+    if (data && data.error) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">เกิดข้อผิดพลาด: ' + data.error + '</td></tr>';
+      return;
+    }
+    
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center">ไม่มีข้อมูลนักเรียนค่ายในระบบ</td></tr>';
+      return;
+    }
+    
+    var html = "";
+    data.forEach(function(item) {
+      html += "<tr>";
+      html += "<td>" + (item.timestamp || "-") + "</td>";
+      html += "<td>" + (item.camp_name || "-") + "</td>";
+      html += "<td>" + (item.camp_year || "-") + "</td>";
+      html += "<td>" + (item.std_grade || "-") + "</td>";
+      html += "<td>" + (item.class_section || "-") + "</td>";
+      html += "<td>" + (item.std_name || "-") + "</td>";
+      html += "<td>" + (item.std_nickname || "-") + "</td>";
+      html += "<td>" + (item.parent_phone || "-") + "</td>";
+      html += "</tr>";
+    });
+    
+    tbody.innerHTML = html;
+  }).getCampsData(year, name);
+}
+
+
 function switchPanel(panelName) {
 
 
@@ -20795,7 +20898,8 @@ function switchPanel(panelName) {
 
 
 
-    'staff_salary_summary': 'สรุปรายได้ครูทั้งหมด'
+    'staff_salary_summary': 'สรุปรายได้ครูทั้งหมด',
+    'camps': 'ระบบค่าย/กิจกรรม'
 
 
 
@@ -20959,6 +21063,8 @@ function switchPanel(panelName) {
 
 
 
+  } else if (panelName === 'camps') {
+    loadCampsData();
   } else if (panelName === 'debtors') {
 
 
