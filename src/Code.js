@@ -3788,10 +3788,8 @@ function getAdminEvalStats() {
     const rawTeacher = (rows[i][8] || '').toString().trim();
     const rawEvalBy = (rows[i][13] || '').toString().trim();
     let resolvedTeacher = userNicknameMap[rawTeacher.toLowerCase()] ||
-                          userNicknameMap[rawEvalBy.toLowerCase()] ||
-                          resolveUserNickname(db, rawTeacher) ||
-                          resolveUserNickname(db, rawEvalBy) ||
-                          rawTeacher || rawEvalBy;
+                            userNicknameMap[rawEvalBy.toLowerCase()] ||
+                            rawTeacher || rawEvalBy;
 
     const statusVal = rows[i][14] ? String(rows[i][14]).trim() : '';
 
@@ -3974,8 +3972,6 @@ function getEvaluationsList(logUser) {
 
       let resolvedTeacher = userNicknameMap[rawTeacher.toLowerCase()] ||
                             userNicknameMap[rawEvalBy.toLowerCase()] ||
-                            resolveUserNickname(db, rawTeacher) ||
-                            resolveUserNickname(db, rawEvalBy) ||
                             rawTeacher || rawEvalBy;
 
       list.push({
