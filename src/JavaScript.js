@@ -19643,7 +19643,7 @@ function deleteAdminEvaluation(evalId) {
 
             Swal.fire('สำเร็จ', 'ลบใบประเมินเรียบร้อยแล้ว', 'success');
 
-            loadAdminEvaluations(); // Reload the list
+            loadAdminEvaluationsDashboard(); // Reload the list
 
           } else {
 
