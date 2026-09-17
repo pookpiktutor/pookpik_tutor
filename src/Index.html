@@ -285,6 +285,9 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
               <li class="nav-item" data-panel="private_students">
                 <span>👤</span> เด็กเดี่ยว/ย่อย
               </li>
+              <li class="nav-item" data-panel="camps">
+                <span>🏕️</span> ค่าย/กิจกรรม
+              </li>
               <li class="nav-item" data-panel="debtors">
                 <span>🪙</span> นักเรียนค้างชำระ
               </li>
@@ -828,6 +831,26 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           </div>
           
            <!-- 5.5 DEBTORS PANEL (นักเรียนค้างจ่าย) -->
+          
+          <!-- Camps Panel -->
+          <div class="view-panel" id="camps_panel" style="display: none;">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h2>🏕️ ระบบค่าย/กิจกรรม</h2>
+              <div class="panel-actions">
+                <a href="register.html" target="_blank" class="btn" style="text-decoration: none; background: #0084ff; color: white; padding: 10px 16px; border-radius: 8px;">📋 เปิดหน้าแบบฟอร์มลงทะเบียน</a>
+              </div>
+            </div>
+            
+            <div class="card mt-4" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+              <div class="card-header">
+                <h3>รายชื่อนักเรียนที่สมัครค่าย (ข้อมูลจำลอง)</h3>
+              </div>
+              <div class="card-body">
+                <p style="color: #64748b;">ระบบหลังบ้านสำหรับการดูข้อมูลค่ายกำลังอยู่ในช่วงพัฒนา... <br><br>คุณครูสามารถเข้าไปดูข้อมูลที่นักเรียนกรอกเข้ามาได้ที่ Google Sheets แท็บ <b>"ลงทะเบียนค่าย"</b> ครับ</p>
+              </div>
+            </div>
+          </div>
+          
           <div class="view-panel" id="debtors_panel">
             <div class="toolbar" style="margin-bottom: 15px;">
               <div style="font-weight: 600; font-size: 1.2rem; color: var(--text-main);">🪙 ตรวจสอบและบันทึกค้างชำระเงินค่าเรียน</div>
