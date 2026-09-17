@@ -20373,9 +20373,7 @@ function initEvaluationForm() {
 
           if (Array.isArray(res)) {
 
-            const seenSingleSubgroup = new Set();
-
-            const deduplicated = [];
+            const deduplicatedMap = {};
 
             res.forEach(function(c) {
 
@@ -20385,7 +20383,7 @@ function initEvaluationForm() {
 
                 // Strip trailing round numbers / session indicators e.g. " 1", " 2", " ex1", " ex2", " รอบ1"
 
-                cleanName = cleanName.replace(/\s+(ex|EX|รอบ|#)?\s*\d+$/gi, '').trim();
+                cleanName = cleanName.replace(/\s*(ex|EX|รอบ|ครั้งที่|ครั้ง|#|-)?\s*\d+(\.\d+)?\s*$/gi, '').trim();
 
               }
 
@@ -20395,17 +20393,21 @@ function initEvaluationForm() {
 
               const dedupeKey = cleanName.toLowerCase().replace(/\s+/g, '');
 
-              if (!seenSingleSubgroup.has(dedupeKey)) {
-
-                seenSingleSubgroup.add(dedupeKey);
-
-                deduplicated.push(c);
-
+              if (!deduplicatedMap[dedupeKey]) {
+                deduplicatedMap[dedupeKey] = c;
+                if (!deduplicatedMap[dedupeKey].students) {
+                    deduplicatedMap[dedupeKey].students = {};
+                }
+              } else {
+                if (c.students) {
+                  if (!deduplicatedMap[dedupeKey].students) deduplicatedMap[dedupeKey].students = {};
+                  Object.assign(deduplicatedMap[dedupeKey].students, c.students);
+                }
               }
 
             });
 
-            state._teacherCourses = deduplicated; // Store globally
+            state._teacherCourses = Object.values(deduplicatedMap); // Store globally
 
             populateTeacherCourseDropdown();
 
