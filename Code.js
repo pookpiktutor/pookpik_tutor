@@ -992,7 +992,7 @@ function onOpen() {
   ui.createMenu('🤖 ระบบครูปุ๊กปิ๊ก')
       .addItem('🧹 จัดเรียงข้อมูลที่พนักงานลงเองเข้าสู่ระบบ UI', 'organizeAndSortStaffDatabaseData')
       .addItem('🚀 ล้าง/เซ็ตฐานข้อมูลตารางเรียน', 'initAllDatabases')
-      .addItem('🔄 แปลงข้อมูลนักเรียน (กลุ่มหลัก/เด็กเดี่ยว/กลุ่มย่อย) เข้าสู่ StatusDB', 'syncMissingStudentsToStatusDB')
+      .addItem('🔄 แปลงข้อมูลนักเรียน (กลุ่มหลัก/เด็กเดี่ยว/กลุ่มย่อย) เข้าสู่ StatusDB', 'syncMissingStudentsToStatusDB')\n      .addItem('🧹 ลบแถวว่างชีตเดี่ยว/กลุ่มย่อย + ซิงค์เข้า StatusDB', 'cleanEmptyRowsAndSyncPrivateSheets')
       .addItem('🌐 เปิดเว็บไซต์ระบบเรียน', 'openWebAppUrl')
       .addToUi();
 }
@@ -1203,7 +1203,7 @@ function importExternalStudentData() {
 
       const isPrivate = (targetName.indexOf('เดี่ยว ') === 0 || targetName.indexOf('ย่อย ') === 0);
 
-      const startRow = isPrivate ? 12 : 7;
+      const startRow = isPrivate ? 2 : 7;
 
       
 
@@ -1223,7 +1223,7 @@ function importExternalStudentData() {
 
       // Clear target data starting from data row
 
-      const targetStartRow = isPrivate ? 12 : 6;
+      const targetStartRow = isPrivate ? 2 : 6;
 
       const targetLastRow = targetSheet.getLastRow();
 
@@ -4952,7 +4952,7 @@ function getRoundSummary(round, branch) {
       const lastCol = sheet.getLastColumn();
       if (lastRow < 6 || lastCol < 20) return;
       
-      const startRow = isSingle ? 12 : 6;
+      const startRow = isSingle ? 2 : 6;
       if (lastRow < startRow) return;
       
       // Determine grade and default branch
@@ -6172,7 +6172,7 @@ function syncToGradeSheet(student) {
 
   let range = [];
 
-  const startRow = sheetName.includes('เดี่ยว') || sheetName.includes('ย่อย') ? 12 : 6;
+  const startRow = sheetName.includes('เดี่ยว') || sheetName.includes('ย่อย') ? 2 : 6;
 
   
 
@@ -7090,7 +7090,7 @@ function deleteStudentRegistration(id, logUser) {
 
         const gLastRow = gradeSheet.getLastRow();
 
-        const startRow = targetSheetName.includes('เดี่ยว') || targetSheetName.includes('ย่อย') ? 12 : 6;
+        const startRow = targetSheetName.includes('เดี่ยว') || targetSheetName.includes('ย่อย') ? 2 : 6;
 
         if (gLastRow >= startRow) {
 
@@ -15970,7 +15970,7 @@ function syncMissingStudentsToStatusDB(startIndex = 0, maxBatchSheets = 5) {
         grade = sheetName.trim();
       }
 
-      const startRow = isPrivate ? 12 : 6;
+      const startRow = isPrivate ? 2 : 6;
       const lastRow = sheet.getLastRow();
       let lastCol = sheet.getLastColumn();
       if (lastCol < 25) lastCol = 25;
@@ -16310,7 +16310,7 @@ function batchRecalculateFinancials() {
     
     // Check if it's single/subgroup to determine start row
     const isSingle = sheetName.includes('เดี่ยว') || sheetName.includes('ย่อย');
-    const startRow = isSingle ? 12 : 6;
+    const startRow = isSingle ? 2 : 6;
     if (lastRow < startRow) return;
     
     // Read courses from header
@@ -17562,4 +17562,60 @@ function forceUpdatePrivateHeadersRow1() {
     const sheet = db.getSheetByName(name);
     if (sheet) sheet.getRange(1, 1, 1, 21).setValues([headers]);
   });
+}
+
+
+function cleanEmptyRowsAndSyncPrivateSheets() {
+  const db = getDb();
+  const allSheets = db.getSheets();
+  
+  let cleanedSheetsCount = 0;
+  let removedRowsCount = 0;
+  
+  for (let i = 0; i < allSheets.length; i++) {
+    const sheet = allSheets[i];
+    const sheetName = sheet.getName();
+    
+    // Check if it's a private or subgroup sheet
+    if (sheetName.startsWith('เดี่ยว') || sheetName.startsWith('ย่อย') || sheetName.startsWith('กลุ่ม') || sheetName.includes('VIP')) {
+      const lastRow = sheet.getLastRow();
+      const startRow = 2; // We are assuming header is row 1
+      
+      if (lastRow >= startRow) {
+        const lastCol = sheet.getLastColumn();
+        const targetCol = Math.max(lastCol, 36); 
+        
+        const dataRange = sheet.getRange(startRow, 1, lastRow - (startRow - 1), targetCol);
+        const data = dataRange.getValues();
+        
+        const cleanData = [];
+        
+        for (let j = 0; j < data.length; j++) {
+          const rawName = data[j][1] ? data[j][1].toString().trim() : ''; // Column B is Student Name (index 1)
+          if (rawName && rawName !== 'ชื่อ-นามสกุล' && !rawName.includes('ชื่อ-สกุล') && rawName !== 'ชื่อ') {
+            cleanData.push(data[j]);
+          }
+        }
+        
+        const rowsRemoved = data.length - cleanData.length;
+        if (rowsRemoved > 0 || true) { 
+          removedRowsCount += rowsRemoved;
+          
+          // Clear the old data range
+          dataRange.clearContent();
+          
+          // Write back clean data
+          if (cleanData.length > 0) {
+            sheet.getRange(startRow, 1, cleanData.length, targetCol).setValues(cleanData);
+          }
+        }
+      }
+      cleanedSheetsCount++;
+    }
+  }
+  
+  // After cleaning, sync to StatusDB (batch process first 100 sheets)
+  const syncResult = syncMissingStudentsToStatusDB(0, 100);
+  
+  Browser.msgBox('ทำความสะอาดสำเร็จ', 'ทำความสะอาดชีตจำนวน ' + cleanedSheetsCount + ' ชีต, ลบแถวว่างทิ้งไป ' + removedRowsCount + ' แถว\n\nสถานะการซิงค์:\n' + syncResult.message, Browser.Buttons.OK);
 }
