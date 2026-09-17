@@ -18,7 +18,7 @@ echo [SUCCESS] Code pushed.
 echo.
 
 echo 2. Deploying new version to the Production Web App...
-call %CLASP_CMD% deploy -i AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA -d "Auto Update from local"
+call %CLASP_CMD% deploy -i AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg -d "Auto Update from local"
 if %errorlevel% neq 0 (
     echo [ERROR] Deploy failed!
     pause

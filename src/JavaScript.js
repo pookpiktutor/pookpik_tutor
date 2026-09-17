@@ -19689,7 +19689,14 @@ function openAdminEvaluationEditModal(evalId) {
 
   document.getElementById('admin_eval_course').value = ev.subject || '';
 
-  document.getElementById('admin_eval_student').value = ev.studentName + (ev.nickname ? ' (' + ev.nickname + ')' : '');
+  let parsedStdName = String(ev.studentName || '').replace(/^(น้อง|ด\.ช\.|ด\.ญ\.|เด็กชาย|เด็กหญิง|\s)+/g, '').trim();
+  let parsedNick = ev.nickname || '';
+  if (parsedNick && !parsedNick.startsWith('(')) {
+    parsedNick = ' (' + parsedNick + ')';
+  } else if (parsedNick && parsedNick.startsWith('(')) {
+    parsedNick = ' ' + parsedNick;
+  }
+  document.getElementById('admin_eval_student').value = parsedStdName + parsedNick;
 
   document.getElementById('admin_eval_grade').value = ev.grade || '';
 
@@ -20287,9 +20294,11 @@ function renderAdminEvaluationsDashboard(res) {
 
       
 
+      let dispName = String(ev.studentName || 'นักเรียน').replace(/^(น้อง|ด\.ช\.|ด\.ญ\.|เด็กชาย|เด็กหญิง|\s)+/g, '').trim();
+      
       card.innerHTML = `
 
-        <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-color);">${ev.studentName}</div>
+        <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-color);">${dispName}</div>
 
         <div style="display: flex; gap: 6px;">
 
@@ -21027,7 +21036,7 @@ function processSaveStudentQueue() {
 
       if (res && res.success) {
 
-        showToast(`บันทึกข้อมูลของ ${item.studentData.StudentName} สำเร็จ!`, 'success');
+        showToast(`บันทึกข้อมูลของ ${item.studentData.name} สำเร็จ!`, 'success');
 
         saveStudentQueue.shift(); // Remove the completed task
 
@@ -21039,7 +21048,7 @@ function processSaveStudentQueue() {
 
       } else {
 
-        showToast(`เกิดข้อผิดพลาดในการบันทึกของ ${item.studentData.StudentName}: ` + (res ? res.message : 'ไม่ทราบสาเหตุ'), 'error');
+        showToast(`เกิดข้อผิดพลาดในการบันทึกของ ${item.studentData.name}: ` + (res ? res.message : 'ไม่ทราบสาเหตุ'), 'error');
 
         saveStudentQueue.shift();
 
@@ -21053,7 +21062,7 @@ function processSaveStudentQueue() {
 
       isSavingStudent = false;
 
-      showToast(`การเชื่อมต่อขัดข้องในการบันทึกของ ${item.studentData.StudentName}: ${err.message}`, 'error');
+      showToast(`การเชื่อมต่อขัดข้องในการบันทึกของ ${item.studentData.name}: ${err.message}`, 'error');
 
       saveStudentQueue.shift();
 
@@ -21271,7 +21280,7 @@ window.openStudentModal = function(id = null, studentName = null) {
       
       document.getElementById('student_grade').value = data.Grade || data.grade || 'ป.1';
       document.getElementById('student_branch_learn').value = data.BranchLearn || data.branchLearn || 'สาขา1';
-      document.getElementById('student_branch_pay').value = data.BranchPay || data.branchPay || 'สาขา1';
+      document.getElementById('student_branch_pay').value = data.BranchPay || data.branchPay || 'ไลน์สาขา 1';
       
       const courseVal = data.Course || data.round || '';
       if (document.getElementById('shared_course_name')) {

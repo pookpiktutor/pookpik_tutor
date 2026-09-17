@@ -562,7 +562,11 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       `;
 
       evals.forEach((ev, idx) => {
-        const studentName = ev.studentName || ev.student_name || 'นักเรียน';
+        let displayName = String(ev.studentName || ev.student_name || 'นักเรียน').replace(/^(น้อง|ด\.ช\.|ด\.ญ\.|เด็กชาย|เด็กหญิง|\s)+/g, '').trim();
+        if (displayName.match(/^.*?\((.*?)\)(.*)$/)) {
+            displayName = displayName.replace(/^.*?\((.*?)\)(.*)$/, '$1$2').trim();
+        }
+        const studentName = displayName;
         const nickname = (ev.nickname || ev.studentNickname) ? `(${ev.nickname || ev.studentNickname})` : '';
         const courseName = ev.subject || ev.courseName || ev.course || 'คอร์สเรียน';
         const teacherName = ev.teacher || ev.teacherName || ev.kruName || 'ครูผู้สอน';
