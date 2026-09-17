@@ -2970,11 +2970,12 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
 
           <div class="view-panel" id="admin_evaluation_form_panel" style="width: 100%; max-height: none;">
 
-            <div class="toolbar" style="margin-bottom: 16px; flex-wrap: nowrap; gap: 12px;">
+            <div class="toolbar" style="margin-bottom: 16px; flex-wrap: nowrap; gap: 12px; align-items: center;">
 
               <div style="font-family: var(--font-heading); font-size: 1.1rem; font-weight: 500; white-space: nowrap;">📋 รายการนักเรียนที่ได้รับการประเมินแล้ว</div>
-
+              <input type="text" id="admin_eval_search" class="form-input" style="flex: 1; min-width: 200px;" placeholder="ค้นหาชื่อนักเรียน, ชื่อเล่น, หรือวิชา..." onkeyup="filterAdminEvaluations()">
               <button class="btn btn-success" style="white-space: nowrap; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none;" onclick="publishSelectedAdminEvaluations()"><i class="fas fa-paper-plane"></i> ยืนยันเผยแพร่ใบประเมิน (ที่เลือก)</button>
+
               <button class="btn btn-secondary" style="white-space: nowrap;" onclick="loadAdminEvaluationsDashboard()">🔄 รีเฟรช</button>
 
             </div>
@@ -46286,6 +46287,29 @@ function renderAdminEvaluationsDashboard(res) {
 
   });
 
+}
+
+function filterAdminEvaluations() {
+  const searchTerm = document.getElementById('admin_eval_search').value.toLowerCase().trim();
+  if (!window._adminEvalsCache) return;
+  
+  if (!searchTerm) {
+    renderAdminEvaluationsDashboard(window._adminEvalsCache);
+    return;
+  }
+  
+  const filtered = window._adminEvalsCache.filter(ev => {
+    const studentName = (ev.studentName || '').toLowerCase();
+    const nickname = (ev.nickname || '').toLowerCase();
+    const subject = (ev.subject || '').toLowerCase();
+    return studentName.includes(searchTerm) || nickname.includes(searchTerm) || subject.includes(searchTerm);
+  });
+  
+  const payload = {
+    evals: filtered,
+    counts: window._adminEvalsCounts || {}
+  };
+  renderAdminEvaluationsDashboard(payload);
 }
 
 
