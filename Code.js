@@ -5227,13 +5227,13 @@ function getAllCoursesFromGradeSheets() {
 
         const lastRow = sheet.getLastRow();
 
-        if (lastRow >= 12) {
+        if (lastRow >= 2) {
 
           // Column 11 (K) is the Course Name column, Column 2 (B) is Student Name
 
-          const vals = sheet.getRange(12, 11, lastRow - 11, 1).getValues();
+          const vals = sheet.getRange(2, 11, lastRow - 1, 1).getValues();
 
-          const names = sheet.getRange(12, 2, lastRow - 11, 1).getValues();
+          const names = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
 
           vals.forEach((val, idx) => {
 
@@ -5910,7 +5910,7 @@ function getStudentDetailedCourses(studentName, nickname, grade, branchLearn, cl
 
         const lastCol = sheet.getLastColumn();
 
-        if (lastRow >= 12) {
+        if (lastRow >= 2) {
 
           const rawData = sheet.getRange(12, 1, lastRow - 11, lastCol).getValues();
 
@@ -8340,9 +8340,9 @@ function savePrivateStudentPayment(sheetName, name, courseName, paymentData, log
 
     const lastRow = sheet.getLastRow();
 
-    const range = sheet.getRange(12, 2, lastRow - 11, 1).getValues(); 
+    const range = sheet.getRange(2, 2, lastRow - 1, 1).getValues(); 
 
-    const courses = sheet.getRange(12, 11, lastRow - 11, 1).getValues(); 
+    const courses = sheet.getRange(2, 11, lastRow - 1, 1).getValues(); 
 
     
 
@@ -8352,7 +8352,7 @@ function savePrivateStudentPayment(sheetName, name, courseName, paymentData, log
 
       if (range[i][0].toString().trim() === name && courses[i][0].toString().trim() === courseName) {
 
-        rowIndex = i + 12;
+        rowIndex = i + 2;
 
         break;
 

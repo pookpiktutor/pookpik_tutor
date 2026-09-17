@@ -2934,10 +2934,10 @@ function getAllCoursesFromGradeSheets() {
       const sheet = db.getSheetByName(sName);
       if (sheet) {
         const lastRow = sheet.getLastRow();
-        if (lastRow >= 12) {
+        if (lastRow >= 2) {
           // Column 11 (K) is the Course Name column, Column 2 (B) is Student Name
-          const vals = sheet.getRange(12, 11, lastRow - 11, 1).getValues();
-          const names = sheet.getRange(12, 2, lastRow - 11, 1).getValues();
+          const vals = sheet.getRange(2, 11, lastRow - 1, 1).getValues();
+          const names = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
           vals.forEach((val, idx) => {
             const studentName = names[idx][0] ? names[idx][0].toString().trim() : '';
             const cName = val[0] ? val[0].toString().trim() : '';
@@ -4655,13 +4655,13 @@ function savePrivateStudentPayment(sheetName, name, courseName, paymentData, log
     if (!sheet) throw new Error(`ไม่พบชีตข้อมูล ${sheetName}`);
     
     const lastRow = sheet.getLastRow();
-    const range = sheet.getRange(12, 2, lastRow - 11, 1).getValues(); 
-    const courses = sheet.getRange(12, 11, lastRow - 11, 1).getValues(); 
+    const range = sheet.getRange(2, 2, lastRow - 1, 1).getValues(); 
+    const courses = sheet.getRange(2, 11, lastRow - 1, 1).getValues(); 
     
     let rowIndex = -1;
     for (let i = 0; i < range.length; i++) {
       if (range[i][0].toString().trim() === name && courses[i][0].toString().trim() === courseName) {
-        rowIndex = i + 12;
+        rowIndex = i + 2;
         break;
       }
     }
