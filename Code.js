@@ -17628,3 +17628,33 @@ function cleanEmptyRowsAndSyncPrivateSheets() {
   
   Browser.msgBox('ทำความสะอาดสำเร็จ', 'ทำความสะอาดชีตจำนวน ' + cleanedSheetsCount + ' ชีต, ลบแถวว่างทิ้งไป ' + removedRowsCount + ' แถว\n\nสถานะการซิงค์:\n' + syncResult.message, Browser.Buttons.OK);
 }
+
+function saveCampStudentData(campData) {
+  try {
+    const db = getDb();
+    let sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) {
+      sheet = db.insertSheet('ลงทะเบียนค่าย');
+      sheet.appendRow(['Timestamp', 'ชื่อค่าย', 'ปีการศึกษา', 'ระดับชั้น', 'ห้องเรียน', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'เบอร์โทรศัพท์ผู้ปกครอง', 'สถานะ']);
+      sheet.getRange("A1:I1").setFontWeight("bold").setBackground("#e0e7ff");
+      sheet.setFrozenRows(1);
+    }
+    
+    sheet.appendRow([
+      campData.timestamp || new Date().toLocaleString('th-TH'),
+      campData.camp_name || '',
+      campData.camp_year || '',
+      campData.std_grade || '',
+      campData.class_section || '',
+      campData.std_name || '',
+      campData.std_nickname || '',
+      campData.parent_contact || '',
+      campData.status || 'รอตรวจสอบ'
+    ]);
+    
+    return { success: true };
+  } catch (e) {
+    Logger.log('ERROR in saveCampStudentData: ' + e.message);
+    return { success: false, error: e.message };
+  }
+}

@@ -210,6 +210,37 @@
       margin-bottom: 8px;
       color: var(--color-success);
     }
+    
+    /* Tabs CSS */
+    .tabs-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 10px;
+      justify-content: center;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      font-family: 'Outfit', 'Sarabun', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      background: #f1f5f9;
+      color: var(--color-primary);
+    }
+    .tab-btn.active {
+      background: var(--color-primary);
+      color: #ffffff;
+    }
+
   </style>
 
 <style>
@@ -1072,5 +1103,100 @@ window.google.script.run = new Proxy({}, {
   }
 </script>
 
+
+<script>
+  // Camp Form Logic
+  function switchRegistrationTab(tab) {
+    if (tab === 'regular') {
+      document.getElementById('tab_regular').classList.add('active');
+      document.getElementById('tab_camp').classList.remove('active');
+      document.getElementById('regular_section').style.display = 'block';
+      document.getElementById('camp_section').style.display = 'none';
+    } else {
+      document.getElementById('tab_camp').classList.add('active');
+      document.getElementById('tab_regular').classList.remove('active');
+      document.getElementById('camp_section').style.display = 'block';
+      document.getElementById('regular_section').style.display = 'none';
+    }
+  }
+
+  // Populate Years 2569 to 2578
+  document.addEventListener('DOMContentLoaded', () => {
+    const yearSelect = document.getElementById('camp_year');
+    if(yearSelect) {
+      for (let y = 2569; y <= 2578; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = 'ปี ' + y;
+        yearSelect.appendChild(opt);
+      }
+    }
+  });
+
+  // Render Rooms based on Grade
+  function renderCampRooms() {
+    const grade = document.getElementById('camp_grade').value;
+    const roomSelect = document.getElementById('camp_room');
+    roomSelect.innerHTML = '<option value="">-- เลือกห้องเรียน --</option>';
+    
+    let rooms = [];
+    if (grade === 'ป.6') {
+      rooms = ['ห้องพิเศษ Gifted', 'ห้องพิเศษ EP', 'ห้องพิเศษ Smart Com', 'ห้องปกติ'];
+    } else if (grade === 'ม.3') {
+      rooms = ['ห้องSciPro', 'EP วิทย์-คณิต', 'EP ภาษา', 'เตรียมนิติศาสตร์', 'เตรียมวิศวะ', 'ศิลป์-คณิต', 'วิทย์-คณิต', 'ศิลป์ภาษา', 'วิทย์-คอม'];
+    }
+
+    rooms.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r;
+      opt.textContent = r;
+      roomSelect.appendChild(opt);
+    });
+  }
+
+  // Submit Camp Form
+  function submitCampForm() {
+    const form = document.getElementById('camp_form');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const btn = document.getElementById('submit_camp_btn');
+    const spinner = document.getElementById('btn_camp_spinner');
+    const text = document.getElementById('btn_camp_text');
+
+    btn.disabled = true;
+    spinner.style.display = 'inline-block';
+    text.textContent = 'กำลังส่งข้อมูล...';
+
+    const campData = {
+      timestamp: new Date().toLocaleString('th-TH'),
+      camp_name: document.getElementById('camp_name').value,
+      camp_year: document.getElementById('camp_year').value,
+      std_grade: document.getElementById('camp_grade').value,
+      class_section: document.getElementById('camp_room').value,
+      std_name: document.getElementById('camp_std_name').value,
+      std_nickname: document.getElementById('camp_std_nickname').value,
+      parent_contact: document.getElementById('camp_parent_contact').value,
+      status: "รอตรวจสอบ"
+    };
+
+    google.script.run
+      .withSuccessHandler(function() {
+        document.getElementById('form_view').style.display = 'none';
+        document.getElementById('success_view').style.display = 'block';
+        // You can update the success view message if needed
+        document.querySelector('#success_view h2').textContent = 'ลงทะเบียนค่ายสำเร็จ!';
+      })
+      .withFailureHandler(function(error) {
+        alert("เกิดข้อผิดพลาดในการส่งข้อมูล: " + error.message);
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        text.textContent = 'ส่งข้อมูลลงทะเบียนค่าย';
+      })
+      .saveCampStudentData(campData);
+  }
+</script>
 </body>
 </html>
