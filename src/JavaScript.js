@@ -19545,7 +19545,7 @@ function submitStudentEvaluation(event) {
 
     })
 
-    .submitEvaluation(data, getLogUser());
+    .submitEvaluation(JSON.stringify(data), getLogUser());
 
 }
 
@@ -36691,13 +36691,14 @@ function getSubjectPresetOptionsHtml(category, itemIndex, prefix, chosenSubjKey)
 
   let html = `<option value="">-- เลือกคำแนะนำสำเร็จรูป (ข้อที่ ${itemIndex}) --</option>`;
 
+  let globalIdx = 1;
   const renderGroup = (label, listAdvanced, listInter, listFound) => {
     let groupHtml = '';
     
     if (listAdvanced && listAdvanced.length > 0) {
       listAdvanced.forEach((item, idx) => {
         if (!usedTexts.has(item.text) || item.text === currentInputVal) {
-          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">[เก่ง ${idx+1}] ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
+          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">[เก่ง ${globalIdx++}] ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
         }
       });
     }
@@ -36705,7 +36706,7 @@ function getSubjectPresetOptionsHtml(category, itemIndex, prefix, chosenSubjKey)
     if (listInter && listInter.length > 0) {
       listInter.forEach((item, idx) => {
         if (!usedTexts.has(item.text) || item.text === currentInputVal) {
-          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">[กลาง ${idx+1}] ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
+          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">[กลาง ${globalIdx++}] ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
         }
       });
     }
@@ -36713,7 +36714,7 @@ function getSubjectPresetOptionsHtml(category, itemIndex, prefix, chosenSubjKey)
     if (listFound && listFound.length > 0) {
       listFound.forEach((item, idx) => {
         if (!usedTexts.has(item.text) || item.text === currentInputVal) {
-          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">[อ่อน ${idx+1}] ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
+          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">[อ่อน ${globalIdx++}] ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
         }
       });
     }

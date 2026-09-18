@@ -12733,7 +12733,9 @@ function populateFeedbackPresetSelects() {
 
           const levelLabels = { advanced: '⭐ เด็กเก่ง', intermediate: '📘 เด็กกลาง', foundation: '🌱 เด็กอ่อน' };
 
-          ['advanced', 'intermediate', 'foundation'].forEach(lvl => {
+          let globalIdx = 1;
+
+            ['advanced', 'intermediate', 'foundation'].forEach(lvl => {
 
             const items = secData[lvl];
 
@@ -12751,7 +12753,7 @@ function populateFeedbackPresetSelects() {
 
                 const shortText = itemText;
 
-                opt.textContent = (idx + 1) + '. ' + shortText;
+                opt.textContent = (globalIdx++) + '. ' + shortText;
 
                 optgroup.appendChild(opt);
 
