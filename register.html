@@ -358,6 +358,13 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       </div>
     </div>
 
+
+  <div class="tabs-container">
+    <button type="button" id="tab_regular" class="tab-btn active" onclick="switchRegistrationTab('regular')">ลงทะเบียนเรียนปกติ</button>
+    <button type="button" id="tab_camp" class="tab-btn" onclick="switchRegistrationTab('camp')">ลงทะเบียนค่าย/กิจกรรม</button>
+  </div>
+
+  <div id="regular_section">
     <form id="reg_form">
       <div class="row-grid">
         <div class="form-group">
@@ -565,6 +572,75 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         </button>
       </div>
     </form>
+
+  </div> <!-- End regular_section -->
+
+  <!-- CAMP SECTION -->
+  <div id="camp_section" style="display: none;">
+    <form id="camp_form">
+      
+      <div class="row-grid">
+        <div class="form-group">
+          <label class="form-label">เลือกค่ายที่สมัคร <span>*</span></label>
+          <select id="camp_name" class="form-select" required>
+            <option value="">-- เลือกค่าย --</option>
+            <option value="ค่ายปิดเทอมตุลาคม">ค่ายปิดเทอมตุลาคม</option>
+            <option value="ค่ายห้องพิเศษ">ค่ายห้องพิเศษ</option>
+            <option value="ค่ายห้องปกติ">ค่ายห้องปกติ</option>
+            <option value="ค่ายเมษายน">ค่ายเมษายน</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">ปีการศึกษา <span>*</span></label>
+          <select id="camp_year" class="form-select" required>
+            <option value="">-- เลือกปีการศึกษา --</option>
+            <!-- Generated via JS -->
+          </select>
+        </div>
+      </div>
+      
+      <div class="row-grid">
+        <div class="form-group">
+          <label class="form-label">ระดับชั้นเรียน <span>*</span></label>
+          <select id="camp_grade" class="form-select" required onchange="renderCampRooms()">
+            <option value="">-- เลือกระดับชั้น --</option>
+            <option value="ป.6">ป.6</option>
+            <option value="ม.3">ม.3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ห้องเรียน <span>*</span></label>
+          <select id="camp_room" class="form-select" required>
+            <option value="">-- เลือกระดับชั้นก่อน --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">ชื่อ-นามสกุล นักเรียน <span>*</span></label>
+        <input type="text" id="camp_std_name" class="form-input" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">ชื่อเล่นนักเรียน <span>*</span></label>
+        <input type="text" id="camp_std_nickname" class="form-input" required placeholder="ชื่อเล่น">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">เบอร์โทรศัพท์ผู้ปกครอง <span>*</span></label>
+        <input type="tel" id="camp_parent_contact" class="form-input" required placeholder="0xx-xxx-xxxx" oninput="formatPhoneAsYouType(this)" maxlength="12">
+      </div>
+
+      <div class="form-group" style="margin-top: 20px;">
+        <button type="button" id="submit_camp_btn" class="btn" onclick="submitCampForm()">
+          <span class="spinner" id="btn_camp_spinner"></span>
+          <span id="btn_camp_text">ส่งข้อมูลลงทะเบียนค่าย</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
   </div>
 </div>
 
