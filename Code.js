@@ -5849,9 +5849,68 @@ function getTeacherCoursesAndStudents(logUser) {
     const result = [];
     courseKeys.forEach(key => {
       const item = teacherCoursesMap[key];
+      
+      const uniqueStudents = [];
+      if (item.students && item.students.length > 0) {
+        item.students.forEach(s => {
+           let matchIdx = -1;
+           for (let i = 0; i < uniqueStudents.length; i++) {
+               const u = uniqueStudents[i];
+               
+               const getTokens = (str) => (str||'').replace(/[()]/g, ' ').split(/\s+/).filter(x => x.length >= 3 && !x.match(/^(ม\.|ป\.|ex|เดี่ยว|ย่อย|คอร์ส|วิชา)/i));
+               const sTokens = getTokens(s.name);
+               const uTokens = getTokens(u.name);
+               
+               let overlap = false;
+               for (const t1 of sTokens) {
+                   for (const t2 of uTokens) {
+                       if (t1 === t2 || t1.includes(t2) || t2.includes(t1)) {
+                           overlap = true;
+                           break;
+                       }
+                   }
+                   if (overlap) break;
+               }
+               
+               const sClean = s.name.replace(/\s+/g, '');
+               const uClean = u.name.replace(/\s+/g, '');
+               if (sClean.includes(uClean) || uClean.includes(sClean)) {
+                   overlap = true;
+               }
+               
+               if (overlap) {
+                   matchIdx = i;
+                   break;
+               }
+           }
+           
+           if (matchIdx >= 0) {
+               const score = (name) => {
+                   let pts = 0;
+                   if (name.includes('เดี่ยว')) pts -= 10;
+                   if (name.includes('ย่อย')) pts -= 10;
+                   if (name.includes('ex')) pts -= 10;
+                   if (name.includes('(')) pts -= 5;
+                   if (name.includes('ม.') || name.includes('ป.')) pts -= 5;
+                   if (name.trim().includes(' ')) pts += 5; 
+                   return pts;
+               };
+               
+               const currentScore = score(uniqueStudents[matchIdx].name);
+               const newScore = score(s.name);
+               
+               if (newScore > currentScore || (newScore === currentScore && s.name.length < uniqueStudents[matchIdx].name.length)) {
+                   uniqueStudents[matchIdx] = s;
+               }
+           } else {
+               uniqueStudents.push(s);
+           }
+        });
+      }
+      
       result.push({
         courseName: item.displayCourseName,
-        students: item.students
+        students: uniqueStudents
       });
     });
 
