@@ -46248,22 +46248,22 @@ function renderAdminEvaluationsDashboard(res) {
 
 
 
-  // Group by Course
-
+  // Group by Course (and deduplicate by studentName)
   const grouped = {};
-
   evals.forEach(ev => {
-
     const subj = ev.subject || 'ไม่ระบุวิชา';
-
     if (!grouped[subj]) {
-
       grouped[subj] = [];
-
     }
-
-    grouped[subj].push(ev);
-
+    const existingIdx = grouped[subj].findIndex(e => (e.studentName || '').toLowerCase().trim() === (ev.studentName || '').toLowerCase().trim());
+    if (existingIdx !== -1) {
+       const existing = grouped[subj][existingIdx];
+       if (ev.evalId > existing.evalId) {
+          grouped[subj][existingIdx] = ev;
+       }
+    } else {
+       grouped[subj].push(ev);
+    }
   });
 
 

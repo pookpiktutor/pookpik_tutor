@@ -14056,6 +14056,16 @@ function getLowBalancePrivateStudents() {
 
 // ----------------------------------------------------
 
+      }
+    }
+  }
+  
+  if (matchedRows.length > 0) {
+    return { success: true, data: matchedRows };
+  }
+  return { success: false, data: [] };
+}
+
 function getTeacherLeaveToday(logUser) {
   try {
     const sheet = getDb().getSheetByName('Data Learn');
@@ -15028,88 +15038,50 @@ function getLatestSingleOrSubgroupDetails(courseName) {
 
     const cleanCourseName = courseName.toString().toLowerCase().replace(/\s+/g, '');
 
-    let matchedRow = null;
-
+    let matchedRows = [];
     
-
     for (let sheetName of sheetsToSearch) {
-
       const sheet = db.getSheetByName(sheetName);
-
       if (!sheet) continue;
-
       
-
       const lastRow = sheet.getLastRow();
-
       if (lastRow < 12) continue;
-
       
-
       const rawData = sheet.getRange(12, 1, lastRow - 11, Math.min(25, sheet.getLastColumn())).getValues();
-
       for (let i = 0; i < rawData.length; i++) {
-
         const row = rawData[i];
-
         const colA = row[0] ? row[0].toString().trim() : '';
-
         const colB = row[1] ? row[1].toString().trim() : '';
-
         const colC = row[2] ? row[2].toString().trim() : '';
-
         const colI = row[8] ? row[8].toString().trim() : '';
-
         const colK = row[10] ? row[10].toString().trim() : '';
-
         
-
         if (!colB && !colK) continue;
-
         
-
         const cleanB = colB.toLowerCase().replace(/\s+/g, '');
-
         const cleanC = colC.toLowerCase().replace(/\s+/g, '');
-
         const cleanK = colK.toLowerCase().replace(/\s+/g, '');
-
         
-
         const hasStudentMatch = (cleanB && cleanCourseName.includes(cleanB)) || (cleanC && cleanCourseName.includes(cleanC));
-
         const hasCourseMatch = (cleanK && cleanCourseName.includes(cleanK));
-
         
-
         if (hasStudentMatch && hasCourseMatch) {
-
-          matchedRow = {
-
-            grade: colA,
-
-            studentName: colB + (colC ? '(' + colC + ')' : ''),
-
-            branch: colI,
-
-            subject: colK
-
-          };
-
+          const stuName = colB + (colC ? '(' + colC + ')' : '');
+          if (!matchedRows.some(m => m.studentName === stuName)) {
+            matchedRows.push({
+              grade: colA,
+              studentName: stuName,
+              branch: colI,
+              subject: colK
+            });
+          }
         }
-
       }
-
     }
-
     
-
-    if (matchedRow) {
-
-      return { success: true, data: matchedRow };
-
+    if (matchedRows.length > 0) {
+      return { success: true, data: matchedRows };
     }
-
     return { success: false, error: 'Student/Course not found in single/subgroup sheets' };
 
   } catch (e) {

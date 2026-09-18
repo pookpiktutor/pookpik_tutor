@@ -18928,25 +18928,24 @@ function onEvalCourseChange() {
 
           
 
-          studentSelect.innerHTML = '';
-
-          const opt = document.createElement('option');
-
-          opt.value = data.studentName;
-
-          opt.textContent = data.studentName;
-
-          opt.selected = true;
-
-          studentSelect.appendChild(opt);
-
+          studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
+          const students = Array.isArray(data) ? data : [data];
+          students.forEach(stu => {
+            const opt = document.createElement('option');
+            opt.value = stu.studentName;
+            opt.textContent = stu.studentName;
+            studentSelect.appendChild(opt);
+          });
           
-
-          gradeInput.value = data.grade;
-
-          branchInput.value = data.branch;
-
-          subjectInput.value = data.subject;
+          if (students.length === 1) {
+             studentSelect.selectedIndex = 1;
+          }
+          
+          if (students.length > 0) {
+             gradeInput.value = students[0].grade || '';
+             branchInput.value = students[0].branch || '';
+             subjectInput.value = students[0].subject || '';
+          }
 
         } else {
 
