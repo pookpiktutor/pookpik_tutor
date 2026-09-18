@@ -36698,7 +36698,7 @@ function getSubjectPresetOptionsHtml(category, itemIndex, prefix, chosenSubjKey)
     if (listAdvanced && listAdvanced.length > 0) {
       listAdvanced.forEach((item, idx) => {
         if (!usedTexts.has(item.text) || item.text === currentInputVal) {
-          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">[เก่ง ${globalIdx++}] ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
+          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">เก่ง ${globalIdx++}. ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
         }
       });
     }
@@ -36706,7 +36706,7 @@ function getSubjectPresetOptionsHtml(category, itemIndex, prefix, chosenSubjKey)
     if (listInter && listInter.length > 0) {
       listInter.forEach((item, idx) => {
         if (!usedTexts.has(item.text) || item.text === currentInputVal) {
-          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">[กลาง ${globalIdx++}] ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
+          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">กลาง ${globalIdx++}. ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
         }
       });
     }
@@ -36714,7 +36714,7 @@ function getSubjectPresetOptionsHtml(category, itemIndex, prefix, chosenSubjKey)
     if (listFound && listFound.length > 0) {
       listFound.forEach((item, idx) => {
         if (!usedTexts.has(item.text) || item.text === currentInputVal) {
-          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">[อ่อน ${globalIdx++}] ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
+          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">อ่อน ${globalIdx++}. ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
         }
       });
     }

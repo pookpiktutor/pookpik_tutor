@@ -12753,7 +12753,8 @@ function populateFeedbackPresetSelects() {
 
                 const shortText = itemText;
 
-                opt.textContent = (globalIdx++) + '. ' + shortText;
+                const prefixMap = { advanced: 'เก่ง ', intermediate: 'กลาง ', foundation: 'อ่อน ' };
+                opt.textContent = prefixMap[lvl] + (globalIdx++) + '. ' + shortText;
 
                 optgroup.appendChild(opt);
 
