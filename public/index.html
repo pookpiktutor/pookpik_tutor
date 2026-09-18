@@ -3606,7 +3606,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           <!-- EVALUATION FORM PANEL -->
           <div class="view-panel" id="evaluation_form_panel" style="display: none; overflow-y: auto; max-height: calc(100vh - 110px); padding-right: 6px; padding-bottom: 30px;">
             <form id="evaluation_form_submit" onsubmit="submitStudentEvaluation(event)">
-              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;" class="grid-cols-3">
+              <div style="display: flex; flex-direction: column; gap: 20px;" class="grid-cols-3">
                 <!-- Left: Form -->
                 <div class="glass-panel" style="padding: 20px;">
                   <div class="section-title-group" style="margin-top: 0; margin-bottom: 16px;">
@@ -3971,7 +3971,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                     <textarea id="eval_feedback" class="form-input" rows="10" placeholder="ระบุความคิดเห็นและข้อเสนอแนะเพิ่มเติมของคุณครู..." style="resize: vertical; font-size: 0.85rem;"></textarea>
                   </div>
 
-                  <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: auto; justify-content: center; font-weight: 600; padding: 12px; font-size: 1.05rem;">
+                  <button type="submit" class="btn btn-primary" style="position: fixed; bottom: 30px; right: 30px; z-index: 1000; box-shadow: 0 6px 20px rgba(0,0,0,0.3); border-radius: 50px; padding: 15px 30px; font-weight: 600; font-size: 1.1rem; width: auto; justify-content: center; transition: all 0.2s;">
                     <span>💾</span> บันทึกใบประเมินนักเรียน
                   </button>
                 </div>
@@ -4010,7 +4010,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           <form id="admin_evaluation_edit_form" onsubmit="saveAdminEvaluationEdit(event)">
             <input type="hidden" id="admin_eval_id">
             
-            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;" class="grid-cols-3">
+            <div style="display: flex; flex-direction: column; gap: 20px;" class="grid-cols-3">
               <!-- Left: Evaluation Details & Table -->
               <div class="glass-panel" style="padding: 20px; background: rgba(255,255,255,0.5);">
                 <div class="section-title-group" style="margin-top: 0; margin-bottom: 16px;">
@@ -21144,94 +21144,71 @@ function submitStudentEvaluation(event) {
 
   
 
-  setLoading(true, 'กำลังบันทึกใบประเมินลงฐานข้อมูล...');
+  // Optimistic UI update (Async Save)
+  showToast('กำลังส่งข้อมูล... กรุณารอสักครู่ (คุณสามารถประเมินคนต่อไปได้เลย)', 'info');
 
+  // Push new evaluation to local state so evaluated student disappears immediately
+  if (!state.evaluations) state.evaluations = [];
+  state.evaluations.push({
+    evalId: 'EVAL_TEMP_' + new Date().getTime(),
+    studentName: data.studentName,
+    nickname: data.nickname,
+    grade: data.grade,
+    branch: data.branch,
+    date: data.date,
+    subject: data.subject,
+    teacher: data.teacher
+  });
+  populateTeacherCourseDropdown();
+  onEvalCourseChange();
+
+  // Reset inputs
+  studentSelect.value = '';
+  document.getElementById('eval_grade').value = '';
+  document.getElementById('eval_branch').value = '';
+
+  // Reset all 18 input fields
+  document.querySelectorAll('.eval-strength-item, .eval-improvement-item, .eval-recommendation-item').forEach(input => {
+    input.value = '';
+  });
+
+  // Reset preset dropdowns
+  document.querySelectorAll('.feedback-preset-select').forEach(input => {
+    input.value = '';
+  });
+
+  // Reset character counts
+  document.querySelectorAll('span[id$="_count"]').forEach(el => {
+    if(el) { el.textContent = '0/60 ตัวอักษร'; el.style.color = '#94a3b8'; }
+  });
+
+  // Reset radios back to "Grade 4" default
+  for (let i = 0; i < criteria.length; i++) {
+    const radioGroup = document.getElementsByName('score_' + i);
+    if (radioGroup.length >= 6) {
+      radioGroup[4].checked = true; // เกรด 4
+    }
+  }
+
+  // Scroll to top of the form smoothly
+  const panel = document.getElementById('evaluation_form_panel');
+  if (panel) panel.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Background save call
   google.script.run
-
     .withSuccessHandler(function(res) {
-
-      setLoading(false);
-
       if (res && res.success) {
-
-        showToast('บันทึกใบประเมินนักเรียนสำเร็จเรียบร้อย ✓', 'success');
-
-        // Push new evaluation to local state so evaluated student disappears immediately
-        if (!state.evaluations) state.evaluations = [];
-        state.evaluations.push({
-          evalId: res.id || ('EVAL_' + new Date().getTime()),
-          studentName: data.studentName,
-          nickname: data.nickname,
-          grade: data.grade,
-          branch: data.branch,
-          date: data.date,
-          subject: data.subject,
-          teacher: data.teacher
-        });
-        
-        populateTeacherCourseDropdown();
-        onEvalCourseChange();
-
-        
-
-        // Reset inputs
-
-        studentSelect.value = '';
-
-        document.getElementById('eval_grade').value = '';
-
-        document.getElementById('eval_branch').value = '';
-
-        
-
-        // Reset all 18 input fields
-
-        document.querySelectorAll('.eval-strength-item, .eval-improvement-item, .eval-recommendation-item').forEach(input => {
-
-          input.value = '';
-
-        });
-
-        
-
-        // Reset radios back to "Grade 4" default
-
-        for (let i = 0; i < criteria.length; i++) {
-
-          const radioGroup = document.getElementsByName('score_' + i);
-
-          if (radioGroup.length >= 6) {
-
-            radioGroup[4].checked = true; // เกรด 4
-
-          }
-
-        }
-
-        
-
-        // Refresh history
-
+        showToast(`บันทึกใบประเมินของ ${data.studentName} สำเร็จเรียบร้อย ✓`, 'success');
+        // Optional: refresh history silently
         loadEvaluationsList();
-
       } else {
-
-        showToast('บันทึกใบประเมินล้มเหลว: ' + (res ? res.error : 'unknown'), 'error');
-
+        showToast(`บันทึกใบประเมินของ ${data.studentName} ล้มเหลว: ` + (res ? res.error : 'unknown'), 'error');
       }
-
     })
-
     .withFailureHandler(function(err) {
-
-      setLoading(false);
-
-      showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
-
+      showToast(`การเชื่อมต่อขัดข้องในการบันทึกของ ${data.studentName}: ` + err.message, 'error');
     })
-
     .submitEvaluation(data, getLogUser());
-
 }
 
 
