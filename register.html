@@ -1470,7 +1470,7 @@ window.google.script.run = new Proxy({}, {
         document.getElementById('form_view').style.display = 'none';
         document.getElementById('success_view').style.display = 'block';
         // You can update the success view message if needed
-        document.querySelector('#success_view h2').textContent = 'ลงทะเบียนค่ายสำเร็จ!';
+        document.querySelector('#success_view .success-title').textContent = 'ลงทะเบียนค่ายสำเร็จ!';
       })
       .withFailureHandler(function(error) {
         alert("เกิดข้อผิดพลาดในการส่งข้อมูล: " + error.message);
@@ -1659,7 +1659,7 @@ window.google.script.run = new Proxy({}, {
       .withSuccessHandler(function() {
         document.getElementById('form_view').style.display = 'none';
         document.getElementById('success_view').style.display = 'block';
-        document.querySelector('#success_view h2').textContent = 'ส่งหลักฐานชำระเงินเรียบร้อย!';
+        document.querySelector('#success_view .success-title').textContent = 'ส่งหลักฐานชำระเงินเรียบร้อย!';
       })
       .withFailureHandler(function(error) {
         alert("เกิดข้อผิดพลาดในการส่งข้อมูล: " + error.message);
