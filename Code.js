@@ -3439,7 +3439,15 @@ function clearDailyGridClassroomTimetable(logUser) {
 
 }
 
-function submitEvaluation(data, logUser) {
+function submitEvaluation(dataRaw, logUser) {
+  let data = dataRaw;
+  if (typeof dataRaw === 'string') {
+    try {
+      data = JSON.parse(dataRaw);
+    } catch (e) {
+      Logger.log('Could not parse data string: ' + e.message);
+    }
+  }
 
   try {
 
@@ -5567,30 +5575,78 @@ function getAllStudentsFromSubgroupSheets() {
 
 // ----------------------------------------------------
 
-function isCourseExactMatch(targetCourse, cellText, dayTimeStr) {
+function isCourseExactMatch(targetCourse, cellText, targetDayTime, cellDayTime) {
   if (!targetCourse || !cellText) return false;
 
-  const cleanT = targetCourse.toString().toLowerCase().replace(/\s+/g, ' ').trim();
+  let cleanT = targetCourse.toString().toLowerCase().replace(/\s+/g, ' ').trim();
   const cleanC = cellText.toString().toLowerCase().replace(/\s+/g, ' ').trim();
 
-  if (cleanT === cleanC) return true;
+  // Remove common suffix from Data Learn that might not be in Grade Sheets
+  cleanT = cleanT.replace(/\(สพฐ\)/g, '').trim();
 
-  const noSpaceT = cleanT.replace(/\s+/g, '');
-  const noSpaceC = cleanC.replace(/\s+/g, '');
-  if (noSpaceT === noSpaceC) return true;
-
-  if (cleanT.length > 3 && cleanC.length > 3 && (cleanT.includes(cleanC) || cleanC.includes(cleanT))) return true;
-  if (noSpaceT.length > 3 && noSpaceC.length > 3 && (noSpaceT.includes(noSpaceC) || noSpaceC.includes(noSpaceT))) return true;
-
-  if (dayTimeStr) {
-    const cleanDayTime = dayTimeStr.toString().toLowerCase().replace(/\s+/g, '').trim();
-    const tBase = noSpaceT.replace(cleanDayTime, '');
-    const cBase = noSpaceC.replace(cleanDayTime, '');
-    if (tBase === cBase && tBase.length > 0) return true;
-    if (tBase.length > 3 && cBase.length > 3 && (tBase.includes(cBase) || cBase.includes(tBase))) return true;
+  let isCourseMatch = false;
+  if (cleanT === cleanC) {
+    isCourseMatch = true;
+  } else {
+    const noSpaceT = cleanT.replace(/\s+/g, '');
+    const noSpaceC = cleanC.replace(/\s+/g, '');
+    if (noSpaceT === noSpaceC) {
+      isCourseMatch = true;
+    } else if (cleanT.length > 3 && cleanC.length > 3 && (cleanT.includes(cleanC) || cleanC.includes(cleanT))) {
+      isCourseMatch = true;
+    } else if (noSpaceT.length > 3 && noSpaceC.length > 3 && (noSpaceT.includes(noSpaceC) || noSpaceC.includes(noSpaceT))) {
+      isCourseMatch = true;
+    }
   }
 
-  return false;
+  if (!isCourseMatch) return false;
+
+  if (targetDayTime) {
+    const cleanTargetDayTime = targetDayTime.toString().toLowerCase().replace(/\s+/g, '').trim();
+    const cleanCellDayTime = (cellDayTime || '').toString().toLowerCase().replace(/\s+/g, '').trim();
+    const noSpaceC = cleanC.replace(/\s+/g, '');
+    
+    // Extract day
+    let targetDay = '';
+    const dayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'พฤหัส', 'ศุกร์', 'เสาร์'];
+    for (let d of dayNames) {
+       if (cleanTargetDayTime.includes(d)) {
+          targetDay = d;
+          break;
+       }
+    }
+    
+    // Extract time
+    let targetTime = '';
+    const timeMatch = cleanTargetDayTime.match(/\d+[:.]\d+/);
+    if (timeMatch) targetTime = timeMatch[0].replace(':', '.');
+    
+    let dayMatch = true;
+    if (targetDay) {
+       let cellHasDay = noSpaceC.includes(targetDay) || cleanCellDayTime.includes(targetDay);
+       if (!cellHasDay) {
+          if (targetDay === 'พฤหัสบดี' && (noSpaceC.includes('พฤหัส') || cleanCellDayTime.includes('พฤหัส'))) {
+             cellHasDay = true;
+          } else if (targetDay === 'พฤหัส' && (noSpaceC.includes('พฤหัสบดี') || cleanCellDayTime.includes('พฤหัสบดี'))) {
+             cellHasDay = true;
+          }
+       }
+       dayMatch = cellHasDay;
+    }
+    
+    let timeMatchBool = true;
+    if (targetTime) {
+       const cellTimeC = noSpaceC.replace(/:/g, '.');
+       const cellTimeD = cleanCellDayTime.replace(/:/g, '.');
+       if (!cellTimeC.includes(targetTime) && !cellTimeD.includes(targetTime)) {
+          timeMatchBool = false;
+       }
+    }
+    
+    if (!dayMatch || !timeMatchBool) return false;
+  }
+  
+  return true;
 }
 
 function isTeacherAssigned(rawTeacherName, cleanLogUser, teachersList) {
@@ -5638,6 +5694,13 @@ function getTeacherCoursesAndStudents(logUser) {
   try {
     // Dynamic cache key & bypass stale cache
     const cleanLogUser = (logUser || "").toString().split("|")[0].trim().toLowerCase();
+    const cacheKey = 'teacher_courses_' + cleanLogUser;
+    
+    const cachedData = getCacheObject(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+
     const db = getDb();
 
     // 1. Get all teachers from UsersDB
@@ -5737,7 +5800,7 @@ function getTeacherCoursesAndStudents(logUser) {
           const cellCourse = (courseRow[c] || '').toString().toLowerCase().trim();
           const cellDayTime = (dayTimeRow[c] || '').toString().toLowerCase().trim();
           
-          let isMatch = isCourseExactMatch(targetCourseName, cellCourse, targetDayTime);
+          let isMatch = isCourseExactMatch(targetCourseName, cellCourse, targetDayTime, cellDayTime);
           
           if (isMatch) {
                for (let r = 5; r < data.length; r++) {
@@ -5795,7 +5858,7 @@ function getTeacherCoursesAndStudents(logUser) {
           const colK = (data[r][10] || '').toString().toLowerCase().trim(); // Column K = index 10 = รอบเรียน
           if (!colK) continue;
           
-          let isMatch = isCourseExactMatch(targetCourseName, colK, targetDayTime);
+          let isMatch = isCourseExactMatch(targetCourseName, colK, targetDayTime, '');
           
           if (isMatch) {
              const sId = (data[r][1] || '').toString().trim(); // Column B
@@ -5914,6 +5977,7 @@ function getTeacherCoursesAndStudents(logUser) {
       });
     });
 
+    setCacheObject(cacheKey, result, 300); // Cache for 5 minutes (300 seconds) to speed up fetching
     return result;
 
   } catch (err) {
@@ -14115,16 +14179,6 @@ function getLowBalancePrivateStudents() {
 
 // ----------------------------------------------------
 
-      }
-    }
-  }
-  
-  if (matchedRows.length > 0) {
-    return { success: true, data: matchedRows };
-  }
-  return { success: false, data: [] };
-}
-
 function getTeacherLeaveToday(logUser) {
   try {
     const sheet = getDb().getSheetByName('Data Learn');
@@ -17666,8 +17720,8 @@ function saveCampStudentData(campData) {
     let sheet = db.getSheetByName('ลงทะเบียนค่าย');
     if (!sheet) {
       sheet = db.insertSheet('ลงทะเบียนค่าย');
-      sheet.appendRow(['Timestamp', 'ชื่อค่าย', 'ปีการศึกษา', 'ระดับชั้น', 'ห้องเรียน', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'เบอร์โทรศัพท์ผู้ปกครอง', 'สถานะ']);
-      sheet.getRange("A1:I1").setFontWeight("bold").setBackground("#e0e7ff");
+      sheet.appendRow(['Timestamp', 'ชื่อค่าย', 'ปีการศึกษา', 'ระดับชั้น', 'ห้องเรียน', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'เบอร์โทรศัพท์ผู้ปกครอง', 'สถานะ', 'โรงเรียน', 'โรคประจำตัว/แพ้อาหาร', 'Size เสื้อ']);
+      sheet.getRange("A1:L1").setFontWeight("bold").setBackground("#e0e7ff");
       sheet.setFrozenRows(1);
     }
     
@@ -17680,7 +17734,10 @@ function saveCampStudentData(campData) {
       campData.std_name || '',
       campData.std_nickname || '',
       campData.parent_contact || '',
-      campData.status || 'รอตรวจสอบ'
+      campData.status || 'รอตรวจสอบ',
+      campData.std_school || '',
+      campData.medical_condition || '',
+      campData.shirt_size || ''
     ]);
     
     return { success: true };
@@ -17736,3 +17793,195 @@ function getCampsData(academicYear, campName) {
     return {error: e.message};
   }
 }
+
+
+
+
+function syncSheet3CourseNames() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet3 = ss.getSheetByName('\u0e0a\u0e35\u0e153');
+  if (!sheet3) return 'Sheet3 not found';
+  
+  var debugSheet = ss.getSheetByName('DebugLog');
+  if (!debugSheet) {
+    debugSheet = ss.insertSheet('DebugLog');
+  } else {
+    debugSheet.clear();
+  }
+  var debugData = [['Row', 'CourseA', 'DateVal', 'DayOfWeek', 'Term', 'TimeStr', 'Branch', 'Grade', 'SheetName', 'SheetExists', 'TotalCols', 'MatchedCourse', 'Reason']];
+  
+  var dataRange = sheet3.getDataRange();
+  var values = dataRange.getValues();
+  
+  var midTermStart = new Date(2026, 4, 18).getTime();
+  var midTermEnd = new Date(2026, 6, 19, 23, 59, 59).getTime();
+  var finalStart = new Date(2026, 6, 20).getTime();
+  var finalEnd = new Date(2026, 8, 25, 23, 59, 59).getTime();
+  
+  var gradeSheetRow1Cache = {};
+  var dayNames = ['\u0e2d\u0e32\u0e17\u0e34\u0e15\u0e22\u0e4c', '\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c', '\u0e2d\u0e31\u0e07\u0e04\u0e32\u0e23', '\u0e1e\u0e38\u0e18', '\u0e1e\u0e24\u0e2b\u0e31\u0e2a\u0e1a\u0e14\u0e35', '\u0e28\u0e38\u0e01\u0e23\u0e4c', '\u0e40\u0e2a\u0e32\u0e23\u0e4c'];
+  
+  var changes = 0;
+  
+  for (var i = 1; i < values.length; i++) {
+    var row = values[i];
+    var courseColA = (row[0] || '').toString().trim();
+    if (courseColA.indexOf('\u0e2b\u0e25\u0e31\u0e01') === -1) continue;
+    
+    var dateVal = row[12];
+    if (!dateVal) {
+      debugData.push([i+1, courseColA, 'NO_DATE', '', '', '', '', '', '', '', '', '', 'Skipped: no date in Col M']);
+      continue;
+    }
+    
+    var parsedDate = null;
+    if (dateVal instanceof Date) {
+      parsedDate = dateVal;
+    } else {
+      var parts = dateVal.toString().split('/');
+      if (parts.length === 3) {
+        parsedDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      }
+    }
+    
+    if (!parsedDate || isNaN(parsedDate.getTime())) {
+      debugData.push([i+1, courseColA, dateVal, '', '', '', '', '', '', '', '', '', 'Skipped: invalid date']);
+      continue;
+    }
+    
+    var dTime = parsedDate.getTime();
+    var dayIndex = parsedDate.getDay();
+    var dayName = dayNames[dayIndex];
+    
+    var term = '';
+    if (dTime >= midTermStart && dTime <= midTermEnd) {
+      term = 'MIDTERM';
+    } else if (dTime >= finalStart && dTime <= finalEnd) {
+      term = 'FINAL';
+    }
+    if (!term) {
+      debugData.push([i+1, courseColA, dateVal, dayName, 'NO_TERM', '', '', '', '', '', '', '', 'Skipped: date outside range']);
+      continue;
+    }
+    
+    var startTimeRaw = row[3];
+    var endTimeRaw = row[4];
+    var startHr = '', startMin = '', endHr = '', endMin = '';
+    
+    if (startTimeRaw instanceof Date) {
+      startHr = startTimeRaw.getHours().toString();
+      startMin = startTimeRaw.getMinutes().toString().padStart(2, '0');
+    } else if (startTimeRaw) {
+      var sParts = startTimeRaw.toString().split(':');
+      startHr = sParts[0] || '';
+      startMin = (sParts[1] || '00').padStart(2, '0');
+    }
+    
+    if (endTimeRaw instanceof Date) {
+      endHr = endTimeRaw.getHours().toString();
+      endMin = endTimeRaw.getMinutes().toString().padStart(2, '0');
+    } else if (endTimeRaw) {
+      var eParts = endTimeRaw.toString().split(':');
+      endHr = eParts[0] || '';
+      endMin = (eParts[1] || '00').padStart(2, '0');
+    }
+    
+    var timeStr = '';
+    if (startHr) {
+      timeStr = startHr + '.' + startMin;
+      if (endHr) {
+        timeStr += '-' + endHr + '.' + endMin;
+      }
+    }
+    
+    var branchColN = (row[13] || '').toString().trim();
+    var branchNum = '';
+    var branchM = branchColN.match(/\u0e2a\u0e32\u0e02\u0e32\s*(\d)/);
+    if (branchM) {
+      branchNum = branchM[1];
+    } else if (branchColN.indexOf('1') !== -1) branchNum = '1';
+    else if (branchColN.indexOf('2') !== -1) branchNum = '2';
+    else if (branchColN.indexOf('3') !== -1) branchNum = '3';
+    
+    if (!branchNum) {
+      debugData.push([i+1, courseColA, dateVal, dayName, term, timeStr, 'NO_BRANCH', '', '', '', '', '', 'Branch: ' + branchColN]);
+      continue;
+    }
+    
+    var gradeM = courseColA.match(/(\u0e2d\u0e19\u0e38\u0e1a\u0e32\u0e25|\u0e1b\.\d|\u0e21\.\d)/);
+    var grade = gradeM ? gradeM[1] : '';
+    if (!grade) {
+      debugData.push([i+1, courseColA, dateVal, dayName, term, timeStr, branchNum, 'NO_GRADE', '', '', '', '', 'Cannot extract grade']);
+      continue;
+    }
+    
+    var sheetName = grade + '/' + branchNum;
+    
+    if (!gradeSheetRow1Cache[sheetName]) {
+      var gSheet = ss.getSheetByName(sheetName);
+      if (gSheet) {
+        var lastCol = gSheet.getLastColumn();
+        if (lastCol >= 1) {
+          gradeSheetRow1Cache[sheetName] = gSheet.getRange(1, 1, 1, lastCol).getValues()[0];
+        } else {
+          gradeSheetRow1Cache[sheetName] = [];
+        }
+      } else {
+        gradeSheetRow1Cache[sheetName] = null;
+      }
+    }
+    
+    var headerRow1 = gradeSheetRow1Cache[sheetName];
+    if (!headerRow1) {
+      debugData.push([i+1, courseColA, dateVal, dayName, term, timeStr, branchNum, grade, sheetName, 'NO_SHEET', '', '', 'Sheet not found']);
+      continue;
+    }
+    if (headerRow1.length === 0) {
+      debugData.push([i+1, courseColA, dateVal, dayName, term, timeStr, branchNum, grade, sheetName, 'EMPTY', '0', '', 'No columns']);
+      continue;
+    }
+    
+    var foundCourseName = '';
+    var lastReason = 'No match';
+    var subjectPart = courseColA.split(grade)[0].replace('\u0e2b\u0e25\u0e31\u0e01', '').replace(/\(\u0e2a\u0e1e\u0e10\)/, '').trim();
+    
+    for (var c = 10; c < headerRow1.length; c++) {
+      var headerText = (headerRow1[c] || '').toString().trim();
+      if (!headerText) continue;
+      if (headerText.indexOf('\u0e2b\u0e25\u0e31\u0e01') === -1) { lastReason = 'col' + (c+1) + ':no \u0e2b\u0e25\u0e31\u0e01'; continue; }
+      if (headerText.toUpperCase().indexOf(term) === -1) { lastReason = 'col' + (c+1) + ':no ' + term; continue; }
+      if (subjectPart && headerText.indexOf(subjectPart) === -1) { lastReason = 'col' + (c+1) + ':subj miss ' + subjectPart; continue; }
+      if (headerText.indexOf(dayName) === -1) { lastReason = 'col' + (c+1) + ':day miss ' + dayName; continue; }
+      
+      var timeMatched = false;
+      if (timeStr && headerText.indexOf(timeStr) !== -1) {
+        timeMatched = true;
+      } else if (startHr && headerText.indexOf(startHr + '.') !== -1) {
+        timeMatched = true;
+      }
+      if (!timeMatched && timeStr) { lastReason = 'col' + (c+1) + ':time miss ' + timeStr; continue; }
+      
+      foundCourseName = headerText;
+      lastReason = 'MATCHED col' + (c+1);
+      break;
+    }
+    
+    debugData.push([i+1, courseColA, dateVal, dayName, term, timeStr, branchNum, grade, sheetName, 'YES', headerRow1.length, foundCourseName, lastReason]);
+    
+    if (foundCourseName && foundCourseName !== courseColA) {
+      sheet3.getRange(i + 1, 1).setValue(foundCourseName);
+      changes++;
+    }
+  }
+  
+  if (debugData.length > 0) {
+    debugSheet.getRange(1, 1, debugData.length, debugData[0].length).setValues(debugData);
+  }
+  
+  if (changes > 0) {
+    SpreadsheetApp.getUi().alert('\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08', '\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\u0e0a\u0e37\u0e48\u0e2d\u0e04\u0e2d\u0e23\u0e4c\u0e2a\u0e40\u0e23\u0e35\u0e22\u0e1a\u0e23\u0e49\u0e2d\u0e22\u0e41\u0e25\u0e49\u0e27 ' + changes + ' \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23', SpreadsheetApp.getUi().ButtonSet.OK);
+  } else {
+    SpreadsheetApp.getUi().alert('\u0e41\u0e08\u0e49\u0e07\u0e40\u0e15\u0e37\u0e2d\u0e19', '\u0e44\u0e21\u0e48\u0e1e\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\n\u0e01\u0e23\u0e38\u0e13\u0e32\u0e14\u0e39\u0e0a\u0e35\u0e15 DebugLog \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e15\u0e23\u0e27\u0e08\u0e2a\u0e2d\u0e1a\u0e2a\u0e32\u0e40\u0e2b\u0e15\u0e38', SpreadsheetApp.getUi().ButtonSet.OK);
+  }
+}
+

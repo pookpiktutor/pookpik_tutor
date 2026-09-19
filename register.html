@@ -632,6 +632,59 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         <input type="tel" id="camp_parent_contact" class="form-input" required placeholder="0xx-xxx-xxxx" oninput="formatPhoneAsYouType(this)" maxlength="12">
       </div>
 
+      <div class="form-group">
+        <label class="form-label">โรงเรียน <span>*</span></label>
+        <input type="text" id="camp_std_school" class="form-input" required placeholder="ระบุชื่อโรงเรียนปัจจุบัน" list="std_school_list">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" style="line-height: 1.4;">โรคประจำตัว / แพ้ยา / แพ้อาหาร /<br>ไม่รับประทานอาหารประเภทใด</label>
+        <input type="text" id="camp_medical_condition" class="form-input" placeholder="หากไม่มีให้เว้นว่าง หรือระบุ -">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Size เสื้อค่าย (แจกฟรี 1 ตัว) <span>*</span></label>
+        <select id="camp_shirt_size" class="form-select" required>
+          <option value="">-- เลือก Size เสื้อ --</option>
+          <option value="S">Size S = รอบอก 32" ความยาว 24"</option>
+          <option value="M">Size M = รอบอก 36" ความยาว 24.5"</option>
+          <option value="L">Size L = รอบอก 40" ความยาว 25"</option>
+          <option value="XL">Size XL = รอบอก 44" ความยาว 25.5"</option>
+          <option value="2XL">Size 2XL = รอบอก 46" ความยาว 26"</option>
+          <option value="3XL">Size 3XL = รอบอก 50" ความยาว 27"</option>
+        </select>
+      </div>
+
+      <div class="info-card" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-top: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          สถานที่จัดงาน
+        </h3>
+        <p style="margin: 0 0 12px 0; color: #475569; font-size: 0.95rem; line-height: 1.5;">
+          <strong>โรงเรียนกวดวิชาบ้านครูปุ๊กปิ๊ก สาขา 2</strong><br>
+          ข้างโรงเรียนระยองวิทยาคม
+        </p>
+        <a href="https://share.google/EB7qvnZspFUf7Lhqr" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background-color: #dbeafe; color: #1d4ed8; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: background-color 0.2s;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+          เปิดแผนที่นำทาง (Google Maps)
+        </a>
+
+        <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 20px 0;">
+
+        <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+          ของใช้ที่ต้องนำมาสำหรับพักค่ายค้างคืนนะคะ
+        </h3>
+        <ul style="margin: 0; padding-left: 24px; color: #475569; font-size: 0.95rem; line-height: 1.6;">
+          <li style="margin-bottom: 6px;">ที่นอนปิคนิคขนาดไม่เกิน 3 ฟุต / หมอน / ผ้าห่ม</li>
+          <li style="margin-bottom: 6px;">เสื้อผ้า / ของใช้ส่วนตัว</li>
+          <li style="margin-bottom: 6px;">ยารักษาโรคประจำตัว</li>
+          <li style="margin-bottom: 6px;">อุปกรณ์เครื่องเขียน / ดินสอ / ปากกา / ยางลบ</li>
+          <li style="margin-bottom: 6px;">เงินค่าขนม</li>
+          <li style="margin-bottom: 0;"><strong>โทรศัพท์มือถือ</strong> งดนำอุปกรณ์อิเล็กทรอนิกส์ชนิดอื่นมานะคะ<br><span style="font-size: 0.85rem; color: #64748b;">(ทางคุณครูจะดูแลเรื่องการใช้โทรศัพท์ให้เด็ก ๆ ค่ะ)</span></li>
+        </ul>
+      </div>
+
       <div class="form-group" style="margin-top: 20px;">
         <button type="button" id="submit_camp_btn" class="btn" onclick="submitCampForm()">
           <span class="spinner" id="btn_camp_spinner"></span>
@@ -1255,6 +1308,9 @@ window.google.script.run = new Proxy({}, {
       std_name: document.getElementById('camp_std_name').value,
       std_nickname: document.getElementById('camp_std_nickname').value,
       parent_contact: document.getElementById('camp_parent_contact').value,
+      std_school: document.getElementById('camp_std_school').value,
+      medical_condition: document.getElementById('camp_medical_condition').value,
+      shirt_size: document.getElementById('camp_shirt_size').value,
       status: "รอตรวจสอบ"
     };
 
