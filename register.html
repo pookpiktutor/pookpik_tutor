@@ -362,6 +362,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
   <div class="tabs-container">
     <button type="button" id="tab_regular" class="tab-btn active" onclick="switchRegistrationTab('regular')">ลงทะเบียนเรียนปกติ</button>
     <button type="button" id="tab_camp" class="tab-btn" onclick="switchRegistrationTab('camp')">ลงทะเบียนค่าย/กิจกรรม</button>
+    <button type="button" id="tab_payment" class="tab-btn" onclick="switchRegistrationTab('payment')">ค้นหายอดชำระเงิน</button>
   </div>
 
   <div id="regular_section">
@@ -718,6 +719,73 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         </button>
       </div>
 
+    </form>
+  </div>
+
+  <!-- PAYMENT SEARCH SECTION -->
+  <div id="payment_section" style="display: none;">
+    <form id="payment_search_form">
+      <div class="row-grid">
+        <div class="form-group" style="grid-column: span 2;">
+          <label class="form-label">ค้นหาด้วย ชื่อ-นามสกุล <span>*</span></label>
+          <div style="display: flex; gap: 10px;">
+              <input type="text" id="search_std_name" class="form-input" required placeholder="กรอกชื่อ-นามสกุลนักเรียน" style="flex: 1;">
+              <button type="button" class="btn" onclick="execSearchPayment()" style="width: auto; padding: 0 20px;">
+                <span class="spinner" id="search_spinner" style="display:none;"></span> 🔍 ค้นหา
+              </button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="payment_search_result" style="display: none; margin-top: 20px;">
+        <h4 style="color: var(--color-primary); font-size: 1.1rem; margin-bottom: 10px;">รายการที่พบ (ติ๊กเพื่อเลือกชำระ)</h4>
+        <div class="table-responsive">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 2px solid #cbd5e1; color: #475569;">
+                <th style="padding: 8px;">เลือก</th>
+                <th style="padding: 8px;">รายการ</th>
+                <th style="padding: 8px;">รายละเอียด</th>
+                <th style="padding: 8px; text-align: right;">ค่าใช้จ่าย</th>
+              </tr>
+            </thead>
+            <tbody id="payment_search_tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+            <tfoot>
+              <tr style="border-top: 2px dashed #cbd5e1; font-weight: 700; color: var(--color-primary-hover);">
+                <td colspan="3" style="padding: 10px 8px; text-align: right;">ยอดรวมที่เลือกชำระ:</td>
+                <td id="payment_search_total" style="padding: 10px 8px; text-align: right; font-size: 1.1rem; color: var(--color-danger);">฿0.00</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="form-group" style="margin-top:20px;">
+          <label class="form-label">จำนวนเงินที่โอน (บาท) <span>*</span></label>
+          <input type="number" id="payment_search_transfer" class="form-input" required placeholder="ยอดเงินตามสลิป">
+        </div>
+
+        <div class="form-group" id="payment_search_upload_group">
+          <label class="form-label">แนบหลักฐานการโอนเงิน (สลิป) <span>*</span></label>
+          <div class="upload-area" onclick="document.getElementById('search_file_input').click()">
+            <div class="upload-icon">📸</div>
+            <div class="upload-text" id="search_upload_status">คลิกเพื่อเลือกรูปภาพสลิป</div>
+            <input type="file" id="search_file_input" style="display: none;" accept="image/*" onchange="handleSearchFileSelect(event)">
+          </div>
+          <div id="search_preview_container" style="display: none; margin-top: 10px; text-align: center;">
+            <div style="font-size: 0.8rem; color: var(--text-muted);">ตัวอย่างรูปภาพสลิป:</div>
+            <img id="search_preview_img" src="" style="max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 8px;">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+          <button type="button" id="submit_search_btn" class="btn" onclick="submitSearchPayment()">
+            <span class="spinner" id="btn_search_spinner"></span>
+            <span id="btn_search_text">ส่งข้อมูลชำระเงิน</span>
+          </button>
+        </div>
+      </div>
     </form>
   </div>
   </div>
@@ -1312,16 +1380,22 @@ window.google.script.run = new Proxy({}, {
 <script>
   // Camp Form Logic
   function switchRegistrationTab(tab) {
+    document.getElementById('tab_regular').classList.remove('active');
+    document.getElementById('tab_camp').classList.remove('active');
+    document.getElementById('tab_payment').classList.remove('active');
+    document.getElementById('regular_section').style.display = 'none';
+    document.getElementById('camp_section').style.display = 'none';
+    document.getElementById('payment_section').style.display = 'none';
+
     if (tab === 'regular') {
       document.getElementById('tab_regular').classList.add('active');
-      document.getElementById('tab_camp').classList.remove('active');
       document.getElementById('regular_section').style.display = 'block';
-      document.getElementById('camp_section').style.display = 'none';
-    } else {
+    } else if (tab === 'camp') {
       document.getElementById('tab_camp').classList.add('active');
-      document.getElementById('tab_regular').classList.remove('active');
       document.getElementById('camp_section').style.display = 'block';
-      document.getElementById('regular_section').style.display = 'none';
+    } else if (tab === 'payment') {
+      document.getElementById('tab_payment').classList.add('active');
+      document.getElementById('payment_section').style.display = 'block';
     }
   }
 
@@ -1406,6 +1480,196 @@ window.google.script.run = new Proxy({}, {
       })
       .saveCampStudentData(campData);
   }
+
+  // --- PAYMENT SEARCH LOGIC ---
+  let searchSlipFileData = null;
+  let searchResultsData = null;
+
+  function handleSearchFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert('ขนาดไฟล์ใหญ่เกิน 10MB กรุณาเลือกไฟล์ใหม่');
+        event.target.value = '';
+        return;
+      }
+      document.getElementById('search_upload_status').textContent = 'กำลังประมวลผลรูปภาพ...';
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64Data = e.target.result.split(',')[1];
+        searchSlipFileData = {
+          fileName: file.name,
+          mimeType: file.type,
+          base64: base64Data
+        };
+        document.getElementById('search_upload_status').textContent = 'เลือกไฟล์เรียบร้อย: ' + file.name;
+        
+        const previewContainer = document.getElementById('search_preview_container');
+        const previewImg = document.getElementById('search_preview_img');
+        previewImg.src = e.target.result;
+        previewContainer.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function execSearchPayment() {
+    const nameInput = document.getElementById('search_std_name').value.trim();
+    if (!nameInput) {
+      alert('กรุณากรอกชื่อ-นามสกุล');
+      return;
+    }
+
+    const spinner = document.getElementById('search_spinner');
+    spinner.style.display = 'inline-block';
+    
+    google.script.run
+      .withSuccessHandler(function(results) {
+        spinner.style.display = 'none';
+        searchResultsData = results;
+        renderSearchResults(results);
+      })
+      .withFailureHandler(function(error) {
+        spinner.style.display = 'none';
+        alert("เกิดข้อผิดพลาดในการค้นหา: " + error.message);
+      })
+      .searchStudentPayment(nameInput);
+  }
+
+  function renderSearchResults(results) {
+    const tbody = document.getElementById('payment_search_tbody');
+    tbody.innerHTML = '';
+    let hasData = false;
+
+    if (results.regular && results.regular.length > 0) {
+      results.regular.forEach((item, index) => {
+        hasData = true;
+        const tr = document.createElement('tr');
+        const remain = item.remaining > 0 ? item.remaining : 0;
+        tr.innerHTML = `
+          <td style="padding: 8px;"><input type="checkbox" class="search_item_checkbox" data-cost="${remain}" data-name="เรียนปกติ: ${item.course}" style="width:18px;height:18px;cursor:pointer;accent-color:#0084ff;" onchange="calcSearchTotal()"></td>
+          <td style="padding: 8px;">เรียนปกติ</td>
+          <td style="padding: 8px;">${item.course} (ยอดค้าง: ฿${remain.toLocaleString()})</td>
+          <td style="padding: 8px; text-align: right;">
+             <input type="number" class="search_item_input" value="${remain}" style="width: 80px; text-align:right;" oninput="calcSearchTotal()">
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    if (results.camp && results.camp.length > 0) {
+      results.camp.forEach((item, index) => {
+        hasData = true;
+        
+        const trFull = document.createElement('tr');
+        trFull.innerHTML = `
+          <td style="padding: 8px;"><input type="checkbox" class="search_item_checkbox" data-cost="${item.costFull}" data-name="ค่าย (เต็ม): ${item.campName}" style="width:18px;height:18px;cursor:pointer;accent-color:#0084ff;" onchange="calcSearchTotal()"></td>
+          <td style="padding: 8px;">ลงทะเบียนค่าย</td>
+          <td style="padding: 8px;">${item.campName} ${item.grade} (เต็มค่าย)</td>
+          <td style="padding: 8px; text-align: right;">
+             <input type="number" class="search_item_input" value="${item.costFull}" style="width: 80px; text-align:right;" oninput="calcSearchTotal()">
+          </td>
+        `;
+        tbody.appendChild(trFull);
+
+        const trDaily = document.createElement('tr');
+        trDaily.innerHTML = `
+          <td style="padding: 8px;"><input type="checkbox" class="search_item_checkbox" data-cost="${item.costDaily}" data-name="ค่าย (รายวัน): ${item.campName}" style="width:18px;height:18px;cursor:pointer;accent-color:#0084ff;" onchange="calcSearchTotal()"></td>
+          <td style="padding: 8px;">ลงทะเบียนค่าย</td>
+          <td style="padding: 8px;">${item.campName} ${item.grade} (รายวัน)</td>
+          <td style="padding: 8px; text-align: right;">
+             <input type="number" class="search_item_input" value="${item.costDaily}" style="width: 80px; text-align:right;" oninput="calcSearchTotal()">
+          </td>
+        `;
+        tbody.appendChild(trDaily);
+      });
+    }
+
+    if (!hasData) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 10px;">ไม่พบประวัติการลงทะเบียน</td></tr>';
+    }
+
+    document.getElementById('payment_search_result').style.display = 'block';
+    calcSearchTotal();
+  }
+
+  function calcSearchTotal() {
+    const checkboxes = document.querySelectorAll('.search_item_checkbox');
+    const inputs = document.querySelectorAll('.search_item_input');
+    let total = 0;
+    checkboxes.forEach((cb, i) => {
+      if (cb.checked) {
+        total += parseFloat(inputs[i].value) || 0;
+      }
+    });
+    document.getElementById('payment_search_total').textContent = '฿' + total.toLocaleString();
+    document.getElementById('payment_search_transfer').value = total > 0 ? total : '';
+  }
+
+  function submitSearchPayment() {
+    if (!searchSlipFileData) {
+      alert('กรุณาแนบสลิปโอนเงิน');
+      return;
+    }
+
+    const checkboxes = document.querySelectorAll('.search_item_checkbox');
+    const inputs = document.querySelectorAll('.search_item_input');
+    let selectedItems = [];
+    let total = 0;
+
+    checkboxes.forEach((cb, i) => {
+      if (cb.checked) {
+        let val = parseFloat(inputs[i].value) || 0;
+        total += val;
+        selectedItems.push(`${cb.dataset.name} (฿${val})`);
+      }
+    });
+
+    if (selectedItems.length === 0) {
+      alert('กรุณาเลือกรายการที่ต้องการชำระเงิน');
+      return;
+    }
+
+    const transferAmount = document.getElementById('payment_search_transfer').value;
+    if (!transferAmount || transferAmount <= 0) {
+      alert('กรุณาระบุจำนวนเงินที่โอน');
+      return;
+    }
+
+    const btn = document.getElementById('submit_search_btn');
+    const spinner = document.getElementById('btn_search_spinner');
+    const text = document.getElementById('btn_search_text');
+
+    btn.disabled = true;
+    spinner.style.display = 'inline-block';
+    text.textContent = 'กำลังส่งข้อมูล...';
+
+    const payload = {
+      std_name: document.getElementById('search_std_name').value,
+      selected_items: selectedItems.join(', '),
+      total_amount: total,
+      transfer_amount: transferAmount,
+      fileData: searchSlipFileData,
+      timestamp: new Date().toLocaleString('th-TH')
+    };
+
+    google.script.run
+      .withSuccessHandler(function() {
+        document.getElementById('form_view').style.display = 'none';
+        document.getElementById('success_view').style.display = 'block';
+        document.querySelector('#success_view h2').textContent = 'ส่งหลักฐานชำระเงินเรียบร้อย!';
+      })
+      .withFailureHandler(function(error) {
+        alert("เกิดข้อผิดพลาดในการส่งข้อมูล: " + error.message);
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        text.textContent = 'ส่งข้อมูลชำระเงิน';
+      })
+      .submitPaymentSlipSearch(payload);
+  }
+
 </script>
 </body>
 </html>
