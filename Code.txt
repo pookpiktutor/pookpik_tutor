@@ -17771,7 +17771,10 @@ function getCampsData(academicYear, campName) {
         std_name: row[5],
         std_nickname: row[6],
         parent_phone: row[7],
-        status: row[8]
+        status: row[8],
+        std_school: row[9] || '',
+        medical_condition: row[10] || '',
+        shirt_size: row[11] || ''
       };
       
       let match = true;

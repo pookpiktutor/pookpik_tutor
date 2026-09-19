@@ -1625,10 +1625,14 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                     <th style="width: 180px;">ชื่อ-นามสกุล</th>
                     <th style="width: 80px;">ชื่อเล่น</th>
                     <th style="width: 120px;">เบอร์โทรศัพท์</th>
+                    <th style="width: 150px;">โรงเรียน</th>
+                    <th style="width: 150px;">โรคประจำตัว/แพ้อาหาร</th>
+                    <th style="width: 100px;">Size เสื้อ</th>
+                    <th style="width: 100px;">สถานะ</th>
                   </tr>
                 </thead>
                 <tbody id="camps_table_body">
-                  <tr><td colspan="8" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  <tr><td colspan="12" class="text-center">กำลังโหลดข้อมูล...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -20718,7 +20722,7 @@ function loadCampsData() {
     }
     
     if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="text-center">ไม่มีข้อมูลนักเรียนค่ายในระบบ</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="12" class="text-center">ไม่มีข้อมูลนักเรียนค่ายในระบบ</td></tr>';
       return;
     }
     
@@ -20733,6 +20737,10 @@ function loadCampsData() {
       html += "<td>" + (item.std_name || "-") + "</td>";
       html += "<td>" + (item.std_nickname || "-") + "</td>";
       html += "<td>" + (item.parent_phone || "-") + "</td>";
+      html += "<td>" + (item.std_school || "-") + "</td>";
+      html += "<td>" + (item.medical_condition || "-") + "</td>";
+      html += "<td>" + (item.shirt_size || "-") + "</td>";
+      html += "<td><span class='badge bg-info'>" + (item.status || "-") + "</span></td>";
       html += "</tr>";
     });
     
