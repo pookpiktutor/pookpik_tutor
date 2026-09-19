@@ -583,7 +583,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       <div class="row-grid">
         <div class="form-group">
           <label class="form-label">เลือกค่ายที่สมัคร <span>*</span></label>
-          <select id="camp_name" class="form-select" required>
+          <select id="camp_name" class="form-select" required onchange="calculateCampCost()">
             <option value="">-- เลือกค่าย --</option>
             <option value="ค่ายปิดเทอมตุลาคม">ค่ายปิดเทอมตุลาคม</option>
             <option value="ค่ายห้องพิเศษ">ค่ายห้องพิเศษ</option>
@@ -604,7 +604,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       <div class="row-grid">
         <div class="form-group">
           <label class="form-label">ระดับชั้นเรียน <span>*</span></label>
-          <select id="camp_grade" class="form-select" required onchange="renderCampRooms()">
+          <select id="camp_grade" class="form-select" required onchange="renderCampRooms(); calculateCampCost();">
             <option value="">-- เลือกระดับชั้น --</option>
             <option value="ป.6">ป.6</option>
             <option value="ม.3">ม.3</option>
@@ -684,6 +684,24 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           <li style="margin-bottom: 6px;">เงินค่าขนม</li>
           <li style="margin-bottom: 0;"><strong>โทรศัพท์มือถือ</strong> งดนำอุปกรณ์อิเล็กทรอนิกส์ชนิดอื่นมานะคะ<br><span style="font-size: 0.85rem; color: #64748b;">(ทางคุณครูจะดูแลเรื่องการใช้โทรศัพท์ให้เด็ก ๆ ค่ะ)</span></li>
         </ul>
+      </div>
+
+      <div id="camp_cost_display" class="info-card" style="display: none; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <h3 style="color: #16a34a; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          ยอดชำระสำหรับค่ายที่เลือก
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <tr style="border-bottom: 1px dashed #bbf7d0;">
+            <td style="padding: 8px 0; color: #166534;">ราคาเหมาจ่าย (เต็มค่าย):</td>
+            <td id="camp_full_price" style="padding: 8px 0; text-align: right; font-weight: 700; color: #15803d; font-size: 1.1rem;">฿0</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #166534;">หรือ ราคาแบบรายวัน:</td>
+            <td id="camp_daily_price" style="padding: 8px 0; text-align: right; font-weight: 700; color: #15803d; font-size: 1.1rem;">฿0 / วัน</td>
+          </tr>
+        </table>
+        <p style="margin: 12px 0 0 0; font-size: 0.85rem; color: #166534;">* สามารถเลือกโอนเฉพาะยอดมัดจำ 1,000 บาท ก่อนได้ หรือโอนเต็มจำนวนตามยอดด้านบน</p>
       </div>
 
       <div class="info-card" style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
@@ -1431,6 +1449,32 @@ window.google.script.run = new Proxy({}, {
       opt.textContent = r;
       roomSelect.appendChild(opt);
     });
+  }
+
+  function calculateCampCost() {
+    const campName = document.getElementById('camp_name').value;
+    const campGrade = document.getElementById('camp_grade').value;
+    let costFull = 0;
+    let costDaily = 0;
+
+    if (campName.includes('ตุลาคม')) {
+      costFull = 4400; costDaily = 1700;
+    } else if (campName.includes('ห้องพิเศษ')) {
+      if (campGrade.includes('ป.6')) { costFull = 7900; costDaily = 1700; }
+      else if (campGrade.includes('ม.3')) { costFull = 8900; costDaily = 1900; }
+    } else if (campName.includes('ห้องปกติ')) {
+      if (campGrade.includes('ป.6')) { costFull = 7900; costDaily = 1700; }
+      else if (campGrade.includes('ม.3')) { costFull = 8900; costDaily = 1900; }
+    }
+
+    const costDisplay = document.getElementById('camp_cost_display');
+    if (costFull > 0) {
+      document.getElementById('camp_full_price').innerText = '฿' + costFull.toLocaleString();
+      document.getElementById('camp_daily_price').innerText = '฿' + costDaily.toLocaleString() + ' / วัน';
+      costDisplay.style.display = 'block';
+    } else {
+      costDisplay.style.display = 'none';
+    }
   }
 
   // Submit Camp Form
