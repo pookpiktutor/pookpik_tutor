@@ -12703,6 +12703,18 @@ function getSelectedSubjectKey(section, suffix) {
   return subj;
 }
 
+function getCurrentlySelectedTexts(sec, suf) {
+  const usedTexts = new Set();
+  for (let i = 1; i <= 6; i++) {
+    const inputId = sec + '_' + i + (suf ? '_' + suf : '');
+    const input = document.getElementById(inputId);
+    if (input && input.value) {
+      usedTexts.add(input.value.trim());
+    }
+  }
+  return usedTexts;
+}
+
 function populateFeedbackPresetSelects() {
 
   const sections = ['strength', 'improvement', 'recommendation'];
@@ -12745,7 +12757,15 @@ function populateFeedbackPresetSelects() {
 
               optgroup.label = levelLabels[lvl] || lvl;
 
+              const usedTexts = getCurrentlySelectedTexts(sec, suf);
+              const currentInputId = sec + '_' + i + (suf ? '_' + suf : '');
+              const currentInputVal = document.getElementById(currentInputId) ? document.getElementById(currentInputId).value.trim() : '';
+
               items.forEach((itemText, idx) => {
+                if (usedTexts.has(itemText) && itemText !== currentInputVal) {
+                  globalIdx++;
+                  return;
+                }
 
                 const opt = document.createElement('option');
 
@@ -12793,7 +12813,11 @@ function applyFeedbackPreset(selectEl, targetId) {
     const countId = targetId + '_count';
 
     updateCharCountBadge(targetEl, countId);
-
+    
+    // Regenerate preset dropdowns to hide used options
+    if (typeof populateFeedbackPresetSelects === 'function') {
+      populateFeedbackPresetSelects();
+    }
   }
 
 }
@@ -12898,6 +12922,10 @@ function clearFeedbackSection(section, suffix) {
 
   }
 
+  // Regenerate preset dropdowns to show cleared options again
+  if (typeof populateFeedbackPresetSelects === 'function') {
+    populateFeedbackPresetSelects();
+  }
 }
 
 
@@ -43139,6 +43167,7 @@ function populateTeacherCourseDropdown() {
       
       if (!c || !c.courseName || c.courseName.startsWith('NO_COURSES') || c.courseName.startsWith('ERR_')) return;
 const isDone = isCourseFullyEvaluated(c, evals);
+      if (isDone) return; // Do not show evaluated courses
 
       availableCount++;
 
