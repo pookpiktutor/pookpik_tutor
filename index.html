@@ -1607,8 +1607,8 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
               </div>
               
               <div class="panel-actions">
-                <a href="register.html" target="_blank" class="btn btn-success btn-sm" style="text-decoration: none; padding: 4px 10px; font-size: 0.8rem;">
-                  📋 เปิดหน้าลงทะเบียนค่าย
+                <a href="register.html" target="_blank" class="btn btn-success" style="text-decoration: none; padding: 6px 14px; font-size: 0.95rem; font-weight: bold; margin-left: 10px;">
+                  📋 ลงทะเบียนค่าย
                 </a>
               </div>
             </div>
@@ -1628,11 +1628,12 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                     <th style="width: 150px;">โรงเรียน</th>
                     <th style="width: 150px;">โรคประจำตัว/แพ้อาหาร</th>
                     <th style="width: 100px;">Size เสื้อ</th>
+                    <th style="width: 100px;">สลิป</th>
                     <th style="width: 100px;">สถานะ</th>
                   </tr>
                 </thead>
                 <tbody id="camps_table_body">
-                  <tr><td colspan="12" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  <tr><td colspan="13" class="text-center">กำลังโหลดข้อมูล...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -20722,7 +20723,7 @@ function loadCampsData() {
     }
     
     if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="12" class="text-center">ไม่มีข้อมูลนักเรียนค่ายในระบบ</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="13" class="text-center">ไม่มีข้อมูลนักเรียนค่ายในระบบ</td></tr>';
       return;
     }
     
@@ -20740,6 +20741,11 @@ function loadCampsData() {
       html += "<td>" + (item.std_school || "-") + "</td>";
       html += "<td>" + (item.medical_condition || "-") + "</td>";
       html += "<td>" + (item.shirt_size || "-") + "</td>";
+      if (item.slip_url && item.slip_url !== '-' && item.slip_url.trim() !== '') {
+        html += "<td><a href='" + item.slip_url + "' target='_blank' class='btn btn-sm btn-outline-primary'>ดูสลิป</a></td>";
+      } else {
+        html += "<td>-</td>";
+      }
       html += "<td><span class='badge bg-info'>" + (item.status || "-") + "</span></td>";
       html += "</tr>";
     });

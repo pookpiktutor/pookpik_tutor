@@ -17717,11 +17717,42 @@ function cleanEmptyRowsAndSyncPrivateSheets() {
 function saveCampStudentData(campData) {
   try {
     const db = getDb();
+    let slipUrl = '-';
+
+    if (campData.fileData && campData.fileData.base64) {
+      let folder;
+      const folderName = 'data_PookPik_Tutor_Slips';
+      const props = PropertiesService.getScriptProperties();
+      const folderId = props.getProperty('SLIP_FOLDER_ID');
+      
+      if (folderId) {
+        try {
+          folder = DriveApp.getFolderById(folderId);
+        } catch(e) {
+          folder = null;
+        }
+      }
+      if (!folder) {
+        const folders = DriveApp.getFoldersByName(folderName);
+        if (folders.hasNext()) {
+          folder = folders.next();
+        } else {
+          folder = DriveApp.createFolder(folderName);
+        }
+        props.setProperty('SLIP_FOLDER_ID', folder.getId());
+      }
+      const content = Utilities.base64Decode(campData.fileData.base64);
+      const blob = Utilities.newBlob(content, campData.fileData.mimeType, 'camp_slip_' + Date.now() + '_' + campData.fileData.fileName);
+      const file = folder.createFile(blob);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      slipUrl = file.getUrl();
+    }
+
     let sheet = db.getSheetByName('ลงทะเบียนค่าย');
     if (!sheet) {
       sheet = db.insertSheet('ลงทะเบียนค่าย');
-      sheet.appendRow(['Timestamp', 'ชื่อค่าย', 'ปีการศึกษา', 'ระดับชั้น', 'ห้องเรียน', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'เบอร์โทรศัพท์ผู้ปกครอง', 'สถานะ', 'โรงเรียน', 'โรคประจำตัว/แพ้อาหาร', 'Size เสื้อ']);
-      sheet.getRange("A1:L1").setFontWeight("bold").setBackground("#e0e7ff");
+      sheet.appendRow(['Timestamp', 'ชื่อค่าย', 'ปีการศึกษา', 'ระดับชั้น', 'ห้องเรียน', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'เบอร์โทรศัพท์ผู้ปกครอง', 'สถานะ', 'โรงเรียน', 'โรคประจำตัว/แพ้อาหาร', 'Size เสื้อ', 'สลิป']);
+      sheet.getRange("A1:M1").setFontWeight("bold").setBackground("#e0e7ff");
       sheet.setFrozenRows(1);
     }
     
@@ -17737,7 +17768,8 @@ function saveCampStudentData(campData) {
       campData.status || 'รอตรวจสอบ',
       campData.std_school || '',
       campData.medical_condition || '',
-      campData.shirt_size || ''
+      campData.shirt_size || '',
+      slipUrl
     ]);
     
     return { success: true };
@@ -17774,7 +17806,8 @@ function getCampsData(academicYear, campName) {
         status: row[8],
         std_school: row[9] || '',
         medical_condition: row[10] || '',
-        shirt_size: row[11] || ''
+        shirt_size: row[11] || '',
+        slip_url: row[12] || ''
       };
       
       let match = true;
