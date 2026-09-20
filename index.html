@@ -32197,11 +32197,7 @@ function printStaffSalarySummary() {
 
 
 
-  printWindow.document.write('<html><head><title>สรุปรายได้ครู</title>' + css + '<style>
-  .swal2-container { z-index: 99999 !important; }
-  .swal2-styled.swal2-confirm { background-color: var(--color-primary, #2b3a67) !important; }
-</style>
-</head><body>');
+  printWindow.document.write('<html><head><title>สรุปรายได้ครู</title>' + css + '<style>.swal2-container { z-index: 99999 !important; } .swal2-styled.swal2-confirm { background-color: var(--color-primary, #2b3a67) !important; }</style></head><body>');
 
 
 
@@ -32221,17 +32217,7 @@ function printStaffSalarySummary() {
 
 
 
-  printWindow.document.write('<script>
-window.alert = function(message) {
-    Swal.fire({
-        text: message,
-        confirmButtonText: 'ตกลง',
-        confirmButtonColor: '#2b3a67',
-        allowOutsideClick: false
-    });
-};
-</script>
-</body></html>');
+  printWindow.document.write('<script>window.alert = function(message) { Swal.fire({text: message, confirmButtonText: "ตกลง", confirmButtonColor: "#2b3a67", allowOutsideClick: false}); };<\\/script></body></html>');
 
 
 
