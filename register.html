@@ -332,6 +332,11 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
   }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+  .swal2-container { z-index: 99999 !important; }
+  .swal2-styled.swal2-confirm { background-color: var(--color-primary, #2b3a67) !important; }
+</style>
 </head>
 <body>
 
@@ -1772,6 +1777,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+</script>
+<script>
+window.alert = function(message) {
+    Swal.fire({
+        text: message,
+        confirmButtonText: 'ตกลง',
+        confirmButtonColor: '#2b3a67',
+        allowOutsideClick: false
+    });
+};
 </script>
 </body>
 
