@@ -1594,10 +1594,11 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                   <label for="camps_name_select" style="margin-bottom:0; font-size: 0.85rem;">ชื่อค่าย:</label>
                   <select id="camps_name_select" class="form-select form-select-sm" style="width: 180px;" onchange="loadCampsData()">
                     <option value="all">ทั้งหมด</option>
-                    <option value="ค่ายปิดเทอม(ตุลาคม)">ค่ายปิดเทอม(ตุลาคม)</option>
-                    <option value="ค่ายห้องพิเศษ(มีนาคม)">ค่ายห้องพิเศษ(มีนาคม)</option>
-                    <option value="ค่ายห้องปกติ(มีนาคม) รอบ1">ค่ายห้องปกติ(มีนาคม) รอบ1</option>
-                    <option value="ค่ายห้องปกติ(มีนาคม) รอบ2">ค่ายห้องปกติ(มีนาคม) รอบ2</option>
+                    <option value="ค่ายเตรียมความพร้อม(เมษายน)">ค่ายเตรียมความพร้อม(เมษายน)</option>
+                    <option value="ค่ายวางแผนติดspeed(ตุลาคม)">ค่ายวางแผนติดspeed(ตุลาคม)</option>
+                    <option value="ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)">ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)</option>
+                    <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1</option>
+                    <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2</option>
                   </select>
                 </div>
 
@@ -10364,7 +10365,10 @@ function handleLogin(e) {
       }
       setLoginError('เกิดข้อผิดพลาดของระบบ');
     }
-
+  } catch (errOuter) {
+    console.error('Fatal outer handleLogin error:', errOuter);
+    setLoginError('เกิดข้อผิดพลาดของระบบ');
+  }
 }
 
 

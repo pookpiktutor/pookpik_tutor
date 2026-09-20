@@ -585,10 +585,11 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           <label class="form-label">เลือกค่ายที่สมัคร <span>*</span></label>
           <select id="camp_name" class="form-select" required onchange="calculateCampCost()">
             <option value="">-- เลือกค่าย --</option>
-            <option value="ค่ายปิดเทอม(ตุลาคม)">ค่ายปิดเทอม(ตุลาคม)</option>
-            <option value="ค่ายห้องพิเศษ(มีนาคม)">ค่ายห้องพิเศษ(มีนาคม)</option>
-            <option value="ค่ายห้องปกติ(มีนาคม) รอบ1">ค่ายห้องปกติ(มีนาคม) รอบ1</option>
-            <option value="ค่ายห้องปกติ(มีนาคม) รอบ2">ค่ายห้องปกติ(มีนาคม) รอบ2</option>
+            <option value="ค่ายเตรียมความพร้อม(เมษายน)">ค่ายเตรียมความพร้อม(เมษายน)</option>
+            <option value="ค่ายวางแผนติดspeed(ตุลาคม)">ค่ายวางแผนติดspeed(ตุลาคม)</option>
+            <option value="ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)">ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)</option>
+            <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1</option>
+            <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2</option>
           </select>
         </div>
         
@@ -1457,7 +1458,9 @@ window.google.script.run = new Proxy({}, {
     let costFull = 0;
     let costDaily = 0;
 
-    if (campName.includes('ตุลาคม')) {
+    if (campName.includes('เมษายน')) {
+      costFull = 4400; costDaily = 1700;
+    } else if (campName.includes('ตุลาคม')) {
       costFull = 4400; costDaily = 1700;
     } else if (campName.includes('ห้องพิเศษ')) {
       if (campGrade.includes('ป.6')) { costFull = 7900; costDaily = 1700; }
