@@ -421,7 +421,12 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       <div class="row-grid">
         <div class="form-group">
           <label class="form-label">ชื่อ - นามสกุล นักเรียน <span>*</span></label>
-          <input type="text" id="std_name" class="form-input" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว">
+          <div style="display: flex; gap: 8px;">
+             <input type="text" id="std_name" class="form-input" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว" style="flex: 1;">
+             <button type="button" id="btn_search_student" class="btn btn-secondary" style="padding: 0 15px; border-radius: 6px; white-space: nowrap;">
+               <i class="fas fa-search"></i> ค้นหา
+             </button>
+           </div>
         </div>
         <div class="form-group">
           <label class="form-label">ชื่อเล่นนักเรียน <span>*</span></label>
