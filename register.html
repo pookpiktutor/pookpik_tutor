@@ -362,7 +362,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
   <div class="tabs-container">
     <button type="button" id="tab_regular" class="tab-btn active" onclick="switchRegistrationTab('regular')">ลงทะเบียนเรียนปกติ</button>
     <button type="button" id="tab_camp" class="tab-btn" onclick="switchRegistrationTab('camp')">ลงทะเบียนค่าย/กิจกรรม</button>
-    <button type="button" id="tab_payment" class="tab-btn" onclick="switchRegistrationTab(\'payment\')">แจ้งสลิปชำระเงิน</button>
+    <button type="button" id="tab_payment" class="tab-btn" onclick="switchRegistrationTab('payment')">แจ้งสลิปชำระเงิน</button>
   </div>
 
   <div id="regular_section">
@@ -1710,6 +1710,69 @@ window.google.script.run = new Proxy({}, {
       .submitPaymentSlipSearch(payload);
   }
 
+
+document.addEventListener('DOMContentLoaded', function() {
+    const btnSearchStudent = document.getElementById('btn_search_student');
+    if (btnSearchStudent) {
+        btnSearchStudent.addEventListener('click', function() {
+            const nameInput = document.getElementById('std_name');
+            const name = nameInput ? nameInput.value.trim() : '';
+            if (!name) {
+                alert("กรุณากรอกชื่อ - นามสกุลที่ต้องการค้นหา");
+                return;
+            }
+            
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังค้นหา...';
+            btn.disabled = true;
+
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    if (res && res.success && res.data) {
+                        const data = res.data;
+                        
+                        if (data.Grade) {
+                            const el = document.getElementById('std_grade');
+                            if(el) { el.value = data.Grade; el.dispatchEvent(new Event('change')); }
+                        }
+                        if (data.BranchLearn) {
+                            const el = document.getElementById('branch_learn');
+                            if(el) { el.value = data.BranchLearn; el.dispatchEvent(new Event('change')); }
+                        }
+                        if (data.Nickname) {
+                            const el = document.getElementById('std_nickname');
+                            if(el) el.value = data.Nickname;
+                        }
+                        if (data.School) {
+                            const el = document.getElementById('std_school');
+                            if(el) el.value = data.School;
+                        }
+                        if (data.Contact) {
+                            const el = document.getElementById('parent_contact');
+                            if(el) el.value = data.Contact;
+                        }
+                        if (data.LineID) {
+                            const el = document.getElementById('line_id');
+                            if(el) el.value = data.LineID;
+                        }
+                        alert("ค้นพบข้อมูลนักเรียนเรียบร้อยแล้ว ระบบได้เติมข้อมูลให้โดยอัตโนมัติ");
+                    } else {
+                        alert("ไม่พบข้อมูลนักเรียนในระบบ หรือพิมพ์ชื่อ-นามสกุลไม่ถูกต้อง");
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    alert("เกิดข้อผิดพลาดในการค้นหา: " + err.message);
+                })
+                .getStudentData(name);
+        });
+    }
+});
 </script>
 </body>
+
 </html>
