@@ -2086,8 +2086,6 @@ function clearActiveSession(username) {
 function verifyLogin(username, password) {
   const db = getDb();
   const cleanUsername = normalizeStr(username);
-  const cleanUsernameKey = cleanUserKey(cleanUsername);
-  
   const cleanPassword = normalizeStr(password);
   if (!cleanUsername || !cleanPassword) {
     return { success: false, error: 'กรุณากรอกชื่อผู้ใช้งานและรหัสผ่าน' };
@@ -2107,8 +2105,7 @@ function verifyLogin(username, password) {
     let nickname = rows[i][3] !== undefined && rows[i][3] !== null ? normalizeStr(rows[i][3]) : '';
     let profilePic = rows[i][4] !== undefined && rows[i][4] !== null ? normalizeStr(rows[i][4]) : '';
 
-    const dbUserKey = cleanUserKey(dbUsername);
-    if (dbUserKey === cleanUsernameKey) {
+    if (dbUsername === cleanUsername) {
       foundUser = true;
       if (dbPassword === cleanPassword) {
         if (isTeacherUser(dbUsername, nickname)) {
@@ -2130,13 +2127,13 @@ function verifyLogin(username, password) {
           } 
         };
       } else {
-        return { success: false, error: 'รหัสผ่านไม่ถูกต้อง (กรุณาตรวจสอบรหัสผ่านอีกครั้ง)' };
+        return { success: false, error: 'รหัสผ่านไม่ถูกต้อง' };
       }
     }
   }
 
   if (!foundUser) {
-    return { success: false, error: 'ไม่พบชื่อผู้ใช้งาน "' + cleanUsername + '" ในระบบ (กรุณาตรวจสอบชื่อผู้ใช้)' };
+    return { success: false, error: 'ชื่อผู้ใช้งานไม่ถูกต้อง' };
   }
 
   return { success: false, error: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง' };
@@ -18102,13 +18099,11 @@ function searchStudentPayment(studentName) {
            let cGrade = gradeIdx !== -1 ? String(row[gradeIdx] || '') : '';
            let costFull = 0;
            let costDaily = 0;
-           
-           if (cName.includes('ตุลาคม')) {
+           if (cName.includes('เมษายน')) {
              costFull = 4400; costDaily = 1700;
-           } else if (cName.includes('ห้องพิเศษ')) {
-             if (cGrade.includes('ป.6')) { costFull = 7900; costDaily = 1700; }
-             else if (cGrade.includes('ม.3')) { costFull = 8900; costDaily = 1900; }
-           } else if (cName.includes('ห้องปกติ')) {
+           } else if (cName.includes('ตุลาคม')) {
+             costFull = 4400; costDaily = 1700;
+           } else if (cName.includes('สานฝันปั้นน้อง')) {
              if (cGrade.includes('ป.6')) { costFull = 7900; costDaily = 1700; }
              else if (cGrade.includes('ม.3')) { costFull = 8900; costDaily = 1900; }
            }
