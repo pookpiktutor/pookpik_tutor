@@ -1347,10 +1347,8 @@ window.google.script.run = new Proxy({}, {
   function switchRegistrationTab(tab) {
     document.getElementById('tab_regular').classList.remove('active');
     document.getElementById('tab_camp').classList.remove('active');
-    document.getElementById('tab_payment').classList.remove('active');
     document.getElementById('regular_section').style.display = 'none';
     document.getElementById('camp_section').style.display = 'none';
-    document.getElementById('payment_section').style.display = 'none';
 
     if (tab === 'regular') {
       document.getElementById('tab_regular').classList.add('active');
@@ -1358,9 +1356,6 @@ window.google.script.run = new Proxy({}, {
     } else if (tab === 'camp') {
       document.getElementById('tab_camp').classList.add('active');
       document.getElementById('camp_section').style.display = 'block';
-    } else if (tab === 'payment') {
-      document.getElementById('tab_payment').classList.add('active');
-      document.getElementById('payment_section').style.display = 'block';
     }
   }
 
