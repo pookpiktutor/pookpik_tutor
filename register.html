@@ -1162,18 +1162,23 @@ window.google.script.run = new Proxy({}, {
   }
 
   function getCourseRound(courseName) {
-    if (!courseName) return 'None';
-    const clean = courseName.toString().trim();
-    // 1) "MIDTERM 1/2569" or "FINAL 1/2569"
-    let match = clean.match(/(MIDTERM\s+\d+\/\d+|FINAL\s+\d+\/\d+)/i);
-    if (match) return match[1].toUpperCase();
-
-    // 2) "SUMMER 2568"
-    match = clean.match(/(SUMMER\s+\d+)/i);
-    if (match) return match[1].toUpperCase();
-
-    return 'None';
+  if (!courseName) return 'None';
+  const clean = courseName.toString().trim();
+  
+  // 1) Dynamic Extraction: Extract text between Grade and Day of Week
+  const dynamicPattern = /(?:ป\.\d|ม\.\d|อนุบาล|แข่งขัน|ติว|แข่งขัน\s+\d|เตรียมสอบ)\s+(.*?)\s+(?:จันทร์|อังคาร|พุธ|พฤหัสบดี|พฤหัสฯ|พฤหัส|ศุกร์|เสาร์|อาทิตย์|จ\.|อ\.|พ\.|พฤ\.|ศ\.|ส\.|อา\.)/i;
+  let dynamicMatch = clean.match(dynamicPattern);
+  if (dynamicMatch && dynamicMatch[1]) {
+    let extracted = dynamicMatch[1].trim();
+    if (extracted.length > 0) return extracted.toUpperCase();
   }
+
+  // 2) Fallback explicit regex
+  let match = clean.match(/(MIDTERM\s+\d+\/\d+|FINAL\s+\d+\/\d+|ปิดเทอม\s+[^\s]+\/\d+|ปิดเทอม\s+[^\s]+|SUMMER\s+\d+)/i);
+  if (match) return match[1].toUpperCase();
+
+  return 'None';
+}
 
   function renderCourseCheckboxes() {
   const tbody = document.getElementById('fees_list_tbody');
