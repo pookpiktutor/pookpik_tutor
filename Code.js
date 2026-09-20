@@ -1996,7 +1996,7 @@ function isTeacherUser(username, nickname) {
   if (cleanUsername === 'admin' || cleanUsername === 'staff') return false;
   if (!cleanUsername) return false;
 
-  if (cleanUsername.startsWith('tutor') || cleanUsername.startsWith('tu') || cleanUsername.includes('tutor') || cleanUsername.includes('ครู') || cleanUsername.includes('teacher')) {
+  if (cleanUsername.startsWith('tutor') || cleanUsername.startsWith('tu') || cleanUsername.includes('tutor') || cleanUsername.includes('totur') || cleanUsername.includes('ครู') || cleanUsername.includes('teacher')) {
     return true;
   }
 
@@ -17831,6 +17831,30 @@ function getCampsData(academicYear, campName) {
 }
 
 
+function updateCampStatus(timestamp, newStatus) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return {success: false, error: 'ไม่พบชีตลงทะเบียนค่าย'};
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return {success: false, error: 'ไม่มีข้อมูลในชีต'};
+    
+    for (let i = 1; i < data.length; i++) {
+      // Column A (index 0) is timestamp
+      if (String(data[i][0]) === String(timestamp)) {
+        // Status is Column I (index 8)
+        sheet.getRange(i + 1, 9).setValue(newStatus);
+        return {success: true};
+      }
+    }
+    
+    return {success: false, error: 'ไม่พบข้อมูลนักเรียนที่ต้องการอัปเดต'};
+  } catch (e) {
+    Logger.log('ERROR in updateCampStatus: ' + e.message);
+    return {success: false, error: e.message};
+  }
+}
 
 
 function syncSheet3CourseNames() {
