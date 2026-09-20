@@ -735,7 +735,7 @@ function showLoginScreen() {
 
 function handleLogin(e) {
 
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
 
   const user = document.getElementById('login_username').value.trim();
 
