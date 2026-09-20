@@ -416,14 +416,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         </div>
       </div>
 
-      <div class="row-grid" id="course_round_container" style="display: none;">
-        <div class="form-group" style="grid-column: span 2;">
-          <label class="form-label">กลุ่มหลักตามตารางคอร์ส <span>*</span></label>
-          <select id="course_round" class="form-select" onchange="renderCourseCheckboxes()">
-            <option value="">-- เลือกรอบเรียน --</option>
-          </select>
-        </div>
-      </div>
+      
 
       <div class="row-grid">
         <div class="form-group">
@@ -1147,29 +1140,6 @@ window.google.script.run = new Proxy({}, {
           window._outstandingCourses = outstandingCourses;
 
           // Check if classType is "กลุ่มหลัก" and populate round
-          const courseRoundContainer = document.getElementById('course_round_container');
-          const courseRoundSelect = document.getElementById('course_round');
-          
-          if (classType === 'กลุ่มหลัก' && courseRoundContainer && courseRoundSelect) {
-            const roundsSet = new Set();
-            outstandingCourses.forEach(c => {
-               const r = getCourseRound(c.courseName);
-               if (r !== 'None') roundsSet.add(r);
-            });
-            courseRoundSelect.innerHTML = '<option value="">-- เลือกรอบเรียน --</option>';
-            const roundsArray = Array.from(roundsSet);
-            roundsArray.forEach(r => {
-               const opt = document.createElement('option');
-               opt.value = r;
-               opt.textContent = r;
-               courseRoundSelect.appendChild(opt);
-            });
-            courseRoundContainer.style.display = 'grid'; // because row-grid uses display: grid
-          } else {
-            if (courseRoundContainer) courseRoundContainer.style.display = 'none';
-            if (courseRoundSelect) courseRoundSelect.value = '';
-          }
-
           renderCourseCheckboxes();
         } else {
           var tr = document.createElement('tr');
@@ -1206,36 +1176,52 @@ window.google.script.run = new Proxy({}, {
   }
 
   function renderCourseCheckboxes() {
-    const tbody = document.getElementById('fees_list_tbody');
-    tbody.innerHTML = '';
+  const tbody = document.getElementById('fees_list_tbody');
+  tbody.innerHTML = '';
+
+  let displayedCourses = window._outstandingCourses || [];
+  
+  const classType = document.getElementById('class_type').value;
+  if (classType === 'กลุ่มหลัก') {
+    const d = new Date();
+    const m = d.getMonth() + 1;
+    const currentYearStr = (d.getFullYear() + 543).toString();
     
-    const courseRoundSelect = document.getElementById('course_round');
-    const selectedRound = courseRoundSelect ? courseRoundSelect.value : '';
+    let targetRounds = [];
+    if (m >= 2 && m <= 4) targetRounds.push('SUMMER');
+    if (m >= 4 && m <= 7) targetRounds.push('MIDTERM 1');
+    if (m >= 7 && m <= 9) targetRounds.push('FINAL 1');
+    if (m >= 9 && m <= 10) targetRounds.push('ปิดเทอม');
+    if (m >= 10 && m <= 12) targetRounds.push('MIDTERM 2');
+    if (m === 12 || m <= 2) targetRounds.push('FINAL 2');
     
-    let displayedCourses = window._outstandingCourses || [];
-    
-    if (selectedRound && selectedRound !== '') {
-       displayedCourses = displayedCourses.filter(c => getCourseRound(c.courseName) === selectedRound);
-    }
-    
-    if (displayedCourses.length === 0) {
-       var tr = document.createElement('tr');
-       var td = document.createElement('td');
-       td.colSpan = 4;
-       td.style.padding = '20px';
-       td.style.textAlign = 'center';
-       td.style.color = '#64748b';
-       td.textContent = 'ไม่พบคอร์สเรียนที่ตรงกับรอบที่เลือก';
-       tr.appendChild(td);
-       tbody.appendChild(tr);
-       
-       document.getElementById('select_all_courses').checked = false;
-       document.getElementById('fees_grand_total').textContent = '฿0.00';
-       document.getElementById('fees_grand_total').style.color = '#16a34a';
-       document.getElementById('selected_outstanding_courses').value = '';
-       document.getElementById('transfer_amount').value = '';
-       return;
-    }
+    displayedCourses = displayedCourses.filter(c => {
+      const round = getCourseRound(c.courseName).toUpperCase();
+      const matchesYear = round.includes(currentYearStr);
+      const matchesRound = targetRounds.some(tr => round.includes(tr));
+      return matchesYear && matchesRound;
+    });
+  }
+
+  if (displayedCourses.length === 0) {
+    var tr = document.createElement('tr');
+    var td = document.createElement('td');
+    td.colSpan = 4;
+    td.style.padding = '20px';
+    td.style.textAlign = 'center';
+    td.style.color = '#64748b';
+    td.textContent = 'ไม่พบคอร์สเรียนที่เปิดสอนสำหรับเงื่อนไขนี้ (กรองตามรอบเดือนปัจจุบัน)';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+
+    document.getElementById('select_all_courses').checked = false;
+    document.getElementById('fees_grand_total').textContent = '฿0.00';
+    document.getElementById('fees_grand_total').style.color = '#16a34a';
+    document.getElementById('selected_outstanding_courses').value = '';
+    document.getElementById('transfer_amount').value = '';
+    return;
+  }
+
 
     displayedCourses.forEach(function(c, idx) {
       // Find original index to map properly for data-index
