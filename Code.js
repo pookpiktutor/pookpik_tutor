@@ -15763,13 +15763,10 @@ function submitPublicRegistration(studentData, fileData) {
     
 
     // 3. Save directly to StatusDB
-
     const std = {
-
+      id: studentData.id || "",
       name: studentData.name,
-
       nickname: studentData.nickname,
-
       school: studentData.school || '-',
 
       contact: studentData.contact,
@@ -17753,7 +17750,16 @@ function saveCampStudentData(campData) {
       sheet.setFrozenRows(1);
     }
     
-    sheet.appendRow([
+    const data = sheet.getDataRange().getValues();
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][1] === (campData.camp_name || '') && data[i][2] === (campData.camp_year || '') && data[i][5] === (campData.std_name || '')) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+
+    const rowData = [
       campData.timestamp || new Date().toLocaleString('th-TH'),
       campData.camp_name || '',
       campData.camp_year || '',
@@ -17767,7 +17773,17 @@ function saveCampStudentData(campData) {
       campData.medical_condition || '',
       campData.shirt_size || '',
       slipUrl
-    ]);
+    ];
+
+    if (rowIndex > -1) {
+      // If slip wasn't provided, try to keep the old slip if we are just updating data
+      if (slipUrl === '-' && data[rowIndex - 1][12]) {
+         rowData[12] = data[rowIndex - 1][12];
+      }
+      sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
+    } else {
+      sheet.appendRow(rowData);
+    }
     
     return { success: true };
   } catch (e) {

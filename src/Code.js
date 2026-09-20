@@ -15672,13 +15672,10 @@ function submitPublicRegistration(studentData, fileData) {
     
 
     // 3. Save directly to StatusDB
-
     const std = {
-
+      id: studentData.id || "",
       name: studentData.name,
-
       nickname: studentData.nickname,
-
       school: studentData.school || '-',
 
       contact: studentData.contact,

@@ -367,11 +367,11 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
   <div class="tabs-container">
     <button type="button" id="tab_regular" class="tab-btn active" onclick="switchRegistrationTab('regular')">ลงทะเบียนเรียนปกติ</button>
     <button type="button" id="tab_camp" class="tab-btn" onclick="switchRegistrationTab('camp')">ลงทะเบียนค่าย/กิจกรรม</button>
-    <button type="button" id="tab_payment" class="tab-btn" onclick="switchRegistrationTab('payment')">แจ้งสลิปชำระเงิน</button>
   </div>
 
   <div id="regular_section">
     <form id="reg_form">
+      <input type="hidden" id="student_id" value="">
       <div class="row-grid">
         <div class="form-group">
           <label class="form-label">ระดับชั้นเรียน <span>*</span></label>
@@ -432,6 +432,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                <i class="fas fa-search" style="margin-right: 5px;"></i> ค้นหา
              </button>
            </div>
+           <div style="font-size: 0.8rem; color: var(--color-primary); margin-top: 5px;">* สามารถกดค้นหาจากชื่อ-นามสกุล เพื่อดึงข้อมูลเดิมขึ้นมาได้</div>
         </div>
         <div class="form-group">
           <label class="form-label">ชื่อเล่นนักเรียน <span>*</span></label>
@@ -580,8 +581,10 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
   </div> <!-- End regular_section -->
 
   <!-- CAMP SECTION -->
+  <!-- CAMP SECTION -->
   <div id="camp_section" style="display: none;">
     <form id="camp_form">
+      <input type="hidden" id="camp_student_id" value="">
       
       <div class="row-grid">
         <div class="form-group">
@@ -624,7 +627,13 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
 
       <div class="form-group">
         <label class="form-label">ชื่อ-นามสกุล นักเรียน <span>*</span></label>
-        <input type="text" id="camp_std_name" class="form-input" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว">
+        <div style="display: flex; gap: 8px;">
+           <input type="text" id="camp_std_name" class="form-input" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว" style="flex: 1;">
+           <button type="button" id="btn_search_student_camp" class="btn btn-secondary" style="padding: 0 15px; border-radius: 6px; white-space: nowrap; width: auto; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;">
+             <i class="fas fa-search" style="margin-right: 5px;"></i> ค้นหา
+           </button>
+         </div>
+         <div style="font-size: 0.8rem; color: var(--color-primary); margin-top: 5px;">* สามารถกดค้นหาจากชื่อ-นามสกุล เพื่อดึงข้อมูลเดิมขึ้นมาได้</div>
       </div>
 
       <div class="form-group">
@@ -744,72 +753,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
     </form>
   </div>
 
-  <!-- PAYMENT SEARCH SECTION -->
-  <div id="payment_section" style="display: none;">
-    <form id="payment_search_form">
-      <div class="row-grid">
-        <div class="form-group" style="grid-column: span 2;">
-          <label class="form-label">ค้นหาด้วย ชื่อ-นามสกุล <span>*</span></label>
-          <div style="display: flex; gap: 10px;">
-              <input type="text" id="search_std_name" class="form-input" required placeholder="กรอกชื่อ-นามสกุลนักเรียน" style="flex: 1;">
-              <button type="button" class="btn" onclick="execSearchPayment()" style="width: auto; padding: 0 20px;">
-                <span class="spinner" id="search_spinner" style="display:none;"></span> 🔍 ค้นหา
-              </button>
-          </div>
-        </div>
-      </div>
-      
-      <div id="payment_search_result" style="display: none; margin-top: 20px;">
-        <h4 style="color: var(--color-primary); font-size: 1.1rem; margin-bottom: 10px;">รายการที่พบ (ติ๊กเพื่อเลือกชำระ)</h4>
-        <div class="table-responsive">
-          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
-            <thead>
-              <tr style="border-bottom: 2px solid #cbd5e1; color: #475569;">
-                <th style="padding: 8px;">เลือก</th>
-                <th style="padding: 8px;">รายการ</th>
-                <th style="padding: 8px;">รายละเอียด</th>
-                <th style="padding: 8px; text-align: right;">ค่าใช้จ่าย</th>
-              </tr>
-            </thead>
-            <tbody id="payment_search_tbody">
-              <!-- Dynamically populated -->
-            </tbody>
-            <tfoot>
-              <tr style="border-top: 2px dashed #cbd5e1; font-weight: 700; color: var(--color-primary-hover);">
-                <td colspan="3" style="padding: 10px 8px; text-align: right;">ยอดรวมที่เลือกชำระ:</td>
-                <td id="payment_search_total" style="padding: 10px 8px; text-align: right; font-size: 1.1rem; color: var(--color-danger);">฿0.00</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
 
-        <div class="form-group" style="margin-top:20px;">
-          <label class="form-label">จำนวนเงินที่โอน (บาท) <span>*</span></label>
-          <input type="number" id="payment_search_transfer" class="form-input" required placeholder="ยอดเงินตามสลิป">
-        </div>
-
-        <div class="form-group" id="payment_search_upload_group">
-          <label class="form-label">แนบหลักฐานการโอนเงิน (สลิป) <span>*</span></label>
-          <div class="upload-area" onclick="document.getElementById('search_file_input').click()">
-            <div class="upload-icon">📸</div>
-            <div class="upload-text" id="search_upload_status">คลิกเพื่อเลือกรูปภาพสลิป</div>
-            <input type="file" id="search_file_input" style="display: none;" accept="image/*" onchange="handleSearchFileSelect(event)">
-          </div>
-          <div id="search_preview_container" style="display: none; margin-top: 10px; text-align: center;">
-            <div style="font-size: 0.8rem; color: var(--text-muted);">ตัวอย่างรูปภาพสลิป:</div>
-            <img id="search_preview_img" src="" style="max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 8px;">
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-top: 20px;">
-          <button type="button" id="submit_search_btn" class="btn" onclick="submitSearchPayment()">
-            <span class="spinner" id="btn_search_spinner"></span>
-            <span id="btn_search_text">ส่งข้อมูลชำระเงิน</span>
-          </button>
-        </div>
-      </div>
-    </form>
-  </div>
   </div>
 </div>
 
@@ -1342,6 +1286,7 @@ window.google.script.run = new Proxy({}, {
 
       const outstandingCourses = document.getElementById('selected_outstanding_courses').value;
       const studentData = {
+        id: document.getElementById('student_id') ? document.getElementById('student_id').value : "",
         name: name,
         nickname: nickname,
         school: school,
@@ -1495,6 +1440,7 @@ window.google.script.run = new Proxy({}, {
     text.textContent = 'กำลังส่งข้อมูล...';
 
     const campData = {
+      id: document.getElementById('camp_student_id') ? document.getElementById('camp_student_id').value : "",
       fileData: campSlipFileData,
       timestamp: new Date().toLocaleString('th-TH'),
       camp_name: document.getElementById('camp_name').value,
@@ -1739,6 +1685,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (res && res.success && res.data) {
                         const data = res.data;
                         
+                        if (data.id) {
+                            const el = document.getElementById('student_id');
+                            if(el) el.value = data.id;
+                        }
                         if (data.Grade) {
                             const el = document.getElementById('std_grade');
                             if(el) { el.value = data.Grade; el.dispatchEvent(new Event('change')); }
@@ -1762,6 +1712,58 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (data.LineID) {
                             const el = document.getElementById('line_id');
                             if(el) el.value = data.LineID;
+                        }
+                        alert("ค้นพบข้อมูลนักเรียนเรียบร้อยแล้ว ระบบได้เติมข้อมูลให้โดยอัตโนมัติ");
+                    } else {
+                        alert("ไม่พบข้อมูลนักเรียนในระบบ หรือพิมพ์ชื่อ-นามสกุลไม่ถูกต้อง");
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    alert("เกิดข้อผิดพลาดในการค้นหา: " + err.message);
+                })
+                .getStudentData(name);
+        });
+    }
+
+    const btnSearchStudentCamp = document.getElementById('btn_search_student_camp');
+    if (btnSearchStudentCamp) {
+        btnSearchStudentCamp.addEventListener('click', function() {
+            const nameInput = document.getElementById('camp_std_name');
+            const name = nameInput.value.trim();
+            if (!name) {
+                alert("กรุณากรอกชื่อ-นามสกุลนักเรียนก่อนค้นหา");
+                return;
+            }
+
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังค้นหา...';
+            btn.disabled = true;
+
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    if (res && res.success && res.data) {
+                        const data = res.data;
+                        
+                        if (data.id) {
+                            const el = document.getElementById('camp_student_id');
+                            if(el) el.value = data.id;
+                        }
+                        if (data.Nickname) {
+                            const el = document.getElementById('camp_std_nickname');
+                            if(el) el.value = data.Nickname;
+                        }
+                        if (data.School) {
+                            const el = document.getElementById('camp_std_school');
+                            if(el) el.value = data.School;
+                        }
+                        if (data.Contact) {
+                            const el = document.getElementById('camp_parent_contact');
+                            if(el) el.value = data.Contact;
                         }
                         alert("ค้นพบข้อมูลนักเรียนเรียบร้อยแล้ว ระบบได้เติมข้อมูลให้โดยอัตโนมัติ");
                     } else {
