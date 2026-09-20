@@ -477,18 +477,10 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
 
           // Check Name / Nickname match
           const rawStdName = String(item.studentName || item.student_name || item.name || '');
-          const rawStdNick = String(item.nickname || item.studentNickname || '');
-          
           const stdNameClean = cleanNick(rawStdName);
-          const stdNickClean = cleanNick(rawStdNick);
           
-          const nameMatch = stdNameClean.includes(cleanedQuery) || 
-                            cleanedQuery.includes(stdNameClean) ||
-                            stdNickClean.includes(cleanedQuery) || 
-                            cleanedQuery.includes(stdNickClean) ||
-                            (cleanedQuery.length >= 2 && stdNickClean.length >= 2 && cleanedQuery.includes(stdNickClean)) ||
-                            rawStdName.toLowerCase().includes(studentName.toLowerCase()) ||
-                            rawStdNick.toLowerCase().includes(studentName.toLowerCase());
+          const nameMatch = (stdNameClean === cleanedQuery) || 
+                            (rawStdName.trim().toLowerCase() === studentName.trim().toLowerCase());
 
           return nameMatch;
         });
