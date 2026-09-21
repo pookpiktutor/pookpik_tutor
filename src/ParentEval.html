@@ -683,7 +683,7 @@ function submitSatisfactionSurvey() {
 
 function showSatisfactionSurvey() {
   const container = document.getElementById('resultsContainer');
-  let html = 
+  let html = `
     <div style="background: #fff; border-radius: 20px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center;">
       <h3 style="font-size: 20px; font-weight: 700; color: #2d3748; margin-bottom: 10px;">กรุณาประเมินความพึงพอใจ</h3>
       <p style="color: #718096; font-size: 14.5px; margin-bottom: 20px;">เพื่อให้เราพัฒนาการบริการให้ดียิ่งขึ้น รบกวนเวลาให้คะแนนโรงเรียนกวดวิชาบ้านครูปุ๊กปิ๊กด้วยนะครับ (ทำเพียงครั้งเดียว)</p>
@@ -703,7 +703,7 @@ function showSatisfactionSurvey() {
           .survey-stars label { font-size: 28px; }
         }
       </style>
-  ;
+  `;
   
   const criteria = [
     { id: 'ratingLocation', label: '🏫 ด้านสถานที่' },
@@ -714,21 +714,21 @@ function showSatisfactionSurvey() {
   ];
   
   criteria.forEach(c => {
-    html += 
+    html += `
       <div class="survey-row">
-        <span class="survey-label"></span>
+        <span class="survey-label">${c.label}</span>
         <div class="survey-stars">
-          <input type="radio" id="5" name="" value="5"><label for="5">★</label>
-          <input type="radio" id="4" name="" value="4"><label for="4">★</label>
-          <input type="radio" id="3" name="" value="3"><label for="3">★</label>
-          <input type="radio" id="2" name="" value="2"><label for="2">★</label>
-          <input type="radio" id="1" name="" value="1"><label for="1">★</label>
+          <input type="radio" id="${c.id}5" name="${c.id}" value="5"><label for="${c.id}5">★</label>
+          <input type="radio" id="${c.id}4" name="${c.id}" value="4"><label for="${c.id}4">★</label>
+          <input type="radio" id="${c.id}3" name="${c.id}" value="3"><label for="${c.id}3">★</label>
+          <input type="radio" id="${c.id}2" name="${c.id}" value="2"><label for="${c.id}2">★</label>
+          <input type="radio" id="${c.id}1" name="${c.id}" value="1"><label for="${c.id}1">★</label>
         </div>
       </div>
-    ;
+    `;
   });
   
-  html += 
+  html += `
       <div style="text-align: left; margin-bottom: 20px; margin-top: 20px;">
         <label class="survey-label" style="display: block; margin-bottom: 8px;">💬 ข้อเสนอแนะเพิ่มเติม (ถ้ามี)</label>
         <textarea id="surveyComments" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; outline: none; font-family: inherit; resize: vertical; box-sizing: border-box;" rows="3" placeholder="ระบุข้อเสนอแนะ..."></textarea>
@@ -737,7 +737,7 @@ function showSatisfactionSurvey() {
         ส่งแบบประเมินและดูผลการเรียน
       </button>
     </div>
-  ;
+  `;
   container.innerHTML = html;
 }
 
