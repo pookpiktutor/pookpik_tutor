@@ -613,18 +613,18 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       ];
       
       criteria.forEach(c => {
-        html += \`
+        html += `
           <div class="survey-row">
-            <span class="survey-label">\${c.label}</span>
+            <span class="survey-label">${c.label}</span>
             <div class="survey-stars">
-              <input type="radio" id="\${c.id}5" name="\${c.id}" value="5"><label for="\${c.id}5">★</label>
-              <input type="radio" id="\${c.id}4" name="\${c.id}" value="4"><label for="\${c.id}4">★</label>
-              <input type="radio" id="\${c.id}3" name="\${c.id}" value="3"><label for="\${c.id}3">★</label>
-              <input type="radio" id="\${c.id}2" name="\${c.id}" value="2"><label for="\${c.id}2">★</label>
-              <input type="radio" id="\${c.id}1" name="\${c.id}" value="1"><label for="\${c.id}1">★</label>
+              <input type="radio" id="${c.id}5" name="${c.id}" value="5"><label for="${c.id}5">★</label>
+              <input type="radio" id="${c.id}4" name="${c.id}" value="4"><label for="${c.id}4">★</label>
+              <input type="radio" id="${c.id}3" name="${c.id}" value="3"><label for="${c.id}3">★</label>
+              <input type="radio" id="${c.id}2" name="${c.id}" value="2"><label for="${c.id}2">★</label>
+              <input type="radio" id="${c.id}1" name="${c.id}" value="1"><label for="${c.id}1">★</label>
             </div>
           </div>
-        \`;
+        `;
       });
       
       html += `
