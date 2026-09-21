@@ -10615,7 +10615,18 @@ function getClassLogsForTeacher(teacherName, nickname) {
 
     
 
-    return logs.reverse();
+        logs.sort((a, b) => {
+      const parseDate = (dStr) => {
+        if (!dStr) return 0;
+        const parts = dStr.split('/');
+        if (parts.length === 3) {
+          return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+        }
+        return new Date(dStr).getTime() || 0;
+      };
+      return parseDate(b.date) - parseDate(a.date);
+    });
+    return logs;
 
   } catch (err) {
 
