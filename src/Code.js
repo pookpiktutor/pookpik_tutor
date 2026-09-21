@@ -17613,3 +17613,32 @@ function cleanEmptyRowsAndSyncPrivateSheets() {
   
   Browser.msgBox('ทำความสะอาดสำเร็จ', 'ทำความสะอาดชีตจำนวน ' + cleanedSheetsCount + ' ชีต, ลบแถวว่างทิ้งไป ' + removedRowsCount + ' แถว\n\nสถานะการซิงค์:\n' + syncResult.message, Browser.Buttons.OK);
 }
+
+
+// --- Satisfaction Survey ---
+function saveSatisfactionSurvey(data) {
+  try {
+    const db = getDb();
+    let sheet = db.getSheetByName('SatisfactionSurveyDB');
+    if (!sheet) {
+      sheet = db.insertSheet('SatisfactionSurveyDB');
+      sheet.getRange(1, 1, 1, 9).setValues([['Timestamp', 'Name', 'Phone', 'Location', 'Staff', 'Teachers', 'Atmosphere', 'Content', 'Comments']]);
+      sheet.getRange('A1:I1').setFontWeight('bold').setBackground('#f3f4f6');
+    }
+    const row = [
+      new Date(),
+      data.name || '',
+      data.phone || '',
+      data.location || 0,
+      data.staff || 0,
+      data.teachers || 0,
+      data.atmosphere || 0,
+      data.content || 0,
+      data.comments || ''
+    ];
+    sheet.appendRow(row);
+    return { success: true };
+  } catch (err) {
+    return { error: err.message };
+  }
+}
