@@ -10615,7 +10615,7 @@ function getClassLogsForTeacher(teacherName, nickname) {
 
     
 
-    return logs;
+    return logs.reverse();
 
   } catch (err) {
 
