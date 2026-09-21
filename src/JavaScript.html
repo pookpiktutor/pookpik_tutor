@@ -16023,6 +16023,20 @@ function isCourseFullyEvaluated(c, evals) {
   return false;
 }
 
+// Month-based course keyword filter for evaluations
+// Returns a keyword filter string for the given month, or null if no filter (show all)
+function getEvalCourseFilterByMonth(month) {
+  switch (month) {
+    case 4:  return 'summer';           // เมษายน → Summer
+    case 7:  return 'midterm 1';        // กรกฎาคม → MIDTERM 1/...
+    case 9:  return 'final 1';          // กันยายน → FINAL 1/...
+    case 10: return 'ปิดเทอม ต.ค.';     // ตุลาคม → ปิดเทอม ต.ค./...
+    case 12: return 'midterm 2';        // ธันวาคม → MIDTERM 2/...
+    case 2:  return 'final 2';          // กุมภาพันธ์ → FINAL 2/...
+    default: return null;               // เดือนอื่นๆ → แสดงทั้งหมด
+  }
+}
+
 function populateTeacherCourseDropdown() {
   const courseSelect = document.getElementById('eval_course');
   const studentSelect = document.getElementById('eval_student');
@@ -16031,12 +16045,34 @@ function populateTeacherCourseDropdown() {
   courseSelect.innerHTML = '<option value="">-- เลือกคอร์สเรียน --</option>';
   if (studentSelect) studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
 
+  // Determine month-based course filter from eval_date
+  let monthFilter = null;
+  const evalDateEl = document.getElementById('eval_date');
+  if (evalDateEl && evalDateEl.value) {
+    const dateParts = evalDateEl.value.split('-'); // yyyy-mm-dd
+    if (dateParts.length === 3) {
+      const selectedMonth = parseInt(dateParts[1]);
+      monthFilter = getEvalCourseFilterByMonth(selectedMonth);
+    }
+  }
+
   if (Array.isArray(state._teacherCourses)) {
     const evals = state.evaluations || [];
     let availableCount = 0;
     
     state._teacherCourses.forEach(function(c, idx) {
       if (!c || !c.courseName || c.courseName.startsWith('NO_COURSES') || c.courseName.startsWith('ERR_')) return;
+      
+      // Apply month-based course filter
+      if (monthFilter) {
+        const courseNameLower = (c.courseName || '').toLowerCase();
+        const displayNameLower = (c.displayCourseName || '').toLowerCase();
+        const filterLower = monthFilter.toLowerCase();
+        if (!courseNameLower.includes(filterLower) && !displayNameLower.includes(filterLower)) {
+          return; // Skip courses that don't match the month filter
+        }
+      }
+      
       const isDone = isCourseFullyEvaluated(c, evals);
       availableCount++;
       const opt = document.createElement('option');
@@ -16045,7 +16081,9 @@ function populateTeacherCourseDropdown() {
       courseSelect.appendChild(opt);
     });
 
-    if (availableCount === 0) {
+    if (availableCount === 0 && monthFilter) {
+      courseSelect.innerHTML = '<option value="" disabled selected>-- ไม่พบคอร์สที่ตรงกับเดือนที่เลือก --</option>';
+    } else if (availableCount === 0) {
       courseSelect.innerHTML = '<option value="" disabled selected>-- ไม่พบตารางคอร์สเรียนของคุณครู --</option>';
     }
   }
@@ -16069,7 +16107,13 @@ function initEvaluationForm() {
 
   const evalDateEl = document.getElementById('eval_date');
 
-  if (evalDateEl) evalDateEl.value = dateStr;
+  if (evalDateEl) {
+    evalDateEl.value = dateStr;
+    // Re-populate course dropdown when date changes (month-based filtering)
+    evalDateEl.addEventListener('change', function() {
+      populateTeacherCourseDropdown();
+    });
+  }
 
   
 
