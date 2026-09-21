@@ -560,24 +560,19 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         comments: document.getElementById('surveyComments') ? document.getElementById('surveyComments').value : ''
       };
     
+      // ให้ปิดหน้าต่างและแสดงผลการเรียนทันที โดยไม่ต้องรอผลลัพธ์จากเซิร์ฟเวอร์
+      localStorage.setItem('pookpik_survey_done', 'true');
+      showEvaluationCards(window.pendingEvals, window.pendingQueryName);
+      
       const GAS_URL = "https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec";
       fetch(GAS_URL, {
         method: 'POST',
+        mode: 'no-cors', // สำคัญมาก เพื่อไม่ให้โดนบล็อก CORS จาก Google Apps Script ตอนยิงเบื้องหลัง
         body: JSON.stringify({
           functionName: 'saveSatisfactionSurvey',
           arguments: [data]
         })
-      })
-      .then(res => res.json())
-      .then(res => {
-        localStorage.setItem('pookpik_survey_done', 'true');
-        showEvaluationCards(window.pendingEvals, window.pendingQueryName);
-      })
-      .catch(err => {
-        console.error(err);
-        localStorage.setItem('pookpik_survey_done', 'true');
-        showEvaluationCards(window.pendingEvals, window.pendingQueryName);
-      });
+      }).catch(err => console.error(err));
     }
     
     function showSatisfactionSurvey() {
