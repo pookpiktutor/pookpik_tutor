@@ -9145,9 +9145,9 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         const timeA = parseDate(a.date);
         const timeB = parseDate(b.date);
         if (timeA !== timeB) {
-          return timeB - timeA;
+          return timeA - timeB; // Ascending (oldest first)
         }
-        return (b.rowIndex || 0) - (a.rowIndex || 0);
+        return (a.rowIndex || 0) - (b.rowIndex || 0); // Tie-breaker
       });
       
       var currentTotalPay = Math.round(totalPay * 100) / 100;
