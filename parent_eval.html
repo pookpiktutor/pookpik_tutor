@@ -429,7 +429,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           .getEvaluationsList('parent');
       } else {
         // Fallback fetch to WebApp API for standalone GitHub Pages
-        const apiUrl = "https://script.google.com/macros/s/AKfycbxc-LcGjXRDBbOJxsckaf30NJTS790DEW9Hx9Bn2OeUJ2eZ_znRNQpVDTxe_jkwW6M9FA/exec?action=getEvaluationsList&role=parent&t=" + new Date().getTime();
+        const apiUrl = "https://script.google.com/macros/s/AKfycbyDXdhdbYB9wus-6aDqAUwDrZgRSFyXKHykyg6bK3PstPTQPl3jGIKRGaUcJzzZty5n/exec?action=getEvaluationsList&role=parent&t=" + new Date().getTime();
         fetch(apiUrl)
           .then(res => res.json())
           .then(data => {
@@ -564,7 +564,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       localStorage.setItem('pookpik_survey_done', 'true');
       showEvaluationCards(window.pendingEvals, window.pendingQueryName);
       
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbxc-LcGjXRDBbOJxsckaf30NJTS790DEW9Hx9Bn2OeUJ2eZ_znRNQpVDTxe_jkwW6M9FA/exec";
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbyDXdhdbYB9wus-6aDqAUwDrZgRSFyXKHykyg6bK3PstPTQPl3jGIKRGaUcJzzZty5n/exec";
       fetch(GAS_URL, {
         method: 'POST',
         mode: 'no-cors', // สำคัญมาก เพื่อไม่ให้โดนบล็อก CORS จาก Google Apps Script ตอนยิงเบื้องหลัง
