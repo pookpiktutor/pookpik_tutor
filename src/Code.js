@@ -9096,11 +9096,58 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
       matchedClasses.sort((a, b) => {
         const parseDate = (dStr) => {
           if (!dStr) return 0;
-          const parts = dStr.split('/');
-          if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
-          return new Date(dStr).getTime() || 0;
+          let s = dStr.toString().trim();
+          
+          const parts = s.split('/');
+          if (parts.length === 3) {
+            let y = parseInt(parts[2], 10);
+            if (y < 100) y += (y > 50 ? 1900 : 2000);
+            if (y > 2400) y -= 543;
+            return new Date(y, parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
+          }
+          
+          const partsDash = s.split('-');
+          if (partsDash.length === 3) {
+            let y = parseInt(partsDash[0], 10);
+            if (y > 2400) y -= 543;
+            return new Date(y, parseInt(partsDash[1], 10) - 1, parseInt(partsDash[2], 10)).getTime();
+          }
+          
+          const thaiMonths = {
+            'ม.ค.':0, 'มกราคม':0, 'ก.พ.':1, 'กุมภาพันธ์':1, 'มี.ค.':2, 'มีนาคม':2,
+            'เม.ย.':3, 'เมษายน':3, 'พ.ค.':4, 'พฤษภาคม':4, 'มิ.ย.':5, 'มิถุนายน':5,
+            'ก.ค.':6, 'กรกฎาคม':6, 'ส.ค.':7, 'สิงหาคม':7, 'ก.ย.':8, 'กันยายน':8,
+            'ต.ค.':9, 'ตุลาคม':9, 'พ.ย.':10, 'พฤศจิกายน':10, 'ธ.ค.':11, 'ธันวาคม':11
+          };
+          
+          const tokens = s.split(/\s+/);
+          let d = null, m = null, y = null;
+          
+          for (let i = 0; i < tokens.length; i++) {
+            let t = tokens[i];
+            if (/^\d{1,2}$/.test(t) && d === null) {
+              d = parseInt(t, 10);
+            } else if (thaiMonths[t] !== undefined) {
+              m = thaiMonths[t];
+            } else if (/^\d{2,4}$/.test(t) && d !== null && m !== null) {
+              y = parseInt(t, 10);
+              if (y < 100) y += 2500;
+              if (y > 2400) y -= 543;
+            }
+          }
+          
+          if (d !== null && m !== null && y !== null) {
+            return new Date(y, m, d).getTime();
+          }
+
+          return new Date(s).getTime() || 0;
         };
-        return parseDate(b.date) - parseDate(a.date);
+        const timeA = parseDate(a.date);
+        const timeB = parseDate(b.date);
+        if (timeA !== timeB) {
+          return timeB - timeA;
+        }
+        return (b.rowIndex || 0) - (a.rowIndex || 0);
       });
       
       var currentTotalPay = Math.round(totalPay * 100) / 100;
