@@ -2390,7 +2390,7 @@ function getEmployeeList(logUser) {
 
     }
 
-    return users;
+    return users.reverse();
 
   } catch (e) {
 
@@ -2813,7 +2813,7 @@ function getActivityLogs(logUser) {
     if (Array.isArray(logs) && logs.length > 0) {
       setCacheObject(cacheKey, logs, 300);
     }
-    return logs;
+    return logs.reverse();
   } catch (e) {
     return { error: e.message };
   }
@@ -4002,7 +4002,7 @@ function getEvaluationsList(logUser) {
     if (!isParentQuery) {
       setCacheObject(cacheKey, list, 300);
     }
-    return list;
+    return list.reverse();
   } catch (e) {
     return [];
   }
@@ -5531,7 +5531,7 @@ function getStudentsListRaw() {
     });
   });
   
-  return students;
+  return students.reverse();
 }
 
 function getAllStudentsFromSubgroupSheets() {
@@ -10369,7 +10369,7 @@ function getClassLogs(filterDate, logUser) {
 
      // Cache for 2 minutes
 
-    return logs;
+    return logs.reverse();
 
   } catch (err) {
 
@@ -11499,7 +11499,7 @@ function getManagerOTLogs(logUser) {
 
     
 
-    return logs;
+    return logs.reverse();
 
   } catch (err) {
 
@@ -16589,7 +16589,7 @@ function getPaymentsForStudent(studentId) {
       }
     });
     
-    return payments;
+    return payments.reverse();
   } catch (e) {
     return [];
   }
@@ -17836,7 +17836,7 @@ function getCampsData(academicYear, campName) {
       }
     }
     
-    return results;
+    return results.reverse();
   } catch (e) {
     Logger.log('ERROR in getCampsData: ' + e.message);
     return {error: e.message};
