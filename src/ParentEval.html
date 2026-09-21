@@ -647,6 +647,20 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         return;
       }
 
+      // Only show the LATEST evaluation for each subject
+      // Since evals is already sorted newest-first (from list.reverse() in backend),
+      // we just need to take the first occurrence of each subject
+      const latestEvals = [];
+      const seenSubjects = new Set();
+      
+      evals.forEach(ev => {
+        const courseName = (ev.subject || ev.courseName || ev.course || '').trim().toLowerCase();
+        if (!seenSubjects.has(courseName)) {
+          seenSubjects.add(courseName);
+          latestEvals.push(ev);
+        }
+      });
+
       let html = `
         <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
           <h2 style="font-size: 18px; font-weight: 700; color: #2d3748; display: flex; align-items: center; gap: 10px;">
@@ -656,12 +670,12 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
             ผลการประเมินการเรียนสำหรับผู้ปกครอง
           </h2>
           <span style="background: #e6fffa; color: #047857; font-size: 13.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; border: 1px solid #a7f3d0; display: inline-flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-circle-check" style="color: #10b981;"></i> พบ ${evals.length} รายการ (เผยแพร่แล้ว)
+            <i class="fa-solid fa-circle-check" style="color: #10b981;"></i> พบ ${latestEvals.length} รายการ (เผยแพร่แล้ว)
           </span>
         </div>
       `;
 
-      evals.forEach((ev, idx) => {
+      latestEvals.forEach((ev, idx) => {
         const studentName = ev.studentName || ev.student_name || 'นักเรียน';
         const nickname = (ev.nickname || ev.studentNickname) ? `(${ev.nickname || ev.studentNickname})` : '';
         const courseName = ev.subject || ev.courseName || ev.course || 'คอร์สเรียน';
