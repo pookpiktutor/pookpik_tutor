@@ -9092,7 +9092,19 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
         }
       });
 
+      
+      matchedClasses.sort((a, b) => {
+        const parseDate = (dStr) => {
+          if (!dStr) return 0;
+          const parts = dStr.split('/');
+          if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+          return new Date(dStr).getTime() || 0;
+        };
+        return parseDate(b.date) - parseDate(a.date);
+      });
+      
       var currentTotalPay = Math.round(totalPay * 100) / 100;
+
       var netPay = Math.max(0, currentTotalPay + adjustmentBonus - adjustmentDeduction - insuranceDeduction);
 
       monthlyResults[m] = {
