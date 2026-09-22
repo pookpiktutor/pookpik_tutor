@@ -8850,13 +8850,12 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
         
 
-        const matchB = cleanB !== '' && cleanB === cleanNick;
+        const cleanNickStr = cleanResolvedNick.replace(/^ครู/, '').replace(/\s+/g, '').trim();
+        const cleanBStr = cleanB.replace(/\s+/g, '');
+        const cleanCStr = cleanC.replace(/\s+/g, '');
 
-        const matchC = cleanC !== '' && cleanC === cleanNick;
-
-        
-
-        // If both B and C have values, use C (substitute teacher priority rule)
+        const matchB = cleanBStr !== '' && cleanBStr === cleanNickStr;
+        const matchC = cleanCStr !== '' && cleanCStr === cleanNickStr;
 
         // If only one has value, use that one
 
@@ -9516,8 +9515,12 @@ function getAllTeachersMonthlyPay(year, month) {
         const cleanB = cellB.replace(/^ครู/, '').trim();
         const cleanC = cellC.replace(/^ครู/, '').trim();
 
-        const matchB = cleanB !== '' && (cleanB === cleanNick || cleanB.includes(cleanNick) || cleanNick.includes(cleanB));
-        const matchC = cleanC !== '' && (cleanC === cleanNick || cleanC.includes(cleanNick) || cleanNick.includes(cleanC) || (cellC.includes(cleanNick) && !isEmptySub(cellC)));
+        const cleanNickStr = cleanResolvedNick.replace(/^ครู/, '').replace(/\s+/g, '').trim();
+        const cleanBStr = cleanB.replace(/\s+/g, '');
+        const cleanCStr = cleanC.replace(/\s+/g, '');
+
+        const matchB = cleanBStr !== '' && cleanBStr === cleanNickStr;
+        const matchC = cleanCStr !== '' && cleanCStr === cleanNickStr;
 
         let role = '';
         if (cellB !== '' && cellC !== '' && !isEmptySub(cellC)) {
@@ -9797,7 +9800,17 @@ function parseDateString(str) {
 
   }
 
-  return null;
+  const partsDot = str.toString().trim().split('.');
+  if (partsDot.length === 3) {
+    const d = parseInt(partsDot[0], 10);
+    const m = parseInt(partsDot[1], 10);
+    let y = parseInt(partsDot[2], 10);
+    if (y < 100) y += 2000;
+    if (y > 2400) y -= 543;
+    return new Date(y, m - 1, d);
+  }
+
+  return new Date(str);
 
 }
 
@@ -10483,13 +10496,20 @@ function getClassLogsForTeacher(teacherName, nickname) {
 
       // คอลัมน์ B (ครูหลัก) หรือคอลัมน์ C (ครูสอนแทน) ตรงกับชื่อหรือชื่อเล่นของผู้ใช้ (ลบคำว่า ครู เพื่อเทียบแบบยืดหยุ่น)
 
-      const isMatch = (searchNickClean !== '' && (cleanReg === searchNickClean || cleanSub === searchNickClean)) ||
+      const searchNickStr = searchNickClean.replace(/\s+/g, '');
+      const searchNameStr = searchNameClean.replace(/\s+/g, '');
+      const cleanNameStr = cleanName.replace(/\s+/g, '');
+      const cleanNickStr = cleanNick.replace(/\s+/g, '');
 
-                      (searchNameClean !== '' && (cleanReg === searchNameClean || cleanSub === searchNameClean)) ||
+      const cleanRegStr = cleanReg.replace(/\s+/g, '');
+      const cleanSubStr = cleanSub.replace(/\s+/g, '');
+      const teacherRegStr = teacherRegular.replace(/\s+/g, '');
+      const teacherSubStr = teacherSub.replace(/\s+/g, '');
 
-                      (cleanName !== '' && (teacherRegular === cleanName || teacherSub === cleanName)) ||
-
-                      (cleanNick !== '' && (teacherRegular === cleanNick || teacherSub === cleanNick));
+      const isMatch = (searchNickStr !== '' && (cleanRegStr === searchNickStr || cleanSubStr === searchNickStr)) ||
+                      (searchNameStr !== '' && (cleanRegStr === searchNameStr || cleanSubStr === searchNameStr)) ||
+                      (cleanNameStr !== '' && (teacherRegStr === cleanNameStr || teacherSubStr === cleanNameStr)) ||
+                      (cleanNickStr !== '' && (teacherRegStr === cleanNickStr || teacherSubStr === cleanNickStr));
 
       if (!isMatch) return;
 
@@ -17641,4 +17661,15 @@ function saveSatisfactionSurvey(data) {
   } catch (err) {
     return { error: err.message };
   }
+}
+
+function runDebugDates() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Data Learn');
+  var data = sheet.getRange(2, 1, 10, 15).getValues();
+  data.forEach((row, idx) => {
+    var rawDate = row[12];
+    var cleanDate = cleanSheetDate(rawDate);
+    var parsedDate = parseDateString(cleanDate);
+    Logger.log("Row " + (idx+2) + ": Raw=" + rawDate + " (Type=" + typeof(rawDate) + ") Clean=" + cleanDate + " Parsed=" + parsedDate);
+  });
 }
