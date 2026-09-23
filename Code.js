@@ -17901,6 +17901,34 @@ function getCampsData(academicYear, campName) {
         pay_r3_channel: row[24] || ''
       };
       
+      // Auto-fill full amount if not set based on camp name
+      if (!item.full || item.full === 0) {
+        var cName = (item.camp_name || '').toString();
+        var cGrade = (item.std_grade || '').toString();
+        if (cName.indexOf('วางแผนติด') >= 0 || cName.indexOf('ตุลาคม') >= 0) {
+          item.full = 4400;
+        } else if (cName.indexOf('ผ่าน') >= 0 && cName.indexOf('Gifted') >= 0) {
+          item.full = 4400;
+        } else if (cName.indexOf('ผ่าน') >= 0 && cName.indexOf('Smart') >= 0) {
+          item.full = 4400;
+        } else if (cName.indexOf('ผ่าน') >= 0 && (cName.indexOf('LP') >= 0 || cName.indexOf('FP') >= 0)) {
+          item.full = 4400;
+        } else if (cName.indexOf('ผ่านฉลุยสอบติด') >= 0 || cName.indexOf('สานฝันฉันต้องติด') >= 0) {
+          if (cGrade.indexOf('ป.6') >= 0) item.full = 7900;
+          else if (cGrade.indexOf('ม.3') >= 0) item.full = 8900;
+        } else if (cName.indexOf('ค่าย') >= 0) {
+          item.full = 4400;
+        }
+      }
+      // Recalculate outstanding = full - paid
+      if (item.full > 0) {
+        var calcOutst = item.full - (item.paid || 0);
+        if (calcOutst < 0) calcOutst = 0;
+        if (!item.outstanding || item.outstanding === 0) {
+          item.outstanding = calcOutst;
+        }
+      }
+      
       let match = true;
       if (academicYear && academicYear !== 'all' && String(item.camp_year) !== String(academicYear)) {
         match = false;
