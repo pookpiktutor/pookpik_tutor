@@ -21185,54 +21185,75 @@ function renderCampsTable() {
   }
   
   var html = "";
+  
+  // Group by Camp Name -> Class/Room
+  var grouped = {};
   filteredData.forEach(function(item) {
-    html += "<tr>";
-    var displayDate = item.timestamp ? String(item.timestamp).split('T')[0] : "-";
-    html += "<td>" + displayDate + "</td>";
-    html += "<td>" + (item.camp_name || "-") + "</td>";
-    html += "<td>" + (item.camp_year || "-") + "</td>";
-    html += "<td>" + (item.std_grade || "-") + "</td>";
-    html += "<td>" + (item.class_section || "-") + "</td>";
-    html += "<td>" + (item.std_name || "-") + "</td>";
-    html += "<td>" + (item.std_nickname || "-") + "</td>";
-    html += "<td>" + (item.parent_phone || "-") + "</td>";
-    html += "<td>" + (item.std_school || "-") + "</td>";
-    html += "<td>" + (item.medical_condition || "-") + "</td>";
-    html += "<td>" + (item.shirt_size || "-") + "</td>";
-    if (item.slip_url && item.slip_url !== '-' && item.slip_url.trim() !== '') {
-      html += "<td><a href='" + item.slip_url + "' target='_blank' class='btn btn-sm btn-outline-primary' style='font-size:0.75rem; padding: 2px 5px;'>ดูสลิป</a></td>";
-    } else {
-      html += "<td>-</td>";
-    }
+    var cName = item.camp_name || 'ไม่ระบุค่าย';
+    var cGroup = (item.std_grade || '') + ' ' + (item.class_section || '');
+    cGroup = cGroup.trim() || 'ไม่ระบุชั้น/ห้อง';
     
-    // ค้างชำระ
-    var outst = parseFloat(item.outstanding) || 0;
-    var outstColor = outst > 0 ? "color: red; font-weight: bold;" : "color: green;";
-    html += "<td style='" + outstColor + "'>" + outst.toLocaleString() + "</td>";
-    
-    // จัดการเงิน (Modal)
-    var escTs = (item.timestamp || '').toString().replace(/'/g, "\\'");
-    html += "<td><button class='btn btn-sm btn-outline-warning' style='font-size:0.75rem; padding: 2px 5px;' onclick=\"showCampPaymentModal('" + escTs + "')\">🪙 จัดการ</button></td>";
-    
-    var currentStatus = (item.status || "").trim();
-    if (currentStatus === "ยืนยันแล้ว") {
-      html += "<td><span class='badge bg-success'>" + currentStatus + "</span></td>";
-    } else {
-      html += "<td>";
-      if (currentStatus) {
-        html += "<span class='badge bg-warning text-dark' style='margin-bottom:4px; display:inline-block;'>" + currentStatus + "</span><br/>";
-      }
-      var escTs = (item.timestamp || '').toString().replace(/'/g, "\\'");
-      html += "<button class='btn btn-sm btn-success' style='font-size:0.75rem; padding: 2px 5px;' onclick=\"confirmCampStatus('" + escTs + "')\">กดยืนยัน</button>";
-      html += "</td>";
-    }
-    
-    // Delete Button
-    var escTs = (item.timestamp || '').toString().replace(/'/g, "\\'");
-    html += "<td style='text-align:center;'><button class='btn btn-sm btn-outline-danger' style='padding: 2px 6px;' onclick=\"deleteCampStudent('" + escTs + "')\" title='ลบข้อมูล'><i class='fa-solid fa-trash'></i></button></td>";
-    
-    html += "</tr>";
+    if(!grouped[cName]) grouped[cName] = {};
+    if(!grouped[cName][cGroup]) grouped[cName][cGroup] = [];
+    grouped[cName][cGroup].push(item);
   });
+  
+  for(var cName in grouped) {
+    html += "<tr style='background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);'><td colspan='16' style='font-weight:bold; color:#1e293b; padding: 10px; font-size: 1.05rem;'>🏫 ค่าย: " + cName + "</td></tr>";
+    
+    for(var cGroup in grouped[cName]) {
+      html += "<tr style='background-color: #f8fafc;'><td colspan='16' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge bg-secondary' style='margin-left: 8px; font-weight: normal;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
+      
+      grouped[cName][cGroup].forEach(function(item, idx) {
+        html += "<tr>";
+        var displayDate = item.timestamp ? String(item.timestamp).split('T')[0] : "-";
+        html += "<td>" + displayDate + "</td>";
+        html += "<td>" + (item.camp_name || "-") + "</td>";
+        html += "<td>" + (item.camp_year || "-") + "</td>";
+        html += "<td>" + (item.std_grade || "-") + "</td>";
+        html += "<td>" + (item.class_section || "-") + "</td>";
+        html += "<td>" + (item.std_name || "-") + "</td>";
+        html += "<td>" + (item.std_nickname || "-") + "</td>";
+        html += "<td>" + (item.parent_phone || "-") + "</td>";
+        html += "<td>" + (item.std_school || "-") + "</td>";
+        html += "<td>" + (item.medical_condition || "-") + "</td>";
+        html += "<td>" + (item.shirt_size || "-") + "</td>";
+        if (item.slip_url && item.slip_url !== '-' && item.slip_url.trim() !== '') {
+          html += "<td><a href='" + item.slip_url + "' target='_blank' class='btn btn-sm btn-outline-primary' style='font-size:0.75rem; padding: 2px 5px;'>ดูสลิป</a></td>";
+        } else {
+          html += "<td>-</td>";
+        }
+        
+        // ค้างชำระ
+        var outst = parseFloat(item.outstanding) || 0;
+        var outstColor = outst > 0 ? "color: red; font-weight: bold;" : "color: green;";
+        html += "<td style='" + outstColor + "'>" + outst.toLocaleString() + "</td>";
+        
+        // จัดการเงิน (Modal)
+        var escTs = (item.timestamp || '').toString().replace(/'/g, "\\'");
+        html += "<td><button class='btn btn-sm btn-outline-warning' style='font-size:0.75rem; padding: 2px 5px;' onclick=\"showCampPaymentModal('" + escTs + "')\">🪙 จัดการ</button></td>";
+        
+        var currentStatus = (item.status || "").trim();
+        if (currentStatus === "ยืนยันแล้ว") {
+          html += "<td><span class='badge bg-success'>" + currentStatus + "</span></td>";
+        } else {
+          html += "<td>";
+          if (currentStatus) {
+            html += "<span class='badge bg-warning text-dark' style='margin-bottom:4px; display:inline-block;'>" + currentStatus + "</span><br/>";
+          }
+          var escTs = (item.timestamp || '').toString().replace(/'/g, "\\'");
+          html += "<button class='btn btn-sm btn-success' style='font-size:0.75rem; padding: 2px 5px;' onclick=\"confirmCampStatus('" + escTs + "')\">กดยืนยัน</button>";
+          html += "</td>";
+        }
+        
+        // Delete Button
+        var escTs = (item.timestamp || '').toString().replace(/'/g, "\\'");
+        html += "<td style='text-align:center;'><button class='btn btn-sm btn-outline-danger' style='padding: 2px 6px;' onclick=\"deleteCampStudent('" + escTs + "')\" title='ลบข้อมูล'><i class='fa-solid fa-trash'></i></button></td>";
+        
+        html += "</tr>";
+      });
+    }
+  }
   
   tbody.innerHTML = html;
 }
