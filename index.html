@@ -1649,6 +1649,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                     <th style="width: 100px;">ค้างชำระ</th>
                     <th style="width: 80px;">จัดการเงิน</th>
                     <th style="width: 100px;">สถานะ</th>
+                    <th style="width: 60px;">ลบ</th>
                   </tr>
                 </thead>
                 <tbody id="camps_table_body">
@@ -21225,13 +21226,47 @@ function renderCampsTable() {
       html += "<button class='btn btn-sm btn-success' style='font-size:0.75rem; padding: 2px 5px;' onclick=\"confirmCampStatus('" + escTs + "')\">กดยืนยัน</button>";
       html += "</td>";
     }
+    
+    // Delete Button
+    var escTs = (item.timestamp || '').toString().replace(/'/g, "\\'");
+    html += "<td style='text-align:center;'><button class='btn btn-sm btn-outline-danger' style='padding: 2px 6px;' onclick=\"deleteCampStudent('" + escTs + "')\" title='ลบข้อมูล'><i class='fa-solid fa-trash'></i></button></td>";
+    
     html += "</tr>";
   });
   
   tbody.innerHTML = html;
 }
 
-function confirmCampStatus(timestamp) {
+function deleteCampStudent(timestamp) {
+  showCustomConfirm('คุณแน่ใจหรือไม่ว่าต้องการ "ลบ" ข้อมูลนักเรียนคนนี้ออกจากค่าย? (ลบแล้วกู้คืนไม่ได้)', function() {
+    Swal.fire({
+      title: 'กำลังลบข้อมูล...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if(res && res.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'ลบข้อมูลสำเร็จ',
+            showConfirmButton: false,
+            timer: 1500
+          });
+          fetchCampsData(); // refresh table
+        } else {
+          Swal.fire('Error', res.error || 'ลบข้อมูลไม่สำเร็จ', 'error');
+        }
+      })
+      .withFailureHandler(function(err) {
+        Swal.fire('Error', err.message, 'error');
+      })
+      .deleteCampStudentByTimestamp(timestamp);
+  });
+}function confirmCampStatus(timestamp) {
   showCustomConfirm('คุณต้องการยืนยันสถานะเป็น "ยืนยันแล้ว" สำหรับนักเรียนคนนี้ใช่หรือไม่?', function() {
     google.script.run.withSuccessHandler(function(res) {
     if (res && res.success) {

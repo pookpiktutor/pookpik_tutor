@@ -18422,4 +18422,22 @@ function verifySlipImage(url) {
     Logger.log('ERROR in verifySlipImage: ' + e.message);
     return { success: false, error: e.message };
   }
+}function deleteCampStudentByTimestamp(timestampStr) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName('Camps');
+    if (!sheet) return { success: false, error: "ไม่พบชีต Camps" };
+    
+    const data = sheet.getDataRange().getValues();
+    // Start from row 1 (index 1) assuming row 0 is header
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(timestampStr)) {
+        sheet.deleteRow(i + 1);
+        return { success: true };
+      }
+    }
+    return { success: false, error: "ไม่พบข้อมูลที่ต้องการลบ" };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 }
