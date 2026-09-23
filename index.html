@@ -21082,7 +21082,8 @@ function renderCampsTable() {
   var html = "";
   filteredData.forEach(function(item) {
     html += "<tr>";
-    html += "<td>" + (item.timestamp || "-") + "</td>";
+    var displayDate = item.timestamp ? String(item.timestamp).split('T')[0] : "-";
+    html += "<td>" + displayDate + "</td>";
     html += "<td>" + (item.camp_name || "-") + "</td>";
     html += "<td>" + (item.camp_year || "-") + "</td>";
     html += "<td>" + (item.std_grade || "-") + "</td>";
