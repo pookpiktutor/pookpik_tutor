@@ -681,7 +681,13 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         const studentName = displayName;
         const nickname = (ev.nickname || ev.studentNickname) ? `(${ev.nickname || ev.studentNickname})` : '';
         const courseName = ev.subject || ev.courseName || ev.course || 'คอร์สเรียน';
-        const teacherName = ev.teacher || ev.teacherName || ev.kruName || 'ครูผู้สอน';
+        let rawTeacherName = ev.teacher || ev.teacherName || ev.kruName || 'ครูผู้สอน';
+        let teacherName = rawTeacherName.trim();
+        if (teacherName.includes(')')) {
+          teacherName = teacherName.split(')')[0] + ')';
+        } else if (teacherName.indexOf(' ') > 0) {
+          teacherName = teacherName.split(' ')[0];
+        }
         let evalDate = ev.date || ev.evalDate || 'ล่าสุด';
         if (evalDate && evalDate.includes('T')) {
           const d = new Date(evalDate);
