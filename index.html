@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <!-- Version 66.3.0: เปลี่ยนโลโก้ Favicon เป็นรูปเดียวกันกับหน้าล็อคอิน -->
 
@@ -21248,7 +21248,7 @@ function renderCampsTable() {
         
         // Delete Button
         var escTs = (item.timestamp || '').toString().replace(/'/g, "\\'");
-        html += "<td style='text-align:center;'><button class='btn btn-sm btn-outline-danger' style='padding: 2px 6px;' onclick=\"deleteCampStudent('" + escTs + "')\" title='ลบข้อมูล'><i class='fa-solid fa-trash'></i></button></td>";
+        html += "<td style='text-align:center;'><button class='btn btn-sm btn-danger' style='padding: 2px 6px; font-size: 0.75rem;' onclick=\"deleteCampStudent('" + escTs + "')\" title='ลบข้อมูล'>🗑️ ลบ</button></td>";
         
         html += "</tr>";
       });
@@ -21381,12 +21381,12 @@ function autoVerifySlip() {
   }
   
   btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังสแกน...';
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังสแกน...';
   
   google.script.run
     .withSuccessHandler(function(result) {
       btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> สแกนสลิปอัตโนมัติ';
+      btn.innerHTML = '<i class="fas fa-magic"></i> สแกนสลิปอัตโนมัติ';
       
       if (!result || !result.success) {
         alert('ไม่สามารถสแกนสลิปได้: ' + (result ? result.error : 'ไม่ทราบสาเหตุ'));
@@ -21459,7 +21459,7 @@ function autoVerifySlip() {
     })
     .withFailureHandler(function(err) {
       btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> สแกนสลิปอัตโนมัติ';
+      btn.innerHTML = '<i class="fas fa-magic"></i> สแกนสลิปอัตโนมัติ';
       alert('เกิดข้อผิดพลาด: ' + err.message);
     })
     .verifySlipImage(slipUrl);
