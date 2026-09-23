@@ -21058,11 +21058,8 @@ function renderCampsTable() {
 }
 
 function confirmCampStatus(timestamp) {
-  if (!confirm('คุณต้องการยืนยันสถานะเป็น "ยืนยันแล้ว" สำหรับนักเรียนคนนี้ใช่หรือไม่?')) {
-    return;
-  }
-  
-  google.script.run.withSuccessHandler(function(res) {
+  showCustomConfirm('คุณต้องการยืนยันสถานะเป็น "ยืนยันแล้ว" สำหรับนักเรียนคนนี้ใช่หรือไม่?', function() {
+    google.script.run.withSuccessHandler(function(res) {
     if (res && res.success) {
       // Update local data and re-render
       var itemIndex = currentCampsData.findIndex(function(item) {
@@ -21078,6 +21075,7 @@ function confirmCampStatus(timestamp) {
       alert('เกิดข้อผิดพลาด: ' + (res ? res.error : 'ไม่ทราบสาเหตุ'));
     }
   }).updateCampStatus(timestamp, 'ยืนยันแล้ว');
+  });
 }
 
 function showCampPaymentModal(timestamp) {
