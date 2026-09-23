@@ -21160,7 +21160,21 @@ function showCampPaymentModal(timestamp) {
   document.getElementById('cp_student_display_name').innerText = 'นักเรียน: ' + (item.std_name || '') + ' (' + (item.std_nickname || '') + ')';
   document.getElementById('cp_camp_display_name').innerText = 'ค่าย: ' + (item.camp_name || '') + ' (ปี ' + (item.camp_year || '') + ')';
   
-  document.getElementById('cp_full').value = item.full || '';
+  var defaultFull = item.full || '';
+  if (!defaultFull || defaultFull === '0') {
+    var cName = (item.camp_name || '');
+    var cGrade = (item.class_level || '');
+    if (cName.includes('เรียน') || cName.includes('ตุลาคม')) {
+      defaultFull = '4400';
+    } else if (cName.includes('สานฝันฉันต้องติด')) {
+      if (cGrade.includes('ม.6')) {
+        defaultFull = '7900';
+      } else if (cGrade.includes('ม.3')) {
+        defaultFull = '8900';
+      }
+    }
+  }
+  document.getElementById('cp_full').value = defaultFull;
   document.getElementById('cp_paid').value = item.paid || '';
   document.getElementById('cp_outstanding').value = item.outstanding || '';
   
