@@ -18441,3 +18441,21 @@ function verifySlipImage(url) {
     return { success: false, error: e.message };
   }
 }
+function cleanupOldSessionsAndProperties() {
+  var props = PropertiesService.getScriptProperties();
+  var allProps = props.getProperties();
+  var count = 0;
+  for (var key in allProps) {
+    if (key.indexOf('active_session_tutor_') === 0) {
+      props.deleteProperty(key);
+      count++;
+    }
+  }
+  return 'Deleted ' + count + ' old session properties. You can now edit properties in the UI.';
+}
+
+function setGeminiApiKeyProgrammatically() {
+  // แทนที่ 'ใส่_API_KEY_ที่นี่' ด้วย API Key ของคุณ
+  var myApiKey = 'ใส่_API_KEY_ที่นี่';
+  PropertiesService.getScriptProperties().setProperty('GEMINI_API_KEY', myApiKey);
+}
