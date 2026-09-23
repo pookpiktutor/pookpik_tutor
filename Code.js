@@ -18329,3 +18329,69 @@ function submitPaymentSlipSearch(payload) {
     return { success: false, error: e.message };
   }
 }
+
+function verifySlipImage(url) {
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const apiKey = props.getProperty('GEMINI_API_KEY');
+    if (!apiKey) {
+      return { success: false, error: 'ไม่พบ API Key สำหรับสแกนสลิป โปรดติดต่อแอดมินให้ตั้งค่า GEMINI_API_KEY ใน Script Properties' };
+    }
+
+    let fileId = '';
+    if (url.includes('id=')) {
+      fileId = url.split('id=')[1].split('&')[0];
+    } else if (url.includes('/d/')) {
+      fileId = url.split('/d/')[1].split('/')[0];
+    }
+    
+    if (!fileId) return { success: false, error: 'ไม่สามารถดึง File ID จาก URL สลิปได้' };
+    
+    const file = DriveApp.getFileById(fileId);
+    const mimeType = file.getMimeType();
+    const base64Data = Utilities.base64Encode(file.getBlob().getBytes());
+
+    const apiURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey;
+    
+    const payload = {
+      contents: [{
+        parts: [
+          { text: 'Extract information from this bank transfer slip image. Return ONLY a JSON object with no markdown and no code block. The JSON keys must be exactly: amount (number), date (string in format DD/MM/YYYY), time (string in format HH:MM), channel (string, the name of the destination bank or channel). If you cannot find a value, use null.' },
+          { inline_data: { mime_type: mimeType, data: base64Data } }
+        ]
+      }],
+      generationConfig: {
+        temperature: 0,
+        response_mime_type: 'application/json'
+      }
+    };
+    
+    const options = {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    };
+    
+    const response = UrlFetchApp.fetch(apiURL, options);
+    const responseCode = response.getResponseCode();
+    const resultText = response.getContentText();
+    
+    if (responseCode !== 200) {
+      return { success: false, error: 'Gemini API Error: ' + resultText };
+    }
+    
+    const resultJson = JSON.parse(resultText);
+    if (!resultJson.candidates || resultJson.candidates.length === 0) {
+      return { success: false, error: 'ไม่สามารถอ่านสลิปได้' };
+    }
+    
+    const textOutput = resultJson.candidates[0].content.parts[0].text;
+    const extractedData = JSON.parse(textOutput);
+    
+    return { success: true, data: extractedData };
+  } catch (e) {
+    Logger.log('ERROR in verifySlipImage: ' + e.message);
+    return { success: false, error: e.message };
+  }
+}
