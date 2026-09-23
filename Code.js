@@ -3574,6 +3574,9 @@ function submitEvaluation(dataRaw, logUser) {
     
 
     let resolvedTeacherName = resolveUserNickname(db, data.teacher) || resolveUserNickname(db, logUser) || data.teacher || logUser || '';
+    if (resolvedTeacherName.includes(')')) {
+      resolvedTeacherName = resolvedTeacherName.split(')')[0] + ')';
+    }
 
     sheet.appendRow([
 
@@ -3653,7 +3656,11 @@ function updateEvaluation(evalData, logUser) {
     if (evalData.branch) sheet.getRange(rowIndex, 6).setValue(evalData.branch);
     if (evalData.date) sheet.getRange(rowIndex, 7).setValue(evalData.date);
     if (evalData.subject || evalData.courseName) sheet.getRange(rowIndex, 8).setValue(evalData.subject || evalData.courseName);
-    if (evalData.teacher) sheet.getRange(rowIndex, 9).setValue(evalData.teacher);
+    if (evalData.teacher) {
+      let tName = evalData.teacher;
+      if (tName.includes(')')) tName = tName.split(')')[0] + ')';
+      sheet.getRange(rowIndex, 9).setValue(tName);
+    }
 
     sheet.getRange(rowIndex, 11).setValue(evalData.strengths || '');
     sheet.getRange(rowIndex, 12).setValue(evalData.improvements || '');
