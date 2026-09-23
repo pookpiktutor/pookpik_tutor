@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <!-- Version 66.3.0: เปลี่ยนโลโก้ Favicon เป็นรูปเดียวกันกับหน้าล็อคอิน -->
 
@@ -21118,6 +21118,53 @@ function renderCampsTable() {
         ctHtml += '<td style="padding: 8px 10px; text-align: center; border: 1px solid #e2e8f0; color: #047857;">' + (sizeTotals[size] || 0) + '</td>';
       });
       ctHtml += '<td style="padding: 8px 10px; text-align: center; border: 1px solid #e2e8f0; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-size: 1rem;">' + sizeGrandTotal + '</td>';
+      ctHtml += '</tr>';
+      
+      ctHtml += '</tbody></table></div>';
+      
+      // FINANCIAL SUMMARY TABLE
+      var finCamps = {};
+      allData.forEach(function(item) {
+        var cname = (item.camp_name || 'ไม่ระบุค่าย').trim();
+        if (!finCamps[cname]) {
+          finCamps[cname] = { full: 0, paid: 0, outst: 0 };
+        }
+        finCamps[cname].full += (parseFloat(item.full) || 0);
+        finCamps[cname].paid += (parseFloat(item.paid) || 0);
+        finCamps[cname].outst += (parseFloat(item.outstanding) || 0);
+      });
+      
+      ctHtml += '<div style="font-weight: 600; font-size: 1rem; margin-top: 20px; margin-bottom: 10px; color: var(--text-main);">💰 สรุปยอดเงินแยกตามค่าย</div>';
+      ctHtml += '<div style="overflow-x: auto;">';
+      ctHtml += '<table class="table table-bordered table-hover" style="width: 100%; font-size: 0.85rem; margin-bottom: 0; border-collapse: collapse;">';
+      ctHtml += '<thead><tr style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">';
+      ctHtml += '<th style="padding: 8px 12px; text-align: left; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);">ชื่อค่าย / กิจกรรม</th>';
+      ctHtml += '<th style="padding: 8px 10px; text-align: right; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);">ยอดเต็ม (บาท)</th>';
+      ctHtml += '<th style="padding: 8px 10px; text-align: right; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);">ยอดจ่าย (บาท)</th>';
+      ctHtml += '<th style="padding: 8px 10px; text-align: right; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);">ค้างชำระ (บาท)</th>';
+      ctHtml += '</tr></thead><tbody>';
+      
+      var totalFull = 0, totalPaid = 0, totalOutst = 0;
+      sortedCamps.forEach(function(cname, idx) {
+        var rowBg = idx % 2 === 0 ? 'background-color: rgba(245, 158, 11, 0.04);' : '';
+        var fc = finCamps[cname] || {full:0, paid:0, outst:0};
+        totalFull += fc.full;
+        totalPaid += fc.paid;
+        totalOutst += fc.outst;
+        
+        ctHtml += '<tr style="' + rowBg + '">';
+        ctHtml += '<td style="padding: 8px 12px; font-weight: 500; border: 1px solid #e2e8f0; color: var(--text-main);">' + cname + '</td>';
+        ctHtml += '<td style="padding: 8px 10px; text-align: right; border: 1px solid #e2e8f0;">' + fc.full.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2}) + '</td>';
+        ctHtml += '<td style="padding: 8px 10px; text-align: right; border: 1px solid #e2e8f0; color: #059669;">' + fc.paid.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2}) + '</td>';
+        ctHtml += '<td style="padding: 8px 10px; text-align: right; border: 1px solid #e2e8f0; ' + (fc.outst > 0 ? 'color: #dc2626; font-weight: 600;' : '') + '">' + fc.outst.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2}) + '</td>';
+        ctHtml += '</tr>';
+      });
+      
+      ctHtml += '<tr style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); font-weight: 700;">';
+      ctHtml += '<td style="padding: 8px 12px; border: 1px solid #e2e8f0; color: var(--text-main);">รวมทั้งหมด</td>';
+      ctHtml += '<td style="padding: 8px 10px; text-align: right; border: 1px solid #e2e8f0;">' + totalFull.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2}) + '</td>';
+      ctHtml += '<td style="padding: 8px 10px; text-align: right; border: 1px solid #e2e8f0; color: #059669;">' + totalPaid.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2}) + '</td>';
+      ctHtml += '<td style="padding: 8px 10px; text-align: right; border: 1px solid #e2e8f0; ' + (totalOutst > 0 ? 'color: #dc2626;' : '') + '">' + totalOutst.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2}) + '</td>';
       ctHtml += '</tr>';
       
       ctHtml += '</tbody></table></div></div>';
