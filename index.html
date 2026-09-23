@@ -20998,6 +20998,75 @@ function renderCampsTable() {
       ctHtml += '<td style="padding: 8px 10px; text-align: center; border: 1px solid #e2e8f0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 1rem;">' + grandTotal + '</td>';
       ctHtml += '</tr>';
       
+            ctHtml += '</tbody></table></div>';
+      
+      // SHIRT SIZE CROSSTAB
+      var sizeNames = {};
+      var sizeCrossCounts = {};
+      allData.forEach(function(item) {
+        var cname = (item.camp_name || 'ไม่ระบุค่าย').trim();
+        var size = (item.shirt_size || 'ไม่ระบุไซส์').toString().trim();
+        if (size === '' || size === '-') size = 'ไม่ระบุไซส์';
+        sizeNames[size] = true;
+        var key = cname + '||' + size;
+        sizeCrossCounts[key] = (sizeCrossCounts[key] || 0) + 1;
+      });
+      
+      var sortedSizes = Object.keys(sizeNames).sort(function(a, b) {
+        if (a === 'ไม่ระบุไซส์') return 1;
+        if (b === 'ไม่ระบุไซส์') return -1;
+        var sizeOrder = {'S':1, 'M':2, 'L':3, 'XL':4, 'XXL':5, 'XXXL':6, '3XL':6};
+        var oa = sizeOrder[a.toUpperCase()] || 99;
+        var ob = sizeOrder[b.toUpperCase()] || 99;
+        if (oa !== ob) return oa - ob;
+        return a.localeCompare(b, 'en');
+      });
+      
+      ctHtml += '<div style="font-weight: 600; font-size: 1rem; margin-top: 20px; margin-bottom: 10px; color: var(--text-main);">👕 สรุปจำนวนไซส์เสื้อแยกตามค่าย</div>';
+      ctHtml += '<div style="overflow-x: auto;">';
+      ctHtml += '<table class="table table-bordered table-hover" style="width: 100%; font-size: 0.85rem; margin-bottom: 0; border-collapse: collapse;">';
+      ctHtml += '<thead><tr style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">';
+      ctHtml += '<th style="padding: 8px 12px; text-align: left; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);">ชื่อค่าย / กิจกรรม</th>';
+      sortedSizes.forEach(function(size) {
+        ctHtml += '<th style="padding: 8px 10px; text-align: center; font-weight: 600; border: 1px solid rgba(255,255,255,0.2); min-width: 50px;">' + size + '</th>';
+      });
+      ctHtml += '<th style="padding: 8px 10px; text-align: center; font-weight: 700; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.15); min-width: 60px;">รวม</th>';
+      ctHtml += '</tr></thead><tbody>';
+      
+      var sizeGrandTotal = 0;
+      var sizeTotals = {};
+      sortedCamps.forEach(function(cname, idx) {
+        var rowBg = idx % 2 === 0 ? 'background-color: rgba(16, 185, 129, 0.04);' : '';
+        ctHtml += '<tr style="' + rowBg + '">';
+        ctHtml += '<td style="padding: 8px 12px; font-weight: 500; border: 1px solid #e2e8f0; color: var(--text-main);">' + cname + '</td>';
+        var rowTotal = 0;
+        
+        sortedSizes.forEach(function(size) {
+          var key = cname + '||' + size;
+          var count = sizeCrossCounts[key] || 0;
+          rowTotal += count;
+          sizeTotals[size] = (sizeTotals[size] || 0) + count;
+          
+          if (count > 0) {
+            ctHtml += '<td style="padding: 8px 10px; text-align: center; border: 1px solid #e2e8f0; font-weight: 600; color: #059669;">' + count + '</td>';
+          } else {
+            ctHtml += '<td style="padding: 8px 10px; text-align: center; border: 1px solid #e2e8f0; color: #cbd5e1;">-</td>';
+          }
+        });
+        
+        sizeGrandTotal += rowTotal;
+        ctHtml += '<td style="padding: 8px 10px; text-align: center; font-weight: 700; border: 1px solid #e2e8f0; background-color: rgba(16, 185, 129, 0.08); color: #047857;">' + rowTotal + '</td>';
+        ctHtml += '</tr>';
+      });
+      
+      ctHtml += '<tr style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); font-weight: 700;">';
+      ctHtml += '<td style="padding: 8px 12px; border: 1px solid #e2e8f0; color: var(--text-main);">รวม</td>';
+      sortedSizes.forEach(function(size) {
+        ctHtml += '<td style="padding: 8px 10px; text-align: center; border: 1px solid #e2e8f0; color: #047857;">' + (sizeTotals[size] || 0) + '</td>';
+      });
+      ctHtml += '<td style="padding: 8px 10px; text-align: center; border: 1px solid #e2e8f0; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-size: 1rem;">' + sizeGrandTotal + '</td>';
+      ctHtml += '</tr>';
+      
       ctHtml += '</tbody></table></div></div>';
       crosstabContainer.innerHTML = ctHtml;
     } else {
