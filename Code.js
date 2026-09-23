@@ -1,4 +1,4 @@
-function findTeacherProfile(teachersList, teacherArg) {
+﻿function findTeacherProfile(teachersList, teacherArg) {
   if (!Array.isArray(teachersList) || !teacherArg) return null;
   const cleanArg = teacherArg.toString().trim();
   if (!cleanArg || cleanArg === 'all' || cleanArg === 'ทั้งหมด') return null;
@@ -17920,7 +17920,8 @@ function updateCampStatus(timestamp, newStatus) {
     
     for (let i = 1; i < data.length; i++) {
       // Column A (index 0) is timestamp
-      if (String(data[i][0]) === String(timestamp)) {
+      let rowTs = data[i][0] instanceof Date ? data[i][0].toISOString() : String(data[i][0]);
+      if (rowTs === String(timestamp) || String(data[i][0]) === String(timestamp)) {
         // Status is Column I (index 8)
         sheet.getRange(i + 1, 9).setValue(newStatus);
         return {success: true};
@@ -17944,7 +17945,8 @@ function saveCampPayment(timestamp, paymentData) {
     if (data.length <= 1) return {success: false, error: 'ไม่มีข้อมูลในชีต'};
     
     for (let i = 1; i < data.length; i++) {
-      if (String(data[i][0]) === String(timestamp)) {
+      let rowTs = data[i][0] instanceof Date ? data[i][0].toISOString() : String(data[i][0]);
+      if (rowTs === String(timestamp) || String(data[i][0]) === String(timestamp)) {
         const rIndex = i + 1;
         const rowUpdates = [
           [
