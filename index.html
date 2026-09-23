@@ -5650,10 +5650,14 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           <form id="camp_payment_form" onsubmit="saveCampPaymentSubmit(event)">
             <input type="hidden" id="cp_timestamp">
             
-            <div style="margin-bottom: 15px; padding: 12px; background: rgba(102, 126, 234, 0.1); border-radius: 6px; border-left: 4px solid var(--color-primary);">
+            <div style="margin-bottom: 15px; padding: 12px; background: rgba(102, 126, 234, 0.1); border-radius: 6px; border-left: 4px solid var(--color-primary); display: flex; justify-content: space-between; align-items: center;">
+  <div>
               <div style="font-weight: bold; color: var(--text-main);" id="cp_student_display_name">นักเรียน: </div>
               <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="cp_camp_display_name">ค่าย: </div>
-            </div>
+            
+  </div>
+  <button type="button" class="btn btn-sm" id="btn_auto_verify_slip" onclick="autoVerifySlip()" style="display:none; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; border: none; border-radius: 20px; padding: 5px 12px; font-size: 0.8rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"><i class="fa-solid fa-wand-magic-sparkles"></i> สแกนสลิปอัตโนมัติ</button>
+</div>
             
             <div class="form-grid">
               <div class="form-group">
