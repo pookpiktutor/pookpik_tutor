@@ -21330,11 +21330,118 @@ function showCampPaymentModal(timestamp) {
   document.getElementById('cp_pay_r3_amount').value = item.pay_r3_amount || '';
   document.getElementById('cp_pay_r3_channel').value = item.pay_r3_channel || '';
   
+  // Show auto-verify button if slip exists
+  var verifyBtn = document.getElementById('btn_auto_verify_slip');
+  if (verifyBtn) {
+    if (item.slip_url && item.slip_url !== '-' && item.slip_url !== '') {
+      verifyBtn.style.display = 'inline-block';
+      verifyBtn.setAttribute('data-slip-url', item.slip_url);
+    } else {
+      verifyBtn.style.display = 'none';
+    }
+  }
+
+  // Auto-calculate outstanding if not set
+  autoCalculateCampPayment();
+  
   document.getElementById('camp_payment_modal').classList.add('active');
 }
 
 function closeCampPaymentModal() {
   document.getElementById('camp_payment_modal').classList.remove('active');
+}
+
+function autoVerifySlip() {
+  var btn = document.getElementById('btn_auto_verify_slip');
+  var slipUrl = btn ? btn.getAttribute('data-slip-url') : '';
+  if (!slipUrl) {
+    alert('ไม่พบ URL สลิป');
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังสแกน...';
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> สแกนสลิปอัตโนมัติ';
+      
+      if (!result || !result.success) {
+        alert('ไม่สามารถสแกนสลิปได้: ' + (result ? result.error : 'ไม่ทราบสาเหตุ'));
+        return;
+      }
+      
+      var data = result.data;
+      
+      // Find the first empty round to fill in
+      var rounds = ['r1', 'r2', 'r3'];
+      var targetRound = null;
+      for (var ri = 0; ri < rounds.length; ri++) {
+        var amountEl = document.getElementById('cp_pay_' + rounds[ri] + '_amount');
+        if (amountEl && (!amountEl.value || amountEl.value === '0' || amountEl.value === '')) {
+          targetRound = rounds[ri];
+          break;
+        }
+      }
+      
+      if (!targetRound) {
+        alert('ทุกงวดมีข้อมูลแล้ว ไม่สามารถเพิ่มได้');
+        return;
+      }
+      
+      // Fill in the data
+      if (data.amount) {
+        document.getElementById('cp_pay_' + targetRound + '_amount').value = data.amount;
+      }
+      if (data.date) {
+        // Convert DD/MM/YYYY to YYYY-MM-DD for input[type=date]
+        var parts = data.date.split('/');
+        if (parts.length === 3) {
+          var year = parseInt(parts[2]); // oops python inside string but this is JS in python string
+          if (year > 2500) year -= 543; // Convert Buddhist year to CE
+          var dateStr = year + '-' + parts[1].padStart(2, '0') + '-' + parts[0].padStart(2, '0');
+          document.getElementById('cp_pay_' + targetRound + '_date').value = dateStr;
+        }
+      }
+      if (data.time) {
+        var timeEl = document.getElementById('cp_pay_' + targetRound + '_time');
+        if (timeEl) timeEl.value = data.time;
+      }
+      if (data.channel) {
+        // Try to match channel to existing select options
+        var channelEl = document.getElementById('cp_pay_' + targetRound + '_channel');
+        if (channelEl) {
+          var bankName = data.channel.toLowerCase();
+          var matched = false;
+          for (var oi = 0; oi < channelEl.options.length; oi++) {
+            var optVal = channelEl.options[oi].value.toLowerCase();
+            if (optVal && (bankName.includes(optVal.split(' ')[0]) || optVal.includes(bankName.split(' ')[0]))) {
+              channelEl.selectedIndex = oi;
+              matched = true;
+              break;
+            }
+          }
+          if (!matched) {
+            // Add custom option
+            var newOpt = document.createElement('option');
+            newOpt.value = data.channel;
+            newOpt.text = data.channel;
+            channelEl.appendChild(newOpt);
+            channelEl.value = data.channel;
+          }
+        }
+      }
+      
+      autoCalculateCampPayment();
+      alert('สแกนสลิปเสร็จสิ้น! กรุณาตรวจสอบข้อมูลก่อนบันทึก\n\nยอดเงิน: ' + (data.amount || '-') + ' บาท\nวันที่: ' + (data.date || '-') + '\nเวลา: ' + (data.time || '-') + '\nช่องทาง: ' + (data.channel || '-'));
+    })
+    .withFailureHandler(function(err) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> สแกนสลิปอัตโนมัติ';
+      alert('เกิดข้อผิดพลาด: ' + err.message);
+    })
+    .verifySlipImage(slipUrl);
 }
 
 function autoCalculateCampPayment() {
