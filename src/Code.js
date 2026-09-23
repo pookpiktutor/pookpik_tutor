@@ -1996,7 +1996,7 @@ function isTeacherUser(username, nickname) {
   if (cleanUsername === 'admin' || cleanUsername === 'staff') return false;
   if (!cleanUsername) return false;
 
-  if (cleanUsername.startsWith('tutor') || cleanUsername.startsWith('tu') || cleanUsername.includes('tutor') || cleanUsername.includes('ครู') || cleanUsername.includes('teacher')) {
+  if (cleanUsername.startsWith('tutor') || cleanUsername.startsWith('tu') || cleanUsername.includes('tutor') || cleanUsername.includes('totur') || cleanUsername.includes('ครู') || cleanUsername.includes('teacher')) {
     return true;
   }
 
@@ -2086,8 +2086,6 @@ function clearActiveSession(username) {
 function verifyLogin(username, password) {
   const db = getDb();
   const cleanUsername = normalizeStr(username);
-  const cleanUsernameKey = cleanUserKey(cleanUsername);
-  
   const cleanPassword = normalizeStr(password);
   if (!cleanUsername || !cleanPassword) {
     return { success: false, error: 'กรุณากรอกชื่อผู้ใช้งานและรหัสผ่าน' };
@@ -2107,8 +2105,7 @@ function verifyLogin(username, password) {
     let nickname = rows[i][3] !== undefined && rows[i][3] !== null ? normalizeStr(rows[i][3]) : '';
     let profilePic = rows[i][4] !== undefined && rows[i][4] !== null ? normalizeStr(rows[i][4]) : '';
 
-    const dbUserKey = cleanUserKey(dbUsername);
-    if (dbUserKey === cleanUsernameKey) {
+    if (dbUsername === cleanUsername) {
       foundUser = true;
       if (dbPassword === cleanPassword) {
         if (isTeacherUser(dbUsername, nickname)) {
@@ -2130,13 +2127,13 @@ function verifyLogin(username, password) {
           } 
         };
       } else {
-        return { success: false, error: 'รหัสผ่านไม่ถูกต้อง (กรุณาตรวจสอบรหัสผ่านอีกครั้ง)' };
+        return { success: false, error: 'รหัสผ่านไม่ถูกต้อง' };
       }
     }
   }
 
   if (!foundUser) {
-    return { success: false, error: 'ไม่พบชื่อผู้ใช้งาน "' + cleanUsername + '" ในระบบ (กรุณาตรวจสอบชื่อผู้ใช้)' };
+    return { success: false, error: 'ชื่อผู้ใช้งานไม่ถูกต้อง' };
   }
 
   return { success: false, error: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง' };
@@ -3439,7 +3436,15 @@ function clearDailyGridClassroomTimetable(logUser) {
 
 }
 
-function submitEvaluation(data, logUser) {
+function submitEvaluation(dataRaw, logUser) {
+  let data = dataRaw;
+  if (typeof dataRaw === 'string') {
+    try {
+      data = JSON.parse(dataRaw);
+    } catch (e) {
+      Logger.log('Could not parse data string: ' + e.message);
+    }
+  }
 
   try {
 
@@ -5567,30 +5572,78 @@ function getAllStudentsFromSubgroupSheets() {
 
 // ----------------------------------------------------
 
-function isCourseExactMatch(targetCourse, cellText, dayTimeStr) {
+function isCourseExactMatch(targetCourse, cellText, targetDayTime, cellDayTime) {
   if (!targetCourse || !cellText) return false;
 
-  const cleanT = targetCourse.toString().toLowerCase().replace(/\s+/g, ' ').trim();
+  let cleanT = targetCourse.toString().toLowerCase().replace(/\s+/g, ' ').trim();
   const cleanC = cellText.toString().toLowerCase().replace(/\s+/g, ' ').trim();
 
-  if (cleanT === cleanC) return true;
+  // Remove common suffix from Data Learn that might not be in Grade Sheets
+  cleanT = cleanT.replace(/\(สพฐ\)/g, '').trim();
 
-  const noSpaceT = cleanT.replace(/\s+/g, '');
-  const noSpaceC = cleanC.replace(/\s+/g, '');
-  if (noSpaceT === noSpaceC) return true;
-
-  if (cleanT.length > 3 && cleanC.length > 3 && (cleanT.includes(cleanC) || cleanC.includes(cleanT))) return true;
-  if (noSpaceT.length > 3 && noSpaceC.length > 3 && (noSpaceT.includes(noSpaceC) || noSpaceC.includes(noSpaceT))) return true;
-
-  if (dayTimeStr) {
-    const cleanDayTime = dayTimeStr.toString().toLowerCase().replace(/\s+/g, '').trim();
-    const tBase = noSpaceT.replace(cleanDayTime, '');
-    const cBase = noSpaceC.replace(cleanDayTime, '');
-    if (tBase === cBase && tBase.length > 0) return true;
-    if (tBase.length > 3 && cBase.length > 3 && (tBase.includes(cBase) || cBase.includes(tBase))) return true;
+  let isCourseMatch = false;
+  if (cleanT === cleanC) {
+    isCourseMatch = true;
+  } else {
+    const noSpaceT = cleanT.replace(/\s+/g, '');
+    const noSpaceC = cleanC.replace(/\s+/g, '');
+    if (noSpaceT === noSpaceC) {
+      isCourseMatch = true;
+    } else if (cleanT.length > 3 && cleanC.length > 3 && (cleanT.includes(cleanC) || cleanC.includes(cleanT))) {
+      isCourseMatch = true;
+    } else if (noSpaceT.length > 3 && noSpaceC.length > 3 && (noSpaceT.includes(noSpaceC) || noSpaceC.includes(noSpaceT))) {
+      isCourseMatch = true;
+    }
   }
 
-  return false;
+  if (!isCourseMatch) return false;
+
+  if (targetDayTime) {
+    const cleanTargetDayTime = targetDayTime.toString().toLowerCase().replace(/\s+/g, '').trim();
+    const cleanCellDayTime = (cellDayTime || '').toString().toLowerCase().replace(/\s+/g, '').trim();
+    const noSpaceC = cleanC.replace(/\s+/g, '');
+    
+    // Extract day
+    let targetDay = '';
+    const dayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'พฤหัส', 'ศุกร์', 'เสาร์'];
+    for (let d of dayNames) {
+       if (cleanTargetDayTime.includes(d)) {
+          targetDay = d;
+          break;
+       }
+    }
+    
+    // Extract time
+    let targetTime = '';
+    const timeMatch = cleanTargetDayTime.match(/\d+[:.]\d+/);
+    if (timeMatch) targetTime = timeMatch[0].replace(':', '.');
+    
+    let dayMatch = true;
+    if (targetDay) {
+       let cellHasDay = noSpaceC.includes(targetDay) || cleanCellDayTime.includes(targetDay);
+       if (!cellHasDay) {
+          if (targetDay === 'พฤหัสบดี' && (noSpaceC.includes('พฤหัส') || cleanCellDayTime.includes('พฤหัส'))) {
+             cellHasDay = true;
+          } else if (targetDay === 'พฤหัส' && (noSpaceC.includes('พฤหัสบดี') || cleanCellDayTime.includes('พฤหัสบดี'))) {
+             cellHasDay = true;
+          }
+       }
+       dayMatch = cellHasDay;
+    }
+    
+    let timeMatchBool = true;
+    if (targetTime) {
+       const cellTimeC = noSpaceC.replace(/:/g, '.');
+       const cellTimeD = cleanCellDayTime.replace(/:/g, '.');
+       if (!cellTimeC.includes(targetTime) && !cellTimeD.includes(targetTime)) {
+          timeMatchBool = false;
+       }
+    }
+    
+    if (!dayMatch || !timeMatchBool) return false;
+  }
+  
+  return true;
 }
 
 function isTeacherAssigned(rawTeacherName, cleanLogUser, teachersList) {
@@ -5638,6 +5691,13 @@ function getTeacherCoursesAndStudents(logUser) {
   try {
     // Dynamic cache key & bypass stale cache
     const cleanLogUser = (logUser || "").toString().split("|")[0].trim().toLowerCase();
+    const cacheKey = 'teacher_courses_' + cleanLogUser;
+    
+    const cachedData = getCacheObject(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+
     const db = getDb();
 
     // 1. Get all teachers from UsersDB
@@ -5650,10 +5710,12 @@ function getTeacherCoursesAndStudents(logUser) {
     if (Array.isArray(classLogs)) {
       classLogs.forEach(c => {
         const rawTeacherRegular = (c.teacherRegular || '').toString().trim();
+        const rawTeacherSub = (c.teacherSub || '').toString().trim();
 
         const isRegular = isTeacherAssigned(rawTeacherRegular, cleanLogUser, teachersList);
+        const isSub = isTeacherAssigned(rawTeacherSub, cleanLogUser, teachersList);
 
-        if (isRegular && c.subject) {
+        if ((isRegular || isSub) && c.subject) {
           const courseKey = c.subject.trim();
           const dayName = c.dayOfWeek || '';
           const timeStart = c.timeStart || '';
@@ -5687,6 +5749,12 @@ function getTeacherCoursesAndStudents(logUser) {
           };
         }
       });
+    } else if (classLogs && classLogs.error) {
+       return [{ courseName: "ERR_CLASSLOGS: " + classLogs.error, displayCourseName: "ERR_CLASSLOGS: " + classLogs.error, students: [] }];
+    }
+
+    if (teachersList && teachersList.error) {
+       return [{ courseName: "ERR_TEACHERS: " + teachersList.error, displayCourseName: "ERR_TEACHERS: " + teachersList.error, students: [] }];
     }
 
     const courseKeys = Object.keys(teacherCoursesMap);
@@ -5729,7 +5797,7 @@ function getTeacherCoursesAndStudents(logUser) {
           const cellCourse = (courseRow[c] || '').toString().toLowerCase().trim();
           const cellDayTime = (dayTimeRow[c] || '').toString().toLowerCase().trim();
           
-          let isMatch = isCourseExactMatch(targetCourseName, cellCourse, targetDayTime);
+          let isMatch = isCourseExactMatch(targetCourseName, cellCourse, targetDayTime, cellDayTime);
           
           if (isMatch) {
                for (let r = 5; r < data.length; r++) {
@@ -5787,7 +5855,7 @@ function getTeacherCoursesAndStudents(logUser) {
           const colK = (data[r][10] || '').toString().toLowerCase().trim(); // Column K = index 10 = รอบเรียน
           if (!colK) continue;
           
-          let isMatch = isCourseExactMatch(targetCourseName, colK, targetDayTime);
+          let isMatch = isCourseExactMatch(targetCourseName, colK, targetDayTime, '');
           
           if (isMatch) {
              const sId = (data[r][1] || '').toString().trim(); // Column B
@@ -5841,16 +5909,76 @@ function getTeacherCoursesAndStudents(logUser) {
     const result = [];
     courseKeys.forEach(key => {
       const item = teacherCoursesMap[key];
+      
+      const uniqueStudents = [];
+      if (item.students && item.students.length > 0) {
+        item.students.forEach(s => {
+           let matchIdx = -1;
+           for (let i = 0; i < uniqueStudents.length; i++) {
+               const u = uniqueStudents[i];
+               
+               const getTokens = (str) => (str||'').replace(/[()]/g, ' ').split(/\s+/).filter(x => x.length >= 3 && !x.match(/^(ม\.|ป\.|ex|เดี่ยว|ย่อย|คอร์ส|วิชา)/i));
+               const sTokens = getTokens(s.name);
+               const uTokens = getTokens(u.name);
+               
+               let overlap = false;
+               for (const t1 of sTokens) {
+                   for (const t2 of uTokens) {
+                       if (t1 === t2 || t1.includes(t2) || t2.includes(t1)) {
+                           overlap = true;
+                           break;
+                       }
+                   }
+                   if (overlap) break;
+               }
+               
+               const sClean = s.name.replace(/\s+/g, '');
+               const uClean = u.name.replace(/\s+/g, '');
+               if (sClean.includes(uClean) || uClean.includes(sClean)) {
+                   overlap = true;
+               }
+               
+               if (overlap) {
+                   matchIdx = i;
+                   break;
+               }
+           }
+           
+           if (matchIdx >= 0) {
+               const score = (name) => {
+                   let pts = 0;
+                   if (name.includes('เดี่ยว')) pts -= 10;
+                   if (name.includes('ย่อย')) pts -= 10;
+                   if (name.includes('ex')) pts -= 10;
+                   if (name.includes('(')) pts -= 5;
+                   if (name.includes('ม.') || name.includes('ป.')) pts -= 5;
+                   if (name.trim().includes(' ')) pts += 5; 
+                   return pts;
+               };
+               
+               const currentScore = score(uniqueStudents[matchIdx].name);
+               const newScore = score(s.name);
+               
+               if (newScore > currentScore || (newScore === currentScore && s.name.length < uniqueStudents[matchIdx].name.length)) {
+                   uniqueStudents[matchIdx] = s;
+               }
+           } else {
+               uniqueStudents.push(s);
+           }
+        });
+      }
+      
       result.push({
         courseName: item.displayCourseName,
-        students: item.students
+        students: uniqueStudents
       });
     });
 
+    setCacheObject(cacheKey, result, 300); // Cache for 5 minutes (300 seconds) to speed up fetching
     return result;
 
   } catch (err) {
-    return [];
+    return [{ courseName: "ERR_CATCH: " + err.message, displayCourseName: "ERR_CATCH: " + err.message, students: [] }];
   }
 }
 function getStudentDetailedCourses(studentName, nickname, grade, branchLearn, classType, logUser) {
@@ -5899,7 +6027,7 @@ function getStudentDetailedCourses(studentName, nickname, grade, branchLearn, cl
 
         const lastCol = sheet.getLastColumn();
 
-        if (lastRow >= 12) {
+        if (lastRow >= 2) {
 
           const rawData = sheet.getRange(12, 1, lastRow - 11, lastCol).getValues();
 
@@ -8850,12 +8978,13 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
 
         
 
-        const cleanNickStr = cleanResolvedNick.replace(/^ครู/, '').replace(/\s+/g, '').trim();
-        const cleanBStr = cleanB.replace(/\s+/g, '');
-        const cleanCStr = cleanC.replace(/\s+/g, '');
+        const matchB = cleanB !== '' && cleanB === cleanNick;
 
-        const matchB = cleanBStr !== '' && cleanBStr === cleanNickStr;
-        const matchC = cleanCStr !== '' && cleanCStr === cleanNickStr;
+        const matchC = cleanC !== '' && cleanC === cleanNick;
+
+        
+
+        // If both B and C have values, use C (substitute teacher priority rule)
 
         // If only one has value, use that one
 
@@ -9095,58 +9224,11 @@ function calculateTeacherYearlyPay(teacher, year, logUser) {
       matchedClasses.sort((a, b) => {
         const parseDate = (dStr) => {
           if (!dStr) return 0;
-          let s = dStr.toString().trim();
-          
-          const parts = s.split('/');
-          if (parts.length === 3) {
-            let y = parseInt(parts[2], 10);
-            if (y < 100) y += (y > 50 ? 1900 : 2000);
-            if (y > 2400) y -= 543;
-            return new Date(y, parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
-          }
-          
-          const partsDash = s.split('-');
-          if (partsDash.length === 3) {
-            let y = parseInt(partsDash[0], 10);
-            if (y > 2400) y -= 543;
-            return new Date(y, parseInt(partsDash[1], 10) - 1, parseInt(partsDash[2], 10)).getTime();
-          }
-          
-          const thaiMonths = {
-            'ม.ค.':0, 'มกราคม':0, 'ก.พ.':1, 'กุมภาพันธ์':1, 'มี.ค.':2, 'มีนาคม':2,
-            'เม.ย.':3, 'เมษายน':3, 'พ.ค.':4, 'พฤษภาคม':4, 'มิ.ย.':5, 'มิถุนายน':5,
-            'ก.ค.':6, 'กรกฎาคม':6, 'ส.ค.':7, 'สิงหาคม':7, 'ก.ย.':8, 'กันยายน':8,
-            'ต.ค.':9, 'ตุลาคม':9, 'พ.ย.':10, 'พฤศจิกายน':10, 'ธ.ค.':11, 'ธันวาคม':11
-          };
-          
-          const tokens = s.split(/\s+/);
-          let d = null, m = null, y = null;
-          
-          for (let i = 0; i < tokens.length; i++) {
-            let t = tokens[i];
-            if (/^\d{1,2}$/.test(t) && d === null) {
-              d = parseInt(t, 10);
-            } else if (thaiMonths[t] !== undefined) {
-              m = thaiMonths[t];
-            } else if (/^\d{2,4}$/.test(t) && d !== null && m !== null) {
-              y = parseInt(t, 10);
-              if (y < 100) y += 2500;
-              if (y > 2400) y -= 543;
-            }
-          }
-          
-          if (d !== null && m !== null && y !== null) {
-            return new Date(y, m, d).getTime();
-          }
-
-          return new Date(s).getTime() || 0;
+          const parts = dStr.split('/');
+          if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+          return new Date(dStr).getTime() || 0;
         };
-        const timeA = parseDate(a.date);
-        const timeB = parseDate(b.date);
-        if (timeA !== timeB) {
-          return timeA - timeB; // Ascending (oldest first)
-        }
-        return (a.rowIndex || 0) - (b.rowIndex || 0); // Tie-breaker
+        return parseDate(b.date) - parseDate(a.date);
       });
       
       var currentTotalPay = Math.round(totalPay * 100) / 100;
@@ -9515,12 +9597,8 @@ function getAllTeachersMonthlyPay(year, month) {
         const cleanB = cellB.replace(/^ครู/, '').trim();
         const cleanC = cellC.replace(/^ครู/, '').trim();
 
-        const cleanNickStr = cleanResolvedNick.replace(/^ครู/, '').replace(/\s+/g, '').trim();
-        const cleanBStr = cleanB.replace(/\s+/g, '');
-        const cleanCStr = cleanC.replace(/\s+/g, '');
-
-        const matchB = cleanBStr !== '' && cleanBStr === cleanNickStr;
-        const matchC = cleanCStr !== '' && cleanCStr === cleanNickStr;
+        const matchB = cleanB !== '' && (cleanB === cleanNick || cleanB.includes(cleanNick) || cleanNick.includes(cleanB));
+        const matchC = cleanC !== '' && (cleanC === cleanNick || cleanC.includes(cleanNick) || cleanNick.includes(cleanC) || (cellC.includes(cleanNick) && !isEmptySub(cellC)));
 
         let role = '';
         if (cellB !== '' && cellC !== '' && !isEmptySub(cellC)) {
@@ -9800,17 +9878,7 @@ function parseDateString(str) {
 
   }
 
-  const partsDot = str.toString().trim().split('.');
-  if (partsDot.length === 3) {
-    const d = parseInt(partsDot[0], 10);
-    const m = parseInt(partsDot[1], 10);
-    let y = parseInt(partsDot[2], 10);
-    if (y < 100) y += 2000;
-    if (y > 2400) y -= 543;
-    return new Date(y, m - 1, d);
-  }
-
-  return new Date(str);
+  return null;
 
 }
 
@@ -10324,8 +10392,9 @@ function getClassLogs(filterDate, logUser) {
 }
 
 function debugGetClassLogs() {
-  const logs = getClassLogs('');
-  return logs ? logs.slice(0, 5) : null;
+  const result = getTeacherCoursesAndStudents('pookpik');
+  console.log(JSON.stringify(result, null, 2));
+  return result;
 }
 
 function getClassLogByRow(rowIndex) {
@@ -10496,20 +10565,13 @@ function getClassLogsForTeacher(teacherName, nickname) {
 
       // คอลัมน์ B (ครูหลัก) หรือคอลัมน์ C (ครูสอนแทน) ตรงกับชื่อหรือชื่อเล่นของผู้ใช้ (ลบคำว่า ครู เพื่อเทียบแบบยืดหยุ่น)
 
-      const searchNickStr = searchNickClean.replace(/\s+/g, '');
-      const searchNameStr = searchNameClean.replace(/\s+/g, '');
-      const cleanNameStr = cleanName.replace(/\s+/g, '');
-      const cleanNickStr = cleanNick.replace(/\s+/g, '');
+      const isMatch = (searchNickClean !== '' && (cleanReg === searchNickClean || cleanSub === searchNickClean)) ||
 
-      const cleanRegStr = cleanReg.replace(/\s+/g, '');
-      const cleanSubStr = cleanSub.replace(/\s+/g, '');
-      const teacherRegStr = teacherRegular.replace(/\s+/g, '');
-      const teacherSubStr = teacherSub.replace(/\s+/g, '');
+                      (searchNameClean !== '' && (cleanReg === searchNameClean || cleanSub === searchNameClean)) ||
 
-      const isMatch = (searchNickStr !== '' && (cleanRegStr === searchNickStr || cleanSubStr === searchNickStr)) ||
-                      (searchNameStr !== '' && (cleanRegStr === searchNameStr || cleanSubStr === searchNameStr)) ||
-                      (cleanNameStr !== '' && (teacherRegStr === cleanNameStr || teacherSubStr === cleanNameStr)) ||
-                      (cleanNickStr !== '' && (teacherRegStr === cleanNickStr || teacherSubStr === cleanNickStr));
+                      (cleanName !== '' && (teacherRegular === cleanName || teacherSub === cleanName)) ||
+
+                      (cleanNick !== '' && (teacherRegular === cleanNick || teacherSub === cleanNick));
 
       if (!isMatch) return;
 
@@ -15109,88 +15171,50 @@ function getLatestSingleOrSubgroupDetails(courseName) {
 
     const cleanCourseName = courseName.toString().toLowerCase().replace(/\s+/g, '');
 
-    let matchedRow = null;
-
+    let matchedRows = [];
     
-
     for (let sheetName of sheetsToSearch) {
-
       const sheet = db.getSheetByName(sheetName);
-
       if (!sheet) continue;
-
       
-
       const lastRow = sheet.getLastRow();
-
       if (lastRow < 12) continue;
-
       
-
       const rawData = sheet.getRange(12, 1, lastRow - 11, Math.min(25, sheet.getLastColumn())).getValues();
-
       for (let i = 0; i < rawData.length; i++) {
-
         const row = rawData[i];
-
         const colA = row[0] ? row[0].toString().trim() : '';
-
         const colB = row[1] ? row[1].toString().trim() : '';
-
         const colC = row[2] ? row[2].toString().trim() : '';
-
         const colI = row[8] ? row[8].toString().trim() : '';
-
         const colK = row[10] ? row[10].toString().trim() : '';
-
         
-
         if (!colB && !colK) continue;
-
         
-
         const cleanB = colB.toLowerCase().replace(/\s+/g, '');
-
         const cleanC = colC.toLowerCase().replace(/\s+/g, '');
-
         const cleanK = colK.toLowerCase().replace(/\s+/g, '');
-
         
-
         const hasStudentMatch = (cleanB && cleanCourseName.includes(cleanB)) || (cleanC && cleanCourseName.includes(cleanC));
-
         const hasCourseMatch = (cleanK && cleanCourseName.includes(cleanK));
-
         
-
         if (hasStudentMatch && hasCourseMatch) {
-
-          matchedRow = {
-
-            grade: colA,
-
-            studentName: colB + (colC ? '(' + colC + ')' : ''),
-
-            branch: colI,
-
-            subject: colK
-
-          };
-
+          const stuName = colB + (colC ? '(' + colC + ')' : '');
+          if (!matchedRows.some(m => m.studentName === stuName)) {
+            matchedRows.push({
+              grade: colA,
+              studentName: stuName,
+              branch: colI,
+              subject: colK
+            });
+          }
         }
-
       }
-
     }
-
     
-
-    if (matchedRow) {
-
-      return { success: true, data: matchedRow };
-
+    if (matchedRows.length > 0) {
+      return { success: true, data: matchedRows };
     }
-
     return { success: false, error: 'Student/Course not found in single/subgroup sheets' };
 
   } catch (e) {
@@ -17555,6 +17579,79 @@ function updateDataLearnMidtermToFinal() {
 
 
 
+function deleteEvaluation(evalId, logUser) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('EvaluationsDB');
+    if (!sheet) {
+      return { success: false, error: 'ไม่พบฐานข้อมูล EvaluationsDB' };
+    }
+    
+    const rows = sheet.getDataRange().getValues();
+    let rowIndex = -1;
+    for (let i = 1; i < rows.length; i++) {
+      const rowId = rows[i][0] ? String(rows[i][0]).trim() : '';
+      const fallbackId = 'EVAL-' + String(i).padStart(4, '0');
+      if (rowId === String(evalId).trim() || fallbackId === String(evalId).trim()) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+    
+    if (rowIndex === -1) {
+      return { success: false, error: 'ไม่พบ ID ใบประเมินในระบบ' };
+    }
+    
+    const studentName = rows[rowIndex - 1][2] || 'ไม่ทราบชื่อ';
+    sheet.deleteRow(rowIndex);
+    
+    SpreadsheetApp.flush();
+    clearAllEvaluationCaches();
+    
+    logActivity(logUser, 'ลบใบประเมิน', `ลบใบประเมินนักเรียน: ${studentName}`);
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+
+
+function deleteMultipleEvaluations(evalIds, logUser) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('EvaluationsDB');
+    if (!sheet) {
+      return { success: false, error: 'ไม่พบฐานข้อมูล EvaluationsDB' };
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    
+    // We iterate backwards to safely delete rows
+    let deletedCount = 0;
+    for (let i = data.length - 1; i > 0; i--) {
+      const rowId = data[i][0] ? String(data[i][0]).trim() : '';
+      const fallbackId = 'EVAL-' + String(i).padStart(4, '0');
+      
+      if (evalIds.includes(rowId) || evalIds.includes(fallbackId)) {
+        sheet.deleteRow(i + 1);
+        deletedCount++;
+      }
+    }
+    
+    SpreadsheetApp.flush();
+    clearAllEvaluationCaches();
+    
+    logActivity(logUser || 'System', 'ลบใบประเมิน (หลายรายการ)', 'Deleted ' + deletedCount + ' evaluations');
+    return { success: true, deletedCount: deletedCount };
+  } catch (err) {
+    Logger.log('Error in deleteMultipleEvaluations: ' + err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+
+
 function forceUpdatePrivateHeadersRow1() {
   const db = getDb();
   const grades = ['อนุบาล','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
@@ -17634,44 +17731,119 @@ function cleanEmptyRowsAndSyncPrivateSheets() {
   Browser.msgBox('ทำความสะอาดสำเร็จ', 'ทำความสะอาดชีตจำนวน ' + cleanedSheetsCount + ' ชีต, ลบแถวว่างทิ้งไป ' + removedRowsCount + ' แถว\n\nสถานะการซิงค์:\n' + syncResult.message, Browser.Buttons.OK);
 }
 
-
-// --- Satisfaction Survey ---
-function saveSatisfactionSurvey(data) {
+function saveCampStudentData(campData) {
   try {
     const db = getDb();
-    let sheet = db.getSheetByName('SatisfactionSurveyDB');
-    if (!sheet) {
-      sheet = db.insertSheet('SatisfactionSurveyDB');
-      sheet.getRange(1, 1, 1, 9).setValues([['Timestamp', 'Name', 'Phone', 'Location', 'Staff', 'Teachers', 'Atmosphere', 'Content', 'Comments']]);
-      sheet.getRange('A1:I1').setFontWeight('bold').setBackground('#f3f4f6');
+    let slipUrl = '-';
+
+    if (campData.fileData && campData.fileData.base64) {
+      let folder;
+      const folderName = 'data_PookPik_Tutor_Slips';
+      const props = PropertiesService.getScriptProperties();
+      const folderId = props.getProperty('SLIP_FOLDER_ID');
+      
+      if (folderId) {
+        try {
+          folder = DriveApp.getFolderById(folderId);
+        } catch(e) {
+          folder = null;
+        }
+      }
+      if (!folder) {
+        const folders = DriveApp.getFoldersByName(folderName);
+        if (folders.hasNext()) {
+          folder = folders.next();
+        } else {
+          folder = DriveApp.createFolder(folderName);
+        }
+        props.setProperty('SLIP_FOLDER_ID', folder.getId());
+      }
+      const content = Utilities.base64Decode(campData.fileData.base64);
+      const blob = Utilities.newBlob(content, campData.fileData.mimeType, 'camp_slip_' + Date.now() + '_' + campData.fileData.fileName);
+      const file = folder.createFile(blob);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      slipUrl = file.getUrl();
     }
-    const row = [
-      new Date(),
-      data.name || '',
-      data.phone || '',
-      data.location || 0,
-      data.staff || 0,
-      data.teachers || 0,
-      data.atmosphere || 0,
-      data.content || 0,
-      data.comments || ''
+
+    let sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) {
+      sheet = db.insertSheet('ลงทะเบียนค่าย');
+      sheet.appendRow(['Timestamp', 'ชื่อค่าย', 'ปีการศึกษา', 'ระดับชั้น', 'ห้องเรียน', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'เบอร์โทรศัพท์ผู้ปกครอง', 'สถานะ', 'โรงเรียน', 'โรคประจำตัว/แพ้อาหาร', 'Size เสื้อ', 'สลิป']);
+      sheet.getRange("A1:M1").setFontWeight("bold").setBackground("#e0e7ff");
+      sheet.setFrozenRows(1);
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][1] === (campData.camp_name || '') && data[i][2] === (campData.camp_year || '') && data[i][5] === (campData.std_name || '')) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+
+    const rowData = [
+      campData.timestamp || new Date().toLocaleString('th-TH'),
+      campData.camp_name || '',
+      campData.camp_year || '',
+      campData.std_grade || '',
+      campData.class_section || '',
+      campData.std_name || '',
+      campData.std_nickname || '',
+      campData.parent_contact || '',
+      campData.status || 'รอตรวจสอบ',
+      campData.std_school || '',
+      campData.medical_condition || '',
+      campData.shirt_size || '',
+      slipUrl
     ];
-    sheet.appendRow(row);
+
+    if (rowIndex > -1) {
+      // If slip wasn't provided, try to keep the old slip if we are just updating data
+      if (slipUrl === '-' && data[rowIndex - 1][12]) {
+         rowData[12] = data[rowIndex - 1][12];
+      }
+      sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
+    } else {
+      sheet.appendRow(rowData);
+    }
+    
     return { success: true };
-  } catch (err) {
-    return { error: err.message };
+  } catch (e) {
+    Logger.log('ERROR in saveCampStudentData: ' + e.message);
+    return { success: false, error: e.message };
   }
 }
 
-function runDebugDates() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Data Learn');
-  var data = sheet.getRange(2, 1, 10, 15).getValues();
-  data.forEach((row, idx) => {
-    var rawDate = row[12];
-    var cleanDate = cleanSheetDate(rawDate);
-    var parsedDate = parseDateString(cleanDate);
-    Logger.log("Row " + (idx+2) + ": Raw=" + rawDate + " (Type=" + typeof(rawDate) + ") Clean=" + cleanDate + " Parsed=" + parsedDate);
-  });
+
+function getCampsFilterOptions() {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return { campNames: [], academicYears: [] };
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return { campNames: [], academicYears: [] };
+    
+    const campNamesSet = new Set();
+    const yearsSet = new Set();
+    
+    for (let i = 1; i < data.length; i++) {
+      const campName = (data[i][1] || '').toString().trim();
+      const year = (data[i][2] || '').toString().trim();
+      
+      if (campName) campNamesSet.add(campName);
+      if (year) yearsSet.add(year);
+    }
+    
+    return {
+      campNames: Array.from(campNamesSet).sort(),
+      academicYears: Array.from(yearsSet).sort().reverse()
+    };
+  } catch (e) {
+    Logger.log('ERROR in getCampsFilterOptions: ' + e.message);
+    return { campNames: [], academicYears: [] };
+  }
 }
 
 function getCampsData(academicYear, campName) {
@@ -17701,7 +17873,19 @@ function getCampsData(academicYear, campName) {
         std_school: row[9] || '',
         medical_condition: row[10] || '',
         shirt_size: row[11] || '',
-        slip_url: row[12] || ''
+        slip_url: row[12] || '',
+        full: parseFloat(row[13]) || 0,
+        paid: parseFloat(row[14]) || 0,
+        outstanding: parseFloat(row[15]) || 0,
+        pay_r1_date: row[16] ? cleanSheetDate(row[16]) : '',
+        pay_r1_amount: parseFloat(row[17]) || 0,
+        pay_r1_channel: row[18] || '',
+        pay_r2_date: row[19] ? cleanSheetDate(row[19]) : '',
+        pay_r2_amount: parseFloat(row[20]) || 0,
+        pay_r2_channel: row[21] || '',
+        pay_r3_date: row[22] ? cleanSheetDate(row[22]) : '',
+        pay_r3_amount: parseFloat(row[23]) || 0,
+        pay_r3_channel: row[24] || ''
       };
       
       let match = true;
@@ -17747,5 +17931,386 @@ function updateCampStatus(timestamp, newStatus) {
   } catch (e) {
     Logger.log('ERROR in updateCampStatus: ' + e.message);
     return {success: false, error: e.message};
+  }
+}
+
+function saveCampPayment(timestamp, paymentData) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return {success: false, error: 'ไม่พบชีตลงทะเบียนค่าย'};
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return {success: false, error: 'ไม่มีข้อมูลในชีต'};
+    
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(timestamp)) {
+        const rIndex = i + 1;
+        const rowUpdates = [
+          [
+            paymentData.full || 0,
+            paymentData.paid || 0,
+            paymentData.outstanding || 0,
+            paymentData.pay_r1_date || '',
+            paymentData.pay_r1_amount || '',
+            paymentData.pay_r1_channel || '',
+            paymentData.pay_r2_date || '',
+            paymentData.pay_r2_amount || '',
+            paymentData.pay_r2_channel || '',
+            paymentData.pay_r3_date || '',
+            paymentData.pay_r3_amount || '',
+            paymentData.pay_r3_channel || ''
+          ]
+        ];
+        sheet.getRange(rIndex, 14, 1, 12).setValues(rowUpdates);
+        
+        // Ensure headers exist if this is the first time
+        const headers = data[0];
+        if (!headers[13] || headers[13] !== 'ยอดเต็ม') {
+          const headerUpdates = [['ยอดเต็ม', 'ชำระแล้ว', 'ค้างชำระ', 
+            'วันที่ชำระงวด 1', 'ยอดเงินงวด 1', 'ช่องทางงวด 1',
+            'วันที่ชำระงวด 2', 'ยอดเงินงวด 2', 'ช่องทางงวด 2',
+            'วันที่ชำระงวด 3', 'ยอดเงินงวด 3', 'ช่องทางงวด 3']];
+          sheet.getRange(1, 14, 1, 12).setValues(headerUpdates);
+        }
+        
+        return {success: true};
+      }
+    }
+    
+    return {success: false, error: 'ไม่พบข้อมูลนักเรียนที่ต้องการอัปเดต'};
+  } catch (e) {
+    Logger.log('ERROR in saveCampPayment: ' + e.message);
+    return {success: false, error: e.message};
+  }
+}
+
+
+function syncSheet3CourseNames() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet3 = ss.getSheetByName('\u0e0a\u0e35\u0e153');
+  if (!sheet3) return 'Sheet3 not found';
+  
+  var debugSheet = ss.getSheetByName('DebugLog');
+  if (!debugSheet) {
+    debugSheet = ss.insertSheet('DebugLog');
+  } else {
+    debugSheet.clear();
+  }
+  var debugData = [['Row', 'CourseA', 'DateVal', 'DayOfWeek', 'Term', 'TimeStr', 'Branch', 'Grade', 'SheetName', 'SheetExists', 'TotalCols', 'MatchedCourse', 'Reason']];
+  
+  var dataRange = sheet3.getDataRange();
+  var values = dataRange.getValues();
+  
+  var midTermStart = new Date(2026, 4, 18).getTime();
+  var midTermEnd = new Date(2026, 6, 19, 23, 59, 59).getTime();
+  var finalStart = new Date(2026, 6, 20).getTime();
+  var finalEnd = new Date(2026, 8, 25, 23, 59, 59).getTime();
+  
+  var gradeSheetRow1Cache = {};
+  var dayNames = ['\u0e2d\u0e32\u0e17\u0e34\u0e15\u0e22\u0e4c', '\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c', '\u0e2d\u0e31\u0e07\u0e04\u0e32\u0e23', '\u0e1e\u0e38\u0e18', '\u0e1e\u0e24\u0e2b\u0e31\u0e2a\u0e1a\u0e14\u0e35', '\u0e28\u0e38\u0e01\u0e23\u0e4c', '\u0e40\u0e2a\u0e32\u0e23\u0e4c'];
+  
+  var changes = 0;
+  
+  for (var i = 1; i < values.length; i++) {
+    var row = values[i];
+    var courseColA = (row[0] || '').toString().trim();
+    if (courseColA.indexOf('\u0e2b\u0e25\u0e31\u0e01') === -1) continue;
+    
+    var dateVal = row[12];
+    if (!dateVal) {
+      debugData.push([i+1, courseColA, 'NO_DATE', '', '', '', '', '', '', '', '', '', 'Skipped: no date in Col M']);
+      continue;
+    }
+    
+    var parsedDate = null;
+    if (dateVal instanceof Date) {
+      parsedDate = dateVal;
+    } else {
+      var parts = dateVal.toString().split('/');
+      if (parts.length === 3) {
+        parsedDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      }
+    }
+    
+    if (!parsedDate || isNaN(parsedDate.getTime())) {
+      debugData.push([i+1, courseColA, dateVal, '', '', '', '', '', '', '', '', '', 'Skipped: invalid date']);
+      continue;
+    }
+    
+    var dTime = parsedDate.getTime();
+    var dayIndex = parsedDate.getDay();
+    var dayName = dayNames[dayIndex];
+    
+    var term = '';
+    if (dTime >= midTermStart && dTime <= midTermEnd) {
+      term = 'MIDTERM';
+    } else if (dTime >= finalStart && dTime <= finalEnd) {
+      term = 'FINAL';
+    }
+    if (!term) {
+      debugData.push([i+1, courseColA, dateVal, dayName, 'NO_TERM', '', '', '', '', '', '', '', 'Skipped: date outside range']);
+      continue;
+    }
+    
+    var startTimeRaw = row[3];
+    var endTimeRaw = row[4];
+    var startHr = '', startMin = '', endHr = '', endMin = '';
+    
+    if (startTimeRaw instanceof Date) {
+      startHr = startTimeRaw.getHours().toString();
+      startMin = startTimeRaw.getMinutes().toString().padStart(2, '0');
+    } else if (startTimeRaw) {
+      var sParts = startTimeRaw.toString().split(':');
+      startHr = sParts[0] || '';
+      startMin = (sParts[1] || '00').padStart(2, '0');
+    }
+    
+    if (endTimeRaw instanceof Date) {
+      endHr = endTimeRaw.getHours().toString();
+      endMin = endTimeRaw.getMinutes().toString().padStart(2, '0');
+    } else if (endTimeRaw) {
+      var eParts = endTimeRaw.toString().split(':');
+      endHr = eParts[0] || '';
+      endMin = (eParts[1] || '00').padStart(2, '0');
+    }
+    
+    var timeStr = '';
+    if (startHr) {
+      timeStr = startHr + '.' + startMin;
+      if (endHr) {
+        timeStr += '-' + endHr + '.' + endMin;
+      }
+    }
+    
+    var branchColN = (row[13] || '').toString().trim();
+    var branchNum = '';
+    var branchM = branchColN.match(/\u0e2a\u0e32\u0e02\u0e32\s*(\d)/);
+    if (branchM) {
+      branchNum = branchM[1];
+    } else if (branchColN.indexOf('1') !== -1) branchNum = '1';
+    else if (branchColN.indexOf('2') !== -1) branchNum = '2';
+    else if (branchColN.indexOf('3') !== -1) branchNum = '3';
+    
+    if (!branchNum) {
+      debugData.push([i+1, courseColA, dateVal, dayName, term, timeStr, 'NO_BRANCH', '', '', '', '', '', 'Branch: ' + branchColN]);
+      continue;
+    }
+    
+    var gradeM = courseColA.match(/(\u0e2d\u0e19\u0e38\u0e1a\u0e32\u0e25|\u0e1b\.\d|\u0e21\.\d)/);
+    var grade = gradeM ? gradeM[1] : '';
+    if (!grade) {
+      debugData.push([i+1, courseColA, dateVal, dayName, term, timeStr, branchNum, 'NO_GRADE', '', '', '', '', 'Cannot extract grade']);
+      continue;
+    }
+    
+    var sheetName = grade + '/' + branchNum;
+    
+    if (!gradeSheetRow1Cache[sheetName]) {
+      var gSheet = ss.getSheetByName(sheetName);
+      if (gSheet) {
+        var lastCol = gSheet.getLastColumn();
+        if (lastCol >= 1) {
+          gradeSheetRow1Cache[sheetName] = gSheet.getRange(1, 1, 1, lastCol).getValues()[0];
+        } else {
+          gradeSheetRow1Cache[sheetName] = [];
+        }
+      } else {
+        gradeSheetRow1Cache[sheetName] = null;
+      }
+    }
+    
+    var headerRow1 = gradeSheetRow1Cache[sheetName];
+    if (!headerRow1) {
+      debugData.push([i+1, courseColA, dateVal, dayName, term, timeStr, branchNum, grade, sheetName, 'NO_SHEET', '', '', 'Sheet not found']);
+      continue;
+    }
+    if (headerRow1.length === 0) {
+      debugData.push([i+1, courseColA, dateVal, dayName, term, timeStr, branchNum, grade, sheetName, 'EMPTY', '0', '', 'No columns']);
+      continue;
+    }
+    
+    var foundCourseName = '';
+    var lastReason = 'No match';
+    var subjectPart = courseColA.split(grade)[0].replace('\u0e2b\u0e25\u0e31\u0e01', '').replace(/\(\u0e2a\u0e1e\u0e10\)/, '').trim();
+    
+    for (var c = 10; c < headerRow1.length; c++) {
+      var headerText = (headerRow1[c] || '').toString().trim();
+      if (!headerText) continue;
+      if (headerText.indexOf('\u0e2b\u0e25\u0e31\u0e01') === -1) { lastReason = 'col' + (c+1) + ':no \u0e2b\u0e25\u0e31\u0e01'; continue; }
+      if (headerText.toUpperCase().indexOf(term) === -1) { lastReason = 'col' + (c+1) + ':no ' + term; continue; }
+      if (subjectPart && headerText.indexOf(subjectPart) === -1) { lastReason = 'col' + (c+1) + ':subj miss ' + subjectPart; continue; }
+      if (headerText.indexOf(dayName) === -1) { lastReason = 'col' + (c+1) + ':day miss ' + dayName; continue; }
+      
+      var timeMatched = false;
+      if (timeStr && headerText.indexOf(timeStr) !== -1) {
+        timeMatched = true;
+      } else if (startHr && headerText.indexOf(startHr + '.') !== -1) {
+        timeMatched = true;
+      }
+      if (!timeMatched && timeStr) { lastReason = 'col' + (c+1) + ':time miss ' + timeStr; continue; }
+      
+      foundCourseName = headerText;
+      lastReason = 'MATCHED col' + (c+1);
+      break;
+    }
+    
+    debugData.push([i+1, courseColA, dateVal, dayName, term, timeStr, branchNum, grade, sheetName, 'YES', headerRow1.length, foundCourseName, lastReason]);
+    
+    if (foundCourseName && foundCourseName !== courseColA) {
+      sheet3.getRange(i + 1, 1).setValue(foundCourseName);
+      changes++;
+    }
+  }
+  
+  if (debugData.length > 0) {
+    debugSheet.getRange(1, 1, debugData.length, debugData[0].length).setValues(debugData);
+  }
+  
+  if (changes > 0) {
+    SpreadsheetApp.getUi().alert('\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08', '\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\u0e0a\u0e37\u0e48\u0e2d\u0e04\u0e2d\u0e23\u0e4c\u0e2a\u0e40\u0e23\u0e35\u0e22\u0e1a\u0e23\u0e49\u0e2d\u0e22\u0e41\u0e25\u0e49\u0e27 ' + changes + ' \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23', SpreadsheetApp.getUi().ButtonSet.OK);
+  } else {
+    SpreadsheetApp.getUi().alert('\u0e41\u0e08\u0e49\u0e07\u0e40\u0e15\u0e37\u0e2d\u0e19', '\u0e44\u0e21\u0e48\u0e1e\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\n\u0e01\u0e23\u0e38\u0e13\u0e32\u0e14\u0e39\u0e0a\u0e35\u0e15 DebugLog \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e15\u0e23\u0e27\u0e08\u0e2a\u0e2d\u0e1a\u0e2a\u0e32\u0e40\u0e2b\u0e15\u0e38', SpreadsheetApp.getUi().ButtonSet.OK);
+  }
+}
+
+
+// --- NEW BACKEND FUNCTIONS FOR PAYMENT SEARCH AND SLIP SUBMISSION ---
+function searchStudentPayment(studentName) {
+  const db = getDb();
+  let results = {
+    regular: [],
+    camp: []
+  };
+  if (!studentName || studentName.trim() === '') return results;
+  const searchName = studentName.trim().toLowerCase();
+
+  const statusSheet = db.getSheetByName('StatusDB');
+  if (statusSheet) {
+    const data = statusSheet.getDataRange().getValues();
+    const headers = data[0];
+    const idIdx = headers.indexOf('ID');
+    const nameIdx = headers.indexOf('ชื่อ-นามสกุล');
+    const courseIdx = headers.indexOf('สาขาเรียน');
+    const costIdx = headers.indexOf('ค่าเรียน');
+    const paidIdx = headers.indexOf('ยอดจ่ายมา');
+    const remainIdx = headers.indexOf('คงเหลือ');
+    
+    if (nameIdx !== -1) {
+      for (let i = 1; i < data.length; i++) {
+        let row = data[i];
+        let name = String(row[nameIdx] || '').trim().toLowerCase();
+        if (name.includes(searchName)) {
+           results.regular.push({
+              id: idIdx !== -1 ? (row[idIdx] || ('R' + i)) : ('R' + i),
+              name: String(row[nameIdx] || ''),
+              course: courseIdx !== -1 ? String(row[courseIdx] || '-') : '-',
+              cost: costIdx !== -1 ? (parseFloat(row[costIdx]) || 0) : 0,
+              paid: paidIdx !== -1 ? (parseFloat(row[paidIdx]) || 0) : 0,
+              remaining: remainIdx !== -1 ? (parseFloat(row[remainIdx]) || 0) : 0
+           });
+        }
+      }
+    }
+  }
+
+  const campSheet = db.getSheetByName('ลงทะเบียนค่าย');
+  if (campSheet) {
+    const data = campSheet.getDataRange().getValues();
+    const headers = data[0];
+    const nameIdx = headers.indexOf('ชื่อ-นามสกุล'); 
+    const campNameIdx = headers.indexOf('ชื่อค่าย'); 
+    const gradeIdx = headers.indexOf('ระดับชั้น');
+    
+    if (nameIdx !== -1) {
+      for (let i = 1; i < data.length; i++) {
+        let row = data[i];
+        let name = String(row[nameIdx] || '').trim().toLowerCase();
+        if (name.includes(searchName)) {
+           let cName = campNameIdx !== -1 ? String(row[campNameIdx] || '') : '';
+           let cGrade = gradeIdx !== -1 ? String(row[gradeIdx] || '') : '';
+           let costFull = 0;
+           let costDaily = 0;
+           if (cName.includes('เมษายน')) {
+             costFull = 4400; costDaily = 1700;
+           } else if (cName.includes('ตุลาคม')) {
+             costFull = 4400; costDaily = 1700;
+           } else if (cName.includes('สานฝันปั้นน้อง')) {
+             if (cGrade.includes('ป.6')) { costFull = 7900; costDaily = 1700; }
+             else if (cGrade.includes('ม.3')) { costFull = 8900; costDaily = 1900; }
+           }
+
+           results.camp.push({
+              id: 'C' + i,
+              name: String(row[nameIdx] || ''),
+              campName: cName,
+              grade: cGrade,
+              costFull: costFull,
+              costDaily: costDaily
+           });
+        }
+      }
+    }
+  }
+
+  return results;
+}
+
+function submitPaymentSlipSearch(payload) {
+  try {
+    const db = getDb();
+    let slipUrl = '-';
+
+    if (payload.fileData && payload.fileData.base64) {
+      let folder;
+      const folderName = 'data_PookPik_Tutor_Slips';
+      const props = PropertiesService.getScriptProperties();
+      const folderId = props.getProperty('SLIP_FOLDER_ID');
+      
+      if (folderId) {
+        try {
+          folder = DriveApp.getFolderById(folderId);
+        } catch(e) {
+          folder = null;
+        }
+      }
+      if (!folder) {
+        const folders = DriveApp.getFoldersByName(folderName);
+        if (folders.hasNext()) {
+          folder = folders.next();
+        } else {
+          folder = DriveApp.createFolder(folderName);
+        }
+        props.setProperty('SLIP_FOLDER_ID', folder.getId());
+      }
+      const content = Utilities.base64Decode(payload.fileData.base64);
+      const blob = Utilities.newBlob(content, payload.fileData.mimeType, 'payment_slip_' + Date.now() + '_' + payload.fileData.fileName);
+      const file = folder.createFile(blob);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      slipUrl = file.getUrl();
+    }
+
+    let sheet = db.getSheetByName('แจ้งชำระเงิน');
+    if (!sheet) {
+      sheet = db.insertSheet('แจ้งชำระเงิน');
+      sheet.appendRow(['Timestamp', 'ชื่อ-นามสกุล', 'รายการที่เลือก', 'ยอดรวมที่ต้องชำระ', 'ยอดที่โอน', 'ลิงก์สลิป', 'สถานะ']);
+      sheet.getRange("A1:G1").setFontWeight("bold").setBackground("#e0e7ff");
+      sheet.setFrozenRows(1);
+    }
+    
+    sheet.appendRow([
+      payload.timestamp || new Date().toLocaleString('th-TH'),
+      payload.std_name || '',
+      payload.selected_items || '',
+      payload.total_amount || 0,
+      payload.transfer_amount || 0,
+      slipUrl,
+      'รอตรวจสอบ'
+    ]);
+    
+    return { success: true };
+  } catch (e) {
+    Logger.log('ERROR in submitPaymentSlipSearch: ' + e.message);
+    return { success: false, error: e.message };
   }
 }

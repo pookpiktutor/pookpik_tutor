@@ -4715,7 +4715,7 @@ function switchPanel(panelName) {
     'admin_evaluation_form': 'รายการประเมินผลการเรียน (เจ้าหน้าที่)',
 
     'staff_salary_summary': 'สรุปรายได้ครูทั้งหมด',
-    'camps': 'ระบบค่าย/กิจกรรม'
+    'camps': 'ข้อมูลค่าย'
 
   };
 
@@ -10410,35 +10410,53 @@ function loadRevenueLogs(isSilent = false) {
   }
 
   google.script.run
-
     .withSuccessHandler(data => {
-
-      if (!isSilent) setLoading(false);
-
-      if (Array.isArray(data)) {
-
-        state.students = data;
-
-        renderRevenueLogs();
-
-      } else {
-
-        if (!isSilent) showToast('ไม่สามารถดึงข้อมูลรายรับได้: ' + (data ? data.error : 'unknown'), 'error');
-
-      }
-
+      // Fetch Camps data to merge into revenue
+      google.script.run.withSuccessHandler(campsData => {
+        if (!isSilent) setLoading(false);
+        if (Array.isArray(data)) {
+          let allRevenueData = data;
+          if (Array.isArray(campsData)) {
+            const mappedCamps = campsData.map(c => {
+              // Find the latest payment date and channel
+              let lastDate = c.pay_r3_date || c.pay_r2_date || c.pay_r1_date || '';
+              let lastChannel = c.pay_r3_date ? c.pay_r3_channel : (c.pay_r2_date ? c.pay_r2_channel : c.pay_r1_channel);
+              
+              return {
+                id: c.timestamp,
+                name: c.std_name,
+                nickname: c.std_nickname,
+                grade: c.std_grade,
+                round: c.camp_name,
+                full: c.full || 0,
+                paid: c.paid || 0,
+                outstanding: c.outstanding || 0,
+                paymentDate: lastDate,
+                paymentChannel: lastChannel || '',
+                staff: '',
+                extraNote: 'กิจกรรมค่าย',
+                paymentTimeNote: '',
+                isCamp: true,
+                campOriginalData: c
+              };
+            });
+            allRevenueData = allRevenueData.concat(mappedCamps);
+          }
+          state.students = allRevenueData;
+          renderRevenueLogs();
+        } else {
+          if (!isSilent) showToast('ไม่สามารถดึงข้อมูลรายรับได้: ' + (data ? data.error : 'unknown'), 'error');
+        }
+      }).withFailureHandler(err => {
+        if (!isSilent) setLoading(false);
+        if (!isSilent) showToast('ดึงข้อมูลค่ายล้มเหลว: ' + err.message, 'error');
+      }).getCampsData('all', 'all');
     })
-
     .withFailureHandler(err => {
-
       if (!isSilent) setLoading(false);
-
       if (!isSilent) showToast('ดึงข้อมูลล้มเหลว: ' + err.message, 'error');
-
     })
-
     .getStudentsList(getLogUser());
-
 }
 
 

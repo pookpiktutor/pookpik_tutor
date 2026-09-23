@@ -489,7 +489,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
               </li>
 
 <li class="nav-item" data-panel="camps">
-<span>🏕️</span> ค่าย/กิจกรรม
+<span>🏕️</span> ข้อมูลค่าย
 </li>
 
               <li class="nav-item" data-panel="debtors">
@@ -1587,12 +1587,8 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                   <label for="camps_year_select" style="margin-bottom:0; font-size: 0.85rem;">ปีการศึกษา:</label>
                   <select id="camps_year_select" class="form-select form-select-sm" style="width: 120px;" onchange="loadCampsData()">
                     <option value="all">ทั้งหมด</option>
-                    <option value="2569">2569</option>
-                    <option value="2570">2570</option>
-                    <option value="2571">2571</option>
-                    <option value="2572">2572</option>
-                    <option value="2573">2573</option>
                   </select>
+
                 </div>
                 
                 <div class="d-flex align-items-center" style="gap: 5px; margin-left: 10px;">
@@ -1630,6 +1626,9 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
             <div id="camps_summary_container" style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
               <!-- Cards will be dynamically inserted here -->
             </div>
+
+            <!-- Cross-tab Summary Table: Camp × Room -->
+            <div id="camps_crosstab_container" style="margin-bottom: 15px;"></div>
             
             <div class="table-container" style="max-height: calc(100vh - 260px); overflow-y: auto;">
               <table class="table table-bordered table-hover custom-table" style="width: 100%;">
@@ -1647,11 +1646,13 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                     <th style="width: 150px;">โรคประจำตัว/แพ้อาหาร</th>
                     <th style="width: 100px;">Size เสื้อ</th>
                     <th style="width: 100px;">สลิป</th>
+                    <th style="width: 100px;">ค้างชำระ</th>
+                    <th style="width: 80px;">จัดการเงิน</th>
                     <th style="width: 100px;">สถานะ</th>
                   </tr>
                 </thead>
                 <tbody id="camps_table_body">
-                  <tr><td colspan="13" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                  <tr><td colspan="15" class="text-center">กำลังโหลดข้อมูล...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -5634,7 +5635,113 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
     </div>
 
     
+    <!-- 9.5. Camp Payment Modal -->
+    <div class="modal-backdrop" id="camp_payment_modal">
+      <div class="glass-panel modal-container" style="max-width: 700px; width: 95%;">
+        <div class="modal-header">
+          <h3 class="modal-title">จัดการเงินค่าลงทะเบียนค่าย</h3>
+          <button class="modal-close" onclick="closeCampPaymentModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="camp_payment_form" onsubmit="saveCampPaymentSubmit(event)">
+            <input type="hidden" id="cp_timestamp">
+            
+            <div style="margin-bottom: 15px; padding: 12px; background: rgba(102, 126, 234, 0.1); border-radius: 6px; border-left: 4px solid var(--color-primary);">
+              <div style="font-weight: bold; color: var(--text-main);" id="cp_student_display_name">นักเรียน: </div>
+              <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="cp_camp_display_name">ค่าย: </div>
+            </div>
+            
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">ยอดเต็ม (บาท)</label>
+                <input type="number" id="cp_full" class="form-input" placeholder="0" oninput="autoCalculateCampPayment()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">รวมชำระแล้ว (บาท)</label>
+                <input type="number" id="cp_paid" class="form-input" placeholder="0" readonly style="background: var(--color-surface-secondary);">
+              </div>
+              <div class="form-group">
+                <label class="form-label">ค้างชำระ (บาท)</label>
+                <input type="number" id="cp_outstanding" class="form-input" placeholder="0" readonly style="background: var(--color-surface-secondary); font-weight: bold; color: var(--color-danger);">
+              </div>
+            </div>
 
+            <div style="margin: 20px 0 10px; font-weight: bold; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">ประวัติการชำระเงิน</div>
+            
+            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px;">
+              <div class="form-group form-group-full" style="margin-bottom: 5px;"><strong style="font-size: 0.9rem; color: var(--color-primary);">งวดที่ 1</strong></div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">วันที่ชำระ</label>
+                <input type="date" id="cp_pay_r1_date" class="form-input form-input-sm">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">ยอดเงิน</label>
+                <input type="number" id="cp_pay_r1_amount" class="form-input form-input-sm" oninput="autoCalculateCampPayment()" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">ช่องทาง</label>
+                <select id="cp_pay_r1_channel" class="form-select form-select-sm">
+                  <option value="">- เลือกช่องทาง -</option>
+                  <option value="โอนเงิน">โอนเงิน</option>
+                  <option value="เงินสด">เงินสด</option>
+                  <option value="บัตรเครดิต">บัตรเครดิต</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px; margin-top: 10px;">
+              <div class="form-group form-group-full" style="margin-bottom: 5px;"><strong style="font-size: 0.9rem; color: var(--color-primary);">งวดที่ 2</strong></div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">วันที่ชำระ</label>
+                <input type="date" id="cp_pay_r2_date" class="form-input form-input-sm">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">ยอดเงิน</label>
+                <input type="number" id="cp_pay_r2_amount" class="form-input form-input-sm" oninput="autoCalculateCampPayment()" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">ช่องทาง</label>
+                <select id="cp_pay_r2_channel" class="form-select form-select-sm">
+                  <option value="">- เลือกช่องทาง -</option>
+                  <option value="โอนเงิน">โอนเงิน</option>
+                  <option value="เงินสด">เงินสด</option>
+                  <option value="บัตรเครดิต">บัตรเครดิต</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px; margin-top: 10px;">
+              <div class="form-group form-group-full" style="margin-bottom: 5px;"><strong style="font-size: 0.9rem; color: var(--color-primary);">งวดที่ 3</strong></div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">วันที่ชำระ</label>
+                <input type="date" id="cp_pay_r3_date" class="form-input form-input-sm">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">ยอดเงิน</label>
+                <input type="number" id="cp_pay_r3_amount" class="form-input form-input-sm" oninput="autoCalculateCampPayment()" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">ช่องทาง</label>
+                <select id="cp_pay_r3_channel" class="form-select form-select-sm">
+                  <option value="">- เลือกช่องทาง -</option>
+                  <option value="โอนเงิน">โอนเงิน</option>
+                  <option value="เงินสด">เงินสด</option>
+                  <option value="บัตรเครดิต">บัตรเครดิต</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-footer" style="margin-top: 20px;">
+              <button type="button" class="btn btn-secondary" onclick="closeCampPaymentModal()">ยกเลิก</button>
+              <button type="submit" class="btn btn-primary">💾 บันทึกข้อมูลการเงิน</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
     <!-- 10. Print Receipt Modal -->
 
     <div class="modal-backdrop" id="print_receipt_modal">
@@ -13500,17 +13607,13 @@ function loadTeacherDailySchedule() {
 
 
       filtered.sort((a, b) => {
-
         const partsA = a.date.split('/');
-
         const partsB = b.date.split('/');
-
         let yA = parseInt(partsA[2]);
-
+        if (yA < 100) yA += (yA > 50) ? 2500 : 2000;
         if (yA > 2400) yA -= 543;
-
         let yB = parseInt(partsB[2]);
-
+        if (yB < 100) yB += (yB > 50) ? 2500 : 2000;
         if (yB > 2400) yB -= 543;
 
         const dateA = new Date(yA, parseInt(partsA[1]) - 1, parseInt(partsA[0]));
@@ -20668,8 +20771,61 @@ function makeSelectSearchable(selectId) {
 
 // Camps Dashboard Feature
 let currentCampsData = [];
+let campsFiltersInitialized = false;
+
+function initCampsFilters(callback) {
+  google.script.run.withSuccessHandler(function(options) {
+    var yearEl = document.getElementById('camps_year_select');
+    var nameEl = document.getElementById('camps_name_select');
+    
+    if (yearEl && options.academicYears && options.academicYears.length > 0) {
+      var currentYear = yearEl.value;
+      var yearHtml = '<option value="all">ทั้งหมด</option>';
+      options.academicYears.forEach(function(y) {
+        yearHtml += '<option value="' + y + '">' + y + '</option>';
+      });
+      yearEl.innerHTML = yearHtml;
+      // Try to restore previous selection
+      if (currentYear && currentYear !== 'all') {
+        yearEl.value = currentYear;
+      }
+    }
+    
+    if (nameEl && options.campNames && options.campNames.length > 0) {
+      var currentName = nameEl.value;
+      var nameHtml = '<option value="all">ทั้งหมด</option>';
+      options.campNames.forEach(function(n) {
+        nameHtml += '<option value="' + n + '">' + n + '</option>';
+      });
+      nameEl.innerHTML = nameHtml;
+      // Try to restore previous selection
+      if (currentName && currentName !== 'all') {
+        nameEl.value = currentName;
+      }
+    }
+    
+    campsFiltersInitialized = true;
+    if (callback) callback();
+  }).getCampsFilterOptions();
+}
 
 function loadCampsData() {
+  var tbody = document.getElementById('camps_table_body');
+  if (!tbody) return;
+  
+  tbody.innerHTML = '<tr><td colspan="15" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
+  
+  // Initialize filters from sheet data on first load
+  if (!campsFiltersInitialized) {
+    initCampsFilters(function() {
+      doLoadCampsData();
+    });
+  } else {
+    doLoadCampsData();
+  }
+}
+
+function doLoadCampsData() {
   var yearEl = document.getElementById('camps_year_select');
   var nameEl = document.getElementById('camps_name_select');
   var year = yearEl ? yearEl.value : 'all';
@@ -20678,11 +20834,12 @@ function loadCampsData() {
   var tbody = document.getElementById('camps_table_body');
   if (!tbody) return;
   
-  tbody.innerHTML = '<tr><td colspan="13" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="15" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
   
+
   google.script.run.withSuccessHandler(function(data) {
     if (data && data.error) {
-      tbody.innerHTML = '<tr><td colspan="13" class="text-center text-danger">เกิดข้อผิดพลาด: ' + data.error + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="15" class="text-center text-danger">เกิดข้อผิดพลาด: ' + data.error + '</td></tr>';
       return;
     }
     
@@ -20755,8 +20912,101 @@ function renderCampsTable() {
     summaryContainer.innerHTML = summaryHtml;
   }
   
+  // Cross-tab Summary Table: Camp × Room
+  var crosstabContainer = document.getElementById('camps_crosstab_container');
+  if (crosstabContainer) {
+    // Use ALL data (not filtered by room) for the cross-tab
+    var allData = currentCampsData || [];
+    
+    // Collect unique camp names and rooms
+    var campNames = {};
+    var roomNames = {};
+    var crossCounts = {}; // key: "campName||room" => count
+    
+    allData.forEach(function(item) {
+      var cname = (item.camp_name || 'ไม่ระบุค่าย').trim();
+      var room = (item.class_section || 'ไม่ระบุห้อง').toString().trim();
+      if (room === '' || room === '-') room = 'ไม่ระบุห้อง';
+      
+      campNames[cname] = true;
+      roomNames[room] = true;
+      
+      var key = cname + '||' + room;
+      crossCounts[key] = (crossCounts[key] || 0) + 1;
+    });
+    
+    var sortedCamps = Object.keys(campNames).sort();
+    var sortedRooms = Object.keys(roomNames).sort(function(a, b) {
+      // Sort "ไม่ระบุห้อง" to the end
+      if (a === 'ไม่ระบุห้อง') return 1;
+      if (b === 'ไม่ระบุห้อง') return -1;
+      return a.localeCompare(b, 'th');
+    });
+    
+    if (sortedCamps.length > 0) {
+      var ctHtml = '<div class="glass-panel" style="padding: 16px; border-radius: 12px;">';
+      ctHtml += '<div style="font-weight: 600; font-size: 1rem; margin-bottom: 10px; color: var(--text-main);">📊 สรุปจำนวนนักเรียนแยกตามค่ายและห้อง</div>';
+      ctHtml += '<div style="overflow-x: auto;">';
+      ctHtml += '<table class="table table-bordered table-hover" style="width: 100%; font-size: 0.85rem; margin-bottom: 0; border-collapse: collapse;">';
+      
+      // Header row
+      ctHtml += '<thead><tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">';
+      ctHtml += '<th style="padding: 8px 12px; text-align: left; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);">ชื่อค่าย / กิจกรรม</th>';
+      sortedRooms.forEach(function(room) {
+        ctHtml += '<th style="padding: 8px 10px; text-align: center; font-weight: 600; border: 1px solid rgba(255,255,255,0.2); min-width: 70px;">' + room + '</th>';
+      });
+      ctHtml += '<th style="padding: 8px 10px; text-align: center; font-weight: 700; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.15); min-width: 70px;">รวม</th>';
+      ctHtml += '</tr></thead>';
+      
+      // Data rows
+      ctHtml += '<tbody>';
+      var grandTotal = 0;
+      var roomTotals = {};
+      
+      sortedCamps.forEach(function(cname, idx) {
+        var rowBg = idx % 2 === 0 ? 'background-color: rgba(102, 126, 234, 0.04);' : '';
+        ctHtml += '<tr style="' + rowBg + '">';
+        ctHtml += '<td style="padding: 8px 12px; font-weight: 500; border: 1px solid #e2e8f0; color: var(--text-main);">' + cname + '</td>';
+        var rowTotal = 0;
+        
+        sortedRooms.forEach(function(room) {
+          var key = cname + '||' + room;
+          var count = crossCounts[key] || 0;
+          rowTotal += count;
+          roomTotals[room] = (roomTotals[room] || 0) + count;
+          
+          var cellStyle = 'padding: 8px 10px; text-align: center; border: 1px solid #e2e8f0;';
+          if (count > 0) {
+            ctHtml += '<td style="' + cellStyle + ' font-weight: 600; color: #2563eb;">' + count + '</td>';
+          } else {
+            ctHtml += '<td style="' + cellStyle + ' color: #cbd5e1;">-</td>';
+          }
+        });
+        
+        grandTotal += rowTotal;
+        ctHtml += '<td style="padding: 8px 10px; text-align: center; font-weight: 700; border: 1px solid #e2e8f0; background-color: rgba(102, 126, 234, 0.08); color: #1e40af;">' + rowTotal + '</td>';
+        ctHtml += '</tr>';
+      });
+      
+      // Footer totals row
+      ctHtml += '<tr style="background: linear-gradient(135deg, #f0f4ff 0%, #e8ecff 100%); font-weight: 700;">';
+      ctHtml += '<td style="padding: 8px 12px; border: 1px solid #e2e8f0; color: var(--text-main);">รวมทั้งหมด</td>';
+      sortedRooms.forEach(function(room) {
+        var rt = roomTotals[room] || 0;
+        ctHtml += '<td style="padding: 8px 10px; text-align: center; border: 1px solid #e2e8f0; color: #1e40af;">' + rt + '</td>';
+      });
+      ctHtml += '<td style="padding: 8px 10px; text-align: center; border: 1px solid #e2e8f0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 1rem;">' + grandTotal + '</td>';
+      ctHtml += '</tr>';
+      
+      ctHtml += '</tbody></table></div></div>';
+      crosstabContainer.innerHTML = ctHtml;
+    } else {
+      crosstabContainer.innerHTML = '';
+    }
+  }
+  
   if (filteredData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="13" class="text-center">ไม่มีข้อมูลนักเรียนในระบบตามเงื่อนไขที่เลือก</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="15" class="text-center">ไม่มีข้อมูลนักเรียนในระบบตามเงื่อนไขที่เลือก</td></tr>';
     return;
   }
   
@@ -20779,6 +21029,15 @@ function renderCampsTable() {
     } else {
       html += "<td>-</td>";
     }
+    
+    // ค้างชำระ
+    var outst = parseFloat(item.outstanding) || 0;
+    var outstColor = outst > 0 ? "color: red; font-weight: bold;" : "color: green;";
+    html += "<td style='" + outstColor + "'>" + outst.toLocaleString() + "</td>";
+    
+    // จัดการเงิน (Modal)
+    var escTs = (item.timestamp || '').toString().replace(/'/g, "\\'");
+    html += "<td><button class='btn btn-sm btn-outline-warning' style='font-size:0.75rem; padding: 2px 5px;' onclick=\"showCampPaymentModal('" + escTs + "')\">🪙 จัดการ</button></td>";
     
     var currentStatus = (item.status || "").trim();
     if (currentStatus === "ยืนยันแล้ว") {
@@ -20819,6 +21078,95 @@ function confirmCampStatus(timestamp) {
       alert('เกิดข้อผิดพลาด: ' + (res ? res.error : 'ไม่ทราบสาเหตุ'));
     }
   }).updateCampStatus(timestamp, 'ยืนยันแล้ว');
+}
+
+function showCampPaymentModal(timestamp) {
+  var item = currentCampsData.find(function(c) {
+    return String(c.timestamp) === String(timestamp);
+  });
+  if (!item) {
+    alert("ไม่พบข้อมูลนักเรียน");
+    return;
+  }
+  
+  document.getElementById('cp_timestamp').value = item.timestamp;
+  document.getElementById('cp_student_display_name').innerText = 'นักเรียน: ' + (item.std_name || '') + ' (' + (item.std_nickname || '') + ')';
+  document.getElementById('cp_camp_display_name').innerText = 'ค่าย: ' + (item.camp_name || '') + ' (ปี ' + (item.camp_year || '') + ')';
+  
+  document.getElementById('cp_full').value = item.full || '';
+  document.getElementById('cp_paid').value = item.paid || '';
+  document.getElementById('cp_outstanding').value = item.outstanding || '';
+  
+  document.getElementById('cp_pay_r1_date').value = (item.pay_r1_date) ? convertDateTimeFromSheet(item.pay_r1_date).split('T')[0] : '';
+  document.getElementById('cp_pay_r1_amount').value = item.pay_r1_amount || '';
+  document.getElementById('cp_pay_r1_channel').value = item.pay_r1_channel || '';
+  
+  document.getElementById('cp_pay_r2_date').value = (item.pay_r2_date) ? convertDateTimeFromSheet(item.pay_r2_date).split('T')[0] : '';
+  document.getElementById('cp_pay_r2_amount').value = item.pay_r2_amount || '';
+  document.getElementById('cp_pay_r2_channel').value = item.pay_r2_channel || '';
+  
+  document.getElementById('cp_pay_r3_date').value = (item.pay_r3_date) ? convertDateTimeFromSheet(item.pay_r3_date).split('T')[0] : '';
+  document.getElementById('cp_pay_r3_amount').value = item.pay_r3_amount || '';
+  document.getElementById('cp_pay_r3_channel').value = item.pay_r3_channel || '';
+  
+  document.getElementById('camp_payment_modal').classList.add('active');
+}
+
+function closeCampPaymentModal() {
+  document.getElementById('camp_payment_modal').classList.remove('active');
+}
+
+function autoCalculateCampPayment() {
+  var full = parseFloat(document.getElementById('cp_full').value) || 0;
+  var r1 = parseFloat(document.getElementById('cp_pay_r1_amount').value) || 0;
+  var r2 = parseFloat(document.getElementById('cp_pay_r2_amount').value) || 0;
+  var r3 = parseFloat(document.getElementById('cp_pay_r3_amount').value) || 0;
+  
+  var totalPaid = r1 + r2 + r3;
+  var outst = full - totalPaid;
+  
+  document.getElementById('cp_paid').value = totalPaid;
+  document.getElementById('cp_outstanding').value = outst;
+}
+
+function saveCampPaymentSubmit(e) {
+  e.preventDefault();
+  
+  var timestamp = document.getElementById('cp_timestamp').value;
+  var full = parseFloat(document.getElementById('cp_full').value) || 0;
+  var paid = parseFloat(document.getElementById('cp_paid').value) || 0;
+  var outst = parseFloat(document.getElementById('cp_outstanding').value) || 0;
+  
+  var paymentData = {
+    full: full,
+    paid: paid,
+    outstanding: outst,
+    pay_r1_date: document.getElementById('cp_pay_r1_date').value,
+    pay_r1_amount: parseFloat(document.getElementById('cp_pay_r1_amount').value) || 0,
+    pay_r1_channel: document.getElementById('cp_pay_r1_channel').value,
+    pay_r2_date: document.getElementById('cp_pay_r2_date').value,
+    pay_r2_amount: parseFloat(document.getElementById('cp_pay_r2_amount').value) || 0,
+    pay_r2_channel: document.getElementById('cp_pay_r2_channel').value,
+    pay_r3_date: document.getElementById('cp_pay_r3_date').value,
+    pay_r3_amount: parseFloat(document.getElementById('cp_pay_r3_amount').value) || 0,
+    pay_r3_channel: document.getElementById('cp_pay_r3_channel').value
+  };
+  
+  setLoading(true, "กำลังบันทึกข้อมูล...");
+  
+  google.script.run.withSuccessHandler(function(res) {
+    setLoading(false);
+    if (res && res.success) {
+      closeCampPaymentModal();
+      showToast('บันทึกการชำระเงินเรียบร้อยแล้ว', 'success');
+      loadCampsData();
+    } else {
+      alert('เกิดข้อผิดพลาด: ' + (res ? res.error : 'ไม่ทราบสาเหตุ'));
+    }
+  }).withFailureHandler(function(err) {
+    setLoading(false);
+    alert('เกิดข้อผิดพลาด: ' + err.message);
+  }).saveCampPayment(timestamp, paymentData);
 }
 
 
@@ -21011,7 +21359,7 @@ function switchPanel(panelName) {
 
 
     'staff_salary_summary': 'สรุปรายได้ครูทั้งหมด',
-    'camps': 'ระบบค่าย/กิจกรรม'
+    'camps': 'ข้อมูลค่าย'
 
 
 

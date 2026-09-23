@@ -1,4 +1,4 @@
-// --- BACKGROUND TASK QUEUE MANAGER ---
+﻿// --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
 
@@ -129,7 +129,7 @@ function processBgTaskQueue() {
 
   } else {
 
-     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA/exec';
+     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
 
      fetch(GAS_API_URL, {
 
@@ -255,7 +255,7 @@ window.google.script.run = new Proxy({}, {
 
         } else {
 
-          const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA/exec';
+          const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
 
           fetch(GAS_API_URL, {
 
@@ -10414,35 +10414,53 @@ function loadRevenueLogs(isSilent = false) {
   }
 
   google.script.run
-
     .withSuccessHandler(data => {
-
-      if (!isSilent) setLoading(false);
-
-      if (Array.isArray(data)) {
-
-        state.students = data;
-
-        renderRevenueLogs();
-
-      } else {
-
-        if (!isSilent) showToast('ไม่สามารถดึงข้อมูลรายรับได้: ' + (data ? data.error : 'unknown'), 'error');
-
-      }
-
+      // Fetch Camps data to merge into revenue
+      google.script.run.withSuccessHandler(campsData => {
+        if (!isSilent) setLoading(false);
+        if (Array.isArray(data)) {
+          let allRevenueData = data;
+          if (Array.isArray(campsData)) {
+            const mappedCamps = campsData.map(c => {
+              // Find the latest payment date and channel
+              let lastDate = c.pay_r3_date || c.pay_r2_date || c.pay_r1_date || '';
+              let lastChannel = c.pay_r3_date ? c.pay_r3_channel : (c.pay_r2_date ? c.pay_r2_channel : c.pay_r1_channel);
+              
+              return {
+                id: c.timestamp,
+                name: c.std_name,
+                nickname: c.std_nickname,
+                grade: c.std_grade,
+                round: c.camp_name,
+                full: c.full || 0,
+                paid: c.paid || 0,
+                outstanding: c.outstanding || 0,
+                paymentDate: lastDate,
+                paymentChannel: lastChannel || '',
+                staff: '',
+                extraNote: 'กิจกรรมค่าย',
+                paymentTimeNote: '',
+                isCamp: true,
+                campOriginalData: c
+              };
+            });
+            allRevenueData = allRevenueData.concat(mappedCamps);
+          }
+          state.students = allRevenueData;
+          renderRevenueLogs();
+        } else {
+          if (!isSilent) showToast('ไม่สามารถดึงข้อมูลรายรับได้: ' + (data ? data.error : 'unknown'), 'error');
+        }
+      }).withFailureHandler(err => {
+        if (!isSilent) setLoading(false);
+        if (!isSilent) showToast('ดึงข้อมูลค่ายล้มเหลว: ' + err.message, 'error');
+      }).getCampsData('all', 'all');
     })
-
     .withFailureHandler(err => {
-
       if (!isSilent) setLoading(false);
-
       if (!isSilent) showToast('ดึงข้อมูลล้มเหลว: ' + err.message, 'error');
-
     })
-
     .getStudentsList(getLogUser());
-
 }
 
 

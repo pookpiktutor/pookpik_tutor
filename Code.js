@@ -17816,6 +17816,36 @@ function saveCampStudentData(campData) {
 }
 
 
+function getCampsFilterOptions() {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return { campNames: [], academicYears: [] };
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return { campNames: [], academicYears: [] };
+    
+    const campNamesSet = new Set();
+    const yearsSet = new Set();
+    
+    for (let i = 1; i < data.length; i++) {
+      const campName = (data[i][1] || '').toString().trim();
+      const year = (data[i][2] || '').toString().trim();
+      
+      if (campName) campNamesSet.add(campName);
+      if (year) yearsSet.add(year);
+    }
+    
+    return {
+      campNames: Array.from(campNamesSet).sort(),
+      academicYears: Array.from(yearsSet).sort().reverse()
+    };
+  } catch (e) {
+    Logger.log('ERROR in getCampsFilterOptions: ' + e.message);
+    return { campNames: [], academicYears: [] };
+  }
+}
+
 function getCampsData(academicYear, campName) {
   try {
     const db = getDb();
@@ -17843,7 +17873,19 @@ function getCampsData(academicYear, campName) {
         std_school: row[9] || '',
         medical_condition: row[10] || '',
         shirt_size: row[11] || '',
-        slip_url: row[12] || ''
+        slip_url: row[12] || '',
+        full: parseFloat(row[13]) || 0,
+        paid: parseFloat(row[14]) || 0,
+        outstanding: parseFloat(row[15]) || 0,
+        pay_r1_date: row[16] ? cleanSheetDate(row[16]) : '',
+        pay_r1_amount: parseFloat(row[17]) || 0,
+        pay_r1_channel: row[18] || '',
+        pay_r2_date: row[19] ? cleanSheetDate(row[19]) : '',
+        pay_r2_amount: parseFloat(row[20]) || 0,
+        pay_r2_channel: row[21] || '',
+        pay_r3_date: row[22] ? cleanSheetDate(row[22]) : '',
+        pay_r3_amount: parseFloat(row[23]) || 0,
+        pay_r3_channel: row[24] || ''
       };
       
       let match = true;
@@ -17888,6 +17930,57 @@ function updateCampStatus(timestamp, newStatus) {
     return {success: false, error: 'ไม่พบข้อมูลนักเรียนที่ต้องการอัปเดต'};
   } catch (e) {
     Logger.log('ERROR in updateCampStatus: ' + e.message);
+    return {success: false, error: e.message};
+  }
+}
+
+function saveCampPayment(timestamp, paymentData) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return {success: false, error: 'ไม่พบชีตลงทะเบียนค่าย'};
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return {success: false, error: 'ไม่มีข้อมูลในชีต'};
+    
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(timestamp)) {
+        const rIndex = i + 1;
+        const rowUpdates = [
+          [
+            paymentData.full || 0,
+            paymentData.paid || 0,
+            paymentData.outstanding || 0,
+            paymentData.pay_r1_date || '',
+            paymentData.pay_r1_amount || '',
+            paymentData.pay_r1_channel || '',
+            paymentData.pay_r2_date || '',
+            paymentData.pay_r2_amount || '',
+            paymentData.pay_r2_channel || '',
+            paymentData.pay_r3_date || '',
+            paymentData.pay_r3_amount || '',
+            paymentData.pay_r3_channel || ''
+          ]
+        ];
+        sheet.getRange(rIndex, 14, 1, 12).setValues(rowUpdates);
+        
+        // Ensure headers exist if this is the first time
+        const headers = data[0];
+        if (!headers[13] || headers[13] !== 'ยอดเต็ม') {
+          const headerUpdates = [['ยอดเต็ม', 'ชำระแล้ว', 'ค้างชำระ', 
+            'วันที่ชำระงวด 1', 'ยอดเงินงวด 1', 'ช่องทางงวด 1',
+            'วันที่ชำระงวด 2', 'ยอดเงินงวด 2', 'ช่องทางงวด 2',
+            'วันที่ชำระงวด 3', 'ยอดเงินงวด 3', 'ช่องทางงวด 3']];
+          sheet.getRange(1, 14, 1, 12).setValues(headerUpdates);
+        }
+        
+        return {success: true};
+      }
+    }
+    
+    return {success: false, error: 'ไม่พบข้อมูลนักเรียนที่ต้องการอัปเดต'};
+  } catch (e) {
+    Logger.log('ERROR in saveCampPayment: ' + e.message);
     return {success: false, error: e.message};
   }
 }
