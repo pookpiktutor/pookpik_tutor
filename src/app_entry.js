@@ -2,7 +2,7 @@
 // Connects directly to Google Apps Script Web App for database operations
 // No Firebase dependency - all data goes through GAS
 
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec";
 
 
 

@@ -437,7 +437,7 @@ export async function addManagerLog(managerName, action, details) { return { suc
 export async function deleteCourseColumn(course, logUser) { return { success: true }; }
 // Helper to fetch from GAS
 async function fetchFromGas(functionName, args = []) {
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec";
     try {
         const response = await fetch(WEB_APP_URL, {
             method: "POST",
