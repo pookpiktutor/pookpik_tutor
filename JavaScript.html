@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 // --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
@@ -16035,9 +16035,20 @@ function populateTeacherCourseDropdown() {
     const evals = state.evaluations || [];
     let availableCount = 0;
     
-    state._teacherCourses.forEach(function(c, idx) {
+    // Check if filter function is available
+    const filteredCourses = (typeof filterCoursesByCurrentTerm === 'function') 
+      ? filterCoursesByCurrentTerm(state._teacherCourses)
+      : state._teacherCourses.map((c, idx) => ({ course: c, originalIndex: idx }));
+    
+    filteredCourses.forEach(function(item) {
+      const c = item.course;
+      const idx = item.originalIndex;
+      
       if (!c || !c.courseName || c.courseName.startsWith('NO_COURSES') || c.courseName.startsWith('ERR_')) return;
       const isDone = isCourseFullyEvaluated(c, evals);
+      
+      if (isDone) return; // Do not show evaluated courses
+      
       availableCount++;
       const opt = document.createElement('option');
       opt.value = idx;
@@ -16046,7 +16057,7 @@ function populateTeacherCourseDropdown() {
     });
 
     if (availableCount === 0) {
-      courseSelect.innerHTML = '<option value="" disabled selected>-- ไม่พบตารางคอร์สเรียนของคุณครู --</option>';
+      courseSelect.innerHTML = '<option value="" disabled selected>-- ไม่พบตารางคอร์สเรียน --</option>';
     }
   }
 }

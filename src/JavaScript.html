@@ -16056,35 +16056,24 @@ function populateTeacherCourseDropdown() {
   courseSelect.innerHTML = '<option value="">-- เลือกคอร์สเรียน --</option>';
   if (studentSelect) studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
 
-  // Determine month-based course filter from eval_date
-  let monthFilter = null;
-  const evalDateEl = document.getElementById('eval_date');
-  if (evalDateEl && evalDateEl.value) {
-    const dateParts = evalDateEl.value.split('-'); // yyyy-mm-dd
-    if (dateParts.length === 3) {
-      const selectedMonth = parseInt(dateParts[1]);
-      monthFilter = getEvalCourseFilterByMonth(selectedMonth);
-    }
-  }
-
   if (Array.isArray(state._teacherCourses)) {
     const evals = state.evaluations || [];
     let availableCount = 0;
     
-    state._teacherCourses.forEach(function(c, idx) {
+    // Check if filter function is available
+    const filteredCourses = (typeof filterCoursesByCurrentTerm === 'function') 
+      ? filterCoursesByCurrentTerm(state._teacherCourses)
+      : state._teacherCourses.map((c, idx) => ({ course: c, originalIndex: idx }));
+    
+    filteredCourses.forEach(function(item) {
+      const c = item.course;
+      const idx = item.originalIndex;
+      
       if (!c || !c.courseName || c.courseName.startsWith('NO_COURSES') || c.courseName.startsWith('ERR_')) return;
-      
-      // Apply month-based course filter
-      if (monthFilter) {
-        const courseNameLower = (c.courseName || '').toLowerCase();
-        const displayNameLower = (c.displayCourseName || '').toLowerCase();
-        const filterLower = monthFilter.toLowerCase();
-        if (!courseNameLower.includes(filterLower) && !displayNameLower.includes(filterLower)) {
-          return; // Skip courses that don't match the month filter
-        }
-      }
-      
       const isDone = isCourseFullyEvaluated(c, evals);
+      
+      if (isDone) return; // Do not show evaluated courses
+      
       availableCount++;
       const opt = document.createElement('option');
       opt.value = idx;
@@ -16092,10 +16081,8 @@ function populateTeacherCourseDropdown() {
       courseSelect.appendChild(opt);
     });
 
-    if (availableCount === 0 && monthFilter) {
-      courseSelect.innerHTML = '<option value="" disabled selected>-- ไม่พบคอร์สที่ตรงกับเดือนที่เลือก --</option>';
-    } else if (availableCount === 0) {
-      courseSelect.innerHTML = '<option value="" disabled selected>-- ไม่พบตารางคอร์สเรียนของคุณครู --</option>';
+    if (availableCount === 0) {
+      courseSelect.innerHTML = '<option value="" disabled selected>-- ไม่พบตารางคอร์สเรียน --</option>';
     }
   }
 }

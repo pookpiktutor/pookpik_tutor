@@ -43916,6 +43916,66 @@ function isCourseFullyEvaluated(c, evals) {
 
 
 
+function filterCoursesByCurrentTerm(courses) {
+  if (!Array.isArray(courses) || courses.length === 0) return [];
+
+  var today = new Date();
+  var m = today.getMonth() + 1; // 1-12
+  var d = today.getDate();
+
+  var targetIndex = 0;
+  if (m === 4 || (m === 5 && d <= 16)) targetIndex = 0; // SUMMER
+  else if ((m === 5 && d >= 17) || m === 6 || (m === 7 && d <= 15)) targetIndex = 1; // MIDTERM 1
+  else if ((m === 7 && d >= 16) || m === 8 || m === 9) targetIndex = 2; // FINAL 1
+  else if (m === 10) targetIndex = 3; // OCT
+  else if (m === 11 || m === 12) targetIndex = 4; // MIDTERM 2
+  else if (m === 1 || m === 2 || m === 3) targetIndex = 5; // FINAL 2
+
+  var termOrder = [
+    { name: 'summer', regex: /summer/i },
+    { name: 'midterm 1', regex: /midterm\s*1/i },
+    { name: 'final 1', regex: /final\s*1/i },
+    { name: 'oct', regex: /ปิดเทอม\s*ต\.ค\./i },
+    { name: 'midterm 2', regex: /midterm\s*2/i },
+    { name: 'final 2', regex: /final\s*2/i }
+  ];
+
+  var maxIndex = Math.min(targetIndex + 1, termOrder.length - 1);
+  var activeRegex = null;
+
+  for (var i = maxIndex; i >= 0; i--) {
+    var regex = termOrder[i].regex;
+    var exists = false;
+    for (var j = 0; j < courses.length; j++) {
+      var cName = courses[j].courseName || courses[j].displayCourseName || '';
+      if (regex.test(cName)) {
+        exists = true;
+        break;
+      }
+    }
+    if (exists) {
+      activeRegex = regex;
+      break;
+    }
+  }
+
+  if (!activeRegex) {
+    return courses.map(function(c, idx) {
+      return { course: c, originalIndex: idx };
+    });
+  }
+
+  var filtered = [];
+  for (var k = 0; k < courses.length; k++) {
+    var name = courses[k].courseName || courses[k].displayCourseName || '';
+    if (activeRegex.test(name)) {
+      filtered.push({ course: courses[k], originalIndex: k });
+    }
+  }
+
+  return filtered;
+}
+
 function populateTeacherCourseDropdown() {
 
   const courseSelect = document.getElementById('eval_course');
@@ -43924,13 +43984,9 @@ function populateTeacherCourseDropdown() {
 
   if (!courseSelect) return;
 
-  
-
   courseSelect.innerHTML = '<option value="">-- เลือกคอร์สเรียน --</option>';
 
   if (studentSelect) studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
-
-
 
   if (Array.isArray(state._teacherCourses)) {
 
@@ -43938,13 +43994,17 @@ function populateTeacherCourseDropdown() {
 
     let availableCount = 0;
 
-    
+    const filteredCourses = filterCoursesByCurrentTerm(state._teacherCourses);
 
-    state._teacherCourses.forEach(function(c, idx) {
+    filteredCourses.forEach(function(item) {
 
-      
+      const c = item.course;
+      const idx = item.originalIndex;
+
       if (!c || !c.courseName || c.courseName.startsWith('NO_COURSES') || c.courseName.startsWith('ERR_')) return;
-const isDone = isCourseFullyEvaluated(c, evals);
+      
+      const isDone = isCourseFullyEvaluated(c, evals);
+      
       if (isDone) return; // Do not show evaluated courses
 
       availableCount++;

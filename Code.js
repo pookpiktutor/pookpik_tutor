@@ -1,4 +1,4 @@
-﻿function findTeacherProfile(teachersList, teacherArg) {
+function findTeacherProfile(teachersList, teacherArg) {
   if (!Array.isArray(teachersList) || !teacherArg) return null;
   const cleanArg = teacherArg.toString().trim();
   if (!cleanArg || cleanArg === 'all' || cleanArg === 'ทั้งหมด') return null;
@@ -3760,6 +3760,68 @@ function batchPublishEvaluations(evalIds, logUser) {
   }
 }
 
+function filterEvalsByTerm(evals) {
+  if (!Array.isArray(evals) || evals.length === 0) return [];
+
+  var today = new Date();
+  var m = today.getMonth() + 1; // 1-12
+  var d = today.getDate();
+
+  var targetIndex = 0;
+  if (m === 4 || (m === 5 && d <= 16)) targetIndex = 0; // SUMMER
+  else if ((m === 5 && d >= 17) || m === 6 || (m === 7 && d <= 15)) targetIndex = 1; // MIDTERM 1
+  else if ((m === 7 && d >= 16) || m === 8 || m === 9) targetIndex = 2; // FINAL 1
+  else if (m === 10) targetIndex = 3; // OCT
+  else if (m === 11 || m === 12) targetIndex = 4; // MIDTERM 2
+  else if (m === 1 || m === 2 || m === 3) targetIndex = 5; // FINAL 2
+
+  var termOrder = [
+    { name: 'summer', regex: /summer/i },
+    { name: 'midterm 1', regex: /midterm\s*1/i },
+    { name: 'final 1', regex: /final\s*1/i },
+    { name: 'oct', regex: /ปิดเทอม\s*ต\.ค\./i },
+    { name: 'midterm 2', regex: /midterm\s*2/i },
+    { name: 'final 2', regex: /final\s*2/i }
+  ];
+
+  var maxIndex = Math.min(targetIndex + 1, termOrder.length - 1);
+  var activeRegex = null;
+
+  for (var i = maxIndex; i >= 0; i--) {
+    var regex = termOrder[i].regex;
+    var exists = false;
+    for (var j = 0; j < evals.length; j++) {
+      var cName = evals[j].subject || '';
+      if (regex.test(cName)) {
+        exists = true;
+        break;
+      }
+    }
+    if (exists) {
+      activeRegex = regex;
+      break;
+    }
+  }
+
+  if (!activeRegex) {
+    return evals;
+  }
+
+  var filtered = [];
+  for (var k = 0; k < evals.length; k++) {
+    var name = evals[k].subject || '';
+    if (activeRegex.test(name)) {
+      filtered.push(evals[k]);
+    }
+  }
+
+  if (filtered.length === 0) {
+    return evals;
+  }
+
+  return filtered;
+}
+
 function getAdminEvalStats() {
   try {
     clearAllEvaluationCaches();
@@ -3863,7 +3925,7 @@ function getAdminEvalStats() {
     Logger.log('Error calculating admin eval stats: ' + e.message);
   }
 
-  return { evals: evals, counts: counts };
+  return { evals: filterEvalsByTerm(evals), counts: counts };
 }
 
 function getEvaluationsList(logUser) {
@@ -3871,7 +3933,7 @@ function getEvaluationsList(logUser) {
   const cacheKey = logUser ? 'evaluations_list_' + logUser : 'evaluations_list_all';
 
   const cached = getCacheObject(cacheKey);
-  if (cached && !isParentQuery) return cached;
+  if (cached && !isParentQuery) return filterEvalsByTerm(cached);
 
   try {
     const db = getDb();
@@ -4015,7 +4077,7 @@ function getEvaluationsList(logUser) {
     if (!isParentQuery) {
       setCacheObject(cacheKey, list, 300);
     }
-    return list.reverse();
+    return filterEvalsByTerm(list.reverse());
   } catch (e) {
     return [];
   }
