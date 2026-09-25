@@ -1807,15 +1807,19 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
 
                   <label for="log_start_date" style="color: var(--text-muted); font-size: 0.85rem; white-space: nowrap;">วันเริ่ม:</label>
 
-                  <input type="date" id="log_start_date" class="form-input" style="width: 150px; display: inline-block;" onchange="loadRevenueLogs()">
+                  <input type="date" id="log_start_date" class="form-input" style="width: 150px; display: inline-block;">
 
                   
 
                   <label for="log_end_date" style="color: var(--text-muted); font-size: 0.85rem; white-space: nowrap;">วันสิ้นสุด:</label>
 
-                  <input type="date" id="log_end_date" class="form-input" style="width: 150px; display: inline-block;" onchange="loadRevenueLogs()">
+                  <input type="date" id="log_end_date" class="form-input" style="width: 150px; display: inline-block;">
 
                   
+
+                  <button class="btn btn-secondary" onclick="loadRevenueLogs()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap; padding: 6px 12px; margin-left: 8px;">
+                    <span>🔄</span> ดึงข้อมูล
+                  </button>
 
                   <span id="class_log_date_display" style="font-weight: bold; color: var(--color-primary-hover); font-size: 1.05rem; white-space: nowrap; margin-left: 8px;"></span>
 
@@ -1973,48 +1977,6 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                       </thead>
 
                       <tbody id="revenue_daily_summary_tbody">
-
-                        <!-- Loaded dynamically -->
-
-                      </tbody>
-
-                    </table>
-
-                  </div>
-
-                </div>
-
-
-
-                <!-- Weekly Breakdown Table -->
-
-                <div class="glass-panel" style="padding: 20px;">
-
-                  <div style="font-weight: 600; font-size: 1.05rem; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-
-                    <span>🗓️</span> รายรับรายสัปดาห์ (Weekly)
-
-                  </div>
-
-                  <div class="table-responsive">
-
-                    <table class="custom-table">
-
-                      <thead>
-
-                        <tr>
-
-                          <th>สัปดาห์ (วันเริ่ม - วันสิ้นสุด)</th>
-
-                          <th style="text-align: right;">จำนวนรายการ</th>
-
-                          <th style="text-align: right;">ยอดรวมชำระจริง (บาท)</th>
-
-                        </tr>
-
-                      </thead>
-
-                      <tbody id="revenue_weekly_summary_tbody">
 
                         <!-- Loaded dynamically -->
 

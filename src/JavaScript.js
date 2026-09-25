@@ -18090,46 +18090,6 @@ function renderRevenueSummary() {
 
   
 
-  // Populate Weekly Table
-
-  const weeklyTbody = document.getElementById('revenue_weekly_summary_tbody');
-
-  if (weeklyTbody) {
-
-    weeklyTbody.innerHTML = '';
-
-    const weeklyKeys = Object.keys(weeklyGroups).sort((a, b) => b - a);
-
-    if (weeklyKeys.length === 0) {
-
-      weeklyTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">ไม่มีข้อมูลในช่วงวันที่เลือก</td></tr>';
-
-    } else {
-
-      weeklyKeys.forEach(monTime => {
-
-        const tr = document.createElement('tr');
-
-        tr.innerHTML = `
-
-          <td style="font-weight:600;">${weeklyGroups[monTime].rangeStr}</td>
-
-          <td style="text-align: right;">${weeklyGroups[monTime].count}</td>
-
-          <td style="text-align: right; color: var(--color-success); font-weight: 600;">${weeklyGroups[monTime].sum.toLocaleString()}</td>
-
-        `;
-
-        weeklyTbody.appendChild(tr);
-
-      });
-
-    }
-
-  }
-
-  
-
   // Populate Monthly Table
 
   const monthlyTbody = document.getElementById('revenue_monthly_summary_tbody');
