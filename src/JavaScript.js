@@ -5971,32 +5971,22 @@ function handleGradeBranchChange() {
               }
             })
             .getStudentHorizontalData(studentName, g, ct, bl);
-        }
-
-            const pChannel = state.selectedStudent.paymentChannel || '';
-            const cardRadio = document.getElementById('pay_mode_card_0');
-            const cashRadio = document.getElementById('pay_mode_cash_0');
-            const transferRadio = document.getElementById('pay_mode_transfer_0');
-            
-            if (state.selectedStudent.isCard) {
-              if (cardRadio) cardRadio.checked = true;
-            } else if (pChannel === 'เงินสด' || pChannel === 'สด') {
-              if (cashRadio) cashRadio.checked = true;
-            } else {
-              if (transferRadio) transferRadio.checked = true;
-            }
-
-            
-
-            calculateMainGroupFee();
-
+          const pChannel = state.selectedStudent.paymentChannel || '';
+          const cardRadio = document.getElementById('pay_mode_card_0');
+          const cashRadio = document.getElementById('pay_mode_cash_0');
+          const transferRadio = document.getElementById('pay_mode_transfer_0');
+          
+          if (state.selectedStudent.isCard) {
+            if (cardRadio) cardRadio.checked = true;
+          } else if (pChannel === 'เงินสด' || pChannel === 'สด') {
+            if (cashRadio) cashRadio.checked = true;
           } else {
-
-            loadStudentRegisteredCourses(state.selectedStudent.name, grade, branch);
-
+            if (transferRadio) transferRadio.checked = true;
           }
 
+          calculateMainGroupFee();
         } else {
+          calculateMainGroupFee();
 
           calculateMainGroupFee();
 
@@ -36895,7 +36885,8 @@ function populateAllEvaluationPresetDropdowns() {
 
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(populateAllEvaluationPresetDropdowns, 500);
-});\n// Function to copy magic link to clipboard
+});
+// Function to copy magic link to clipboard
 function copyMagicLink(studentName) {
   if (!studentName) {
      Swal.fire('เกิดข้อผิดพลาด', 'ไม่พบชื่อนักเรียน', 'error');
@@ -36940,7 +36931,7 @@ function copyMagicLink(studentName) {
     console.error('Error creating magic link', e);
     Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถสร้างลิงก์ได้' });
   }
-}\n
+}
 // Camps Dashboard Feature
 function loadCampsData() {
   var yearEl = document.getElementById('camps_year_select');

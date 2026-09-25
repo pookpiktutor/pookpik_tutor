@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 import os
 
 def compile_html():
-    base_dir = r"D:\pookpik_tutor_repo"
+    base_dir = r"G:\My Drive\0.�ҹʶҺѹ\data_PookPik_Tutor"
     public_dir = os.path.join(base_dir, "public")
     
     # Read the original index.html from public (or root)

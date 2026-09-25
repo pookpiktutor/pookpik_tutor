@@ -5472,6 +5472,23 @@ function getStudentsList(logUser) {
 
 }
 
+function cleanRawDateString(str) {
+  if (!str) return '';
+  return str.toString().replace(/([A-Za-z]{3} [A-Za-z]{3} \d{2} \d{4} \d{2}:\d{2}:\d{2} GMT[+\-]\d{4} \([^)]+\))/g, function(match) {
+    try {
+      var d = new Date(match);
+      if (!isNaN(d.getTime())) {
+        var months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        var year = d.getFullYear() + 543;
+        var month = months[d.getMonth()];
+        var day = d.getDate();
+        return day + ' ' + month + ' ' + year;
+      }
+    } catch(e) {}
+    return match;
+  });
+}
+
 function getStudentsListRaw() {
   const statusData = getSheetRows('StatusDB');
   const students = [];
@@ -5486,7 +5503,7 @@ function getStudentsListRaw() {
     const full = parseFloat(row[10]) || 0;
     const debt = parseFloat(row[11]) || (full - paid);
     
-    const coursesStr = row[39] ? row[39].toString().trim() : '';
+    const coursesStr = row[39] ? cleanRawDateString(row[39].toString().trim()) : '';
     const selectedCoursesList = [];
     if (coursesStr) {
       const parts = coursesStr.split(',');
@@ -5517,7 +5534,7 @@ function getStudentsListRaw() {
       paymentDate: cleanSheetDate(row[12]),
       paymentChannel: row[13] ? row[13].toString().trim() : '',
       staff: row[14] ? row[14].toString().trim() : '',
-      round: row[15] ? row[15].toString().trim() : '',
+      round: row[15] ? cleanRawDateString(row[15].toString().trim()) : '',
       selectedCourses: selectedCoursesList,
       
       grade: row[16] ? row[16].toString().trim() : '',
@@ -6745,7 +6762,7 @@ function syncStudentToStatusDB(std, batch = false) {
     // Add initial payment to PaymentsDB for new registrations
     if (parseFloat(std.paid) > 0) {
       try {
-        addPayment({
+        addPaymentForStudent({
           StudentID: id,
           Amount: std.paid,
           Date: std.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'yyyy-MM-dd'),
@@ -16629,14 +16646,17 @@ function addPaymentForStudent(paymentData, logUser) {
     }
     
     const paymentId = 'PAY_' + new Date().getTime();
-    const timestamp = new Date();
+    let timestamp = new Date();
+    if (paymentData.date && paymentData.time) {
+      timestamp = new Date(`${paymentData.date}T${paymentData.time}:00`);
+    }
     
     sheet.appendRow([
       paymentId,
       paymentData.studentId,
       timestamp,
       parseFloat(paymentData.amount) || 0,
-      paymentData.date || timestamp,
+      paymentData.date || new Date(),
       paymentData.channel || '',
       paymentData.receiver || '',
       paymentData.roundLabel || '',

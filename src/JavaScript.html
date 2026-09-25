@@ -19194,13 +19194,14 @@ function submitNewPayment() {
   }
   
   const paymentData = {
-    StudentID: studentId,
-    Amount: amount,
-    Date: document.getElementById('new_payment_date').value,
-    Channel: document.getElementById('new_payment_channel').value,
-    Receiver: document.getElementById('new_payment_receiver').value,
-    Round: document.getElementById('new_payment_round').value,
-    Note: document.getElementById('new_payment_note').value,
+    studentId: studentId,
+    amount: amount,
+    date: document.getElementById('new_payment_date').value,
+    time: document.getElementById('new_payment_time') ? document.getElementById('new_payment_time').value : '',
+    channel: document.getElementById('new_payment_channel').value,
+    receiver: document.getElementById('new_payment_receiver').value,
+    roundLabel: document.getElementById('new_payment_round').value,
+    note: document.getElementById('new_payment_note').value,
     LogUser: state.currentUser ? state.currentUser.username : 'Unknown'
   };
   
@@ -19221,7 +19222,7 @@ function submitNewPayment() {
       setLoading(false);
       showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
     })
-    .addPayment(paymentData);
+    .addPaymentForStudent(paymentData, paymentData.LogUser);
 }
 
 function deletePayment(paymentId) {
