@@ -17708,11 +17708,11 @@ function switchRevenueSubTab(tabName) {
   const panelList = document.getElementById('revenue_subpanel_list');
   const panelSummary = document.getElementById('revenue_subpanel_summary');
   if (panelList) panelList.style.display = 'block';
-  if (panelSummary) panelSummary.style.display = tabName === 'paid' ? 'block' : 'none';
+  if (panelSummary) panelSummary.style.display = 'block';
   const saveBtn = document.getElementById('btn_save_revenue_logs');
   if (saveBtn) saveBtn.style.display = tabName === 'paid' ? 'flex' : 'none';
   if (typeof renderRevenueLogs === 'function') renderRevenueLogs();
-  if (tabName === 'paid' && typeof renderRevenueSummary === 'function') renderRevenueSummary();
+}
 }
 
 }
