@@ -1791,9 +1791,9 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
 
             <div class="branch-tabs" style="margin-bottom: 16px;">
 
-              <button class="branch-tab active" id="tab_rev_list" onclick="switchRevenueSubTab('list')">📋 รายการชำระเงิน</button>
+              <button class="branch-tab active" id="tab_rev_paid" onclick="switchRevenueSubTab('paid')">📋 รายการที่ชำระแล้ว</button>
 
-              <button class="branch-tab" id="tab_rev_summary" onclick="switchRevenueSubTab('summary')">📊 สรุปรายรับ</button>
+              <button class="branch-tab" id="tab_rev_all" onclick="switchRevenueSubTab('all')">📊 รายการลงทะเบียนทั้งหมด</button>
 
             </div>
 
@@ -1848,6 +1848,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                       <th>ชื่อ</th>
 
                       <th style="width: 1%;">ชั้น</th>
+                      <th style="width: 1%;">สาขา</th>
 
                       <th style="width: 1%;">รายการชำระเงิน</th>
 
@@ -1865,7 +1866,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
 
                       <th style="width: 1%;">หมายเหตุ</th>
 
-                      <th style="width: 1%; text-align: center;">เช็คแล้ว</th>
+                      <th style="width: 1%; text-align: center;">สถานะ</th>
 
                     </tr>
 
@@ -21800,7 +21801,7 @@ function switchPanel(panelName) {
 
 
 
-    switchRevenueSubTab('list');
+    switchRevenueSubTab('paid');
 
 
 
@@ -41414,19 +41415,19 @@ function switchRevenueSubTab(tabName) {
 
 
 
-  const tabList = document.getElementById('tab_rev_list');
+  const tabList = document.getElementById('tab_rev_paid');
 
 
 
-  const tabSummary = document.getElementById('tab_rev_summary');
+  const tabSummary = document.getElementById('tab_rev_all');
 
 
 
-  if (tabList) tabList.classList.toggle('active', tabName === 'list');
+  if (tabList) tabList.classList.toggle('active', tabName === 'paid');
 
 
 
-  if (tabSummary) tabSummary.classList.toggle('active', tabName === 'summary');
+  if (tabSummary) tabSummary.classList.toggle('active', tabName === 'all');
 
 
 
@@ -41446,11 +41447,11 @@ function switchRevenueSubTab(tabName) {
 
 
 
-  if (panelList) panelList.style.display = tabName === 'list' ? 'block' : 'none';
+  if (panelList) panelList.style.display = tabName === 'paid' ? 'block' : 'none';
 
 
 
-  if (panelSummary) panelSummary.style.display = tabName === 'summary' ? 'block' : 'none';
+  if (panelSummary) panelSummary.style.display = tabName === 'all' ? 'block' : 'none';
 
 
 

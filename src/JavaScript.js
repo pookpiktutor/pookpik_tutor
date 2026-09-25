@@ -3198,6 +3198,24 @@ function cleanTimeStr(timeStr) {
 
 }
 
+function cleanGMTString(dateStr) {
+  if (!dateStr) return '';
+  let str = dateStr.toString().trim();
+  if (str.includes('GMT') || str.includes('เวลา')) {
+    let cleanStr = str.replace(/\s*GMT[+-]\d+.*$/i, '').trim();
+    cleanStr = cleanStr.replace(/\s*GMT.*$/i, '').trim();
+    cleanStr = cleanStr.replace(/([+-]\d{2}:?\d{2}|Z)$/i, '').trim();
+    const parsed = Date.parse(cleanStr);
+    if (!isNaN(parsed)) {
+      const d = new Date(parsed);
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+  }
+  return str;
+}
 
 
 function matchRoomAndBranch(roomBranch, roomName, branchName) {
@@ -4761,7 +4779,7 @@ function switchPanel(panelName) {
 
   } else if (panelName === 'class_logs') {
 
-    switchRevenueSubTab('list');
+    switchRevenueSubTab('paid');
 
     loadRevenueLogs();
 
@@ -10325,19 +10343,59 @@ function isDateWithinRange(sheetDateStr, startDateStr, endDateStr) {
 
   
 
-  const sheetParts = sheetDateStr.toString().trim().split('/');
+  const str = sheetDateStr.toString().trim();
 
-  if (sheetParts.length !== 3) return false;
+  let sheetDateObj = null;
 
-  
+  if (str.includes('/')) {
 
-  const sDay = parseInt(sheetParts[0], 10);
+    const sheetParts = str.split('/');
 
-  const sMonth = parseInt(sheetParts[1], 10);
+    if (sheetParts.length === 3) {
 
-  const sYear = parseInt(sheetParts[2], 10);
+      const sDay = parseInt(sheetParts[0], 10);
 
-  const sheetDateObj = new Date(sYear, sMonth - 1, sDay);
+      const sMonth = parseInt(sheetParts[1], 10);
+
+      const sYear = parseInt(sheetParts[2], 10);
+
+      sheetDateObj = new Date(sYear, sMonth - 1, sDay);
+
+    }
+
+  } else if (str.includes('-')) {
+
+    const sheetParts = str.split('-');
+
+    if (sheetParts.length === 3) {
+
+      const sYear = parseInt(sheetParts[0], 10);
+
+      const sMonth = parseInt(sheetParts[1], 10);
+
+      const sDay = parseInt(sheetParts[2], 10);
+
+      sheetDateObj = new Date(sYear, sMonth - 1, sDay);
+
+    }
+
+  }
+
+  if (!sheetDateObj) {
+
+    let cleanStr = str.replace(/\s*GMT[+-]\d+.*$/i, '').trim();
+
+    cleanStr = cleanStr.replace(/\s*GMT.*$/i, '').trim();
+
+    cleanStr = cleanStr.replace(/([+-]\d{2}:?\d{2}|Z)$/i, '').trim();
+
+    const parsed = Date.parse(cleanStr);
+
+    if (isNaN(parsed)) return false;
+
+    sheetDateObj = new Date(parsed);
+
+  }
 
   
 
@@ -10410,51 +10468,98 @@ function loadRevenueLogs(isSilent = false) {
   }
 
   google.script.run
-    .withSuccessHandler(data => {
-      // Fetch Camps data to merge into revenue
-      google.script.run.withSuccessHandler(campsData => {
-        if (!isSilent) setLoading(false);
-        if (Array.isArray(data)) {
-          let allRevenueData = data;
-          if (Array.isArray(campsData)) {
-            const mappedCamps = campsData.map(c => {
-              // Find the latest payment date and channel
-              let lastDate = c.pay_r3_date || c.pay_r2_date || c.pay_r1_date || '';
-              let lastChannel = c.pay_r3_date ? c.pay_r3_channel : (c.pay_r2_date ? c.pay_r2_channel : c.pay_r1_channel);
-              
-              return {
-                id: c.timestamp,
-                name: c.std_name,
-                nickname: c.std_nickname,
-                grade: c.std_grade,
-                round: c.camp_name,
-                full: c.full || 0,
-                paid: c.paid || 0,
-                outstanding: c.outstanding || 0,
-                paymentDate: lastDate,
-                paymentChannel: lastChannel || '',
-                staff: '',
-                extraNote: 'กิจกรรมค่าย',
-                paymentTimeNote: '',
-                isCamp: true,
-                campOriginalData: c
-              };
-            });
-            allRevenueData = allRevenueData.concat(mappedCamps);
+    .withSuccessHandler(studentsData => {
+      // Fetch PaymentsDB
+      google.script.run.withSuccessHandler(paymentsRaw => {
+        // Fetch Camps data
+        google.script.run.withSuccessHandler(campsData => {
+          if (!isSilent) setLoading(false);
+          
+          let studentMap = {};
+          if (Array.isArray(studentsData)) {
+            studentsData.forEach(s => studentMap[s.id] = s);
           }
-          state.students = allRevenueData;
+          
+          let allPayments = [];
+          
+          if (Array.isArray(paymentsRaw) && paymentsRaw.length > 1) {
+            for (let i = 1; i < paymentsRaw.length; i++) {
+              let row = paymentsRaw[i];
+              let pDateRaw = row[4];
+              let pDate = pDateRaw ? pDateRaw.toString().split('T')[0] : '';
+              if (pDateRaw instanceof Date || (typeof pDateRaw === 'string' && pDateRaw.includes('T'))) {
+                  let d = new Date(pDateRaw);
+                  if (!isNaN(d)) {
+                      pDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                  }
+              }
+              
+              if (isDateWithinRange(pDate, startDate, endDate)) {
+                let stdId = row[1] ? row[1].toString().trim() : '';
+                let std = studentMap[stdId] || {};
+                
+                allPayments.push({
+                  id: stdId,
+                  paymentId: row[0],
+                  name: std.name || 'ไม่พบชื่อ (' + stdId + ')',
+                  nickname: std.nickname || '',
+                  grade: std.grade || '',
+                  round: row[7] || '',
+                  full: std.full || 0,
+                  paid: parseFloat(row[3]) || 0,
+                  paymentDate: pDate,
+                  paymentTimeNote: row[2] ? new Date(row[2]).toLocaleTimeString('th-TH') : '',
+                  paymentChannel: row[5] || '',
+                  staff: row[6] || '',
+                  extraNote: row[8] || '',
+                  isChecked: std.isChecked || false
+                });
+              }
+            }
+          }
+          
+          if (Array.isArray(campsData)) {
+            campsData.forEach(c => {
+               let lastDate = c.pay_r3_date || c.pay_r2_date || c.pay_r1_date || '';
+               if (isDateWithinRange(lastDate, startDate, endDate)) {
+                 let lastChannel = c.pay_r3_date ? c.pay_r3_channel : (c.pay_r2_date ? c.pay_r2_channel : c.pay_r1_channel);
+                 allPayments.push({
+                    id: c.timestamp,
+                    name: c.std_name,
+                    nickname: c.std_nickname,
+                    grade: c.std_grade,
+                    round: c.camp_name,
+                    full: c.full || 0,
+                    paid: c.paid || 0,
+                    outstanding: c.outstanding || 0,
+                    paymentDate: lastDate,
+                    paymentChannel: lastChannel || '',
+                    staff: '',
+                    extraNote: 'กิจกรรมค่าย',
+                    paymentTimeNote: '',
+                    isCamp: true,
+                    campOriginalData: c
+                 });
+               }
+            });
+          }
+          
+          allPayments.sort((a,b) => new Date(b.paymentDate) - new Date(a.paymentDate));
+          
+          state.students = allPayments;
           renderRevenueLogs();
-        } else {
-          if (!isSilent) showToast('ไม่สามารถดึงข้อมูลรายรับได้: ' + (data ? data.error : 'unknown'), 'error');
-        }
+        }).withFailureHandler(err => {
+          if (!isSilent) setLoading(false);
+          if (!isSilent) showToast('ดึงข้อมูลค่ายล้มเหลว: ' + err.message, 'error');
+        }).getCampsData('all', 'all');
       }).withFailureHandler(err => {
         if (!isSilent) setLoading(false);
-        if (!isSilent) showToast('ดึงข้อมูลค่ายล้มเหลว: ' + err.message, 'error');
-      }).getCampsData('all', 'all');
+        if (!isSilent) showToast('ดึงข้อมูลชำระเงินล้มเหลว: ' + err.message, 'error');
+      }).getSheetRows('PaymentsDB');
     })
     .withFailureHandler(err => {
       if (!isSilent) setLoading(false);
-      if (!isSilent) showToast('ดึงข้อมูลล้มเหลว: ' + err.message, 'error');
+      if (!isSilent) showToast('ดึงข้อมูลรายชื่อล้มเหลว: ' + err.message, 'error');
     })
     .getStudentsList(getLogUser());
 }
@@ -10477,7 +10582,7 @@ function renderRevenueLogs() {
 
   if (!startDate || !endDate) {
 
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">กรุณาเลือกช่วงวันที่</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 40px;">กรุณาเลือกช่วงวันที่</td></tr>`;
 
     return;
 
@@ -10491,7 +10596,7 @@ function renderRevenueLogs() {
 
   if (filteredStudents.length === 0) {
 
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลรายรับในช่วงวันที่เลือก</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลรายรับในช่วงวันที่เลือก</td></tr>`;
 
     return;
 
@@ -10547,13 +10652,15 @@ function renderRevenueLogs() {
 
       <td style="white-space:nowrap; text-align: center; width: 1%;">${s.grade || '-'}</td>
 
+      <td style="white-space:nowrap; width: 1%;">${s.branch || '-'}</td>
+
       <td style="white-space:nowrap; width: 1%;">${s.round || '-'}</td>
 
       <td style="white-space:nowrap; text-align: right; width: 1%;">${(s.full || 0).toLocaleString()}</td>
 
       <td style="white-space:nowrap; text-align: right; color: var(--color-success); font-weight: 600; width: 1%;">${(s.paid || 0).toLocaleString()}</td>
 
-      <td style="white-space:nowrap; width: 1%;">${s.paymentDate || '-'}</td>
+      <td style="white-space:nowrap; width: 1%;">${cleanGMTString(s.paymentDate) || '-'}</td>
 
       <td style="white-space:nowrap; width: 1%;">${cleanTimeStr(s.paymentTimeNote) || '-'}</td>
 
@@ -10563,7 +10670,7 @@ function renderRevenueLogs() {
 
       <td style="white-space:nowrap; width: 1%;">${s.extraNote || '-'}</td>
 
-      <td style="text-align: center; white-space:nowrap; width: 1%;">${checkedCheckbox}</td>
+      <td style="text-align: center; white-space:nowrap; width: 1%;"><span style="padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; ${s.paid > 0 ? 'background: #d4edda; color: #155724;' : 'background: #fff3cd; color: #856404;'}">${s.paid > 0 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}</span></td>
 
     `;
 
@@ -15542,6 +15649,12 @@ function showDebtorPaymentModal(id) {
 
   document.getElementById('dp_payment_date').value = getTodayString();
 
+  const timeField = document.getElementById('dp_payment_time');
+  if(timeField) {
+    const now = new Date();
+    timeField.value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+  }
+
   document.getElementById('dp_staff').value = getLogUser() || '';
 
   
@@ -15633,6 +15746,8 @@ function saveDebtorPayment(e) {
     paid: paid,
 
     paymentDate: paymentDate,
+
+    paymentTime: document.getElementById('dp_payment_time') ? document.getElementById('dp_payment_time').value : '',
 
     paymentChannel: paymentChannel,
 
@@ -17584,13 +17699,13 @@ function switchRevenueSubTab(tabName) {
 
   // Toggle active class on tab buttons
 
-  const tabList = document.getElementById('tab_rev_list');
+  const tabList = document.getElementById('tab_rev_paid');
 
-  const tabSummary = document.getElementById('tab_rev_summary');
+  const tabSummary = document.getElementById('tab_rev_all');
 
-  if (tabList) tabList.classList.toggle('active', tabName === 'list');
+  if (tabList) tabList.classList.toggle('active', tabName === 'paid');
 
-  if (tabSummary) tabSummary.classList.toggle('active', tabName === 'summary');
+  if (tabSummary) tabSummary.classList.toggle('active', tabName === 'all');
 
   
 
@@ -17600,9 +17715,9 @@ function switchRevenueSubTab(tabName) {
 
   const panelSummary = document.getElementById('revenue_subpanel_summary');
 
-  if (panelList) panelList.style.display = tabName === 'list' ? 'block' : 'none';
+  if (panelList) panelList.style.display = tabName === 'paid' ? 'block' : 'none';
 
-  if (panelSummary) panelSummary.style.display = tabName === 'summary' ? 'block' : 'none';
+  if (panelSummary) panelSummary.style.display = tabName === 'all' ? 'block' : 'none';
 
   
 
@@ -17610,11 +17725,11 @@ function switchRevenueSubTab(tabName) {
 
   const saveBtn = document.getElementById('btn_save_revenue_logs');
 
-  if (saveBtn) saveBtn.style.display = tabName === 'list' ? 'flex' : 'none';
+  if (saveBtn) saveBtn.style.display = tabName === 'paid' ? 'flex' : 'none';
 
   
 
-  if (tabName === 'summary') {
+  if (tabName === 'all') {
 
     renderRevenueSummary();
 
@@ -17764,7 +17879,7 @@ function renderRevenueSummary() {
 
     // Group by Daily
 
-    const dateStr = s.paymentDate || 'ไม่ระบุ';
+    const dateStr = cleanGMTString(s.paymentDate) || 'ไม่ระบุ';
 
     if (!dailyGroups[dateStr]) {
 
@@ -21736,6 +21851,13 @@ function showAddPaymentForm() {
     if (dateInput && !dateInput.value) {
       dateInput.value = new Date().toISOString().split('T')[0];
     }
+    
+    // Set default time to now
+    const timeInput = document.getElementById('new_payment_time');
+    if (timeInput && !timeInput.value) {
+      const now = new Date();
+      timeInput.value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    }
   }
 }
 
@@ -21767,13 +21889,14 @@ function submitNewPayment() {
   }
   
   const paymentData = {
-    StudentID: studentId,
-    Amount: amount,
-    Date: document.getElementById('new_payment_date').value,
-    Channel: document.getElementById('new_payment_channel').value,
-    Receiver: document.getElementById('new_payment_receiver').value,
-    Round: document.getElementById('new_payment_round').value,
-    Note: document.getElementById('new_payment_note').value,
+    studentId: studentId,
+    amount: amount,
+    date: document.getElementById('new_payment_date').value,
+    time: document.getElementById('new_payment_time') ? document.getElementById('new_payment_time').value : '',
+    channel: document.getElementById('new_payment_channel').value,
+    receiver: document.getElementById('new_payment_receiver').value,
+    roundLabel: document.getElementById('new_payment_round').value,
+    note: document.getElementById('new_payment_note').value,
     LogUser: state.currentUser ? state.currentUser.username : 'Unknown'
   };
   
@@ -21794,7 +21917,7 @@ function submitNewPayment() {
       setLoading(false);
       showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
     })
-    .addPayment(paymentData);
+    .addPaymentForStudent(paymentData, paymentData.LogUser);
 }
 
 function deletePayment(paymentId) {
