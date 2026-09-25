@@ -5544,7 +5544,8 @@ function getStudentsListRaw() {
       carriedForwardFee: parseFloat(row[20]) || 0,
       classHours: row[21] ? row[21].toString().trim() : '',
       classHoursLeft: row[22] ? row[22].toString().trim() : '',
-      classType: row[23] ? row[23].toString().trim() : 'เดี่ยว'
+      classType: row[23] ? row[23].toString().trim() : 'เดี่ยว',
+      isChecked: parseInt(row[24]) === 1
     });
   });
   

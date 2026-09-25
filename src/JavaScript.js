@@ -10597,7 +10597,12 @@ function renderRevenueLogs() {
 
   
 
-  const channels = state.settings.paymentChannels || [];
+  const channels = [
+    "", "กรุงไทย พี่ปิ๊ก", "กรุงเทพ พี่ปิ๊ก", "SCB พี่ปิ๊ก", "กรุงศรี พี่ปิ๊ก", "TTB",
+    "กสิกร คุณยาย", "SCB คุณยาย", "กรุงศรี คุณตา", "กรุงศรี บัญชีบริษัท",
+    "กสิกร บัญชีบริษัท(กด)", "กสิกร บัญชีบริษัท(สแกน)", "TTB บัญชีบริษัท(กด)",
+    "TTB บัญชีบริษัท(สแกน)", "เงินสด", "พี่ปิ๊ก โอน", "พี่ต้น โอน"
+  ];
 
   
 
@@ -10609,13 +10614,7 @@ function renderRevenueLogs() {
 
     let optionsHtml = '';
 
-    channels.forEach(ch => {
-
-      const selected = ch === s.paymentChannel ? 'selected' : '';
-
-      optionsHtml += `<option value="${ch}" ${selected}>${ch}</option>`;
-
-    });
+    channels.forEach(ch => { const isMatch = (ch === s.paymentChannel || (ch === '' && !s.paymentChannel)); const display = ch === '' ? '- เลือก -' : ch; optionsHtml += `<option value="${ch}" ${isMatch ? 'selected' : ''}>${display}</option>`; });
 
     
 
@@ -10633,7 +10632,7 @@ function renderRevenueLogs() {
 
     const checkedCheckbox = `
 
-      <input type="checkbox" class="pr-check-checkbox" data-id="${s.id}" ${s.isChecked ? 'checked' : ''} onchange="this.closest('tr').classList.toggle('checked-row', this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
+      <input type="checkbox" class="pr-check-checkbox" data-id="${s.id}" ${s.isChecked ? 'checked' : ''} onchange="this.closest('tr').classList.toggle('checked-row', this.checked)" style="width: 18px; height: 18px; cursor: pointer; margin-right: 8px; flex-shrink: 0;">
 
     `;
 
@@ -10641,7 +10640,7 @@ function renderRevenueLogs() {
 
     tr.innerHTML = `
 
-      <td style="white-space:nowrap;"><div style="font-weight:600;">${s.name}${s.nickname ? ` (${s.nickname})` : ''}</div></td>
+      <td style="white-space:nowrap;"><div style="display: flex; align-items: center;">${checkedCheckbox}<div style="font-weight:600; white-space: normal; min-width: 150px;">${s.name}${s.nickname ? ` (${s.nickname})` : ''}${s.isChecked ? '<span style="font-size:0.7rem; color:green; background:#e8f5e9; padding:2px 6px; border-radius:4px; margin-left: 8px; border: 1px solid #a5d6a7;">เช็คแล้ว</span>' : ''}</div></div></td>
 
       <td style="white-space:nowrap; text-align: center; width: 1%;">${s.grade || '-'}</td>
 
