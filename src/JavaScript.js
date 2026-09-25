@@ -1,4 +1,4 @@
-// --- BACKGROUND TASK QUEUE MANAGER ---
+﻿// --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
 
@@ -10581,7 +10581,12 @@ function renderRevenueLogs() {
 
   const filteredStudents = state.students.filter(s => {
     if (!isDateWithinRange(s.paymentDate, startDate, endDate)) return false;
-    if (state.activeRevenueTab === 'paid' && parseFloat(s.paid || 0) <= 0) return false;
+    if (state.activeRevenueTab === 'paid') {
+      const p = parseFloat((s.paid || 0).toString().replace(/,/g, ''));
+      const ch = (s.paymentChannel || '').trim();
+      const hasValidChannel = ch !== '' && ch !== '- เลือก -' && ch !== 'ยังไม่จ่าย';
+      if (p <= 0 || !hasValidChannel) return false;
+    }
     return true;
   });
 
