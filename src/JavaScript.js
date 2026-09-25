@@ -10546,6 +10546,7 @@ function loadRevenueLogs(isSilent = false) {
                  });
                }
             });
+          }
           if (Array.isArray(studentsData)) {
             studentsData.forEach(std => {
               let regDateRaw = std.id;
