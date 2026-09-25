@@ -10590,14 +10590,10 @@ function renderRevenueLogs() {
     return true;
   });
 
-  
-
   if (filteredStudents.length === 0) {
-
-    tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลรายรับในช่วงวันที่เลือก</td></tr>`;
-
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลรายรับในช่วงวันที่เลือก</td></tr>';
+    if (typeof renderRevenueSummary === 'function' && state.activeRevenueTab === 'paid') renderRevenueSummary();
     return;
-
   }
 
   

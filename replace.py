@@ -1,67 +1,27 @@
-import re
-
-with open('g:/My Drive/0.งานสถาบัน/data_PookPik_Tutor/Code.js', 'r', encoding='utf-8') as f:
+﻿import re
+with open('src/JavaScript.js', 'r', encoding='utf-8') as f:
     content = f.read()
 
-target1 = r"""            let countPriv = 0;
-            privData\.forEach\(row => \{
-              const name = row\[1\] \? row\[1\]\.toString\(\)\.trim\(\) : '';
-              const branchLearn = row\[8\] \? row\[8\]\.toString\(\)\.trim\(\) : '';
-              if \(!name\) return;
-              // Match branch: สาขา1, สาขา2, สาขา3
-              if \(branchLearn === branchObj\.name\) \{
-                countPriv\+\+;
-              \}
-            \}\);
-            singleAndSubgroupCount = countPriv;"""
+# Replace options loop
+content = re.sub(
+    r'channels\.forEach\(ch => \{\s*const selected = ch === s\.paymentChannel \? \'selected\' : \'\';\s*optionsHtml \+= `<option value=\"\$\{ch\}\" \$\{selected\}>\$\{ch\}<\/option>`;\s*\}\);',
+    'channels.forEach(ch => { const isMatch = (ch === s.paymentChannel || (ch === \'\' && !s.paymentChannel)); const display = ch === \'\' ? \'- เลือก -\' : ch; optionsHtml += `<option value=\"${ch}\" ${isMatch ? \'selected\' : \'\'}>${display}</option>`; });',
+    content
+)
 
-replace1 = """            let countPriv = new Set();
-            privData.forEach(row => {
-              const name = row[1] ? row[1].toString().trim() : '';
-              const branchLearn = row[8] ? row[8].toString().trim() : '';
-              const paidStr = row[14] ? row[14].toString().trim().replace(/,/g, '') : '0';
-              const paid = parseFloat(paidStr) || 0;
-              if (!name) return;
-              if (branchLearn === branchObj.name && paid > 0) {
-                countPriv.add(name);
-              }
-            });
-            singleAndSubgroupCount = countPriv.size;"""
+# Replace checkedCheckbox
+content = re.sub(
+    r'<input type=\"checkbox\" class=\"pr-check-checkbox\" data-id=\"\$\{s\.id\}\" \$\{s\.isChecked \? \'checked\' : \'\'\} onchange=\"this\.closest\(\'tr\'\)\.classList\.toggle\(\'checked-row\', this\.checked\)\" style=\"width: 18px; height: 18px; cursor: pointer;\">',
+    '<input type=\"checkbox\" class=\"pr-check-checkbox\" data-id=\"${s.id}\" ${s.isChecked ? \'checked\' : \'\'} onchange=\"this.closest(\'tr\').classList.toggle(\'checked-row\', this.checked)\" style=\"width: 18px; height: 18px; cursor: pointer; margin-right: 8px; flex-shrink: 0;\">',
+    content
+)
 
-target2 = r"""            // Count students directly from row 4\+ \(row 1-3 = headers/summary, row 4\+ = students\)
-            const grpLastRow = grpSheet\.getLastRow\(\);
-            if \(grpLastRow >= 4\) \{
-              const startDataRow = 4;
-              const numRows = grpLastRow - startDataRow \+ 1;
-              const nameData = grpSheet\.getRange\(startDataRow, 2, numRows, 1\)\.getValues\(\); // Col B = ชื่อ
-              let countGrp = 0;
-              nameData\.forEach\(row => \{
-                if \(row\[0\] && row\[0\]\.toString\(\)\.trim\(\)\) countGrp\+\+;
-              \}\);
-              regularGroupCount = countGrp;
-            \}"""
+# Replace tr.innerHTML first td
+content = re.sub(
+    r'<td style=\"white-space:nowrap;\"><div style=\"font-weight:600;\">\$\{s\.name\}\$\{s\.nickname \? ` \(\$\{s\.nickname\}\)` : \'\'\}<\/div><\/td>',
+    '<td style=\"white-space:nowrap;\"><div style=\"display: flex; align-items: center;\">${checkedCheckbox}<div style=\"font-weight:600; white-space: normal; min-width: 150px;\">${s.name}${s.nickname ? ` (${s.nickname})` : \'\'}${s.isChecked ? \'<span style=\"font-size:0.7rem; color:green; background:#e8f5e9; padding:2px 6px; border-radius:4px; margin-left: 8px; border: 1px solid #a5d6a7;\">เช็คแล้ว</span>\' : \'\'}</div></div></td>',
+    content
+)
 
-replace2 = """            const grpLastRow = grpSheet.getLastRow();
-            if (grpLastRow >= 6) {
-              const startDataRow = 6;
-              const numRows = grpLastRow - startDataRow + 1;
-              const nameData = grpSheet.getRange(startDataRow, 1, numRows, 15).getValues(); 
-              let countGrp = new Set();
-              nameData.forEach(row => {
-                const name = row[1] ? row[1].toString().trim() : '';
-                const paidStr = row[13] ? row[13].toString().trim().replace(/,/g, '') : '0';
-                const paid = parseFloat(paidStr) || 0;
-                if (name && paid > 0) {
-                  countGrp.add(name);
-                }
-              });
-              regularGroupCount = countGrp.size;
-            }"""
-
-content = re.sub(target1, replace1, content, flags=re.MULTILINE)
-content = re.sub(target2, replace2, content, flags=re.MULTILINE)
-
-with open('g:/My Drive/0.งานสถาบัน/data_PookPik_Tutor/Code.js', 'w', encoding='utf-8') as f:
+with open('src/JavaScript.js', 'w', encoding='utf-8') as f:
     f.write(content)
-
-print("Replaced!")
