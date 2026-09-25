@@ -6820,15 +6820,7 @@ function syncStudentToStatusDB(std, batch = false) {
     // Add initial payment to PaymentsDB for new registrations
     if (parseFloat(std.paid) > 0) {
       try {
-        addPayment({
-          StudentID: id,
-          Amount: std.paid,
-          Date: std.paymentDate || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'yyyy-MM-dd'),
-          Channel: std.paymentChannel || 'ชำระแรกเข้า',
-          Receiver: std.staff || 'System',
-          Round: 'แรกเข้า',
-          Note: std.paymentTimeNote || std.extraNote || 'จากการลงทะเบียนครั้งแรก'
-        });
+        addPaymentForStudent({studentId: id, amount: std.paid, date: std.paymentDate || Utilities.formatDate(new Date(), \'Asia/Bangkok\', \'yyyy-MM-dd\'), channel: std.paymentChannel || \'เงินสด\', receiver: std.staff || \'System\', roundLabel: \'แรกเข้า\', note: std.paymentTimeNote || std.extraNote || \'จากการลงทะเบียนครั้งแรก\'}, \'System\');
       } catch (e) {
         Logger.log('Error adding initial payment to PaymentsDB: ' + e);
       }
@@ -16704,18 +16696,33 @@ function addPaymentForStudent(paymentData, logUser) {
     }
     
     const paymentId = 'PAY_' + new Date().getTime();
-    const timestamp = new Date();
+        const pStudentId = paymentData.studentId || paymentData.StudentID || '';
+    const pAmount = paymentData.amount || paymentData.Amount || 0;
+    const pDate = paymentData.date || paymentData.Date || timestamp;
+    const pChannel = paymentData.channel || paymentData.Channel || '';
+    const pReceiver = paymentData.receiver || paymentData.Receiver || '';
+    const pRoundLabel = paymentData.roundLabel || paymentData.Round || '';
     
+    let finalTimestamp = new Date();
+    const pTime = paymentData.time || paymentData.Time || '';
+    if (pTime && (paymentData.date || paymentData.Date)) {
+      const dStr = (paymentData.date || paymentData.Date) + 'T' + pTime;
+      const parsedD = new Date(dStr);
+      if (!isNaN(parsedD)) finalTimestamp = parsedD;
+    }
+    
+    const pNote = paymentData.note || paymentData.Note || '';
+
     sheet.appendRow([
       paymentId,
-      paymentData.studentId,
-      timestamp,
-      parseFloat(paymentData.amount) || 0,
-      paymentData.date || timestamp,
-      paymentData.channel || '',
-      paymentData.receiver || '',
-      paymentData.roundLabel || '',
-      paymentData.note || ''
+      pStudentId,
+      finalTimestamp,
+      parseFloat(pAmount) || 0,
+      pDate,
+      pChannel,
+      pReceiver,
+      pRoundLabel,
+      pNote
     ]);
     
     // Log activity

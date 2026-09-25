@@ -10487,6 +10487,12 @@ function loadRevenueLogs(isSilent = false) {
               if (isDateWithinRange(pDate, startDate, endDate)) {
                 let stdId = row[1] ? row[1].toString().trim() : '';
                 let std = studentMap[stdId] || {};
+                  let pChannel = (row[5] || '').toString().trim();
+                  if (pChannel.toLowerCase() === 'cash') pChannel = 'เงินสด';
+                  else if (pChannel.toLowerCase() === 'transfer') pChannel = 'โอนเงิน';
+                  else if (pChannel.toLowerCase() === 'card') pChannel = 'บัตรเครดิต';
+                  else if (pChannel.toLowerCase() === 'unpaid') pChannel = 'ยังไม่ชำระ';
+
                 
                 allPayments.push({
                   id: stdId,
@@ -10494,12 +10500,13 @@ function loadRevenueLogs(isSilent = false) {
                   name: std.name || 'ไม่พบชื่อ (' + stdId + ')',
                   nickname: std.nickname || '',
                   grade: std.grade || '',
+                  branch: std.branchPay || std.branchLearn || '',
                   round: row[7] || '',
                   full: std.full || 0,
                   paid: parseFloat(row[3]) || 0,
                   paymentDate: pDate,
                   paymentTimeNote: row[2] ? new Date(row[2]).toLocaleTimeString('th-TH') : '',
-                  paymentChannel: row[5] || '',
+                  paymentChannel: pChannel,
                   staff: row[6] || '',
                   extraNote: row[8] || '',
                   isChecked: std.isChecked || false
@@ -10513,12 +10520,15 @@ function loadRevenueLogs(isSilent = false) {
                let lastDate = c.pay_r3_date || c.pay_r2_date || c.pay_r1_date || '';
                if (isDateWithinRange(lastDate, startDate, endDate)) {
                  let lastChannel = c.pay_r3_date ? c.pay_r3_channel : (c.pay_r2_date ? c.pay_r2_channel : c.pay_r1_channel);
+                  let matchedStudent = Object.values(studentMap).find(s => s.name === c.std_name) || {};
+                  let cBranch = matchedStudent.branchPay || matchedStudent.branchLearn || '';
                  allPayments.push({
                     id: c.timestamp,
                     name: c.std_name,
                     nickname: c.std_nickname,
                     grade: c.std_grade,
-                    round: c.camp_name,
+                     branch: cBranch,
+                     round: c.camp_name,
                     full: c.full || 0,
                     paid: c.paid || 0,
                     outstanding: c.outstanding || 0,
@@ -10580,7 +10590,11 @@ function renderRevenueLogs() {
 
   
 
-  const filteredStudents = state.students.filter(s => isDateWithinRange(s.paymentDate, startDate, endDate));
+  const filteredStudents = state.students.filter(s => {
+    if (!isDateWithinRange(s.paymentDate, startDate, endDate)) return false;
+    if (state.activeRevenueTab === \'paid\' && parseFloat(s.paid || 0) <= 0) return false;
+    return true;
+  });
 
   
 
@@ -17686,44 +17700,20 @@ function calculateInstallmentTotal() {
 // ----------------------------------------------------
 
 function switchRevenueSubTab(tabName) {
-
-  // Toggle active class on tab buttons
-
+  state.activeRevenueTab = tabName;
   const tabList = document.getElementById('tab_rev_paid');
-
   const tabSummary = document.getElementById('tab_rev_all');
-
   if (tabList) tabList.classList.toggle('active', tabName === 'paid');
-
   if (tabSummary) tabSummary.classList.toggle('active', tabName === 'all');
-
-  
-
-  // Toggle sub-panels display
-
   const panelList = document.getElementById('revenue_subpanel_list');
-
   const panelSummary = document.getElementById('revenue_subpanel_summary');
-
-  if (panelList) panelList.style.display = tabName === 'paid' ? 'block' : 'none';
-
-  if (panelSummary) panelSummary.style.display = tabName === 'all' ? 'block' : 'none';
-
-  
-
-  // Toggle Save button (only relevant for the interactive checkbox list)
-
+  if (panelList) panelList.style.display = 'block';
+  if (panelSummary) panelSummary.style.display = tabName === 'paid' ? 'block' : 'none';
   const saveBtn = document.getElementById('btn_save_revenue_logs');
-
   if (saveBtn) saveBtn.style.display = tabName === 'paid' ? 'flex' : 'none';
-
-  
-
-  if (tabName === 'all') {
-
-    renderRevenueSummary();
-
-  }
+  if (typeof renderRevenueLogs === 'function') renderRevenueLogs();
+  if (tabName === 'paid' && typeof renderRevenueSummary === 'function') renderRevenueSummary();
+}
 
 }
 
