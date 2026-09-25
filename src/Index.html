@@ -958,8 +958,8 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           <!-- 6. REVENUE LOGS PANEL -->
           <div class="view-panel" id="class_logs_panel">
             <div class="branch-tabs" style="margin-bottom: 16px;">
-              <button class="branch-tab active" id="tab_rev_list" onclick="switchRevenueSubTab('list')">📋 รายการชำระเงิน</button>
-              <button class="branch-tab" id="tab_rev_summary" onclick="switchRevenueSubTab('summary')">📊 สรุปรายรับ</button>
+              <button class="branch-tab active" id="tab_rev_paid" onclick="switchRevenueSubTab('paid')">📋 รายการที่ชำระแล้ว</button>
+              <button class="branch-tab" id="tab_rev_all" onclick="switchRevenueSubTab('all')">📊 รายการลงทะเบียนทั้งหมด</button>
             </div>
 
             <div class="toolbar" style="margin-bottom: 20px;">
@@ -973,9 +973,14 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                   
                   <span id="class_log_date_display" style="font-weight: bold; color: var(--color-primary-hover); font-size: 1.05rem; white-space: nowrap; margin-left: 8px;"></span>
                 </div>
-                <button class="btn btn-primary" id="btn_save_revenue_logs" onclick="saveRevenueLogs()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
-                  <span>💾</span> บันทึกการตรวจสอบ
-                </button>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn btn-secondary" onclick="loadRevenueLogs()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
+                    <span>🔄</span> ดึงข้อมูล
+                  </button>
+                  <button class="btn btn-primary" id="btn_save_revenue_logs" onclick="saveRevenueLogs()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
+                    <span>💾</span> บันทึกการตรวจสอบ
+                  </button>
+                </div>
               </div>
             </div>
             
@@ -1007,6 +1012,12 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
 
             <!-- Sub panel: Summary Dashboard -->
             <div id="revenue_subpanel_summary" style="display: none;">
+              <!-- Refresh button for summary -->
+              <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+                <button class="btn btn-secondary" onclick="loadRevenueLogs()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                  <span>🔄</span> ดึงข้อมูลรายรับ
+                </button>
+              </div>
               <!-- Summary of Branches Cards -->
               <div id="revenue_summary_cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
                 <!-- Cards loaded dynamically -->
@@ -1746,6 +1757,10 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
                   <div>
                     <label style="font-size: 0.75rem; color: #64748b;">วันที่ชำระ</label>
                     <input type="date" id="new_payment_date" class="form-input" style="padding: 6px; font-size: 0.85rem;">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.75rem; color: #64748b;">เวลา</label>
+                    <input type="time" id="new_payment_time" class="form-input" style="padding: 6px; font-size: 0.85rem;">
                   </div>
                   <div>
                     <label style="font-size: 0.75rem; color: #64748b;">ช่องทาง</label>
@@ -2864,6 +2879,10 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
               <div class="form-group">
                 <label class="form-label">วันที่ชำระเงิน</label>
                 <input type="date" id="dp_payment_date" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">เวลาที่ชำระเงิน</label>
+                <input type="time" id="dp_payment_time" class="form-input">
               </div>
               <div class="form-group">
                 <label class="form-label">ช่องทางชำระเงิน</label>
