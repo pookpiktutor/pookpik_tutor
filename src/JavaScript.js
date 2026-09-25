@@ -10592,7 +10592,7 @@ function renderRevenueLogs() {
 
   const filteredStudents = state.students.filter(s => {
     if (!isDateWithinRange(s.paymentDate, startDate, endDate)) return false;
-    if (state.activeRevenueTab === \'paid\' && parseFloat(s.paid || 0) <= 0) return false;
+    if (state.activeRevenueTab === 'paid' && parseFloat(s.paid || 0) <= 0) return false;
     return true;
   });
 
@@ -17713,9 +17713,8 @@ function switchRevenueSubTab(tabName) {
   if (saveBtn) saveBtn.style.display = tabName === 'paid' ? 'flex' : 'none';
   if (typeof renderRevenueLogs === 'function') renderRevenueLogs();
 }
-}
 
-}
+
 
 
 
