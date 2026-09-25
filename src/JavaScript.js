@@ -10433,6 +10433,9 @@ function isDateWithinRange(sheetDateStr, startDateStr, endDateStr) {
 
 function loadRevenueLogs(isSilent = false) {
 
+  if (window.isFetchingRevenue) return;
+  window.isFetchingRevenue = true;
+
   const startDate = document.getElementById('log_start_date').value;
 
   const endDate = document.getElementById('log_end_date').value;
@@ -10463,6 +10466,7 @@ function loadRevenueLogs(isSilent = false) {
       google.script.run.withSuccessHandler(paymentsRaw => {
         // Fetch Camps data
         google.script.run.withSuccessHandler(campsData => {
+          window.isFetchingRevenue = false;
           if (!isSilent) setLoading(false);
           
           let studentMap = {};
@@ -10542,22 +10546,56 @@ function loadRevenueLogs(isSilent = false) {
                  });
                }
             });
+          if (Array.isArray(studentsData)) {
+            studentsData.forEach(std => {
+              let regDateRaw = std.id;
+              let regDate = regDateRaw ? regDateRaw.toString().split('T')[0] : '';
+              if (regDateRaw instanceof Date || (typeof regDateRaw === 'string' && regDateRaw.includes('T'))) {
+                  let d = new Date(regDateRaw);
+                  if (!isNaN(d)) {
+                      regDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                  }
+              }
+              let hasPayment = allPayments.some(p => p.id === std.id);
+              if (!hasPayment && isDateWithinRange(regDate, startDate, endDate)) {
+                allPayments.push({
+                  id: std.id,
+                  paymentId: '',
+                  name: std.name || 'ไม่พบชื่อ',
+                  nickname: std.nickname || '',
+                  grade: std.grade || '',
+                  branch: std.branchPay || std.branchLearn || '',
+                  round: std.round || '',
+                  full: std.full || 0,
+                  paid: parseFloat(std.paid) || 0,
+                  paymentDate: regDate,
+                  paymentTimeNote: std.paymentTimeNote || '',
+                  paymentChannel: std.paymentChannel || 'ยังไม่ชำระเงิน',
+                  staff: std.staff || '',
+                  extraNote: std.extraNote || '',
+                  isChecked: std.isChecked || false
+                });
+              }
+            });
           }
-          
+
           allPayments.sort((a,b) => new Date(b.paymentDate) - new Date(a.paymentDate));
           
           state.students = allPayments;
           renderRevenueLogs();
         }).withFailureHandler(err => {
+          window.isFetchingRevenue = false;
           if (!isSilent) setLoading(false);
           if (!isSilent) showToast('ดึงข้อมูลค่ายล้มเหลว: ' + err.message, 'error');
         }).getCampsData('all', 'all');
       }).withFailureHandler(err => {
+        window.isFetchingRevenue = false;
         if (!isSilent) setLoading(false);
         if (!isSilent) showToast('ดึงข้อมูลชำระเงินล้มเหลว: ' + err.message, 'error');
       }).getSheetRows('PaymentsDB');
     })
     .withFailureHandler(err => {
+      window.isFetchingRevenue = false;
       if (!isSilent) setLoading(false);
       if (!isSilent) showToast('ดึงข้อมูลรายชื่อล้มเหลว: ' + err.message, 'error');
     })
@@ -17708,10 +17746,11 @@ function switchRevenueSubTab(tabName) {
   const panelList = document.getElementById('revenue_subpanel_list');
   const panelSummary = document.getElementById('revenue_subpanel_summary');
   if (panelList) panelList.style.display = 'block';
-  if (panelSummary) panelSummary.style.display = 'block';
+  if (panelSummary) panelSummary.style.display = tabName === 'paid' ? 'block' : 'none';
   const saveBtn = document.getElementById('btn_save_revenue_logs');
   if (saveBtn) saveBtn.style.display = tabName === 'paid' ? 'flex' : 'none';
   if (typeof renderRevenueLogs === 'function') renderRevenueLogs();
+  if (typeof renderRevenueSummary === 'function' && tabName === 'paid') renderRevenueSummary();
 }
 
 
@@ -17804,11 +17843,11 @@ function renderRevenueSummary() {
 
   if (!startDate || !endDate) return;
 
-  
-
-  const filtered = state.students.filter(s => isDateWithinRange(s.paymentDate, startDate, endDate));
-
-  
+  const filtered = state.students.filter(s => {
+    if (!isDateWithinRange(s.paymentDate, startDate, endDate)) return false;
+    if (parseFloat(s.paid || 0) <= 0) return false;
+    return true;
+  });
 
   const branchGroups = {};
 
