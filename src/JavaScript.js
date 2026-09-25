@@ -36911,3 +36911,59 @@ function loadCampsData() {
     tbody.innerHTML = html;
   }).getCampsData(year, name);
 }
+
+function setLoading(show, text = 'กำลังโหลดข้อมูล...') {
+  if (show) {
+    window._nextTaskTitle = text;
+  }
+  
+  const overlay = document.getElementById('loader_overlay');
+  if (overlay) {
+    overlay.classList.remove('active'); // Ensure full-screen loader is always hidden
+  }
+
+  const inlineLoader = document.getElementById('inline_loading_indicator');
+  const inlineText = document.getElementById('inline_loading_text');
+  
+  // Update global status bar
+  const statusBar = document.getElementById('global_status_bar');
+  const statusDot = document.getElementById('global_status_dot');
+  const statusText = document.getElementById('global_status_text');
+
+  if (show) {
+    if (inlineLoader) {
+      inlineLoader.style.display = 'flex';
+    }
+    if (inlineText) {
+      inlineText.innerText = text;
+    }
+    // Update status bar to loading state
+    if (statusBar) {
+      statusBar.style.background = 'rgba(59, 130, 246, 0.9)';
+    }
+    if (statusDot) {
+      statusDot.style.background = '#fbbf24';
+      statusDot.style.animation = 'pulse 1s infinite';
+    }
+    if (statusText) {
+      statusText.textContent = '⏳ ' + text;
+    }
+  } else {
+    if (inlineLoader) {
+      inlineLoader.style.display = 'none';
+    }
+    // Update status bar to idle state
+    if (statusBar) {
+      statusBar.style.background = 'rgba(15, 23, 42, 0.85)';
+    }
+    if (statusDot) {
+      statusDot.style.background = '#22c55e';
+      statusDot.style.animation = 'none';
+    }
+    if (statusText) {
+      statusText.textContent = '✅ พร้อมใช้งาน';
+    }
+  }
+}
+window.setLoading = setLoading;
+
