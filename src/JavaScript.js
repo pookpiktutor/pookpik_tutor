@@ -3812,57 +3812,7 @@ function convertDateFromSheet(dateVal) {
 
 
 
-function setLoading(show, text = 'กำลังโหลดข้อมูล...') {
 
-  if (show) {
-
-    window._nextTaskTitle = text;
-
-  }
-
-  
-
-  const overlay = document.getElementById('loader_overlay');
-
-  if (overlay) {
-
-    overlay.classList.remove('active'); // Ensure full-screen loader is always hidden
-
-  }
-
-
-
-  const inlineLoader = document.getElementById('inline_loading_indicator');
-
-  const inlineText = document.getElementById('inline_loading_text');
-
-
-
-  if (show) {
-
-    if (inlineLoader) {
-
-      inlineLoader.style.display = 'flex';
-
-    }
-
-    if (inlineText) {
-
-      inlineText.innerText = text;
-
-    }
-
-  } else {
-
-    if (inlineLoader) {
-
-      inlineLoader.style.display = 'none';
-
-    }
-
-  }
-
-}
 
 
 
