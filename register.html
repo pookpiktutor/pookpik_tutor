@@ -415,9 +415,11 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
             <option value="สาขา3">สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ</option>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">ห้อง <span>*</span></label>
-          <input type="text" id="class_section" class="form-input" required placeholder="ระบุห้องเรียน">
+        <div class="form-group" id="course_round_container" style="display: none;">
+          <label class="form-label">คอร์สที่ลง <span>*</span></label>
+          <select id="course_round" class="form-select" onchange="renderCourseCheckboxes()">
+            <option value="">-- เลือกคอร์ส --</option>
+          </select>
         </div>
       </div>
 
@@ -472,18 +474,19 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           </datalist>
         </div>
         <div class="form-group">
-          <label class="form-label">เบอร์โทรศัพท์ผู้ปกครอง <span>*</span></label>
-          <input type="tel" id="parent_contact" class="form-input" required placeholder="0xx-xxx-xxxx" oninput="formatPhoneAsYouType(this)" maxlength="12">
+          <label class="form-label">ห้อง <span>*</span></label>
+          <input type="text" id="class_section" class="form-input" required placeholder="ระบุห้องเรียน">
         </div>
       </div>
 
       <div class="row-grid">
         <div class="form-group">
-          <label class="form-label">Line ID (ถ้ามี)</label>
-          <input type="text" id="line_id" class="form-input" placeholder="Line ID">
+          <label class="form-label">เบอร์โทรศัพท์ผู้ปกครอง <span>*</span></label>
+          <input type="tel" id="parent_contact" class="form-input" required placeholder="0xx-xxx-xxxx" oninput="formatPhoneAsYouType(this)" maxlength="12">
         </div>
         <div class="form-group">
-          <!-- empty placeholder to balance grid columns -->
+          <label class="form-label">Line ID (ถ้ามี)</label>
+          <input type="text" id="line_id" class="form-input" placeholder="Line ID">
         </div>
       </div>
 
@@ -1094,6 +1097,44 @@ window.google.script.run = new Proxy({}, {
           window._outstandingCourses = outstandingCourses;
 
           // Check if classType is "กลุ่มหลัก" and populate round
+          const classType = document.getElementById('class_type').value.trim();
+          const courseRoundContainer = document.getElementById('course_round_container');
+          const courseRoundSelect = document.getElementById('course_round');
+          
+          if (classType === 'กลุ่มหลัก') {
+            courseRoundContainer.style.display = 'block';
+            courseRoundSelect.required = true;
+            
+            // Extract unique rounds from available courses
+            const uniqueRounds = [...new Set(outstandingCourses.map(c => getCourseRound(c.courseName).toUpperCase()).filter(r => r && r !== 'NONE'))];
+            
+            // Remember currently selected round if any
+            const currentSelectedRound = courseRoundSelect.value;
+            
+            // Populate dropdown
+            courseRoundSelect.innerHTML = '<option value="">-- เลือกคอร์ส --</option>';
+            uniqueRounds.forEach(round => {
+              const option = document.createElement('option');
+              option.value = round;
+              option.textContent = round;
+              courseRoundSelect.appendChild(option);
+            });
+            
+            // Restore selection if it exists in the new list, otherwise reset
+            if (currentSelectedRound && uniqueRounds.includes(currentSelectedRound)) {
+              courseRoundSelect.value = currentSelectedRound;
+            } else {
+              // Optionally select the first valid round automatically
+              if (uniqueRounds.length > 0) {
+                courseRoundSelect.value = uniqueRounds[0];
+              }
+            }
+          } else {
+            courseRoundContainer.style.display = 'none';
+            courseRoundSelect.required = false;
+            courseRoundSelect.value = '';
+          }
+
           renderCourseCheckboxes();
         } else {
           var tr = document.createElement('tr');
@@ -1142,23 +1183,14 @@ window.google.script.run = new Proxy({}, {
   
   const classType = document.getElementById('class_type').value;
   if (classType === 'กลุ่มหลัก') {
-    const d = new Date();
-    const m = d.getMonth() + 1;
-    const currentYearStr = (d.getFullYear() + 543).toString();
-    
-    let targetRounds = [];
-    if (m >= 2 && m <= 4) targetRounds.push('SUMMER');
-    if (m >= 4 && m <= 7) targetRounds.push('MIDTERM 1');
-    if (m >= 7 && m <= 9) targetRounds.push('FINAL 1');
-    if (m >= 9 && m <= 10) targetRounds.push('ปิดเทอม ต.ค.');
-    if (m >= 10 && m <= 12) targetRounds.push('MIDTERM 2');
-    if (m === 12 || m <= 2) targetRounds.push('FINAL 2');
+    const selectedRound = document.getElementById('course_round').value;
     
     displayedCourses = displayedCourses.filter(c => {
       const round = getCourseRound(c.courseName).toUpperCase();
-      const matchesYear = round.includes(currentYearStr);
-      const matchesRound = targetRounds.some(tr => round.includes(tr));
-      return matchesYear && matchesRound;
+      // If no round selected, show nothing or everything? Requirements say "ถ้าผู้ปกครองเลือก FINAL ... ก็จะไปดึงชื่อคอร์ส...มาแสดง"
+      // It implies if a round is selected, show courses for that round.
+      if (!selectedRound) return false; // Show nothing until a round is selected
+      return round.includes(selectedRound.toUpperCase());
     });
   }
 
@@ -1169,7 +1201,9 @@ window.google.script.run = new Proxy({}, {
     td.style.padding = '20px';
     td.style.textAlign = 'center';
     td.style.color = '#64748b';
-    td.textContent = 'ไม่พบคอร์สเรียนที่เปิดสอนสำหรับเงื่อนไขนี้ (กรองตามรอบเดือนปัจจุบัน)';
+    td.textContent = (classType === 'กลุ่มหลัก' && !document.getElementById('course_round').value) 
+        ? 'กรุณาเลือกคอร์สที่ลง' 
+        : 'ไม่พบคอร์สเรียนที่เปิดสอนสำหรับเงื่อนไขนี้';
     tr.appendChild(td);
     tbody.appendChild(tr);
 
