@@ -32,10 +32,10 @@ const appsscriptJson = {
 writeFileSync(join(DIST_DIR, 'appsscript.json'), JSON.stringify(appsscriptJson, null, 2), 'utf8');
 console.log('  Index: Created appsscript.json');
 
-// 2. Copy Code.txt to dist/Code.js (clasp treats .js in rootDir as .gs)
-const codeContent = readFileSync(join(BASE_DIR, 'Code.txt'), 'utf8');
+// 2. Copy Code.js to dist/Code.js (clasp treats .js in rootDir as .gs)
+const codeContent = readFileSync(join(BASE_DIR, 'Code.js'), 'utf8');
 writeFileSync(join(DIST_DIR, 'Code.js'), codeContent, 'utf8');
-console.log('  Code: Copied Code.txt -> dist/Code.js');
+console.log('  Code: Copied Code.js -> dist/Code.js');
 
 // 3. Wrap JavaScript.js as dist/JavaScript.html
 const jsContent = readFileSync(join(BASE_DIR, 'src', 'JavaScript.js'), 'utf8');

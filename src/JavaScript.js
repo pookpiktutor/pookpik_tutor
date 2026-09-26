@@ -6291,6 +6291,30 @@ function getCourseRound(courseName) {
 
 
 
+function fetchCoursesForDropdown() {
+  const grade = document.getElementById('grade_sheet_grade_select').value;
+  const branch = document.getElementById('grade_sheet_branch_select').value;
+  const filterSelect = document.getElementById('grade_sheet_round_filter');
+  
+  if (!filterSelect) return;
+  filterSelect.innerHTML = '<option value="ALL">กำลังค้นหาคอร์ส...</option>';
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res && res.success) {
+        state.gradeSheetData = state.gradeSheetData || {};
+        state.gradeSheetData.courses = res.courses;
+        updateRoundFilterDropdown();
+      } else {
+        filterSelect.innerHTML = '<option value="ALL">-- แสดงทุกคอร์สเรียน --</option>';
+      }
+    })
+    .withFailureHandler(err => {
+      filterSelect.innerHTML = '<option value="ALL">-- แสดงทุกคอร์สเรียน --</option>';
+    })
+    .getGradeSheetCourses(grade, branch);
+}
+
 function updateRoundFilterDropdown() {
 
   const filterSelect = document.getElementById('grade_sheet_round_filter');
@@ -6300,110 +6324,35 @@ function updateRoundFilterDropdown() {
   
 
   const curVal = filterSelect.value;
-
   filterSelect.innerHTML = '';
-
   
-
   // 1. Add ALL option
-
   const optAll = document.createElement('option');
-
   optAll.value = 'ALL';
-
-  optAll.innerText = '-- แสดงทั้งหมด --';
-
+  optAll.innerText = '-- แสดงทุกคอร์สเรียน --';
   filterSelect.appendChild(optAll);
-
   
-
-  // 2. Add static base round options
-
-  const staticRounds = ['MIDTERM 1', 'MIDTERM 2', 'FINAL 1', 'FINAL 2', 'ปิดเทอม ต.ค.', 'Summer'];
-
-  staticRounds.forEach(r => {
-
-    const opt = document.createElement('option');
-
-    opt.value = r;
-
-    opt.innerText = r;
-
-    filterSelect.appendChild(opt);
-
-  });
-
+  // 2. Find unique courses actually present in the sheet
+  const courses = state.gradeSheetData.courses || [];
+  const uniqueCourses = new Set();
   
-
-  // 3. Find unique year-specific rounds actually present in the sheet
-
-  const courses = state.gradeSheetData.courses;
-
-  const yearSpecificRounds = new Set();
-
   courses.forEach(c => {
-
-    const round = getCourseRound(c.courseName);
-
-    if (round && round !== 'None' && round.includes('/')) {
-
-      yearSpecificRounds.add(round);
-
+    if (c.courseName && c.courseName.trim() !== '') {
+      uniqueCourses.add(c.courseName.trim());
     }
-
   });
-
   
-
-  // Add year-specific rounds
-
-  yearSpecificRounds.forEach(r => {
-
+  // Add courses
+  const sortedCourses = Array.from(uniqueCourses).sort();
+  sortedCourses.forEach(r => {
     const opt = document.createElement('option');
-
     opt.value = r;
-
     opt.innerText = r;
-
     filterSelect.appendChild(opt);
-
   });
-
   
-
-  // 4. Add unspecified option if there are courses with no round
-
-  let hasNone = false;
-
-  courses.forEach(c => {
-
-    if (getCourseRound(c.courseName) === 'None') {
-
-      hasNone = true;
-
-    }
-
-  });
-
-  
-
-  if (hasNone) {
-
-    const optNone = document.createElement('option');
-
-    optNone.value = 'ไม่ระบุรอบเรียน';
-
-    optNone.innerText = 'ไม่ระบุรอบเรียน';
-
-    filterSelect.appendChild(optNone);
-
-  }
-
-  
-
   // Restore previously selected filter value if still valid
-
-  const allAvailableValues = ['ALL', ...staticRounds, ...yearSpecificRounds, 'ไม่ระบุรอบเรียน'];
+  const allAvailableValues = ['ALL', ...uniqueCourses];
 
   if (allAvailableValues.includes(curVal)) {
 
@@ -36931,6 +36880,8 @@ function doLoadCampsData() {
     }
     
     renderCampsTable();
+  }).withFailureHandler(function(err) {
+    tbody.innerHTML = '<tr><td colspan="15" class="text-center text-danger">ไม่สามารถโหลดข้อมูลได้: ' + (err.message || err) + '</td></tr>';
   }).getCampsData(year, name);
 }
 

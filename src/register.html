@@ -833,7 +833,7 @@ window.google.script.run = new Proxy({}, {
                const r = getCourseRound(c.courseName);
                if (r !== 'None') roundsSet.add(r);
             });
-            courseRoundSelect.innerHTML = '<option value="">-- เลือกรอบเรียน --</option>';
+            courseRoundSelect.innerHTML = '<option value="AUTO">-- แสดงตามช่วงวันที่ (Auto) --</option><option value="ALL">-- แสดงทุกรอบ --</option>';
             const roundsArray = Array.from(roundsSet);
             roundsArray.forEach(r => {
                const opt = document.createElement('option');
@@ -844,7 +844,7 @@ window.google.script.run = new Proxy({}, {
             courseRoundContainer.style.display = 'grid'; // because row-grid uses display: grid
           } else {
             if (courseRoundContainer) courseRoundContainer.style.display = 'none';
-            if (courseRoundSelect) courseRoundSelect.value = '';
+            if (courseRoundSelect) courseRoundSelect.value = 'AUTO';
           }
 
           renderCourseCheckboxes();
@@ -871,15 +871,30 @@ window.google.script.run = new Proxy({}, {
   function getCourseRound(courseName) {
     if (!courseName) return 'None';
     const clean = courseName.toString().trim();
-    // 1) "MIDTERM 1/2569" or "FINAL 1/2569"
-    let match = clean.match(/(MIDTERM\s+\d+\/\d+|FINAL\s+\d+\/\d+)/i);
-    if (match) return match[1].toUpperCase();
-
-    // 2) "SUMMER 2568"
-    match = clean.match(/(SUMMER\s+\d+)/i);
-    if (match) return match[1].toUpperCase();
+    
+    let match = clean.match(/(MIDTERM\s*\d+|FINAL\s*\d+|ปิดเทอม\s*ต\.ค\.|SUMMER)(?:\s*\/?\s*\d+)?/i);
+    if (match) {
+        return match[0].toUpperCase();
+    }
 
     return 'None';
+  }
+
+  function getAutoActiveRounds(dateObj) {
+    if (!dateObj) dateObj = new Date();
+    const m = dateObj.getMonth() + 1;
+    const d = dateObj.getDate();
+    const mmdd = m * 100 + d; 
+
+    let activeRounds = [];
+    if (mmdd >= 315 && mmdd <= 425) activeRounds.push('SUMMER');
+    if (mmdd >= 415 && mmdd <= 715) activeRounds.push('MIDTERM 1');
+    if (mmdd >= 601 && mmdd <= 930) activeRounds.push('FINAL 1');
+    if (mmdd >= 901 && mmdd <= 1031) activeRounds.push('ปิดเทอม ต.ค.');
+    if (mmdd >= 1001 && mmdd <= 1230) activeRounds.push('MIDTERM 2');
+    if (mmdd >= 1201 || mmdd <= 229) activeRounds.push('FINAL 2');
+
+    return activeRounds;
   }
 
   function renderCourseCheckboxes() {
@@ -887,11 +902,18 @@ window.google.script.run = new Proxy({}, {
     tbody.innerHTML = '';
     
     const courseRoundSelect = document.getElementById('course_round');
-    const selectedRound = courseRoundSelect ? courseRoundSelect.value : '';
+    const selectedRound = courseRoundSelect ? courseRoundSelect.value : 'AUTO';
     
     let displayedCourses = window._outstandingCourses || [];
     
-    if (selectedRound && selectedRound !== '') {
+    if (selectedRound === 'AUTO') {
+       const activeBaseRounds = getAutoActiveRounds();
+       displayedCourses = displayedCourses.filter(c => {
+          const r = getCourseRound(c.courseName);
+          if (r === 'None') return false;
+          return activeBaseRounds.some(base => r.toUpperCase().startsWith(base.toUpperCase()));
+       });
+    } else if (selectedRound !== 'ALL' && selectedRound !== '') {
        displayedCourses = displayedCourses.filter(c => getCourseRound(c.courseName) === selectedRound);
     }
     

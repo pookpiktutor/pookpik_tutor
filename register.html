@@ -1061,6 +1061,7 @@ window.google.script.run = new Proxy({}, {
     const grade = document.getElementById('std_grade').value.trim();
     const classType = document.getElementById('class_type').value.trim();
     const branchLearn = document.getElementById('branch_learn').value.trim();
+    const isMainGroup = (isMainGroup || classType === 'กลุ่มหลักตามตารางคอร์ส');
 
     if (!grade || !classType || !branchLearn) {
       if (isFromButton) {
@@ -1077,7 +1078,7 @@ window.google.script.run = new Proxy({}, {
     // Show loading state in course dropdown if class type is 'กลุ่มหลัก'
     const courseRoundContainer = document.getElementById('course_round_container');
     const courseRoundSelect = document.getElementById('course_round');
-    if (classType === 'กลุ่มหลัก') {
+    if (isMainGroup) {
       courseRoundContainer.style.display = 'block';
       courseRoundSelect.innerHTML = '<option value="">กำลังดึงข้อมูลคอร์สเรียน กรุณารอสักครู่...</option>';
       courseRoundSelect.disabled = true;
@@ -1113,7 +1114,7 @@ window.google.script.run = new Proxy({}, {
           const courseRoundContainer = document.getElementById('course_round_container');
           const courseRoundSelect = document.getElementById('course_round');
           
-          if (classType === 'กลุ่มหลัก') {
+          if (isMainGroup) {
             courseRoundContainer.style.display = 'block';
             courseRoundSelect.required = true;
             
@@ -1149,7 +1150,7 @@ window.google.script.run = new Proxy({}, {
 
           renderCourseCheckboxes();
         } else {
-          if (classType === 'กลุ่มหลัก') {
+          if (isMainGroup) {
             courseRoundSelect.innerHTML = '<option value="">-- ไม่พบคอร์สเรียนที่เปิดสอน --</option>';
             courseRoundSelect.disabled = true;
           }
@@ -1168,7 +1169,7 @@ window.google.script.run = new Proxy({}, {
         searchBtn.disabled = false;
         searchBtn.textContent = originalText;
         courseRoundSelect.disabled = false;
-        if (classType === 'กลุ่มหลัก') {
+        if (isMainGroup) {
           courseRoundSelect.innerHTML = '<option value="">-- เกิดข้อผิดพลาดในการดึงข้อมูล --</option>';
         }
         alert('เกิดข้อผิดพลาดในการดึงข้อมูล: ' + err.message);
@@ -1181,7 +1182,7 @@ window.google.script.run = new Proxy({}, {
   const clean = courseName.toString().trim();
   
   // 1) Dynamic Extraction: Extract text between Grade and Day of Week
-  const dynamicPattern = /(?:ป\.\d|ม\.\d|อนุบาล|แข่งขัน|ติว|แข่งขัน\s+\d|เตรียมสอบ)\s+(.*?)\s+(?:จันทร์|อังคาร|พุธ|พฤหัสบดี|พฤหัสฯ|พฤหัส|ศุกร์|เสาร์|อาทิตย์|จ\.|อ\.|พ\.|พฤ\.|ศ\.|ส\.|อา\.)/i;
+  const dynamicPattern = /\s+((?:MIDTERM|FINAL|เทอม|ตุลาคม|\d+\/\d+).*?)\s+(?:จันทร์|อังคาร|พุธ|พฤหัสบดี|พฤหัสฯ|พฤหัส|ศุกร์|เสาร์|อาทิตย์|จ\.|อ\.|พ\.|พฤ\.|ศ\.|ส\.|อา\.)/i;
   let dynamicMatch = clean.match(dynamicPattern);
   if (dynamicMatch && dynamicMatch[1]) {
     let extracted = dynamicMatch[1].trim();
@@ -1202,7 +1203,7 @@ window.google.script.run = new Proxy({}, {
   let displayedCourses = window._outstandingCourses || [];
   
   const classType = document.getElementById('class_type').value;
-  if (classType === 'กลุ่มหลัก') {
+  if (isMainGroup) {
     const selectedRound = document.getElementById('course_round').value;
     
     displayedCourses = displayedCourses.filter(c => {
@@ -1221,7 +1222,7 @@ window.google.script.run = new Proxy({}, {
     td.style.padding = '20px';
     td.style.textAlign = 'center';
     td.style.color = '#64748b';
-    td.textContent = (classType === 'กลุ่มหลัก' && !document.getElementById('course_round').value) 
+    td.textContent = (isMainGroup && !document.getElementById('course_round').value) 
         ? 'กรุณาเลือกคอร์สที่ลง' 
         : 'ไม่พบคอร์สเรียนที่เปิดสอนสำหรับเงื่อนไขนี้';
     tr.appendChild(td);

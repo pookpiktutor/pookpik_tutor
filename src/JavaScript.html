@@ -6426,25 +6426,6 @@ function updateRoundFilterDropdown() {
     });
   }
 
-  // 2. Add fallback rounds with year (/69) if empty or database not loaded
-  if (foundRounds.size === 0) {
-    const curYearBE = (new Date().getFullYear() + 543).toString().slice(-2);
-    const baseRounds = [
-      'MIDTERM 1/' + curYearBE,
-      'MIDTERM 2/' + curYearBE,
-      'FINAL 1/' + curYearBE,
-      'FINAL 2/' + curYearBE,
-      'ปิดเทอม ต.ค./' + curYearBE,
-      'Summer/' + curYearBE,
-      'MIDTERM 1',
-      'MIDTERM 2',
-      'FINAL 1',
-      'FINAL 2',
-      'ปิดเทอม ต.ค.',
-      'Summer'
-    ];
-    baseRounds.forEach(r => foundRounds.add(r));
-  }
 
   // 3. Render options into dropdown
   Array.from(foundRounds).forEach(r => {
