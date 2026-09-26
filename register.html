@@ -1074,10 +1074,22 @@ window.google.script.run = new Proxy({}, {
     searchBtn.disabled = true;
     searchBtn.textContent = 'กำลังค้นหารายวิชา...';
 
+    // Show loading state in course dropdown if class type is 'กลุ่มหลัก'
+    const courseRoundContainer = document.getElementById('course_round_container');
+    const courseRoundSelect = document.getElementById('course_round');
+    if (classType === 'กลุ่มหลัก') {
+      courseRoundContainer.style.display = 'block';
+      courseRoundSelect.innerHTML = '<option value="">กำลังดึงข้อมูลคอร์สเรียน กรุณารอสักครู่...</option>';
+      courseRoundSelect.disabled = true;
+    } else {
+      courseRoundContainer.style.display = 'none';
+    }
+
     google.script.run
       .withSuccessHandler(res => {
         searchBtn.disabled = false;
         searchBtn.textContent = originalText;
+        courseRoundSelect.disabled = false;
 
         const container = document.getElementById('fees_display_container');
         const tbody = document.getElementById('fees_list_tbody');
@@ -1137,6 +1149,10 @@ window.google.script.run = new Proxy({}, {
 
           renderCourseCheckboxes();
         } else {
+          if (classType === 'กลุ่มหลัก') {
+            courseRoundSelect.innerHTML = '<option value="">-- ไม่พบคอร์สเรียนที่เปิดสอน --</option>';
+            courseRoundSelect.disabled = true;
+          }
           var tr = document.createElement('tr');
           var td = document.createElement('td');
           td.colSpan = 4;
@@ -1151,6 +1167,10 @@ window.google.script.run = new Proxy({}, {
       .withFailureHandler(err => {
         searchBtn.disabled = false;
         searchBtn.textContent = originalText;
+        courseRoundSelect.disabled = false;
+        if (classType === 'กลุ่มหลัก') {
+          courseRoundSelect.innerHTML = '<option value="">-- เกิดข้อผิดพลาดในการดึงข้อมูล --</option>';
+        }
         alert('เกิดข้อผิดพลาดในการดึงข้อมูล: ' + err.message);
       })
       .getAvailableCourses(grade, classType, branchLearn);
