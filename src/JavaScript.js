@@ -1,4 +1,4 @@
-﻿// --- BACKGROUND TASK QUEUE MANAGER ---
+// --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
 
@@ -36939,6 +36939,7 @@ function setLoading(show, text = 'กำลังโหลดข้อมูล.
     }
     // Update status bar to loading state
     if (statusBar) {
+      statusBar.style.display = 'flex';
       statusBar.style.background = 'rgba(59, 130, 246, 0.9)';
     }
     if (statusDot) {
@@ -36954,6 +36955,7 @@ function setLoading(show, text = 'กำลังโหลดข้อมูล.
     }
     // Update status bar to idle state
     if (statusBar) {
+      statusBar.style.display = 'none';
       statusBar.style.background = 'rgba(15, 23, 42, 0.85)';
     }
     if (statusDot) {
@@ -36961,7 +36963,7 @@ function setLoading(show, text = 'กำลังโหลดข้อมูล.
       statusDot.style.animation = 'none';
     }
     if (statusText) {
-      statusText.textContent = '✅ พร้อมใช้งาน';
+      statusText.textContent = '';
     }
   }
 }
