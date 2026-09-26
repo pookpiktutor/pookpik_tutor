@@ -17960,14 +17960,17 @@ function getCampsData(academicYear, campName) {
         paid: parseFloat(row[14]) || 0,
         outstanding: parseFloat(row[15]) || 0,
         pay_r1_date: row[16] ? cleanSheetDate(row[16]) : '',
-        pay_r1_amount: parseFloat(row[17]) || 0,
-        pay_r1_channel: row[18] || '',
-        pay_r2_date: row[19] ? cleanSheetDate(row[19]) : '',
-        pay_r2_amount: parseFloat(row[20]) || 0,
-        pay_r2_channel: row[21] || '',
-        pay_r3_date: row[22] ? cleanSheetDate(row[22]) : '',
-        pay_r3_amount: parseFloat(row[23]) || 0,
-        pay_r3_channel: row[24] || ''
+        pay_r1_time: row[17] || '',
+        pay_r1_amount: parseFloat(row[18]) || 0,
+        pay_r1_channel: row[19] || '',
+        pay_r2_date: row[20] ? cleanSheetDate(row[20]) : '',
+        pay_r2_time: row[21] || '',
+        pay_r2_amount: parseFloat(row[22]) || 0,
+        pay_r2_channel: row[23] || '',
+        pay_r3_date: row[24] ? cleanSheetDate(row[24]) : '',
+        pay_r3_time: row[25] || '',
+        pay_r3_amount: parseFloat(row[26]) || 0,
+        pay_r3_channel: row[27] || ''
       };
       
       // Auto-fill full amount if not set based on camp name
@@ -18064,17 +18067,20 @@ function saveCampPayment(timestamp, paymentData) {
             paymentData.paid || 0,
             paymentData.outstanding || 0,
             paymentData.pay_r1_date || '',
+            paymentData.pay_r1_time || '',
             paymentData.pay_r1_amount || '',
             paymentData.pay_r1_channel || '',
             paymentData.pay_r2_date || '',
+            paymentData.pay_r2_time || '',
             paymentData.pay_r2_amount || '',
             paymentData.pay_r2_channel || '',
             paymentData.pay_r3_date || '',
+            paymentData.pay_r3_time || '',
             paymentData.pay_r3_amount || '',
             paymentData.pay_r3_channel || ''
           ]
         ];
-        sheet.getRange(rIndex, 14, 1, 12).setValues(rowUpdates);
+        sheet.getRange(rIndex, 14, 1, 15).setValues(rowUpdates);
         
         // Ensure headers exist if this is the first time
         const headers = data[0];

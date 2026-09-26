@@ -21306,14 +21306,17 @@ function showCampPaymentModal(timestamp) {
   document.getElementById('cp_outstanding').value = item.outstanding || '';
   
   document.getElementById('cp_pay_r1_date').value = (item.pay_r1_date) ? convertDateTimeFromSheet(item.pay_r1_date).split('T')[0] : '';
+  document.getElementById('cp_pay_r1_time').value = item.pay_r1_time || '';
   document.getElementById('cp_pay_r1_amount').value = item.pay_r1_amount || '';
   document.getElementById('cp_pay_r1_channel').value = item.pay_r1_channel || '';
   
   document.getElementById('cp_pay_r2_date').value = (item.pay_r2_date) ? convertDateTimeFromSheet(item.pay_r2_date).split('T')[0] : '';
+  document.getElementById('cp_pay_r2_time').value = item.pay_r2_time || '';
   document.getElementById('cp_pay_r2_amount').value = item.pay_r2_amount || '';
   document.getElementById('cp_pay_r2_channel').value = item.pay_r2_channel || '';
   
   document.getElementById('cp_pay_r3_date').value = (item.pay_r3_date) ? convertDateTimeFromSheet(item.pay_r3_date).split('T')[0] : '';
+  document.getElementById('cp_pay_r3_time').value = item.pay_r3_time || '';
   document.getElementById('cp_pay_r3_amount').value = item.pay_r3_amount || '';
   document.getElementById('cp_pay_r3_channel').value = item.pay_r3_channel || '';
   
@@ -21457,12 +21460,15 @@ function saveCampPaymentSubmit(e) {
     paid: paid,
     outstanding: outst,
     pay_r1_date: document.getElementById('cp_pay_r1_date').value,
+    pay_r1_time: document.getElementById('cp_pay_r1_time').value,
     pay_r1_amount: parseFloat(document.getElementById('cp_pay_r1_amount').value) || 0,
     pay_r1_channel: document.getElementById('cp_pay_r1_channel').value,
     pay_r2_date: document.getElementById('cp_pay_r2_date').value,
+    pay_r2_time: document.getElementById('cp_pay_r2_time').value,
     pay_r2_amount: parseFloat(document.getElementById('cp_pay_r2_amount').value) || 0,
     pay_r2_channel: document.getElementById('cp_pay_r2_channel').value,
     pay_r3_date: document.getElementById('cp_pay_r3_date').value,
+    pay_r3_time: document.getElementById('cp_pay_r3_time').value,
     pay_r3_amount: parseFloat(document.getElementById('cp_pay_r3_amount').value) || 0,
     pay_r3_channel: document.getElementById('cp_pay_r3_channel').value
   };
