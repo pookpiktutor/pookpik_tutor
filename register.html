@@ -565,7 +565,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         <div class="upload-area" onclick="document.getElementById('file_input').click()">
           <div class="upload-icon">📸</div>
           <div class="upload-text" id="upload_status">กดตรงนี้เพื่อเลือกรูปภาพสลิป</div>
-          <input type="file" id="file_input" style="display: none;" accept="image/*" required onchange="handleFileSelect(event)">
+          <input type="file" id="file_input" style="display: none;" accept="image/*" onchange="handleFileSelect(event)">
         </div>
         <div id="preview_container">
           <div style="font-size: 0.8rem; color: var(--text-muted);">ตัวอย่างรูปภาพสลิป:</div>
@@ -1007,7 +1007,7 @@ window.google.script.run = new Proxy({}, {
     } else {
       transferInput.disabled = false;
       transferInput.value = '';
-      fileInput.required = true;
+      fileInput.required = false;
       slipGroup.style.display = 'block';
       recalcSelectedFees();
     }
@@ -1892,7 +1892,8 @@ window.google.script.run = new Proxy({}, {
       paid: payNow,
       outstanding: remaining,
       amount_paid: payNow,
-      status: (remaining <= 0) ? "ชำระครบแล้ว" : (payNow > 0 ? "มัดจำแล้ว" : "รอตรวจสอบ")
+      pay_r1_channel: "TTB บัญชีบริษัท(สแกน)",
+      status: (remaining <= 0) ? "ชำระครบแล้ว" : (payNow > 0 ? "มัดจำแล้ว" : "รอชำระเงิน")
     };
 
     google.script.run

@@ -17881,13 +17881,13 @@ function saveCampStudentData(campData) {
       outstanding,
       campData.pay_r1_date || (paidAmount > 0 ? todayStr : ''),
       campData.pay_r1_amount || (paidAmount > 0 ? paidAmount : ''),
-      campData.pay_r1_channel || (paidAmount > 0 ? 'โอนเงิน (แนบสลิป)' : ''),
+      campData.pay_r1_channel || 'TTB บัญชีบริษัท(สแกน)',
       campData.pay_r2_date || '',
       campData.pay_r2_amount || '',
-      campData.pay_r2_channel || '',
+      campData.pay_r2_channel || (campData.pay_r2_amount ? 'TTB บัญชีบริษัท(สแกน)' : ''),
       campData.pay_r3_date || '',
       campData.pay_r3_amount || '',
-      campData.pay_r3_channel || ''
+      campData.pay_r3_channel || (campData.pay_r3_amount ? 'TTB บัญชีบริษัท(สแกน)' : '')
     ];
 
     if (rowIndex > -1) {
@@ -18302,11 +18302,11 @@ function confirmSearchPayment(payload) {
               if (pay1Amt === 0) {
                 campSheet.getRange(rIndex, 17).setValue(todayStr);
                 campSheet.getRange(rIndex, 18).setValue(transferAmt);
-                campSheet.getRange(rIndex, 19).setValue('โอนเงิน (สลิป)');
+                campSheet.getRange(rIndex, 19).setValue('TTB บัญชีบริษัท(สแกน)');
               } else {
                 campSheet.getRange(rIndex, 20).setValue(todayStr);
                 campSheet.getRange(rIndex, 21).setValue(transferAmt);
-                campSheet.getRange(rIndex, 22).setValue('โอนเงิน (สลิป)');
+                campSheet.getRange(rIndex, 22).setValue('TTB บัญชีบริษัท(สแกน)');
               }
               break;
             }
