@@ -36951,8 +36951,9 @@ function showCampPaymentModal(timestamp) {
 
     html += '<div style="border: 1px solid #cbd5e1; background:#ffffff; border-radius: 8px; padding: 10px; margin-bottom: 8px;">';
     html += '<div style="font-weight: 600; font-size: 0.8rem; margin-bottom: 6px; color: #4338ca;">💳 งวดที่ ' + r + '</div>';
-    html += '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">';
-    html += '<div><label style="font-size:0.75rem;">วันที่</label><input type="date" id="camp_pay_r' + r + '_date" class="form-control form-control-sm" value="' + dateVal + '"></div>';
+    html += '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;">';
+    html += '<div><label style="font-size:0.75rem;">วันที่</label><input type="date" id="camp_pay_r' + r + '_date" class="form-control form-control-sm" value="' + dateVal + '"></div>
+    <div><label style="font-size:0.75rem;">เวลา</label><input type="time" id="camp_pay_r' + r + '_time" class="form-control form-control-sm" value="' + timeVal + '"></div>';
     html += '<div><label style="font-size:0.75rem;">จำนวนเงิน (บาท)</label><input type="number" id="camp_pay_r' + r + '_amount" class="form-control form-control-sm" value="' + amtVal + '" oninput="recalcPaidFromRounds()"></div>';
     html += '<div><label style="font-size:0.75rem;">ช่องทาง</label><select id="camp_pay_r' + r + '_channel" class="form-select form-select-sm">' + channelOptions(chVal) + '</select></div>';
     html += '</div></div>';
