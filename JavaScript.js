@@ -1,3 +1,15 @@
+function setLoading(show, text = 'กำลังโหลดข้อมูล...') {
+  const overlay = document.getElementById('loader_overlay');
+  const loaderText = document.getElementById('loader_text');
+  if (show) {
+    window._nextTaskTitle = text;
+    if (loaderText) loaderText.innerText = text;
+    if (overlay) overlay.classList.add('active');
+  } else {
+    if (overlay) overlay.classList.remove('active');
+  }
+}
+
 // --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
