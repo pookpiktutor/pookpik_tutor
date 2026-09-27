@@ -36851,6 +36851,155 @@ function initCampsFilters(callback) {
   }).getCampsFilterOptions();
 }
 
+function showCampPaymentModal(timestamp) {
+  // Find student data from cached currentCampsData
+  var item = null;
+  if (window.currentCampsData) {
+    item = currentCampsData.find(function(c) {
+      return String(c.timestamp) === String(timestamp);
+    });
+  }
+  if (!item) {
+    Swal.fire('Error', 'ไม่พบข้อมูลนักเรียนคนนี้ กรุณารีเฟรชข้อมูลแล้วลองใหม่', 'error');
+    return;
+  }
+
+  // Build modal HTML
+  var modalEl = document.getElementById('camp_payment_modal');
+  if (!modalEl) {
+    // Create modal container if it doesn't exist
+    modalEl = document.createElement('div');
+    modalEl.className = 'modal-backdrop';
+    modalEl.id = 'camp_payment_modal';
+    modalEl.innerHTML = '<div class="custom-modal" style="max-width: 700px; max-height: 90vh; overflow-y: auto;"><div id="camp_payment_modal_content"></div></div>';
+    document.body.appendChild(modalEl);
+  }
+
+  var contentEl = document.getElementById('camp_payment_modal_content');
+  var channels = ['โอนธนาคาร', 'QR พร้อมเพย์', 'เงินสด', 'อื่นๆ'];
+  var channelOptions = function(selected) {
+    var opts = '<option value="">เลือกช่องทาง</option>';
+    channels.forEach(function(ch) {
+      opts += '<option value="' + ch + '"' + (ch === selected ? ' selected' : '') + '>' + ch + '</option>';
+    });
+    return opts;
+  };
+
+  var html = '<div style="padding: 20px;">';
+  html += '<h5 style="margin-bottom: 15px; color: var(--text-main);">🪙 จัดการการชำระเงิน</h5>';
+  html += '<div style="background: rgba(102,126,234,0.08); border-radius: 8px; padding: 10px 14px; margin-bottom: 15px; font-size: 0.9rem;">';
+  html += '<strong>' + (item.std_name || '-') + '</strong> (' + (item.std_nickname || '-') + ') — ค่าย: ' + (item.camp_name || '-');
+  html += '</div>';
+
+  html += '<input type="hidden" id="camp_pay_timestamp" value="' + (item.timestamp || '') + '">';
+
+  // ยอดเต็ม / ชำระแล้ว / ค้างชำระ
+  html += '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">';
+  html += '<div><label style="font-size:0.8rem; font-weight:600;">ยอดเต็ม (บาท)</label><input type="number" id="camp_pay_full" class="form-control form-control-sm" value="' + (item.full || 0) + '" oninput="calcCampOutstanding()"></div>';
+  html += '<div><label style="font-size:0.8rem; font-weight:600;">ชำระแล้ว (บาท)</label><input type="number" id="camp_pay_paid" class="form-control form-control-sm" value="' + (item.paid || 0) + '" readonly style="background:#f1f5f9;"></div>';
+  html += '<div><label style="font-size:0.8rem; font-weight:600;">ค้างชำระ (บาท)</label><input type="number" id="camp_pay_outstanding" class="form-control form-control-sm" value="' + (item.outstanding || 0) + '" readonly style="background:#f1f5f9;"></div>';
+  html += '</div>';
+
+  // งวดชำระ 1-3
+  for (var r = 1; r <= 3; r++) {
+    var dateVal = item['pay_r' + r + '_date'] || '';
+    var timeVal = item['pay_r' + r + '_time'] || '';
+    var amtVal = item['pay_r' + r + '_amount'] || '';
+    var chVal = item['pay_r' + r + '_channel'] || '';
+
+    html += '<div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin-bottom: 10px;">';
+    html += '<div style="font-weight: 600; font-size: 0.85rem; margin-bottom: 8px; color: #6366f1;">💳 งวดที่ ' + r + '</div>';
+    html += '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;">';
+    html += '<div><label style="font-size:0.75rem;">วันที่</label><input type="date" id="camp_pay_r' + r + '_date" class="form-control form-control-sm" value="' + dateVal + '"></div>';
+    html += '<div><label style="font-size:0.75rem;">เวลา</label><input type="time" id="camp_pay_r' + r + '_time" class="form-control form-control-sm" value="' + timeVal + '"></div>';
+    html += '<div><label style="font-size:0.75rem;">ยอดเงิน</label><input type="number" id="camp_pay_r' + r + '_amount" class="form-control form-control-sm" value="' + amtVal + '" oninput="calcCampOutstanding()"></div>';
+    html += '<div><label style="font-size:0.75rem;">ช่องทาง</label><select id="camp_pay_r' + r + '_channel" class="form-select form-select-sm">' + channelOptions(chVal) + '</select></div>';
+    html += '</div></div>';
+  }
+
+  html += '<div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">';
+  html += '<button class="btn btn-secondary btn-sm" onclick="closeCampPaymentModal()">ยกเลิก</button>';
+  html += '<button class="btn btn-primary btn-sm" onclick="saveCampPaymentSubmit()">💾 บันทึก</button>';
+  html += '</div></div>';
+
+  contentEl.innerHTML = html;
+  modalEl.classList.add('active');
+
+  // Calculate outstanding immediately
+  calcCampOutstanding();
+}
+
+function calcCampOutstanding() {
+  var full = parseFloat(document.getElementById('camp_pay_full').value) || 0;
+  var r1 = parseFloat(document.getElementById('camp_pay_r1_amount').value) || 0;
+  var r2 = parseFloat(document.getElementById('camp_pay_r2_amount').value) || 0;
+  var r3 = parseFloat(document.getElementById('camp_pay_r3_amount').value) || 0;
+  var totalPaid = r1 + r2 + r3;
+  var outstanding = full - totalPaid;
+  if (outstanding < 0) outstanding = 0;
+
+  document.getElementById('camp_pay_paid').value = totalPaid;
+  document.getElementById('camp_pay_outstanding').value = outstanding;
+}
+
+function closeCampPaymentModal() {
+  var modal = document.getElementById('camp_payment_modal');
+  if (modal) modal.classList.remove('active');
+}
+
+function saveCampPaymentSubmit() {
+  var timestamp = document.getElementById('camp_pay_timestamp').value;
+  if (!timestamp) {
+    Swal.fire('Error', 'ไม่พบ timestamp', 'error');
+    return;
+  }
+
+  var paymentData = {
+    full: parseFloat(document.getElementById('camp_pay_full').value) || 0,
+    paid: parseFloat(document.getElementById('camp_pay_paid').value) || 0,
+    outstanding: parseFloat(document.getElementById('camp_pay_outstanding').value) || 0,
+    pay_r1_date: document.getElementById('camp_pay_r1_date').value || '',
+    pay_r1_time: document.getElementById('camp_pay_r1_time').value || '',
+    pay_r1_amount: parseFloat(document.getElementById('camp_pay_r1_amount').value) || 0,
+    pay_r1_channel: document.getElementById('camp_pay_r1_channel').value || '',
+    pay_r2_date: document.getElementById('camp_pay_r2_date').value || '',
+    pay_r2_time: document.getElementById('camp_pay_r2_time').value || '',
+    pay_r2_amount: parseFloat(document.getElementById('camp_pay_r2_amount').value) || 0,
+    pay_r2_channel: document.getElementById('camp_pay_r2_channel').value || '',
+    pay_r3_date: document.getElementById('camp_pay_r3_date').value || '',
+    pay_r3_time: document.getElementById('camp_pay_r3_time').value || '',
+    pay_r3_amount: parseFloat(document.getElementById('camp_pay_r3_amount').value) || 0,
+    pay_r3_channel: document.getElementById('camp_pay_r3_channel').value || ''
+  };
+
+  Swal.fire({
+    title: 'กำลังบันทึก...',
+    allowOutsideClick: false,
+    didOpen: function() { Swal.showLoading(); }
+  });
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (res && res.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'บันทึกสำเร็จ',
+          showConfirmButton: false,
+          timer: 1500
+        });
+        closeCampPaymentModal();
+        loadCampsData(); // refresh table
+      } else {
+        Swal.fire('Error', (res && res.error) || 'บันทึกไม่สำเร็จ', 'error');
+      }
+    })
+    .withFailureHandler(function(err) {
+      Swal.fire('Error', err.message || 'เกิดข้อผิดพลาด', 'error');
+    })
+    .saveCampPayment(timestamp, paymentData);
+}
+
+
 
 function loadCampsData() {
   var tbody = document.getElementById('camps_table_body');
@@ -37264,7 +37413,7 @@ function deleteCampStudent(timestamp) {
             showConfirmButton: false,
             timer: 1500
           });
-          fetchCampsData(); // refresh table
+          loadCampsData(); // refresh table
         } else {
           Swal.fire('Error', res.error || 'ลบข้อมูลไม่สำเร็จ', 'error');
         }

@@ -18580,8 +18580,8 @@ function syncStudentToStatusDB(std, batch = false) {
   } function deleteCampStudentByTimestamp(timestampStr) {
     try {
       const ss = SpreadsheetApp.getActiveSpreadsheet();
-      const sheet = ss.getSheetByName('Camps');
-      if (!sheet) return { success: false, error: "ไม่พบชีต Camps" };
+      const sheet = ss.getSheetByName('ลงทะเบียนค่าย');
+      if (!sheet) return { success: false, error: "ไม่พบชีต ลงทะเบียนค่าย" };
 
       const data = sheet.getDataRange().getValues();
       // Start from row 1 (index 1) assuming row 0 is header
