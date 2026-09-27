@@ -210,6 +210,37 @@
       margin-bottom: 8px;
       color: var(--color-success);
     }
+    
+    /* Tabs CSS */
+    .tabs-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 10px;
+      justify-content: center;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      font-family: 'Outfit', 'Sarabun', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      background: #f1f5f9;
+      color: var(--color-primary);
+    }
+    .tab-btn.active {
+      background: var(--color-primary);
+      color: #ffffff;
+    }
+
   </style>
 
 <style>
@@ -301,6 +332,11 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
   }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+  .swal2-container { z-index: 99999 !important; }
+  .swal2-styled.swal2-confirm { background-color: var(--color-primary, #2b3a67) !important; }
+</style>
 </head>
 <body>
 
@@ -327,7 +363,15 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
       </div>
     </div>
 
+
+  <div class="tabs-container">
+    <button type="button" id="tab_regular" class="tab-btn active" onclick="switchRegistrationTab('regular')">ลงทะเบียนเรียนปกติ</button>
+    <button type="button" id="tab_camp" class="tab-btn" onclick="switchRegistrationTab('camp')">ลงทะเบียนค่าย</button>
+  </div>
+
+  <div id="regular_section">
     <form id="reg_form">
+      <input type="hidden" id="student_id" value="">
       <div class="row-grid">
         <div class="form-group">
           <label class="form-label">ระดับชั้นเรียน <span>*</span></label>
@@ -371,25 +415,26 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
             <option value="สาขา3">สาขา 3 ตรงข้ามโรงเรียนอัสสัมชัญ เซนต์โยเซฟ</option>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">ห้อง <span>*</span></label>
-          <input type="text" id="class_section" class="form-input" required placeholder="ระบุห้องเรียน">
-        </div>
-      </div>
-
-      <div class="row-grid" id="course_round_container" style="display: none;">
-        <div class="form-group" style="grid-column: span 2;">
-          <label class="form-label">กลุ่มหลักตามตารางคอร์ส <span>*</span></label>
+        <div class="form-group" id="course_round_container" style="display: none;">
+          <label class="form-label">คอร์สที่ลง <span>*</span></label>
           <select id="course_round" class="form-select" onchange="renderCourseCheckboxes()">
-            <option value="">-- เลือกรอบเรียน --</option>
+            <option value="">-- เลือกคอร์ส --</option>
           </select>
         </div>
       </div>
 
+      
+
       <div class="row-grid">
         <div class="form-group">
           <label class="form-label">ชื่อ - นามสกุล นักเรียน <span>*</span></label>
-          <input type="text" id="std_name" class="form-input" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว">
+          <div style="display: flex; gap: 8px;">
+             <input type="text" id="std_name" class="form-input" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว" style="flex: 1;">
+             <button type="button" id="btn_search_student" class="btn btn-secondary" style="padding: 0 15px; border-radius: 6px; white-space: nowrap; width: auto; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;">
+               <i class="fas fa-search" style="margin-right: 5px;"></i> ค้นหา
+             </button>
+           </div>
+           <div style="font-size: 0.8rem; color: var(--color-primary); margin-top: 5px;">* สามารถกดค้นหาจากชื่อ-นามสกุล เพื่อดึงข้อมูลเดิมขึ้นมาได้</div>
         </div>
         <div class="form-group">
           <label class="form-label">ชื่อเล่นนักเรียน <span>*</span></label>
@@ -429,18 +474,19 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           </datalist>
         </div>
         <div class="form-group">
-          <label class="form-label">เบอร์โทรศัพท์ผู้ปกครอง <span>*</span></label>
-          <input type="tel" id="parent_contact" class="form-input" required placeholder="0xx-xxx-xxxx" oninput="formatPhoneAsYouType(this)" maxlength="12">
+          <label class="form-label">ห้อง <span>*</span></label>
+          <input type="text" id="class_section" class="form-input" required placeholder="ระบุห้องเรียน">
         </div>
       </div>
 
       <div class="row-grid">
         <div class="form-group">
-          <label class="form-label">Line ID (ถ้ามี)</label>
-          <input type="text" id="line_id" class="form-input" placeholder="Line ID">
+          <label class="form-label">เบอร์โทรศัพท์ผู้ปกครอง <span>*</span></label>
+          <input type="tel" id="parent_contact" class="form-input" required placeholder="0xx-xxx-xxxx" oninput="formatPhoneAsYouType(this)" maxlength="12">
         </div>
         <div class="form-group">
-          <!-- empty placeholder to balance grid columns -->
+          <label class="form-label">Line ID (ถ้ามี)</label>
+          <input type="text" id="line_id" class="form-input" placeholder="Line ID">
         </div>
       </div>
 
@@ -518,7 +564,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         <div class="upload-area" onclick="document.getElementById('file_input').click()">
           <div class="upload-icon">📸</div>
           <div class="upload-text" id="upload_status">กดตรงนี้เพื่อเลือกรูปภาพสลิป</div>
-          <input type="file" id="file_input" style="display: none;" accept="image/*" required onchange="handleFileSelect(event)">
+          <input type="file" id="file_input" style="display: none;" accept="image/*" onchange="handleFileSelect(event)">
         </div>
         <div id="preview_container">
           <div style="font-size: 0.8rem; color: var(--text-muted);">ตัวอย่างรูปภาพสลิป:</div>
@@ -533,6 +579,313 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         </button>
       </div>
     </form>
+
+  </div> <!-- End regular_section -->
+
+  <!-- CAMP SECTION -->
+  <!-- CAMP SECTION -->
+  <div id="camp_section" style="display: none;">
+    <form id="camp_form">
+      <input type="hidden" id="camp_student_id" value="">
+      
+      <!-- 1. ชื่อ-นามสกุล นักเรียน * -->
+      <div class="form-group">
+        <label class="form-label">ชื่อ-นามสกุล นักเรียน <span>*</span></label>
+        <div style="display: flex; gap: 8px;">
+           <input type="text" id="camp_std_name" class="form-input" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว" style="flex: 1;">
+           <button type="button" id="btn_search_student_camp" class="btn btn-secondary" style="padding: 0 15px; border-radius: 6px; white-space: nowrap; width: auto; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;">
+             <i class="fas fa-search" style="margin-right: 5px;"></i> ค้นหา
+           </button>
+         </div>
+         <div style="font-size: 0.8rem; color: var(--color-primary); margin-top: 5px;">* สามารถกดค้นหาจากชื่อ-นามสกุล เพื่อดึงข้อมูลเดิมขึ้นมาได้</div>
+      </div>
+
+      <!-- Unpaid Items Card (สำหรับแจ้งโอนค้างชำระของนักเรียนเดิม) -->
+      <div id="unpaid_items_container" style="display: none; background: #fff8f6; border: 1px solid #ffedd5; border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+        <h4 style="color: #c2410c; margin-top: 0; margin-bottom: 10px; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+          📌 พบรายการค้างชำระ/มัดจำแล้ว ของนักเรียนคนนี้
+        </h4>
+        <div id="unpaid_items_list" style="margin-bottom: 14px;"></div>
+        
+        <div id="unpaid_payment_section" style="display: none; background: #ffffff; border: 1px dashed #fdba74; border-radius: 10px; padding: 14px; margin-top: 10px;">
+          <h5 style="color: #9a3412; margin-top: 0; margin-bottom: 10px; font-size: 0.95rem;">💳 แจ้งโอนเงินค้างชำระ (อัปเดตลงฐานข้อมูลเดิม)</h5>
+          
+          <div class="row-grid" style="margin-bottom: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">จำนวนเงินที่โอน (บาท) <span>*</span></label>
+              <input type="number" id="unpaid_pay_amount" class="form-input" placeholder="ระบุยอดเงินโอน">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">วันที่โอน <span>*</span></label>
+              <input type="date" id="unpaid_pay_date" class="form-input">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">เวลาที่โอน <span>*</span></label>
+              <input type="time" id="unpaid_pay_time" class="form-input">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label">แนบหลักฐานการโอนเงิน (สลิป)</label>
+            <div class="upload-area" onclick="document.getElementById('unpaid_slip_file').click()">
+              <div class="upload-icon">📸</div>
+              <div class="upload-text" id="unpaid_upload_status">คลิกเพื่อแนบสลิปการโอน</div>
+              <input type="file" id="unpaid_slip_file" style="display: none;" accept="image/*" onchange="handleUnpaidFileSelect(event)">
+            </div>
+            <div id="unpaid_preview_container" style="display: none; margin-top: 8px; text-align: center;">
+              <img id="unpaid_preview_img" src="" style="max-height: 150px; border-radius: 8px;">
+            </div>
+          </div>
+
+          <button type="button" id="btn_submit_unpaid_payment" class="btn btn-success" onclick="submitUnpaidPaymentConfirm()" style="width: 100%; font-weight: 700;">
+            💾 บันทึกแจ้งชำระเงิน (อัปเดตตรงเข้าฐานข้อมูลเดิม)
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. ชื่อเล่นนักเรียน * -->
+      <div class="form-group">
+        <label class="form-label">ชื่อเล่นนักเรียน <span>*</span></label>
+        <input type="text" id="camp_std_nickname" class="form-input" required placeholder="ชื่อเล่น">
+      </div>
+
+      <!-- 3. เบอร์โทรศัพท์ผู้ปกครอง * -->
+      <div class="form-group">
+        <label class="form-label">เบอร์โทรศัพท์ผู้ปกครอง <span>*</span></label>
+        <input type="tel" id="camp_parent_contact" class="form-input" required placeholder="0xx-xxx-xxxx" oninput="formatPhoneAsYouType(this)" maxlength="12">
+      </div>
+
+      <!-- 4. โรงเรียน * -->
+      <div class="form-group">
+        <label class="form-label">โรงเรียน <span>*</span></label>
+        <input type="text" id="camp_std_school" class="form-input" required placeholder="ระบุชื่อโรงเรียนปัจจุบัน" list="std_school_list">
+      </div>
+
+      <!-- 5. ระดับชั้นเรียน * & 6. ปีที่ลงทะเบียน * -->
+      <div class="row-grid">
+        <div class="form-group">
+          <label class="form-label">ระดับชั้นเรียน <span>*</span></label>
+          <select id="camp_grade" class="form-select" required onchange="renderCampRooms(); calculateCampCost();">
+            <option value="">-- เลือกระดับชั้น --</option>
+            <option value="ป.6">ป.6</option>
+            <option value="ม.3">ม.3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ปีที่ลงทะเบียน <span>*</span></label>
+          <select id="camp_year" class="form-select" required>
+            <option value="">-- เลือกปีที่ลงทะเบียน --</option>
+            <!-- Generated via JS -->
+          </select>
+        </div>
+      </div>
+
+      <!-- 7. เลือกค่ายที่สมัคร * & 8. ห้องเรียน * -->
+      <div class="row-grid">
+        <div class="form-group">
+          <label class="form-label">เลือกค่ายที่สมัคร <span>*</span></label>
+          <select id="camp_name" class="form-select" required onchange="calculateCampCost()">
+            <option value="">-- เลือกค่าย --</option>
+            <option value="ค่ายเตรียมความพร้อม(เมษายน)">ค่ายเตรียมความพร้อม(เมษายน)</option>
+            <option value="ค่ายวางแผนติดspeed(ตุลาคม)">ค่ายวางแผนติดspeed(ตุลาคม)</option>
+            <option value="ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)">ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)</option>
+            <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1</option>
+            <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ห้องเรียน <span>*</span></label>
+          <select id="camp_room" class="form-select" required>
+            <option value="">-- เลือกระดับชั้นก่อน --</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 9. รูปแบบการเรียนค่าย * (เต็มค่าย / รายวัน) -->
+      <div class="row-grid" style="margin-top: 12px; margin-bottom: 16px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">รูปแบบการเรียนค่าย <span>*</span></label>
+          <div style="display: flex; gap: 16px; margin-top: 6px; background: #ffffff; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: var(--radius-md);">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; color: #1e293b;">
+              <input type="radio" name="camp_price_type" value="full" checked onchange="toggleCampPriceType(); calculateCampCost();">
+              <span>ลงเต็มค่าย</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; color: #1e293b;">
+              <input type="radio" name="camp_price_type" value="daily" onchange="toggleCampPriceType(); calculateCampCost();">
+              <span>ลงรายวัน</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group" id="camp_daily_days_container" style="display: none; margin-bottom: 0;">
+          <label class="form-label">จำนวนวันที่เรียน (วัน) <span>*</span></label>
+          <input type="number" id="camp_daily_days" class="form-input" min="1" max="30" value="1" oninput="calculateCampCost()">
+        </div>
+      </div>
+
+      <!-- 10. โรคประจำตัว / แพ้ยา / แพ้อาหาร /ไม่รับประทานอาหารประเภทใด -->
+      <div class="form-group">
+        <label class="form-label" style="line-height: 1.4;">โรคประจำตัว / แพ้ยา / แพ้อาหาร /<br>ไม่รับประทานอาหารประเภทใด</label>
+        <input type="text" id="camp_medical_condition" class="form-input" placeholder="หากไม่มีให้เว้นว่าง หรือระบุ -">
+      </div>
+
+      <!-- 11. Size เสื้อค่าย (แจกฟรี 1 ตัว) * -->
+      <div class="form-group">
+        <label class="form-label">Size เสื้อค่าย (แจกฟรี 1 ตัว) <span>*</span></label>
+        <select id="camp_shirt_size" class="form-select" required>
+          <option value="">-- เลือก Size เสื้อ --</option>
+          <option value="S">Size S = รอบอก 32" ความยาว 24"</option>
+          <option value="M">Size M = รอบอก 36" ความยาว 24.5"</option>
+          <option value="L">Size L = รอบอก 40" ความยาว 25"</option>
+          <option value="XL">Size XL = รอบอก 44" ความยาว 25.5"</option>
+          <option value="2XL">Size 2XL = รอบอก 46" ความยาว 26"</option>
+          <option value="3XL">Size 3XL = รอบอก 50" ความยาว 27"</option>
+        </select>
+      </div>
+
+      <!-- 12. สถานที่จัดงาน -->
+      <div class="info-card" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-top: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          สถานที่จัดงาน
+        </h3>
+        <p style="margin: 0 0 12px 0; color: #475569; font-size: 0.95rem; line-height: 1.5;">
+          <strong>โรงเรียนกวดวิชาบ้านครูปุ๊กปิ๊ก สาขา 2</strong><br>
+          ข้างโรงเรียนระยองวิทยาคม
+        </p>
+        <a href="https://maps.app.goo.gl/oxxqj5aVZC6zLq8i9" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background-color: #dbeafe; color: #1d4ed8; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: background-color 0.2s;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+          เปิดแผนที่นำทาง (Google Maps)
+        </a>
+      </div>
+
+      <!-- 13. รูปแบบการชำระเงินก่อนแนบสลิป -->
+      <div class="info-card" id="camp_payment_option_card" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+          รูปแบบการชำระเงินก่อนแนบสลิป
+        </h3>
+        <div style="display: flex; gap: 20px; margin-bottom: 14px; flex-wrap: wrap;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #1e293b;">
+            <input type="radio" name="camp_pay_mode" value="unpaid" onchange="toggleCampPayMode(); calculateCampCost();">
+            <span>ยังไม่ชำระเงิน</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #1e293b;">
+            <input type="radio" name="camp_pay_mode" value="full" checked onchange="toggleCampPayMode(); calculateCampCost();">
+            <span>ชำระเต็มจำนวน</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #1e293b;">
+            <input type="radio" name="camp_pay_mode" value="deposit" onchange="toggleCampPayMode(); calculateCampCost();">
+            <span>ชำระ 2 ครั้ง (ครั้งแรกมัดจำ)</span>
+          </label>
+        </div>
+
+        <div id="camp_pay_datetime_container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">วันที่ชำระเงิน (วันที่โอน)</label>
+            <input type="date" id="camp_pay_date" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">เวลาที่ชำระเงิน (เวลาที่โอน)</label>
+            <input type="time" id="camp_pay_time" class="form-input">
+          </div>
+        </div>
+
+        <div id="camp_deposit_field_container" style="display: none; margin-bottom: 14px;">
+          <label class="form-label">ยอดเงินมัดจำ (ชำระครั้งแรก/ครั้งนี้) (บาท)</label>
+          <input type="number" id="camp_deposit_amount_input" class="form-input" placeholder="ระบุยอดเงินชำระ เช่น 2000" oninput="calculateCampCost()">
+        </div>
+
+        <!-- Summary Breakdown Card -->
+        <div style="background: #ffffff; border: 1px dashed #94a3b8; border-radius: 8px; padding: 14px; line-height: 1.8; font-size: 0.95rem;">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #475569;">💰 ยอดรวมค่าเรียนค่ายทั้งหมด:</span>
+            <strong id="summary_total_fee" style="color: #0284c7; font-size: 1.05rem;">0 บาท</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #475569;">✅ ยอดเงินที่ชำระครั้งนี้:</span>
+            <strong id="summary_pay_now" style="color: #16a34a; font-size: 1.05rem;">0 บาท</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #475569;">⏳ ยอดค้างชำระ (ชำระครั้งที่ 2):</span>
+            <strong id="summary_remaining" style="color: #dc2626; font-size: 1.05rem;">0 บาท</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- 14. ยอดชำระสำหรับค่ายที่เลือก -->
+      <div id="camp_cost_display" class="info-card" style="display: none; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <h3 style="color: #16a34a; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          ยอดชำระสำหรับค่ายที่เลือก
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+          <tr style="border-bottom: 1px dashed #bbf7d0;">
+            <td style="padding: 8px 0; color: #166534;">ราคาเหมาจ่าย (เต็มค่าย):</td>
+            <td id="camp_full_price" style="padding: 8px 0; text-align: right; font-weight: 700; color: #15803d; font-size: 1.1rem;">฿0</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #166534;">หรือ ราคาแบบรายวัน:</td>
+            <td id="camp_daily_price" style="padding: 8px 0; text-align: right; font-weight: 700; color: #15803d; font-size: 1.1rem;">฿0 / วัน</td>
+          </tr>
+        </table>
+        <p style="margin: 12px 0 0 0; font-size: 0.85rem; color: #166534;">* สามารถเลือกโอนเฉพาะยอดมัดจำ 1,000 บาท ก่อนได้ หรือโอนเต็มจำนวนตามยอดด้านบน</p>
+      </div>
+
+      <!-- 15. รายละเอียดการโอนเงินมัดจำ (1,000 บาท) -->
+      <div class="info-card" style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <h3 style="color: #b45309; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+          รายละเอียดการโอนเงินมัดจำ (1,000 บาท)
+        </h3>
+        <div style="text-align: center; margin: 16px 0;">
+          <img src="qr_payment_ttb.jpg" alt="QR Code ชำระเงิน" style="max-width: 480px; width: 100%; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 16px;">
+        </div>
+        <div style="text-align: center; margin: 16px 0; padding-top: 16px; border-top: 1px dashed #fcd34d;">
+          <img src="qr_line.png" alt="QR Code LINE ติดต่อสอบถาม" style="max-width: 280px; width: 100%; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.15);">
+        </div>
+      </div>
+
+      <!-- 16. ของใช้ที่ต้องนำมาสำหรับพักค่ายค้างคืนนะคะ -->
+      <div class="info-card" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+          ของใช้ที่ต้องนำมาสำหรับพักค่ายค้างคืนนะคะ
+        </h3>
+        <ul style="margin: 0; padding-left: 24px; color: #475569; font-size: 0.95rem; line-height: 1.6;">
+          <li style="margin-bottom: 6px;">ที่นอนปิคนิคขนาดไม่เกิน 3 ฟุต / หมอน / ผ้าห่ม</li>
+          <li style="margin-bottom: 6px;">เสื้อผ้า / ของใช้ส่วนตัว</li>
+          <li style="margin-bottom: 6px;">ยารักษาโรคประจำตัว</li>
+          <li style="margin-bottom: 6px;">อุปกรณ์เครื่องเขียน / ดินสอ / ปากกา / ยางลบ</li>
+          <li style="margin-bottom: 6px;">เงินค่าขนม</li>
+          <li style="margin-bottom: 0;"><strong>โทรศัพท์มือถือ</strong> งดนำอุปกรณ์อิเล็กทรอนิกส์ชนิดอื่นมานะคะ<br><span style="font-size: 0.85rem; color: #64748b;">(ทางคุณครูจะดูแลเรื่องการใช้โทรศัพท์ให้เด็ก ๆ ค่ะ)</span></li>
+        </ul>
+      </div>
+
+      <!-- 17. แนบหลักฐานการโอนเงิน (สลิป) (ข้ามได้ และส่งให้แอดมินภายหลัง) -->
+      <div class="form-group" id="camp_slip_upload_group">
+        <label class="form-label">แนบหลักฐานการโอนเงิน (สลิป) (ข้ามได้ และส่งให้แอดมินภายหลัง)</label>
+        <div class="upload-area" onclick="document.getElementById('camp_file_input').click()">
+          <div class="upload-icon">📸</div>
+          <div class="upload-text" id="camp_upload_status">คลิกเพื่อเลือกรูปภาพสลิป</div>
+          <input type="file" id="camp_file_input" style="display: none;" accept="image/*" onchange="handleCampFileSelect(event)">
+        </div>
+        <div id="camp_preview_container" style="display: none; margin-top: 10px; text-align: center;">
+          <div style="font-size: 0.8rem; color: var(--text-muted);">ตัวอย่างรูปภาพสลิป:</div>
+          <img id="camp_preview_img" src="" style="max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 8px;">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 20px;">
+        <button type="button" id="submit_camp_btn" class="btn" onclick="submitCampForm()">
+          <span class="spinner" id="btn_camp_spinner"></span>
+          <span id="btn_camp_text">ส่งข้อมูลลงทะเบียนค่าย</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+
   </div>
 </div>
 
@@ -570,6 +923,7 @@ window.google.script.run = new Proxy({}, {
 <script>
 
   let slipFileData = null;
+  let campSlipFileData = null;
 
   window.addEventListener('DOMContentLoaded', () => {
     google.script.run
@@ -656,7 +1010,7 @@ window.google.script.run = new Proxy({}, {
     } else {
       transferInput.disabled = false;
       transferInput.value = '';
-      fileInput.required = true;
+      fileInput.required = false;
       slipGroup.style.display = 'block';
       recalcSelectedFees();
     }
@@ -732,6 +1086,55 @@ window.google.script.run = new Proxy({}, {
   }
 
 
+  function handleCampFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    document.getElementById('camp_upload_status').textContent = 'เลือกไฟล์สำเร็จ: ' + file.name;
+    
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+        
+        document.getElementById('camp_preview_img').src = dataUrl;
+        document.getElementById('camp_preview_container').style.display = 'block';
+        
+        campSlipFileData = {
+          base64: dataUrl.split(',')[1],
+          mimeType: 'image/jpeg',
+          fileName: file.name
+        };
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
   function handleFileSelect(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -787,6 +1190,7 @@ window.google.script.run = new Proxy({}, {
     const grade = document.getElementById('std_grade').value.trim();
     const classType = document.getElementById('class_type').value.trim();
     const branchLearn = document.getElementById('branch_learn').value.trim();
+    const isMainGroup = (isMainGroup || classType === 'กลุ่มหลักตามตารางคอร์ส');
 
     if (!grade || !classType || !branchLearn) {
       if (isFromButton) {
@@ -800,10 +1204,22 @@ window.google.script.run = new Proxy({}, {
     searchBtn.disabled = true;
     searchBtn.textContent = 'กำลังค้นหารายวิชา...';
 
+    // Show loading state in course dropdown if class type is 'กลุ่มหลัก'
+    const courseRoundContainer = document.getElementById('course_round_container');
+    const courseRoundSelect = document.getElementById('course_round');
+    if (isMainGroup) {
+      courseRoundContainer.style.display = 'block';
+      courseRoundSelect.innerHTML = '<option value="">กำลังดึงข้อมูลคอร์สเรียน กรุณารอสักครู่...</option>';
+      courseRoundSelect.disabled = true;
+    } else {
+      courseRoundContainer.style.display = 'none';
+    }
+
     google.script.run
       .withSuccessHandler(res => {
         searchBtn.disabled = false;
         searchBtn.textContent = originalText;
+        courseRoundSelect.disabled = false;
 
         const container = document.getElementById('fees_display_container');
         const tbody = document.getElementById('fees_list_tbody');
@@ -823,31 +1239,50 @@ window.google.script.run = new Proxy({}, {
           window._outstandingCourses = outstandingCourses;
 
           // Check if classType is "กลุ่มหลัก" and populate round
+          const classType = document.getElementById('class_type').value.trim();
           const courseRoundContainer = document.getElementById('course_round_container');
           const courseRoundSelect = document.getElementById('course_round');
           
-          if (classType === 'กลุ่มหลัก' && courseRoundContainer && courseRoundSelect) {
-            const roundsSet = new Set();
-            outstandingCourses.forEach(c => {
-               const r = getCourseRound(c.courseName);
-               if (r !== 'None') roundsSet.add(r);
+          if (isMainGroup) {
+            courseRoundContainer.style.display = 'block';
+            courseRoundSelect.required = true;
+            
+            // Extract unique rounds from available courses
+            const uniqueRounds = [...new Set(outstandingCourses.map(c => getCourseRound(c.courseName).toUpperCase()).filter(r => r && r !== 'NONE'))];
+            
+            // Remember currently selected round if any
+            const currentSelectedRound = courseRoundSelect.value;
+            
+            // Populate dropdown
+            courseRoundSelect.innerHTML = '<option value="">-- เลือกคอร์ส --</option>';
+            uniqueRounds.forEach(round => {
+              const option = document.createElement('option');
+              option.value = round;
+              option.textContent = round;
+              courseRoundSelect.appendChild(option);
             });
-            courseRoundSelect.innerHTML = '<option value="AUTO">-- แสดงตามช่วงวันที่ (Auto) --</option><option value="ALL">-- แสดงทุกรอบ --</option>';
-            const roundsArray = Array.from(roundsSet);
-            roundsArray.forEach(r => {
-               const opt = document.createElement('option');
-               opt.value = r;
-               opt.textContent = r;
-               courseRoundSelect.appendChild(opt);
-            });
-            courseRoundContainer.style.display = 'grid'; // because row-grid uses display: grid
+            
+            // Restore selection if it exists in the new list, otherwise reset
+            if (currentSelectedRound && uniqueRounds.includes(currentSelectedRound)) {
+              courseRoundSelect.value = currentSelectedRound;
+            } else {
+              // Optionally select the first valid round automatically
+              if (uniqueRounds.length > 0) {
+                courseRoundSelect.value = uniqueRounds[0];
+              }
+            }
           } else {
-            if (courseRoundContainer) courseRoundContainer.style.display = 'none';
-            if (courseRoundSelect) courseRoundSelect.value = 'AUTO';
+            courseRoundContainer.style.display = 'none';
+            courseRoundSelect.required = false;
+            courseRoundSelect.value = '';
           }
 
           renderCourseCheckboxes();
         } else {
+          if (isMainGroup) {
+            courseRoundSelect.innerHTML = '<option value="">-- ไม่พบคอร์สเรียนที่เปิดสอน --</option>';
+            courseRoundSelect.disabled = true;
+          }
           var tr = document.createElement('tr');
           var td = document.createElement('td');
           td.colSpan = 4;
@@ -862,78 +1297,74 @@ window.google.script.run = new Proxy({}, {
       .withFailureHandler(err => {
         searchBtn.disabled = false;
         searchBtn.textContent = originalText;
+        courseRoundSelect.disabled = false;
+        if (isMainGroup) {
+          courseRoundSelect.innerHTML = '<option value="">-- เกิดข้อผิดพลาดในการดึงข้อมูล --</option>';
+        }
         alert('เกิดข้อผิดพลาดในการดึงข้อมูล: ' + err.message);
       })
       .getAvailableCourses(grade, classType, branchLearn);
   }
 
   function getCourseRound(courseName) {
-    if (!courseName) return 'None';
-    const clean = courseName.toString().trim();
-    
-    let match = clean.match(/(MIDTERM\s*\d+|FINAL\s*\d+|ปิดเทอม\s*ต\.ค\.|SUMMER)(?:\s*\/?\s*\d+)?/i);
-    if (match) {
-        return match[0].toUpperCase();
-    }
-
-    return 'None';
+  if (!courseName) return 'None';
+  const clean = courseName.toString().trim();
+  
+  // 1) Dynamic Extraction: Extract text between Grade and Day of Week
+  const dynamicPattern = /\s+((?:MIDTERM|FINAL|เทอม|ตุลาคม|\d+\/\d+).*?)\s+(?:จันทร์|อังคาร|พุธ|พฤหัสบดี|พฤหัสฯ|พฤหัส|ศุกร์|เสาร์|อาทิตย์|จ\.|อ\.|พ\.|พฤ\.|ศ\.|ส\.|อา\.)/i;
+  let dynamicMatch = clean.match(dynamicPattern);
+  if (dynamicMatch && dynamicMatch[1]) {
+    let extracted = dynamicMatch[1].trim();
+    if (extracted.length > 0) return extracted.toUpperCase();
   }
 
-  function getAutoActiveRounds(dateObj) {
-    if (!dateObj) dateObj = new Date();
-    const m = dateObj.getMonth() + 1;
-    const d = dateObj.getDate();
-    const mmdd = m * 100 + d; 
+  // 2) Fallback explicit regex
+  let match = clean.match(/(MIDTERM\s+\d+\/\d+|FINAL\s+\d+\/\d+|ปิดเทอม\s+[^\s]+\/\d+|ปิดเทอม\s+[^\s]+|SUMMER\s+\d+)/i);
+  if (match) return match[1].toUpperCase();
 
-    let activeRounds = [];
-    if (mmdd >= 315 && mmdd <= 425) activeRounds.push('SUMMER');
-    if (mmdd >= 415 && mmdd <= 715) activeRounds.push('MIDTERM 1');
-    if (mmdd >= 601 && mmdd <= 930) activeRounds.push('FINAL 1');
-    if (mmdd >= 901 && mmdd <= 1031) activeRounds.push('ปิดเทอม ต.ค.');
-    if (mmdd >= 1001 && mmdd <= 1230) activeRounds.push('MIDTERM 2');
-    if (mmdd >= 1201 || mmdd <= 229) activeRounds.push('FINAL 2');
-
-    return activeRounds;
-  }
+  return 'None';
+}
 
   function renderCourseCheckboxes() {
-    const tbody = document.getElementById('fees_list_tbody');
-    tbody.innerHTML = '';
+  const tbody = document.getElementById('fees_list_tbody');
+  tbody.innerHTML = '';
+
+  let displayedCourses = window._outstandingCourses || [];
+  
+  const classType = document.getElementById('class_type').value;
+  if (isMainGroup) {
+    const selectedRound = document.getElementById('course_round').value;
     
-    const courseRoundSelect = document.getElementById('course_round');
-    const selectedRound = courseRoundSelect ? courseRoundSelect.value : 'AUTO';
-    
-    let displayedCourses = window._outstandingCourses || [];
-    
-    if (selectedRound === 'AUTO') {
-       const activeBaseRounds = getAutoActiveRounds();
-       displayedCourses = displayedCourses.filter(c => {
-          const r = getCourseRound(c.courseName);
-          if (r === 'None') return false;
-          return activeBaseRounds.some(base => r.toUpperCase().startsWith(base.toUpperCase()));
-       });
-    } else if (selectedRound !== 'ALL' && selectedRound !== '') {
-       displayedCourses = displayedCourses.filter(c => getCourseRound(c.courseName) === selectedRound);
-    }
-    
-    if (displayedCourses.length === 0) {
-       var tr = document.createElement('tr');
-       var td = document.createElement('td');
-       td.colSpan = 4;
-       td.style.padding = '20px';
-       td.style.textAlign = 'center';
-       td.style.color = '#64748b';
-       td.textContent = 'ไม่พบคอร์สเรียนที่ตรงกับรอบที่เลือก';
-       tr.appendChild(td);
-       tbody.appendChild(tr);
-       
-       document.getElementById('select_all_courses').checked = false;
-       document.getElementById('fees_grand_total').textContent = '฿0.00';
-       document.getElementById('fees_grand_total').style.color = '#16a34a';
-       document.getElementById('selected_outstanding_courses').value = '';
-       document.getElementById('transfer_amount').value = '';
-       return;
-    }
+    displayedCourses = displayedCourses.filter(c => {
+      const round = getCourseRound(c.courseName).toUpperCase();
+      // If no round selected, show nothing or everything? Requirements say "ถ้าผู้ปกครองเลือก FINAL ... ก็จะไปดึงชื่อคอร์ส...มาแสดง"
+      // It implies if a round is selected, show courses for that round.
+      if (!selectedRound) return false; // Show nothing until a round is selected
+      return round.includes(selectedRound.toUpperCase());
+    });
+  }
+
+  if (displayedCourses.length === 0) {
+    var tr = document.createElement('tr');
+    var td = document.createElement('td');
+    td.colSpan = 4;
+    td.style.padding = '20px';
+    td.style.textAlign = 'center';
+    td.style.color = '#64748b';
+    td.textContent = (isMainGroup && !document.getElementById('course_round').value) 
+        ? 'กรุณาเลือกคอร์สที่ลง' 
+        : 'ไม่พบคอร์สเรียนที่เปิดสอนสำหรับเงื่อนไขนี้';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+
+    document.getElementById('select_all_courses').checked = false;
+    document.getElementById('fees_grand_total').textContent = '฿0.00';
+    document.getElementById('fees_grand_total').style.color = '#16a34a';
+    document.getElementById('selected_outstanding_courses').value = '';
+    document.getElementById('transfer_amount').value = '';
+    return;
+  }
+
 
     displayedCourses.forEach(function(c, idx) {
       // Find original index to map properly for data-index
@@ -1039,6 +1470,7 @@ window.google.script.run = new Proxy({}, {
 
       const outstandingCourses = document.getElementById('selected_outstanding_courses').value;
       const studentData = {
+        id: document.getElementById('student_id') ? document.getElementById('student_id').value : "",
         name: name,
         nickname: nickname,
         school: school,
@@ -1093,5 +1525,724 @@ window.google.script.run = new Proxy({}, {
   }
 </script>
 
+
+<script>
+  // Camp Form Logic
+  function switchRegistrationTab(tab) {
+    document.getElementById('tab_regular').classList.remove('active');
+    document.getElementById('tab_camp').classList.remove('active');
+    document.getElementById('regular_section').style.display = 'none';
+    document.getElementById('camp_section').style.display = 'none';
+
+    if (tab === 'regular') {
+      document.getElementById('tab_regular').classList.add('active');
+      document.getElementById('regular_section').style.display = 'block';
+    } else if (tab === 'camp') {
+      document.getElementById('tab_camp').classList.add('active');
+      document.getElementById('camp_section').style.display = 'block';
+    }
+  }
+
+  // Populate Years 2569 to 2578
+  document.addEventListener('DOMContentLoaded', () => {
+    const yearSelect = document.getElementById('camp_year');
+    if(yearSelect) {
+      for (let y = 2569; y <= 2578; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = 'ปี ' + y;
+        yearSelect.appendChild(opt);
+      }
+    }
+  });
+
+  // Render Rooms based on Grade
+  function renderCampRooms() {
+    const grade = document.getElementById('camp_grade').value;
+    const roomSelect = document.getElementById('camp_room');
+    roomSelect.innerHTML = '<option value="">-- เลือกห้องเรียน --</option>';
+    
+    let rooms = [];
+    if (grade === 'ป.6') {
+      rooms = ['ห้องพิเศษ Gifted', 'ห้องพิเศษ EP', 'ห้องพิเศษ Smart Com', 'ห้องปกติ'];
+    } else if (grade === 'ม.3') {
+      rooms = ['ห้องSciPro', 'EP วิทย์-คณิต', 'EP ภาษา', 'เตรียมนิติศาสตร์', 'เตรียมวิศวะ', 'ศิลป์-คณิต', 'วิทย์-คณิต', 'ศิลป์ภาษา', 'วิทย์-คอม'];
+    }
+
+    rooms.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r;
+      opt.textContent = r;
+      roomSelect.appendChild(opt);
+    });
+  }
+
+  function toggleCampPriceType() {
+    const isDaily = document.querySelector('input[name="camp_price_type"]:checked') && document.querySelector('input[name="camp_price_type"]:checked').value === 'daily';
+    document.getElementById('camp_daily_days_container').style.display = isDaily ? 'block' : 'none';
+  }
+
+  function toggleCampPayMode() {
+    const payModeEl = document.querySelector('input[name="camp_pay_mode"]:checked');
+    const payMode = payModeEl ? payModeEl.value : 'full';
+    const isDeposit = (payMode === 'deposit');
+    const isUnpaid = (payMode === 'unpaid');
+
+    const depositContainer = document.getElementById('camp_deposit_field_container');
+    if (depositContainer) depositContainer.style.display = isDeposit ? 'block' : 'none';
+
+    const dateTimeContainer = document.getElementById('camp_pay_datetime_container');
+    if (dateTimeContainer) dateTimeContainer.style.display = isUnpaid ? 'none' : 'grid';
+
+    const slipGroup = document.getElementById('camp_slip_upload_group');
+    if (slipGroup) slipGroup.style.display = isUnpaid ? 'none' : 'block';
+  }
+
+  let unpaidSlipFileData = null;
+  let unpaidSelectedItemsData = [];
+
+  function initDefaultDateTime() {
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    const hours = String(today.getHours()).padStart(2, '0');
+    const mins = String(today.getMinutes()).padStart(2, '0');
+    const timeStr = `${hours}:${mins}`;
+
+    const dateInput = document.getElementById('camp_pay_date');
+    const timeInput = document.getElementById('camp_pay_time');
+    if (dateInput && !dateInput.value) dateInput.value = dateStr;
+    if (timeInput && !timeInput.value) timeInput.value = timeStr;
+
+    const uDateInput = document.getElementById('unpaid_pay_date');
+    const uTimeInput = document.getElementById('unpaid_pay_time');
+    if (uDateInput && !uDateInput.value) uDateInput.value = dateStr;
+    if (uTimeInput && !uTimeInput.value) uTimeInput.value = timeStr;
+  }
+
+  document.addEventListener('DOMContentLoaded', initDefaultDateTime);
+  setTimeout(initDefaultDateTime, 500);
+
+  function handleUnpaidFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert('ขนาดไฟล์ใหญ่เกิน 10MB กรุณาเลือกใหม่');
+        event.target.value = '';
+        return;
+      }
+      document.getElementById('unpaid_upload_status').textContent = 'กำลังประมวลผลรูปภาพ...';
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        unpaidSlipFileData = {
+          fileName: file.name,
+          mimeType: file.type,
+          base64: e.target.result.split(',')[1]
+        };
+        document.getElementById('unpaid_upload_status').textContent = 'เลือกสลิปแล้ว: ' + file.name;
+        document.getElementById('unpaid_preview_img').src = e.target.result;
+        document.getElementById('unpaid_preview_container').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function renderUnpaidItemsCard(unpaidItems) {
+    const container = document.getElementById('unpaid_items_container');
+    const listEl = document.getElementById('unpaid_items_list');
+    const sectionEl = document.getElementById('unpaid_payment_section');
+
+    if (!unpaidItems || unpaidItems.length === 0) {
+      container.style.display = 'none';
+      return;
+    }
+
+    unpaidSelectedItemsData = unpaidItems;
+    let html = '<table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">';
+    html += '<thead style="background: #ffedd5; font-weight: 700;"><tr>';
+    html += '<th style="padding: 6px; text-align: left;">เลือก</th>';
+    html += '<th style="padding: 6px; text-align: left;">รายการ</th>';
+    html += '<th style="padding: 6px; text-align: right;">ยอดเต็ม</th>';
+    html += '<th style="padding: 6px; text-align: right;">ชำระแล้ว</th>';
+    html += '<th style="padding: 6px; text-align: right; color: #c2410c;">ค้างชำระ</th>';
+    html += '</tr></thead><tbody>';
+
+    unpaidItems.forEach((item, idx) => {
+      const remain = item.remaining > 0 ? item.remaining : 0;
+      const itemName = item.campName || item.course || 'รายการเรียน';
+      const escTs = (item.timestamp || '').replace(/"/g, '&quot;');
+      html += '<tr style="border-bottom: 1px solid #fed7aa;">';
+      html += `<td style="padding: 6px;"><input type="checkbox" class="unpaid_item_cb" data-idx="${idx}" data-type="${item.type}" data-ts="${escTs}" data-name="${itemName}" data-remain="${remain}" checked onchange="updateUnpaidTotalAmount()"></td>`;
+      html += `<td style="padding: 6px;"><strong>${itemName}</strong> (${item.grade||''} ${item.room||''})</td>`;
+      html += `<td style="padding: 6px; text-align: right;">฿${(item.costFull||0).toLocaleString()}</td>`;
+      html += `<td style="padding: 6px; text-align: right;">฿${(item.paid||0).toLocaleString()}</td>`;
+      html += `<td style="padding: 6px; text-align: right; color: #dc2626; font-weight: bold;">฿${remain.toLocaleString()}</td>`;
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    listEl.innerHTML = html;
+    container.style.display = 'block';
+    sectionEl.style.display = 'block';
+    updateUnpaidTotalAmount();
+  }
+
+  function updateUnpaidTotalAmount() {
+    const cbs = document.querySelectorAll('.unpaid_item_cb:checked');
+    let totalRemain = 0;
+    cbs.forEach(cb => {
+      totalRemain += parseFloat(cb.getAttribute('data-remain')) || 0;
+    });
+    document.getElementById('unpaid_pay_amount').value = totalRemain;
+  }
+
+  function submitUnpaidPaymentConfirm() {
+    const cbs = document.querySelectorAll('.unpaid_item_cb:checked');
+    if (cbs.length === 0) {
+      alert('กรุณาเลือกอย่างน้อย 1 รายการเพื่อชำระเงิน');
+      return;
+    }
+    const payAmt = parseFloat(document.getElementById('unpaid_pay_amount').value);
+    if (isNaN(payAmt) || payAmt <= 0) {
+      alert('กรุณาระบุจำนวนเงินที่โอน');
+      return;
+    }
+    if (!unpaidSlipFileData) {
+      alert('กรุณาแนบหลักฐานการโอนเงิน (สลิป)');
+      return;
+    }
+
+    const payDate = document.getElementById('unpaid_pay_date').value;
+    const payTime = document.getElementById('unpaid_pay_time').value;
+    if (!payDate || !payTime) {
+      alert('กรุณาระบุวันที่และเวลาที่โอนเงิน');
+      return;
+    }
+
+    let campItems = [];
+    let regularItems = [];
+    let selectedNames = [];
+
+    cbs.forEach(cb => {
+      const idx = cb.getAttribute('data-idx');
+      const item = unpaidSelectedItemsData[idx];
+      const itemType = cb.getAttribute('data-type');
+      selectedNames.push(item.campName || item.course);
+
+      if (itemType === 'camp') {
+        campItems.push({
+          timestamp: item.timestamp,
+          name: document.getElementById('camp_std_name').value.trim(),
+          campName: item.campName,
+          costFull: item.costFull,
+          amount: payAmt
+        });
+      } else {
+        regularItems.push({
+          id: item.id,
+          name: document.getElementById('camp_std_name').value.trim(),
+          course: item.course,
+          amount: payAmt
+        });
+      }
+    });
+
+    const btn = document.getElementById('btn_submit_unpaid_payment');
+    btn.disabled = true;
+    btn.innerText = 'กำลังส่งข้อมูลอัปเดตลงฐานข้อมูล...';
+
+    const payload = {
+      timestamp: payDate + ' ' + payTime,
+      pay_date: payDate,
+      pay_time: payTime,
+      std_name: document.getElementById('camp_std_name').value.trim(),
+      selected_items: selectedNames.join(', '),
+      total_amount: payAmt,
+      transfer_amount: payAmt,
+      camp_items: campItems,
+      regular_items: regularItems,
+      fileData: unpaidSlipFileData
+    };
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false;
+        btn.innerText = '💾 บันทึกแจ้งชำระเงิน (อัปเดตตรงเข้าฐานข้อมูลเดิม)';
+        if (res && res.success) {
+          alert('บันทึกแจ้งชำระเงินสำเร็จเรียบร้อย! ข้อมูลถูกอัปเดตไปยังฐานข้อมูลนักเรียนเดิมแล้ว');
+          document.getElementById('unpaid_items_container').style.display = 'none';
+          unpaidSlipFileData = null;
+        } else {
+          alert('เกิดข้อผิดพลาด: ' + (res.error || 'ไม่สามารถบันทึกได้'));
+        }
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.innerText = '💾 บันทึกแจ้งชำระเงิน (อัปเดตตรงเข้าฐานข้อมูลเดิม)';
+        alert('เกิดข้อผิดพลาด: ' + err.message);
+      })
+      .confirmSearchPayment(payload);
+  }
+
+  function calculateCampCost() {
+    const campName = document.getElementById('camp_name').value;
+    const campGrade = document.getElementById('camp_grade').value;
+    const priceTypeEl = document.querySelector('input[name="camp_price_type"]:checked');
+    const priceType = priceTypeEl ? priceTypeEl.value : 'full';
+    const dailyDays = parseInt(document.getElementById('camp_daily_days').value) || 1;
+    const payModeEl = document.querySelector('input[name="camp_pay_mode"]:checked');
+    const payMode = payModeEl ? payModeEl.value : 'full';
+    
+    let baseFull = 7900;
+    let dailyRate = 1700;
+
+    if (campName.includes('เตรียมความพร้อม') || campName.includes('เมษายน')) {
+      baseFull = 4400;
+      dailyRate = 1700;
+    } else if (campName.includes('วางแผนติดspeed') || campName.includes('ตุลาคม') || campName.includes('สานฝันปั้นน้อง')) {
+      if (campGrade.includes('ม.3')) {
+        baseFull = 8900;
+        dailyRate = 1900;
+      } else {
+        baseFull = 7900;
+        dailyRate = 1700;
+      }
+    } else {
+      if (campGrade.includes('ม.3')) {
+        baseFull = 8900;
+        dailyRate = 1900;
+      }
+    }
+
+    let totalCost = (priceType === 'daily') ? (dailyRate * dailyDays) : baseFull;
+    
+    let payNow = totalCost;
+    if (payMode === 'unpaid') {
+      payNow = 0;
+    } else if (payMode === 'deposit') {
+      const depInput = parseFloat(document.getElementById('camp_deposit_amount_input').value);
+      payNow = !isNaN(depInput) && depInput > 0 ? depInput : 0;
+    }
+    let remaining = Math.max(0, totalCost - payNow);
+
+    const costDisplay = document.getElementById('camp_cost_display');
+    if (campName) {
+      document.getElementById('camp_full_price').innerText = '฿' + baseFull.toLocaleString();
+      document.getElementById('camp_daily_price').innerText = '฿' + dailyRate.toLocaleString() + ' / วัน';
+      costDisplay.style.display = 'block';
+
+      document.getElementById('summary_total_fee').innerText = totalCost.toLocaleString() + ' บาท';
+      document.getElementById('summary_pay_now').innerText = payNow.toLocaleString() + ' บาท';
+      document.getElementById('summary_remaining').innerText = remaining.toLocaleString() + ' บาท';
+    } else {
+      costDisplay.style.display = 'none';
+    }
+  }
+
+  // Submit Camp Form
+  function submitCampForm() {
+    const form = document.getElementById('camp_form');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const btn = document.getElementById('submit_camp_btn');
+    const spinner = document.getElementById('btn_camp_spinner');
+    const text = document.getElementById('btn_camp_text');
+
+    btn.disabled = true;
+    spinner.style.display = 'inline-block';
+    text.textContent = 'กำลังส่งข้อมูล...';
+
+    const priceTypeEl = document.querySelector('input[name="camp_price_type"]:checked');
+    const priceType = priceTypeEl ? priceTypeEl.value : 'full';
+    const dailyDays = parseInt(document.getElementById('camp_daily_days').value) || 1;
+    const payModeEl = document.querySelector('input[name="camp_pay_mode"]:checked');
+    const payMode = payModeEl ? payModeEl.value : 'full';
+
+    const campName = document.getElementById('camp_name').value;
+    const campGrade = document.getElementById('camp_grade').value;
+
+    let baseFull = 7900;
+    let dailyRate = 1700;
+    if (campName.includes('เตรียมความพร้อม') || campName.includes('เมษายน')) {
+      baseFull = 4400; dailyRate = 1700;
+    } else if (campName.includes('วางแผนติดspeed') || campName.includes('ตุลาคม') || campName.includes('สานฝันปั้นน้อง')) {
+      if (campGrade.includes('ม.3')) { baseFull = 8900; dailyRate = 1900; }
+      else { baseFull = 7900; dailyRate = 1700; }
+    } else {
+      if (campGrade.includes('ม.3')) { baseFull = 8900; dailyRate = 1900; }
+    }
+
+    let totalCost = (priceType === 'daily') ? (dailyRate * dailyDays) : baseFull;
+    let payNow = totalCost;
+    if (payMode === 'unpaid') {
+      payNow = 0;
+    } else if (payMode === 'deposit') {
+      const depInput = parseFloat(document.getElementById('camp_deposit_amount_input').value);
+      payNow = !isNaN(depInput) && depInput > 0 ? depInput : 0;
+    }
+    let remaining = Math.max(0, totalCost - payNow);
+
+    const payDateVal = document.getElementById('camp_pay_date') ? document.getElementById('camp_pay_date').value : '';
+    const payTimeVal = document.getElementById('camp_pay_time') ? document.getElementById('camp_pay_time').value : '';
+    const fullDateTime = (payDateVal && payTimeVal) ? (payDateVal + ' ' + payTimeVal) : new Date().toLocaleString('th-TH');
+
+    const campData = {
+      id: document.getElementById('camp_student_id') ? document.getElementById('camp_student_id').value : "",
+      fileData: campSlipFileData,
+      timestamp: fullDateTime,
+      pay_date: payDateVal,
+      pay_time: payTimeVal,
+      camp_name: campName,
+      camp_year: document.getElementById('camp_year').value,
+      std_grade: campGrade,
+      class_section: document.getElementById('camp_room').value,
+      std_name: document.getElementById('camp_std_name').value,
+      std_nickname: document.getElementById('camp_std_nickname').value,
+      parent_contact: document.getElementById('camp_parent_contact').value,
+      std_school: document.getElementById('camp_std_school').value,
+      medical_condition: document.getElementById('camp_medical_condition').value,
+      shirt_size: document.getElementById('camp_shirt_size').value,
+      camp_type: priceType,
+      daily_count: dailyDays,
+      full: totalCost,
+      paid: payNow,
+      outstanding: remaining,
+      amount_paid: payNow,
+      pay_r1_channel: "TTB บัญชีบริษัท(สแกน)",
+      status: (remaining <= 0) ? "ชำระครบแล้ว" : (payNow > 0 ? "มัดจำแล้ว" : "รอชำระเงิน")
+    };
+
+    google.script.run
+      .withSuccessHandler(function() {
+        document.getElementById('form_view').style.display = 'none';
+        document.getElementById('success_view').style.display = 'block';
+        document.querySelector('#success_view .success-title').textContent = 'ลงทะเบียนสำเร็จ!';
+      })
+      .withFailureHandler(function(error) {
+        alert("เกิดข้อผิดพลาดในการส่งข้อมูล: " + error.message);
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        text.textContent = 'ส่งข้อมูลลงทะเบียนค่าย';
+      })
+      .saveCampStudentData(campData);
+  }
+
+  // --- PAYMENT SEARCH LOGIC ---
+  let searchSlipFileData = null;
+  let searchResultsData = null;
+
+  function handleSearchFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert('ขนาดไฟล์ใหญ่เกิน 10MB กรุณาเลือกไฟล์ใหม่');
+        event.target.value = '';
+        return;
+      }
+      document.getElementById('search_upload_status').textContent = 'กำลังประมวลผลรูปภาพ...';
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64Data = e.target.result.split(',')[1];
+        searchSlipFileData = {
+          fileName: file.name,
+          mimeType: file.type,
+          base64: base64Data
+        };
+        document.getElementById('search_upload_status').textContent = 'เลือกไฟล์เรียบร้อย: ' + file.name;
+        
+        const previewContainer = document.getElementById('search_preview_container');
+        const previewImg = document.getElementById('search_preview_img');
+        previewImg.src = e.target.result;
+        previewContainer.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function execSearchPayment() {
+    const nameInput = document.getElementById('search_std_name').value.trim();
+    if (!nameInput) {
+      alert('กรุณากรอกชื่อ-นามสกุล');
+      return;
+    }
+
+    const spinner = document.getElementById('search_spinner');
+    spinner.style.display = 'inline-block';
+    
+    google.script.run
+      .withSuccessHandler(function(results) {
+        spinner.style.display = 'none';
+        searchResultsData = results;
+        renderSearchResults(results);
+      })
+      .withFailureHandler(function(error) {
+        spinner.style.display = 'none';
+        alert("เกิดข้อผิดพลาดในการค้นหา: " + error.message);
+      })
+      .searchStudentPayment(nameInput);
+  }
+
+  function renderSearchResults(results) {
+    const tbody = document.getElementById('payment_search_tbody');
+    tbody.innerHTML = '';
+    let hasData = false;
+
+    if (results.regular && results.regular.length > 0) {
+      results.regular.forEach((item) => {
+        hasData = true;
+        const tr = document.createElement('tr');
+        const remain = item.remaining > 0 ? item.remaining : 0;
+        tr.innerHTML = `
+          <td style="padding: 8px;"><input type="checkbox" class="search_item_checkbox" data-type="regular" data-id="${item.id}" data-cost="${remain}" data-name="${item.course}" style="width:18px;height:18px;cursor:pointer;accent-color:#0084ff;" onchange="calcSearchTotal()"></td>
+          <td style="padding: 8px;"><span class="badge bg-primary">วิชาเรียน</span></td>
+          <td style="padding: 8px;"><strong>${item.name}</strong> - ${item.course} (คงเหลือ: ฿${remain.toLocaleString()})</td>
+          <td style="padding: 8px; text-align: right;">
+             <input type="number" class="search_item_input form-input" value="${remain}" style="width: 100px; text-align:right;" oninput="calcSearchTotal()">
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    if (results.camp && results.camp.length > 0) {
+      results.camp.forEach((item) => {
+        hasData = true;
+        const tr = document.createElement('tr');
+        const remain = item.remaining > 0 ? item.remaining : 0;
+        const escTimestamp = (item.timestamp || '').replace(/"/g, '&quot;');
+        tr.innerHTML = `
+          <td style="padding: 8px;">
+            <input type="checkbox" class="search_item_checkbox" data-type="camp" data-timestamp="${escTimestamp}" data-name="${item.campName}" data-grade="${item.grade}" data-cost="${remain}" style="width:18px;height:18px;cursor:pointer;accent-color:#16a34a;" onchange="calcSearchTotal()">
+          </td>
+          <td style="padding: 8px;"><span class="badge bg-success">ค่าย</span></td>
+          <td style="padding: 8px;">
+            <strong>${item.name}</strong> (${item.nickname || '-'}) — 
+            ${item.campName} ${item.grade} ${item.room ? '('+item.room+')' : ''} 
+            <div style="font-size:0.8rem; color:#64748b;">ยอดเต็ม: ฿${(item.costFull||0).toLocaleString()} | ชำระแล้ว: ฿${(item.paid||0).toLocaleString()} | คงเหลือ: <span style="color:#dc2626; font-weight:bold;">฿${remain.toLocaleString()}</span> [${item.status||'-'}]</div>
+          </td>
+          <td style="padding: 8px; text-align: right;">
+             <input type="number" class="search_item_input form-input" value="${remain}" style="width: 100px; text-align:right;" oninput="calcSearchTotal()">
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    if (!hasData) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#64748b; padding:20px;">ไม่พบรายการค่ายหรือวิชาเรียนที่ต้องชำระสำหรับชื่อนี้</td></tr>';
+      document.getElementById('search_payment_action_box').style.display = 'none';
+    } else {
+      document.getElementById('search_payment_action_box').style.display = 'block';
+      calcSearchTotal();
+    }
+  }
+
+  function calcSearchTotal() {
+    const checkboxes = document.querySelectorAll('.search_item_checkbox');
+    const inputs = document.querySelectorAll('.search_item_input');
+    let total = 0;
+    checkboxes.forEach((cb, i) => {
+      if (cb.checked) {
+        total += parseFloat(inputs[i].value) || 0;
+      }
+    });
+    document.getElementById('payment_search_total').textContent = '฿' + total.toLocaleString();
+    document.getElementById('payment_search_transfer').value = total > 0 ? total : '';
+  }
+
+  function submitSearchPayment() {
+    if (!searchSlipFileData) {
+      alert('กรุณาแนบสลิปโอนเงิน');
+      return;
+    }
+
+    const checkboxes = document.querySelectorAll('.search_item_checkbox');
+    const inputs = document.querySelectorAll('.search_item_input');
+    let selectedItems = [];
+    let total = 0;
+
+    checkboxes.forEach((cb, i) => {
+      if (cb.checked) {
+        let val = parseFloat(inputs[i].value) || 0;
+        total += val;
+        selectedItems.push(`${cb.dataset.name} (฿${val})`);
+      }
+    });
+
+    if (selectedItems.length === 0) {
+      alert('กรุณาเลือกรายการที่ต้องการชำระเงิน');
+      return;
+    }
+
+    const transferAmount = document.getElementById('payment_search_transfer').value;
+    if (!transferAmount || transferAmount <= 0) {
+      alert('กรุณาระบุจำนวนเงินที่โอน');
+      return;
+    }
+
+    const btn = document.getElementById('submit_search_btn');
+    const spinner = document.getElementById('btn_search_spinner');
+    const text = document.getElementById('btn_search_text');
+
+    btn.disabled = true;
+    spinner.style.display = 'inline-block';
+    text.textContent = 'กำลังส่งข้อมูล...';
+
+    const payload = {
+      std_name: document.getElementById('search_std_name').value,
+      selected_items: selectedItems.join(', '),
+      total_amount: total,
+      transfer_amount: transferAmount,
+      fileData: searchSlipFileData,
+      timestamp: new Date().toLocaleString('th-TH')
+    };
+
+    google.script.run
+      .withSuccessHandler(function() {
+        document.getElementById('form_view').style.display = 'none';
+        document.getElementById('success_view').style.display = 'block';
+        document.querySelector('#success_view .success-title').textContent = 'ส่งหลักฐานชำระเงินเรียบร้อย!';
+      })
+      .withFailureHandler(function(error) {
+        alert("เกิดข้อผิดพลาดในการส่งข้อมูล: " + error.message);
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        text.textContent = 'ส่งข้อมูลชำระเงิน';
+      })
+      .submitPaymentSlipSearch(payload);
+  }
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const btnSearchStudent = document.getElementById('btn_search_student');
+    if (btnSearchStudent) {
+        btnSearchStudent.addEventListener('click', function() {
+            const nameInput = document.getElementById('std_name');
+            const name = nameInput ? nameInput.value.trim() : '';
+            if (!name) {
+                alert("กรุณากรอกชื่อ - นามสกุลที่ต้องการค้นหา");
+                return;
+            }
+            
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังค้นหา...';
+            btn.disabled = true;
+
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    if (res && res.success && res.data) {
+                        const data = res.data;
+                        
+                        if (data.id) {
+                            const el = document.getElementById('student_id');
+                            if(el) el.value = data.id;
+                        }
+                        if (data.Grade) {
+                            const el = document.getElementById('std_grade');
+                            if(el) { el.value = data.Grade; el.dispatchEvent(new Event('change')); }
+                        }
+                        if (data.BranchLearn) {
+                            const el = document.getElementById('branch_learn');
+                            if(el) { el.value = data.BranchLearn; el.dispatchEvent(new Event('change')); }
+                        }
+                        if (data.Nickname) {
+                            const el = document.getElementById('std_nickname');
+                            if(el) el.value = data.Nickname;
+                        }
+                        if (data.School) {
+                            const el = document.getElementById('std_school');
+                            if(el) el.value = data.School;
+                        }
+                        if (data.Contact) {
+                            const el = document.getElementById('parent_contact');
+                            if(el) el.value = data.Contact;
+                        }
+                        if (data.LineID) {
+                            const el = document.getElementById('line_id');
+                            if(el) el.value = data.LineID;
+                        }
+                        alert("ค้นพบข้อมูลนักเรียนเรียบร้อยแล้ว ระบบได้เติมข้อมูลให้โดยอัตโนมัติ");
+                    } else {
+                        alert("ไม่พบข้อมูลนักเรียนในระบบ หรือพิมพ์ชื่อ-นามสกุลไม่ถูกต้อง");
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    alert("เกิดข้อผิดพลาดในการค้นหา: " + err.message);
+                })
+                .getStudentData(name);
+        });
+    }
+
+    const btnSearchStudentCamp = document.getElementById('btn_search_student_camp');
+    if (btnSearchStudentCamp) {
+        btnSearchStudentCamp.addEventListener('click', function() {
+            const nameInput = document.getElementById('camp_std_name');
+            const name = nameInput.value.trim();
+            if (!name) {
+                alert("กรุณากรอกชื่อ-นามสกุลนักเรียนก่อนค้นหา");
+                return;
+            }
+
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังค้นหา...';
+            btn.disabled = true;
+
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    
+                    if (res && res.success) {
+                        if (res.studentInfo) {
+                            const info = res.studentInfo;
+                            if (info.nickname) document.getElementById('camp_std_nickname').value = info.nickname;
+                            if (info.parent_phone) document.getElementById('camp_parent_contact').value = info.parent_phone;
+                            if (info.school) document.getElementById('camp_std_school').value = info.school;
+                            if (info.medical_condition) document.getElementById('camp_medical_condition').value = info.medical_condition;
+                            if (info.shirt_size) document.getElementById('camp_shirt_size').value = info.shirt_size;
+                            if (info.grade) {
+                                document.getElementById('camp_grade').value = info.grade;
+                                if (typeof renderCampRooms === 'function') renderCampRooms();
+                            }
+                            if (info.room) document.getElementById('camp_room').value = info.room;
+                            if (typeof calculateCampCost === 'function') calculateCampCost();
+                        }
+
+                        // Render unpaid items list if any exist
+                        renderUnpaidItemsCard(res.unpaidItems);
+                    } else {
+                        alert("ไม่พบข้อมูลนักเรียนชื่อนี้");
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    alert("เกิดข้อผิดพลาดในการค้นหา: " + err.message);
+                })
+                .searchStudentRegistrationAndUnpaid(name);
+        });
+    }
+});
+</script>
+<script>
+window.alert = function(message) {
+    Swal.fire({
+        text: message,
+        confirmButtonText: 'ตกลง',
+        confirmButtonColor: '#2b3a67',
+        allowOutsideClick: false
+    });
+};
+</script>
 </body>
+
 </html>
