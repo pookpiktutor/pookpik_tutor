@@ -1,4 +1,4 @@
-﻿// --- BACKGROUND TASK QUEUE MANAGER ---
+// --- BACKGROUND TASK QUEUE MANAGER ---
 
 window._bgTaskQueue = [];
 
@@ -735,7 +735,7 @@ function showLoginScreen() {
 
 function handleLogin(e) {
 
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
 
   const user = document.getElementById('login_username').value.trim();
 
@@ -1232,23 +1232,18 @@ function loadTeacherDailySchedule() {
       
 
       filtered.sort((a, b) => {
-
         const partsA = a.date.split('/');
-
         const partsB = b.date.split('/');
-
-        const dateA = new Date(parseInt(partsA[2]), parseInt(partsA[1]) - 1, parseInt(partsA[0]));
-
-        const dateB = new Date(parseInt(partsB[2]), parseInt(partsB[1]) - 1, parseInt(partsB[0]));
-
+        let yA = parseInt(partsA[2]);
+        if (yA > 2400) yA -= 543;
+        let yB = parseInt(partsB[2]);
+        if (yB > 2400) yB -= 543;
+        const dateA = new Date(yA, parseInt(partsA[1]) - 1, parseInt(partsA[0]));
+        const dateB = new Date(yB, parseInt(partsB[1]) - 1, parseInt(partsB[0]));
         if (dateA.getTime() !== dateB.getTime()) {
-
-          return dateA - dateB; // Ascending order: earliest date first
-
+          return dateB - dateA; // Descending order: latest date first (วันที่ล่าสุดอยู่บนสุด)
         }
-
-        return a.timeStart.localeCompare(b.timeStart);
-
+        return (a.timeStart || '').localeCompare(b.timeStart || '');
       });
 
       
@@ -1284,17 +1279,15 @@ function loadTeacherDailySchedule() {
       // Get dates in sorted order (earliest first, since we sorted filtered in ascending order)
 
       const sortedDates = Object.keys(groupedByDate).sort((a, b) => {
-
         const partsA = a.split('/');
-
         const partsB = b.split('/');
-
-        const dateA = new Date(parseInt(partsA[2]), parseInt(partsA[1]) - 1, parseInt(partsA[0]));
-
-        const dateB = new Date(parseInt(partsB[2]), parseInt(partsB[1]) - 1, parseInt(partsB[0]));
-
-        return dateA - dateB;
-
+        let yA = parseInt(partsA[2]);
+        if (yA > 2400) yA -= 543;
+        let yB = parseInt(partsB[2]);
+        if (yB > 2400) yB -= 543;
+        const dateA = new Date(yA, parseInt(partsA[1]) - 1, parseInt(partsA[0]));
+        const dateB = new Date(yB, parseInt(partsB[1]) - 1, parseInt(partsB[0]));
+        return dateB - dateA; // Descending: Latest date first
       });
 
       
@@ -3205,6 +3198,24 @@ function cleanTimeStr(timeStr) {
 
 }
 
+function cleanGMTString(dateStr) {
+  if (!dateStr) return '';
+  let str = dateStr.toString().trim();
+  if (str.includes('GMT') || str.includes('เวลา')) {
+    let cleanStr = str.replace(/\s*GMT[+-]\d+.*$/i, '').trim();
+    cleanStr = cleanStr.replace(/\s*GMT.*$/i, '').trim();
+    cleanStr = cleanStr.replace(/([+-]\d{2}:?\d{2}|Z)$/i, '').trim();
+    const parsed = Date.parse(cleanStr);
+    if (!isNaN(parsed)) {
+      const d = new Date(parsed);
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+  }
+  return str;
+}
 
 
 function matchRoomAndBranch(roomBranch, roomName, branchName) {
@@ -3801,57 +3812,7 @@ function convertDateFromSheet(dateVal) {
 
 
 
-function setLoading(show, text = 'กำลังโหลดข้อมูล...') {
 
-  if (show) {
-
-    window._nextTaskTitle = text;
-
-  }
-
-  
-
-  const overlay = document.getElementById('loader_overlay');
-
-  if (overlay) {
-
-    overlay.classList.remove('active'); // Ensure full-screen loader is always hidden
-
-  }
-
-
-
-  const inlineLoader = document.getElementById('inline_loading_indicator');
-
-  const inlineText = document.getElementById('inline_loading_text');
-
-
-
-  if (show) {
-
-    if (inlineLoader) {
-
-      inlineLoader.style.display = 'flex';
-
-    }
-
-    if (inlineText) {
-
-      inlineText.innerText = text;
-
-    }
-
-  } else {
-
-    if (inlineLoader) {
-
-      inlineLoader.style.display = 'none';
-
-    }
-
-  }
-
-}
 
 
 
@@ -4721,7 +4682,8 @@ function switchPanel(panelName) {
 
     'admin_evaluation_form': 'รายการประเมินผลการเรียน (เจ้าหน้าที่)',
 
-    'staff_salary_summary': 'สรุปรายได้ครูทั้งหมด'
+    'staff_salary_summary': 'สรุปรายได้ครูทั้งหมด',
+    'camps': 'ข้อมูลค่าย'
 
   };
 
@@ -4767,7 +4729,7 @@ function switchPanel(panelName) {
 
   } else if (panelName === 'class_logs') {
 
-    switchRevenueSubTab('list');
+    switchRevenueSubTab('paid');
 
     loadRevenueLogs();
 
@@ -4803,6 +4765,8 @@ function switchPanel(panelName) {
 
     loadActivityLogs();
 
+  } else if (panelName === 'camps') {
+    loadCampsData();
   } else if (panelName === 'debtors') {
 
     loadDebtors();
@@ -5957,32 +5921,22 @@ function handleGradeBranchChange() {
               }
             })
             .getStudentHorizontalData(studentName, g, ct, bl);
-        }
-
-            const pChannel = state.selectedStudent.paymentChannel || '';
-            const cardRadio = document.getElementById('pay_mode_card_0');
-            const cashRadio = document.getElementById('pay_mode_cash_0');
-            const transferRadio = document.getElementById('pay_mode_transfer_0');
-            
-            if (state.selectedStudent.isCard) {
-              if (cardRadio) cardRadio.checked = true;
-            } else if (pChannel === 'เงินสด' || pChannel === 'สด') {
-              if (cashRadio) cashRadio.checked = true;
-            } else {
-              if (transferRadio) transferRadio.checked = true;
-            }
-
-            
-
-            calculateMainGroupFee();
-
+          const pChannel = state.selectedStudent.paymentChannel || '';
+          const cardRadio = document.getElementById('pay_mode_card_0');
+          const cashRadio = document.getElementById('pay_mode_cash_0');
+          const transferRadio = document.getElementById('pay_mode_transfer_0');
+          
+          if (state.selectedStudent.isCard) {
+            if (cardRadio) cardRadio.checked = true;
+          } else if (pChannel === 'เงินสด' || pChannel === 'สด') {
+            if (cashRadio) cashRadio.checked = true;
           } else {
-
-            loadStudentRegisteredCourses(state.selectedStudent.name, grade, branch);
-
+            if (transferRadio) transferRadio.checked = true;
           }
 
+          calculateMainGroupFee();
         } else {
+          calculateMainGroupFee();
 
           calculateMainGroupFee();
 
@@ -6337,6 +6291,30 @@ function getCourseRound(courseName) {
 
 
 
+function fetchCoursesForDropdown() {
+  const grade = document.getElementById('grade_sheet_grade_select').value;
+  const branch = document.getElementById('grade_sheet_branch_select').value;
+  const filterSelect = document.getElementById('grade_sheet_round_filter');
+  
+  if (!filterSelect) return;
+  filterSelect.innerHTML = '<option value="ALL">กำลังค้นหาคอร์ส...</option>';
+  
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res && res.success) {
+        state.gradeSheetData = state.gradeSheetData || {};
+        state.gradeSheetData.courses = res.courses;
+        updateRoundFilterDropdown();
+      } else {
+        filterSelect.innerHTML = '<option value="ALL">-- แสดงทุกคอร์สเรียน --</option>';
+      }
+    })
+    .withFailureHandler(err => {
+      filterSelect.innerHTML = '<option value="ALL">-- แสดงทุกคอร์สเรียน --</option>';
+    })
+    .getGradeSheetCourses(grade, branch);
+}
+
 function updateRoundFilterDropdown() {
 
   const filterSelect = document.getElementById('grade_sheet_round_filter');
@@ -6346,110 +6324,35 @@ function updateRoundFilterDropdown() {
   
 
   const curVal = filterSelect.value;
-
   filterSelect.innerHTML = '';
-
   
-
   // 1. Add ALL option
-
   const optAll = document.createElement('option');
-
   optAll.value = 'ALL';
-
-  optAll.innerText = '-- แสดงทั้งหมด --';
-
+  optAll.innerText = '-- แสดงทุกคอร์สเรียน --';
   filterSelect.appendChild(optAll);
-
   
-
-  // 2. Add static base round options
-
-  const staticRounds = ['MIDTERM 1', 'MIDTERM 2', 'FINAL 1', 'FINAL 2', 'ปิดเทอม ต.ค.', 'Summer'];
-
-  staticRounds.forEach(r => {
-
-    const opt = document.createElement('option');
-
-    opt.value = r;
-
-    opt.innerText = r;
-
-    filterSelect.appendChild(opt);
-
-  });
-
+  // 2. Find unique courses actually present in the sheet
+  const courses = state.gradeSheetData.courses || [];
+  const uniqueCourses = new Set();
   
-
-  // 3. Find unique year-specific rounds actually present in the sheet
-
-  const courses = state.gradeSheetData.courses;
-
-  const yearSpecificRounds = new Set();
-
   courses.forEach(c => {
-
-    const round = getCourseRound(c.courseName);
-
-    if (round && round !== 'None' && round.includes('/')) {
-
-      yearSpecificRounds.add(round);
-
+    if (c.courseName && c.courseName.trim() !== '') {
+      uniqueCourses.add(c.courseName.trim());
     }
-
   });
-
   
-
-  // Add year-specific rounds
-
-  yearSpecificRounds.forEach(r => {
-
+  // Add courses
+  const sortedCourses = Array.from(uniqueCourses).sort();
+  sortedCourses.forEach(r => {
     const opt = document.createElement('option');
-
     opt.value = r;
-
     opt.innerText = r;
-
     filterSelect.appendChild(opt);
-
   });
-
   
-
-  // 4. Add unspecified option if there are courses with no round
-
-  let hasNone = false;
-
-  courses.forEach(c => {
-
-    if (getCourseRound(c.courseName) === 'None') {
-
-      hasNone = true;
-
-    }
-
-  });
-
-  
-
-  if (hasNone) {
-
-    const optNone = document.createElement('option');
-
-    optNone.value = 'ไม่ระบุรอบเรียน';
-
-    optNone.innerText = 'ไม่ระบุรอบเรียน';
-
-    filterSelect.appendChild(optNone);
-
-  }
-
-  
-
   // Restore previously selected filter value if still valid
-
-  const allAvailableValues = ['ALL', ...staticRounds, ...yearSpecificRounds, 'ไม่ระบุรอบเรียน'];
+  const allAvailableValues = ['ALL', ...uniqueCourses];
 
   if (allAvailableValues.includes(curVal)) {
 
@@ -10329,19 +10232,59 @@ function isDateWithinRange(sheetDateStr, startDateStr, endDateStr) {
 
   
 
-  const sheetParts = sheetDateStr.toString().trim().split('/');
+  const str = sheetDateStr.toString().trim();
 
-  if (sheetParts.length !== 3) return false;
+  let sheetDateObj = null;
 
-  
+  if (str.includes('/')) {
 
-  const sDay = parseInt(sheetParts[0], 10);
+    const sheetParts = str.split('/');
 
-  const sMonth = parseInt(sheetParts[1], 10);
+    if (sheetParts.length === 3) {
 
-  const sYear = parseInt(sheetParts[2], 10);
+      const sDay = parseInt(sheetParts[0], 10);
 
-  const sheetDateObj = new Date(sYear, sMonth - 1, sDay);
+      const sMonth = parseInt(sheetParts[1], 10);
+
+      const sYear = parseInt(sheetParts[2], 10);
+
+      sheetDateObj = new Date(sYear, sMonth - 1, sDay);
+
+    }
+
+  } else if (str.includes('-')) {
+
+    const sheetParts = str.split('-');
+
+    if (sheetParts.length === 3) {
+
+      const sYear = parseInt(sheetParts[0], 10);
+
+      const sMonth = parseInt(sheetParts[1], 10);
+
+      const sDay = parseInt(sheetParts[2], 10);
+
+      sheetDateObj = new Date(sYear, sMonth - 1, sDay);
+
+    }
+
+  }
+
+  if (!sheetDateObj) {
+
+    let cleanStr = str.replace(/\s*GMT[+-]\d+.*$/i, '').trim();
+
+    cleanStr = cleanStr.replace(/\s*GMT.*$/i, '').trim();
+
+    cleanStr = cleanStr.replace(/([+-]\d{2}:?\d{2}|Z)$/i, '').trim();
+
+    const parsed = Date.parse(cleanStr);
+
+    if (isNaN(parsed)) return false;
+
+    sheetDateObj = new Date(parsed);
+
+  }
 
   
 
@@ -10389,6 +10332,9 @@ function isDateWithinRange(sheetDateStr, startDateStr, endDateStr) {
 
 function loadRevenueLogs(isSilent = false) {
 
+  if (window.isFetchingRevenue) return;
+  window.isFetchingRevenue = true;
+
   const startDate = document.getElementById('log_start_date').value;
 
   const endDate = document.getElementById('log_end_date').value;
@@ -10414,51 +10360,144 @@ function loadRevenueLogs(isSilent = false) {
   }
 
   google.script.run
-    .withSuccessHandler(data => {
-      // Fetch Camps data to merge into revenue
-      google.script.run.withSuccessHandler(campsData => {
-        if (!isSilent) setLoading(false);
-        if (Array.isArray(data)) {
-          let allRevenueData = data;
-          if (Array.isArray(campsData)) {
-            const mappedCamps = campsData.map(c => {
-              // Find the latest payment date and channel
-              let lastDate = c.pay_r3_date || c.pay_r2_date || c.pay_r1_date || '';
-              let lastChannel = c.pay_r3_date ? c.pay_r3_channel : (c.pay_r2_date ? c.pay_r2_channel : c.pay_r1_channel);
-              
-              return {
-                id: c.timestamp,
-                name: c.std_name,
-                nickname: c.std_nickname,
-                grade: c.std_grade,
-                round: c.camp_name,
-                full: c.full || 0,
-                paid: c.paid || 0,
-                outstanding: c.outstanding || 0,
-                paymentDate: lastDate,
-                paymentChannel: lastChannel || '',
-                staff: '',
-                extraNote: 'กิจกรรมค่าย',
-                paymentTimeNote: '',
-                isCamp: true,
-                campOriginalData: c
-              };
-            });
-            allRevenueData = allRevenueData.concat(mappedCamps);
+    .withSuccessHandler(studentsData => {
+      // Fetch PaymentsDB
+      google.script.run.withSuccessHandler(paymentsRaw => {
+        // Fetch Camps data
+        google.script.run.withSuccessHandler(campsData => {
+          window.isFetchingRevenue = false;
+          if (!isSilent) setLoading(false);
+          
+          let studentMap = {};
+          if (Array.isArray(studentsData)) {
+            studentsData.forEach(s => studentMap[s.id] = s);
           }
-          state.students = allRevenueData;
+          
+          let allPayments = [];
+          
+          if (Array.isArray(paymentsRaw) && paymentsRaw.length > 1) {
+            for (let i = 1; i < paymentsRaw.length; i++) {
+              let row = paymentsRaw[i];
+              let pDateRaw = row[4];
+              let pDate = pDateRaw ? pDateRaw.toString().split('T')[0] : '';
+              if (pDateRaw instanceof Date || (typeof pDateRaw === 'string' && pDateRaw.includes('T'))) {
+                  let d = new Date(pDateRaw);
+                  if (!isNaN(d)) {
+                      pDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                  }
+              }
+              
+              if (isDateWithinRange(pDate, startDate, endDate)) {
+                let stdId = row[1] ? row[1].toString().trim() : '';
+                let std = studentMap[stdId] || {};
+                  let pChannel = (row[5] || '').toString().trim();
+                  if (pChannel.toLowerCase() === 'cash') pChannel = 'เงินสด';
+                  else if (pChannel.toLowerCase() === 'transfer') pChannel = 'โอนเงิน';
+                  else if (pChannel.toLowerCase() === 'card') pChannel = 'บัตรเครดิต';
+                  else if (pChannel.toLowerCase() === 'unpaid') pChannel = 'ยังไม่ชำระ';
+
+                
+                allPayments.push({
+                  id: stdId,
+                  paymentId: row[0],
+                  name: std.name || 'ไม่พบชื่อ (' + stdId + ')',
+                  nickname: std.nickname || '',
+                  grade: std.grade || '',
+                  branch: std.branchPay || std.branchLearn || '',
+                  round: row[7] || '',
+                  full: std.full || 0,
+                  paid: parseFloat(row[3]) || 0,
+                  paymentDate: pDate,
+                  paymentTimeNote: row[2] ? new Date(row[2]).toLocaleTimeString('th-TH') : '',
+                  paymentChannel: pChannel,
+                  staff: row[6] || '',
+                  extraNote: row[8] || '',
+                  isChecked: std.isChecked || false
+                });
+              }
+            }
+          }
+          
+          if (Array.isArray(campsData)) {
+            campsData.forEach(c => {
+               let lastDate = c.pay_r3_date || c.pay_r2_date || c.pay_r1_date || '';
+               if (isDateWithinRange(lastDate, startDate, endDate)) {
+                 let lastChannel = c.pay_r3_date ? c.pay_r3_channel : (c.pay_r2_date ? c.pay_r2_channel : c.pay_r1_channel);
+                  let matchedStudent = Object.values(studentMap).find(s => s.name === c.std_name) || {};
+                  let cBranch = matchedStudent.branchPay || matchedStudent.branchLearn || '';
+                 allPayments.push({
+                    id: c.timestamp,
+                    name: c.std_name,
+                    nickname: c.std_nickname,
+                    grade: c.std_grade,
+                     branch: cBranch,
+                     round: c.camp_name,
+                    full: c.full || 0,
+                    paid: c.paid || 0,
+                    outstanding: c.outstanding || 0,
+                    paymentDate: lastDate,
+                    paymentChannel: lastChannel || '',
+                    staff: '',
+                    extraNote: 'กิจกรรมค่าย',
+                    paymentTimeNote: '',
+                    isCamp: true,
+                    campOriginalData: c
+                 });
+               }
+            });
+          }
+          if (Array.isArray(studentsData)) {
+            studentsData.forEach(std => {
+              let regDateRaw = std.id;
+              let regDate = regDateRaw ? regDateRaw.toString().split('T')[0] : '';
+              if (regDateRaw instanceof Date || (typeof regDateRaw === 'string' && regDateRaw.includes('T'))) {
+                  let d = new Date(regDateRaw);
+                  if (!isNaN(d)) {
+                      regDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                  }
+              }
+              let hasPayment = allPayments.some(p => p.id === std.id);
+              if (!hasPayment && isDateWithinRange(regDate, startDate, endDate)) {
+                allPayments.push({
+                  id: std.id,
+                  paymentId: '',
+                  name: std.name || 'ไม่พบชื่อ',
+                  nickname: std.nickname || '',
+                  grade: std.grade || '',
+                  branch: std.branchPay || std.branchLearn || '',
+                  round: std.round || '',
+                  full: std.full || 0,
+                  paid: parseFloat(std.paid) || 0,
+                  paymentDate: regDate,
+                  paymentTimeNote: std.paymentTimeNote || '',
+                  paymentChannel: std.paymentChannel || 'ยังไม่ชำระเงิน',
+                  staff: std.staff || '',
+                  extraNote: std.extraNote || '',
+                  isChecked: std.isChecked || false
+                });
+              }
+            });
+          }
+
+          allPayments.sort((a,b) => new Date(b.paymentDate) - new Date(a.paymentDate));
+          
+          state.students = allPayments;
           renderRevenueLogs();
-        } else {
-          if (!isSilent) showToast('ไม่สามารถดึงข้อมูลรายรับได้: ' + (data ? data.error : 'unknown'), 'error');
-        }
+        }).withFailureHandler(err => {
+          window.isFetchingRevenue = false;
+          if (!isSilent) setLoading(false);
+          if (!isSilent) showToast('ดึงข้อมูลค่ายล้มเหลว: ' + err.message, 'error');
+        }).getCampsData('all', 'all');
       }).withFailureHandler(err => {
+        window.isFetchingRevenue = false;
         if (!isSilent) setLoading(false);
-        if (!isSilent) showToast('ดึงข้อมูลค่ายล้มเหลว: ' + err.message, 'error');
-      }).getCampsData('all', 'all');
+        if (!isSilent) showToast('ดึงข้อมูลชำระเงินล้มเหลว: ' + err.message, 'error');
+      }).getSheetRows('PaymentsDB');
     })
     .withFailureHandler(err => {
+      window.isFetchingRevenue = false;
       if (!isSilent) setLoading(false);
-      if (!isSilent) showToast('ดึงข้อมูลล้มเหลว: ' + err.message, 'error');
+      if (!isSilent) showToast('ดึงข้อมูลรายชื่อล้มเหลว: ' + err.message, 'error');
     })
     .getStudentsList(getLogUser());
 }
@@ -10481,7 +10520,7 @@ function renderRevenueLogs() {
 
   if (!startDate || !endDate) {
 
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">กรุณาเลือกช่วงวันที่</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 40px;">กรุณาเลือกช่วงวันที่</td></tr>`;
 
     return;
 
@@ -10489,21 +10528,31 @@ function renderRevenueLogs() {
 
   
 
-  const filteredStudents = state.students.filter(s => isDateWithinRange(s.paymentDate, startDate, endDate));
-
-  
+  const filteredStudents = state.students.filter(s => {
+    if (!isDateWithinRange(s.paymentDate, startDate, endDate)) return false;
+    if (state.activeRevenueTab === 'paid') {
+      const p = parseFloat((s.paid || 0).toString().replace(/,/g, ''));
+      const ch = (s.paymentChannel || '').trim();
+      const hasValidChannel = ch !== '' && ch !== '- เลือก -' && ch !== 'ยังไม่จ่าย';
+      if (p <= 0 || !hasValidChannel) return false;
+    }
+    return true;
+  });
 
   if (filteredStudents.length === 0) {
-
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลรายรับในช่วงวันที่เลือก</td></tr>`;
-
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลรายรับในช่วงวันที่เลือก</td></tr>';
+    if (typeof renderRevenueSummary === 'function' && state.activeRevenueTab === 'paid') renderRevenueSummary();
     return;
-
   }
 
   
 
-  const channels = state.settings.paymentChannels || [];
+  const channels = [
+    "", "กรุงไทย พี่ปิ๊ก", "กรุงเทพ พี่ปิ๊ก", "SCB พี่ปิ๊ก", "กรุงศรี พี่ปิ๊ก", "TTB",
+    "กสิกร คุณยาย", "SCB คุณยาย", "กรุงศรี คุณตา", "กรุงศรี บัญชีบริษัท",
+    "กสิกร บัญชีบริษัท(กด)", "กสิกร บัญชีบริษัท(สแกน)", "TTB บัญชีบริษัท(กด)",
+    "TTB บัญชีบริษัท(สแกน)", "เงินสด", "พี่ปิ๊ก โอน", "พี่ต้น โอน"
+  ];
 
   
 
@@ -10515,13 +10564,7 @@ function renderRevenueLogs() {
 
     let optionsHtml = '';
 
-    channels.forEach(ch => {
-
-      const selected = ch === s.paymentChannel ? 'selected' : '';
-
-      optionsHtml += `<option value="${ch}" ${selected}>${ch}</option>`;
-
-    });
+    channels.forEach(ch => { const isMatch = (ch === s.paymentChannel || (ch === '' && !s.paymentChannel)); const display = ch === '' ? '- เลือก -' : ch; optionsHtml += `<option value="${ch}" ${isMatch ? 'selected' : ''}>${display}</option>`; });
 
     
 
@@ -10539,7 +10582,7 @@ function renderRevenueLogs() {
 
     const checkedCheckbox = `
 
-      <input type="checkbox" class="pr-check-checkbox" data-id="${s.id}" ${s.isChecked ? 'checked' : ''} onchange="this.closest('tr').classList.toggle('checked-row', this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
+      <input type="checkbox" class="pr-check-checkbox" data-id="${s.id}" ${s.isChecked ? 'checked' : ''} onchange="this.closest('tr').classList.toggle('checked-row', this.checked)" style="width: 18px; height: 18px; cursor: pointer; margin-right: 8px; flex-shrink: 0;">
 
     `;
 
@@ -10547,9 +10590,11 @@ function renderRevenueLogs() {
 
     tr.innerHTML = `
 
-      <td style="white-space:nowrap;"><div style="font-weight:600;">${s.name}${s.nickname ? ` (${s.nickname})` : ''}</div></td>
+      <td style="white-space:nowrap;"><div style="display: flex; align-items: center;">${checkedCheckbox}<div style="font-weight:600; white-space: normal; min-width: 150px;">${s.name}${s.nickname ? ` (${s.nickname})` : ''}${s.isChecked ? '<span style="font-size:0.7rem; color:green; background:#e8f5e9; padding:2px 6px; border-radius:4px; margin-left: 8px; border: 1px solid #a5d6a7;">เช็คแล้ว</span>' : ''}</div></div></td>
 
       <td style="white-space:nowrap; text-align: center; width: 1%;">${s.grade || '-'}</td>
+
+      <td style="white-space:nowrap; width: 1%;">${s.branch || '-'}</td>
 
       <td style="white-space:nowrap; width: 1%;">${s.round || '-'}</td>
 
@@ -10557,7 +10602,7 @@ function renderRevenueLogs() {
 
       <td style="white-space:nowrap; text-align: right; color: var(--color-success); font-weight: 600; width: 1%;">${(s.paid || 0).toLocaleString()}</td>
 
-      <td style="white-space:nowrap; width: 1%;">${s.paymentDate || '-'}</td>
+      <td style="white-space:nowrap; width: 1%;">${cleanGMTString(s.paymentDate) || '-'}</td>
 
       <td style="white-space:nowrap; width: 1%;">${cleanTimeStr(s.paymentTimeNote) || '-'}</td>
 
@@ -10567,7 +10612,7 @@ function renderRevenueLogs() {
 
       <td style="white-space:nowrap; width: 1%;">${s.extraNote || '-'}</td>
 
-      <td style="text-align: center; white-space:nowrap; width: 1%;">${checkedCheckbox}</td>
+      <td style="text-align: center; white-space:nowrap; width: 1%;"><span style="padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; ${s.paid > 0 ? 'background: #d4edda; color: #155724;' : 'background: #fff3cd; color: #856404;'}">${s.paid > 0 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}</span></td>
 
     `;
 
@@ -15546,6 +15591,12 @@ function showDebtorPaymentModal(id) {
 
   document.getElementById('dp_payment_date').value = getTodayString();
 
+  const timeField = document.getElementById('dp_payment_time');
+  if(timeField) {
+    const now = new Date();
+    timeField.value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+  }
+
   document.getElementById('dp_staff').value = getLogUser() || '';
 
   
@@ -15637,6 +15688,8 @@ function saveDebtorPayment(e) {
     paid: paid,
 
     paymentDate: paymentDate,
+
+    paymentTime: document.getElementById('dp_payment_time') ? document.getElementById('dp_payment_time').value : '',
 
     paymentChannel: paymentChannel,
 
@@ -17585,46 +17638,22 @@ function calculateInstallmentTotal() {
 // ----------------------------------------------------
 
 function switchRevenueSubTab(tabName) {
-
-  // Toggle active class on tab buttons
-
-  const tabList = document.getElementById('tab_rev_list');
-
-  const tabSummary = document.getElementById('tab_rev_summary');
-
-  if (tabList) tabList.classList.toggle('active', tabName === 'list');
-
-  if (tabSummary) tabSummary.classList.toggle('active', tabName === 'summary');
-
-  
-
-  // Toggle sub-panels display
-
+  state.activeRevenueTab = tabName;
+  const tabList = document.getElementById('tab_rev_paid');
+  const tabSummary = document.getElementById('tab_rev_all');
+  if (tabList) tabList.classList.toggle('active', tabName === 'paid');
+  if (tabSummary) tabSummary.classList.toggle('active', tabName === 'all');
   const panelList = document.getElementById('revenue_subpanel_list');
-
   const panelSummary = document.getElementById('revenue_subpanel_summary');
-
-  if (panelList) panelList.style.display = tabName === 'list' ? 'block' : 'none';
-
-  if (panelSummary) panelSummary.style.display = tabName === 'summary' ? 'block' : 'none';
-
-  
-
-  // Toggle Save button (only relevant for the interactive checkbox list)
-
+  if (panelList) panelList.style.display = 'block';
+  if (panelSummary) panelSummary.style.display = tabName === 'paid' ? 'block' : 'none';
   const saveBtn = document.getElementById('btn_save_revenue_logs');
-
-  if (saveBtn) saveBtn.style.display = tabName === 'list' ? 'flex' : 'none';
-
-  
-
-  if (tabName === 'summary') {
-
-    renderRevenueSummary();
-
-  }
-
+  if (saveBtn) saveBtn.style.display = tabName === 'paid' ? 'flex' : 'none';
+  if (typeof renderRevenueLogs === 'function') renderRevenueLogs();
+  if (typeof renderRevenueSummary === 'function' && tabName === 'paid') renderRevenueSummary();
 }
+
+
 
 
 
@@ -17714,11 +17743,11 @@ function renderRevenueSummary() {
 
   if (!startDate || !endDate) return;
 
-  
-
-  const filtered = state.students.filter(s => isDateWithinRange(s.paymentDate, startDate, endDate));
-
-  
+  const filtered = state.students.filter(s => {
+    if (!isDateWithinRange(s.paymentDate, startDate, endDate)) return false;
+    if (parseFloat(s.paid || 0) <= 0) return false;
+    return true;
+  });
 
   const branchGroups = {};
 
@@ -17768,7 +17797,7 @@ function renderRevenueSummary() {
 
     // Group by Daily
 
-    const dateStr = s.paymentDate || 'ไม่ระบุ';
+    const dateStr = cleanGMTString(s.paymentDate) || 'ไม่ระบุ';
 
     if (!dailyGroups[dateStr]) {
 
@@ -17991,46 +18020,6 @@ function renderRevenueSummary() {
         `;
 
         dailyTbody.appendChild(tr);
-
-      });
-
-    }
-
-  }
-
-  
-
-  // Populate Weekly Table
-
-  const weeklyTbody = document.getElementById('revenue_weekly_summary_tbody');
-
-  if (weeklyTbody) {
-
-    weeklyTbody.innerHTML = '';
-
-    const weeklyKeys = Object.keys(weeklyGroups).sort((a, b) => b - a);
-
-    if (weeklyKeys.length === 0) {
-
-      weeklyTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 20px;">ไม่มีข้อมูลในช่วงวันที่เลือก</td></tr>';
-
-    } else {
-
-      weeklyKeys.forEach(monTime => {
-
-        const tr = document.createElement('tr');
-
-        tr.innerHTML = `
-
-          <td style="font-weight:600;">${weeklyGroups[monTime].rangeStr}</td>
-
-          <td style="text-align: right;">${weeklyGroups[monTime].count}</td>
-
-          <td style="text-align: right; color: var(--color-success); font-weight: 600;">${weeklyGroups[monTime].sum.toLocaleString()}</td>
-
-        `;
-
-        weeklyTbody.appendChild(tr);
 
       });
 
@@ -18740,145 +18729,7 @@ var evalLangSocialCriteria = [
 
 
 
-function initEvaluationForm() {
-
-  setLoading(true, 'กำลังโหลดข้อมูลคอร์สของคุณครู...');
-
-  
-
-  // Set default date to today
-
-  const today = new Date();
-
-  const dateStr = today.getFullYear() + '-' + 
-
-    String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-
-    String(today.getDate()).padStart(2, '0');
-
-  const evalDateEl = document.getElementById('eval_date');
-
-  if (evalDateEl) evalDateEl.value = dateStr;
-
-  
-
-  // Set teacher name
-
-  const teacherInput = document.getElementById('eval_teacher');
-
-  if (teacherInput) {
-
-    teacherInput.value = state.currentUser ? (state.currentUser.nickname || state.currentUser.username || '') : '';
-
-  }
-
-  
-
-  // Clean form fields
-
-  document.getElementById('eval_grade').value = '';
-
-  document.getElementById('eval_branch').value = '';
-
-  document.getElementById('eval_subject').value = '';
-
-  
-
-  // Load evaluation history first to know who is already evaluated
-
-  google.script.run
-
-    .withSuccessHandler(function(list) {
-
-      if (Array.isArray(list)) {
-
-        state.evaluations = list;
-
-      } else {
-
-        state.evaluations = [];
-
-      }
-
-      
-
-      // Fetch courses and students specific to this teacher
-
-      google.script.run
-
-        .withSuccessHandler(function(res) {
-
-          setLoading(false);
-
-          const courseSelect = document.getElementById('eval_course');
-
-          const studentSelect = document.getElementById('eval_student');
-
-          if (!courseSelect || !studentSelect) return;
-
-          
-
-          courseSelect.innerHTML = '<option value="">-- เลือกคอร์สเรียน --</option>';
-
-          studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
-
-          
-
-          if (Array.isArray(res)) {
-
-            state._teacherCourses = res; // Store globally
-
-            res.forEach(function(c, idx) {
-
-              const opt = document.createElement('option');
-
-              opt.value = idx;
-
-              opt.textContent = c.courseName;
-
-              courseSelect.appendChild(opt);
-
-            });
-
-          } else {
-
-            showToast('ไม่พบตารางสอนคอร์สใดๆ ของคุณครู', 'warning');
-
-          }
-
-          
-
-          // Default to Math/Science criteria grid at first
-
-          renderEvalCriteriaGrid('math_sci');
-
-        })
-
-        .withFailureHandler(function(err) {
-
-          setLoading(false);
-
-          showToast('ไม่สามารถดึงข้อมูลคอร์สครู: ' + err.message, 'error');
-
-        })
-
-        .getTeacherCoursesAndStudents(state.currentUser ? state.currentUser.username : getLogUser());
-
-    })
-
-    .withFailureHandler(function(err) {
-
-      console.error('Failed to load evaluations list:', err);
-
-      state.evaluations = [];
-
-      setLoading(false);
-
-    })
-
-    .getEvaluationsList(getLogUser());
-
-}
+// function initEvaluationForm() moved to index.html
 
 
 
@@ -18950,25 +18801,24 @@ function onEvalCourseChange() {
 
           
 
-          studentSelect.innerHTML = '';
-
-          const opt = document.createElement('option');
-
-          opt.value = data.studentName;
-
-          opt.textContent = data.studentName;
-
-          opt.selected = true;
-
-          studentSelect.appendChild(opt);
-
+          studentSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>';
+          const students = Array.isArray(data) ? data : [data];
+          students.forEach(stu => {
+            const opt = document.createElement('option');
+            opt.value = stu.studentName;
+            opt.textContent = stu.studentName;
+            studentSelect.appendChild(opt);
+          });
           
-
-          gradeInput.value = data.grade;
-
-          branchInput.value = data.branch;
-
-          subjectInput.value = data.subject;
+          if (students.length === 1) {
+             studentSelect.selectedIndex = 1;
+          }
+          
+          if (students.length > 0) {
+             gradeInput.value = students[0].grade || '';
+             branchInput.value = students[0].branch || '';
+             subjectInput.value = students[0].subject || '';
+          }
 
         } else {
 
@@ -19568,7 +19418,7 @@ function submitStudentEvaluation(event) {
 
     })
 
-    .submitEvaluation(data, getLogUser());
+    .submitEvaluation(JSON.stringify(data), getLogUser());
 
 }
 
@@ -19668,7 +19518,7 @@ function deleteAdminEvaluation(evalId) {
 
             Swal.fire('สำเร็จ', 'ลบใบประเมินเรียบร้อยแล้ว', 'success');
 
-            loadAdminEvaluations(); // Reload the list
+            loadAdminEvaluationsDashboard(); // Reload the list
 
           } else {
 
@@ -19714,7 +19564,14 @@ function openAdminEvaluationEditModal(evalId) {
 
   document.getElementById('admin_eval_course').value = ev.subject || '';
 
-  document.getElementById('admin_eval_student').value = ev.studentName + (ev.nickname ? ' (' + ev.nickname + ')' : '');
+  let parsedStdName = String(ev.studentName || '').replace(/^(น้อง|ด\.ช\.|ด\.ญ\.|เด็กชาย|เด็กหญิง|\s)+/g, '').trim();
+  let parsedNick = ev.nickname || '';
+  if (parsedNick && !parsedNick.startsWith('(')) {
+    parsedNick = ' (' + parsedNick + ')';
+  } else if (parsedNick && parsedNick.startsWith('(')) {
+    parsedNick = ' ' + parsedNick;
+  }
+  document.getElementById('admin_eval_student').value = parsedStdName + parsedNick;
 
   document.getElementById('admin_eval_grade').value = ev.grade || '';
 
@@ -20312,9 +20169,11 @@ function renderAdminEvaluationsDashboard(res) {
 
       
 
+      let dispName = String(ev.studentName || 'นักเรียน').replace(/^(น้อง|ด\.ช\.|ด\.ญ\.|เด็กชาย|เด็กหญิง|\s)+/g, '').trim();
+      
       card.innerHTML = `
 
-        <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-color);">${ev.studentName}</div>
+        <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-color);">${dispName}</div>
 
         <div style="display: flex; gap: 6px;">
 
@@ -21052,7 +20911,7 @@ function processSaveStudentQueue() {
 
       if (res && res.success) {
 
-        showToast(`บันทึกข้อมูลของ ${item.studentData.StudentName} สำเร็จ!`, 'success');
+        showToast(`บันทึกข้อมูลของ ${item.studentData.name} สำเร็จ!`, 'success');
 
         saveStudentQueue.shift(); // Remove the completed task
 
@@ -21064,7 +20923,7 @@ function processSaveStudentQueue() {
 
       } else {
 
-        showToast(`เกิดข้อผิดพลาดในการบันทึกของ ${item.studentData.StudentName}: ` + (res ? res.message : 'ไม่ทราบสาเหตุ'), 'error');
+        showToast(`เกิดข้อผิดพลาดในการบันทึกของ ${item.studentData.name}: ` + (res ? res.message : 'ไม่ทราบสาเหตุ'), 'error');
 
         saveStudentQueue.shift();
 
@@ -21078,7 +20937,7 @@ function processSaveStudentQueue() {
 
       isSavingStudent = false;
 
-      showToast(`การเชื่อมต่อขัดข้องในการบันทึกของ ${item.studentData.StudentName}: ${err.message}`, 'error');
+      showToast(`การเชื่อมต่อขัดข้องในการบันทึกของ ${item.studentData.name}: ${err.message}`, 'error');
 
       saveStudentQueue.shift();
 
@@ -21296,7 +21155,7 @@ window.openStudentModal = function(id = null, studentName = null) {
       
       document.getElementById('student_grade').value = data.Grade || data.grade || 'ป.1';
       document.getElementById('student_branch_learn').value = data.BranchLearn || data.branchLearn || 'สาขา1';
-      document.getElementById('student_branch_pay').value = data.BranchPay || data.branchPay || 'สาขา1';
+      document.getElementById('student_branch_pay').value = data.BranchPay || data.branchPay || 'ไลน์สาขา 1';
       
       const courseVal = data.Course || data.round || '';
       if (document.getElementById('shared_course_name')) {
@@ -21870,6 +21729,13 @@ function showAddPaymentForm() {
     if (dateInput && !dateInput.value) {
       dateInput.value = new Date().toISOString().split('T')[0];
     }
+    
+    // Set default time to now
+    const timeInput = document.getElementById('new_payment_time');
+    if (timeInput && !timeInput.value) {
+      const now = new Date();
+      timeInput.value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    }
   }
 }
 
@@ -21901,13 +21767,14 @@ function submitNewPayment() {
   }
   
   const paymentData = {
-    StudentID: studentId,
-    Amount: amount,
-    Date: document.getElementById('new_payment_date').value,
-    Channel: document.getElementById('new_payment_channel').value,
-    Receiver: document.getElementById('new_payment_receiver').value,
-    Round: document.getElementById('new_payment_round').value,
-    Note: document.getElementById('new_payment_note').value,
+    studentId: studentId,
+    amount: amount,
+    date: document.getElementById('new_payment_date').value,
+    time: document.getElementById('new_payment_time') ? document.getElementById('new_payment_time').value : '',
+    channel: document.getElementById('new_payment_channel').value,
+    receiver: document.getElementById('new_payment_receiver').value,
+    roundLabel: document.getElementById('new_payment_round').value,
+    note: document.getElementById('new_payment_note').value,
     LogUser: state.currentUser ? state.currentUser.username : 'Unknown'
   };
   
@@ -21928,7 +21795,7 @@ function submitNewPayment() {
       setLoading(false);
       showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
     })
-    .addPayment(paymentData);
+    .addPaymentForStudent(paymentData, paymentData.LogUser);
 }
 
 function deletePayment(paymentId) {
@@ -36705,13 +36572,14 @@ function getSubjectPresetOptionsHtml(category, itemIndex, prefix, chosenSubjKey)
 
   let html = `<option value="">-- เลือกคำแนะนำสำเร็จรูป (ข้อที่ ${itemIndex}) --</option>`;
 
+  let globalIdx = 1;
   const renderGroup = (label, listAdvanced, listInter, listFound) => {
     let groupHtml = '';
     
     if (listAdvanced && listAdvanced.length > 0) {
       listAdvanced.forEach((item, idx) => {
         if (!usedTexts.has(item.text) || item.text === currentInputVal) {
-          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">[เก่ง ${idx+1}] ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
+          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">เก่ง ${globalIdx++}. ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
         }
       });
     }
@@ -36719,7 +36587,7 @@ function getSubjectPresetOptionsHtml(category, itemIndex, prefix, chosenSubjKey)
     if (listInter && listInter.length > 0) {
       listInter.forEach((item, idx) => {
         if (!usedTexts.has(item.text) || item.text === currentInputVal) {
-          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">[กลาง ${idx+1}] ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
+          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">กลาง ${globalIdx++}. ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
         }
       });
     }
@@ -36727,7 +36595,7 @@ function getSubjectPresetOptionsHtml(category, itemIndex, prefix, chosenSubjKey)
     if (listFound && listFound.length > 0) {
       listFound.forEach((item, idx) => {
         if (!usedTexts.has(item.text) || item.text === currentInputVal) {
-          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">[อ่อน ${idx+1}] ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
+          groupHtml += `<option value="${escapeHtmlAttr(item.text)}">อ่อน ${globalIdx++}. ${escapeHtmlText(item.label)} (${item.text.length} อักษร)</option>`;
         }
       });
     }
@@ -36906,7 +36774,52 @@ function populateAllEvaluationPresetDropdowns() {
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(populateAllEvaluationPresetDropdowns, 500);
 });
+// Function to copy magic link to clipboard
+function copyMagicLink(studentName) {
+  if (!studentName) {
+     Swal.fire('เกิดข้อผิดพลาด', 'ไม่พบชื่อนักเรียน', 'error');
+     return;
+  }
+  try {
+    const encoded = btoa(unescape(encodeURIComponent(studentName)));
+    let baseUrl = window.location.href.split('?')[0];
+    baseUrl = baseUrl.replace(/index\.html$/, '').replace(/\/$/, '');
+    const link = baseUrl + '/parent_eval.html?ref=' + encodeURIComponent(encoded);
+    
+    const fallbackCopy = () => {
+      Swal.fire({
+        icon: 'success',
+        title: 'สร้างลิงก์สำเร็จ',
+        html: `ลิงก์สำหรับน้อง <b>${studentName}</b>:<br><br><input type="text" id="swal-input1" class="swal2-input" value="${link}" readonly style="width:90%; font-size:14px; text-align:center;">`,
+        confirmButtonText: 'ปิด',
+        didOpen: () => {
+          const input = Swal.getPopup().querySelector('#swal-input1');
+          input.select();
+          try { document.execCommand('copy'); } catch(e){}
+        }
+      });
+    };
 
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(link).then(() => {
+        Swal.fire({
+          icon: 'success',
+          title: 'คัดลอกลิงก์สำเร็จ!',
+          html: `ลิงก์ของน้อง <b>${studentName}</b> ถูกคัดลอกลงในคลิปบอร์ดแล้ว<br><br><input type="text" class="swal2-input" value="${link}" readonly style="width:90%; font-size:14px; text-align:center; color:#64748b; background:#f8fafc;">`,
+          confirmButtonText: 'ตกลง'
+        });
+      }).catch(err => {
+        console.error('Clipboard write failed', err);
+        fallbackCopy();
+      });
+    } else {
+      fallbackCopy();
+    }
+  } catch(e) {
+    console.error('Error creating magic link', e);
+    Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถสร้างลิงก์ได้' });
+  }
+}
 // Camps Dashboard Feature
 var campsFiltersInitialized = false;
 
@@ -37039,8 +36952,8 @@ function showCampPaymentModal(timestamp) {
     html += '<div style="border: 1px solid #cbd5e1; background:#ffffff; border-radius: 8px; padding: 10px; margin-bottom: 8px;">';
     html += '<div style="font-weight: 600; font-size: 0.8rem; margin-bottom: 6px; color: #4338ca;">💳 งวดที่ ' + r + '</div>';
     html += '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;">';
-    html += '<div><label style="font-size:0.75rem;">วันที่</label><input type="date" id="camp_pay_r' + r + '_date" class="form-control form-control-sm" value="' + dateVal + '"></div>
-    <div><label style="font-size:0.75rem;">เวลา</label><input type="time" id="camp_pay_r' + r + '_time" class="form-control form-control-sm" value="' + timeVal + '"></div>';
+    html += '<div><label style="font-size:0.75rem;">วันที่</label><input type="date" id="camp_pay_r' + r + '_date" class="form-control form-control-sm" value="' + dateVal + '"></div>';
+    html += '<div><label style="font-size:0.75rem;">เวลา</label><input type="time" id="camp_pay_r' + r + '_time" class="form-control form-control-sm" value="' + timeVal + '"></div>';
     html += '<div><label style="font-size:0.75rem;">จำนวนเงิน (บาท)</label><input type="number" id="camp_pay_r' + r + '_amount" class="form-control form-control-sm" value="' + amtVal + '" oninput="recalcPaidFromRounds()"></div>';
     html += '<div><label style="font-size:0.75rem;">ช่องทาง</label><select id="camp_pay_r' + r + '_channel" class="form-select form-select-sm">' + channelOptions(chVal) + '</select></div>';
     html += '</div></div>';
@@ -37300,7 +37213,7 @@ function renderCampsTable() {
         html += "<td style='" + outstColor + "'>฿" + outst.toLocaleString() + "</td>";
         
         // Manage Button (ปุ่มจัดการ)
-        html += "<td><button class='btn btn-sm btn-warning' style='font-size:0.75rem; padding: 3px 8px; font-weight:600;' onclick="showCampPaymentModal('" + escTs + "')">🪙 จัดการ</button></td>";
+        html += "<td><button class='btn btn-sm btn-warning' style='font-size:0.75rem; padding: 3px 8px; font-weight:600;' onclick=\"showCampPaymentModal('" + escTs + "')\">🪙 จัดการ</button></td>";
         
         // Status Button (กดยืนยัน)
         var currentStatus = (item.status || "").trim();
@@ -37311,12 +37224,12 @@ function renderCampsTable() {
           if (currentStatus) {
             html += "<span class='badge bg-warning text-dark' style='margin-bottom:4px; display:inline-block;'>" + currentStatus + "</span><br/>";
           }
-          html += "<button class='btn btn-sm btn-success' style='font-size:0.75rem; padding: 3px 8px;' onclick="confirmCampStatus('" + escTs + "')">กดยืนยัน</button>";
+          html += "<button class='btn btn-sm btn-success' style='font-size:0.75rem; padding: 3px 8px;' onclick=\"confirmCampStatus('" + escTs + "')\">กดยืนยัน</button>";
           html += "</td>";
         }
         
         // Delete Button (ตรงลบ ให้กดแล้วสามารถลบข้อมูลออกจากฐานข้อมูลได้เลย)
-        html += "<td style='text-align:center;'><button class='btn btn-sm btn-danger' style='padding: 3px 8px; font-size: 0.75rem;' onclick="deleteCampStudent('" + escTs + "')" title='ลบข้อมูล'>🗑️ ลบ</button></td>";
+        html += "<td style='text-align:center;'><button class='btn btn-sm btn-danger' style='padding: 3px 8px; font-size: 0.75rem;' onclick=\"deleteCampStudent('" + escTs + "')\" title='ลบข้อมูล'>🗑️ ลบ</button></td>";
         
         html += "</tr>";
       });
@@ -37380,3 +37293,5 @@ function deleteCampStudent(timestamp) {
     }
   });
 }
+
+
