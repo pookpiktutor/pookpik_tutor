@@ -8557,9 +8557,9 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
 
 
 
-    <!-- LOADER OVERLAY -->
+    <!-- LOADER OVERLAY (Disabled) -->
 
-    <div class="loader-overlay" id="loader_overlay">
+    <div class="loader-overlay" id="loader_overlay" style="display:none !important;">
 
       <div class="spinner"></div>
 
@@ -19076,15 +19076,11 @@ function setLoading(show, text = 'กำลังโหลดข้อมูล.
 
   const overlay = document.getElementById('loader_overlay');
 
-
-
   if (overlay) {
-
-
 
     overlay.classList.remove('active'); // Ensure full-screen loader is always hidden
 
-
+    overlay.style.display = 'none';
 
   }
 

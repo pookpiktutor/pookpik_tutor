@@ -1,12 +1,64 @@
 function setLoading(show, text = 'กำลังโหลดข้อมูล...') {
-  const overlay = document.getElementById('loader_overlay');
-  const loaderText = document.getElementById('loader_text');
   if (show) {
     window._nextTaskTitle = text;
-    if (loaderText) loaderText.innerText = text;
-    if (overlay) overlay.classList.add('active');
+    window._currentLoadingStatus = text;
   } else {
-    if (overlay) overlay.classList.remove('active');
+    window._currentLoadingStatus = '';
+  }
+
+  const overlay = document.getElementById('loader_overlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.style.display = 'none';
+  }
+
+  const inlineLoader = document.getElementById('inline_loading_indicator');
+  const inlineText = document.getElementById('inline_loading_text');
+
+  // Update global status bar at top-right corner
+  const statusBar = document.getElementById('global_status_bar');
+  const statusDot = document.getElementById('global_status_dot');
+  const statusText = document.getElementById('global_status_text');
+
+  if (show) {
+    if (inlineLoader) {
+      inlineLoader.style.display = 'flex';
+    }
+    if (inlineText) {
+      inlineText.innerText = text;
+    }
+
+    if (statusBar) {
+      statusBar.style.display = 'flex';
+      statusBar.style.background = 'rgba(59, 130, 246, 0.9)';
+    }
+    if (statusDot) {
+      statusDot.style.background = '#fbbf24';
+      statusDot.style.animation = 'pulse 1s infinite';
+    }
+    if (statusText) {
+      statusText.textContent = '⏳ ' + text;
+    }
+  } else {
+    if (inlineLoader) {
+      inlineLoader.style.display = 'none';
+    }
+
+    if (statusBar) {
+      statusBar.style.display = 'flex';
+      statusBar.style.background = 'rgba(15, 23, 42, 0.85)';
+    }
+    if (statusDot) {
+      statusDot.style.background = '#22c55e';
+      statusDot.style.animation = 'none';
+    }
+    if (statusText) {
+      statusText.textContent = '✅ พร้อมใช้งาน';
+    }
+  }
+
+  if (typeof updateTaskWidget === 'function') {
+    updateTaskWidget();
   }
 }
 
@@ -26,7 +78,13 @@ window._currentLoadingStatus = '';
 
 function updateTaskWidget() {
   const widget = document.getElementById('task_queue_widget');
-  if (!widget) return;
+  if (widget) {
+    widget.style.display = 'none';
+  }
+
+  const statusBar = document.getElementById('global_status_bar');
+  const statusDot = document.getElementById('global_status_dot');
+  const statusText = document.getElementById('global_status_text');
 
   const now = Date.now();
   window._bgTaskQueue = window._bgTaskQueue.filter(t => {
@@ -43,38 +101,32 @@ function updateTaskWidget() {
                       || visibleTasks[0];
                       
   let currentActionText = 'พร้อมใช้งาน';
-  let icon = '<i class="fas fa-check-circle" style="color: #10b981; margin-right: 6px;"></i>';
-  let badgeHTML = '<div style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">พร้อมใช้งาน</div>';
+  let isWorking = false;
   
   if (window._currentLoadingStatus) {
       currentActionText = window._currentLoadingStatus;
-      icon = '<i class="fas fa-circle-notch fa-spin" style="color:#3b82f6; margin-right: 6px;"></i>';
-      badgeHTML = `<div style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">กำลังทำงาน</div>`;
+      isWorking = true;
   } else if (displayTask) {
       currentActionText = displayTask.title;
-      icon = '<i class="fas fa-circle-notch fa-spin" style="color:#3b82f6; margin-right: 6px;"></i>';
-      if (displayTask.status === 'success') {
-          icon = '<i class="fas fa-check-circle" style="color: #10b981; margin-right: 6px;"></i>';
-          badgeHTML = `<div style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">สำเร็จ</div>`;
-      } else if (displayTask.status === 'error') {
-          icon = '<i class="fas fa-times-circle" style="color: #ef4444; margin-right: 6px;"></i>';
-          badgeHTML = `<div style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">ผิดพลาด</div>`;
-      } else {
-          badgeHTML = `<div style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem;">กำลังทำเบื้องหลัง</div>`;
+      if (displayTask.status === 'running' || displayTask.status === 'queued') {
+          isWorking = true;
       }
   }
 
-  if (currentActionText === 'พร้อมใช้งาน') {
-      widget.style.display = 'none';
-  } else {
-      widget.style.display = 'flex';
+  if (statusBar && statusDot && statusText) {
+      statusBar.style.display = 'flex';
+      if (isWorking) {
+          statusBar.style.background = 'rgba(59, 130, 246, 0.9)';
+          statusDot.style.background = '#fbbf24';
+          statusDot.style.animation = 'pulse 1s infinite';
+          statusText.textContent = '⏳ ' + currentActionText;
+      } else {
+          statusBar.style.background = 'rgba(15, 23, 42, 0.85)';
+          statusDot.style.background = '#22c55e';
+          statusDot.style.animation = 'none';
+          statusText.textContent = '✅ ' + (currentActionText === 'พร้อมใช้งาน' ? 'พร้อมใช้งาน' : currentActionText);
+      }
   }
-  widget.innerHTML = `
-    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #fff; padding: 8px 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 500; border: 1px solid #e2e8f0; max-width: 300px;">
-      ${icon}
-      <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${currentActionText}</span>
-    </div>
-  `;
 }
 
 

@@ -1772,51 +1772,15 @@ body {
 
 
 
-/* Loader Overlay */
+/* Loader Overlay - Disabled to show status only at top-right */
 
-.loader-overlay {
+.loader-overlay, .loader-overlay.active {
 
-  position: fixed;
+  display: none !important;
 
-  top: 0;
+  opacity: 0 !important;
 
-  left: 0;
-
-  width: 100vw;
-
-  height: 100vh;
-
-  background: rgba(240, 244, 241, 0.88);
-
-  backdrop-filter: blur(10px);
-
-  -webkit-backdrop-filter: blur(10px);
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
-
-  z-index: 2000;
-
-  opacity: 0;
-
-  pointer-events: none;
-
-  transition: opacity 0.3s ease;
-
-}
-
-
-
-.loader-overlay.active {
-
-  opacity: 1;
-
-  pointer-events: auto;
+  pointer-events: none !important;
 
 }
 
