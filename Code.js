@@ -17893,724 +17893,590 @@ function syncStudentToStatusDB(std, batch = false) {
     Browser.msgBox('ทำความสะอาดสำเร็จ', 'ทำความสะอาดชีตจำนวน ' + cleanedSheetsCount + ' ชีต, ลบแถวว่างทิ้งไป ' + removedRowsCount + ' แถว\n\nสถานะการซิงค์:\n' + syncResult.message, Browser.Buttons.OK);
   }
 
-  function saveCampStudentData(campData) {
-    try {
-      const db = getDb();
-      let slipUrl = '-';
+  // --- Helper: Get standard camp price ---
+function getCampPrice(campName, grade, campType, dailyCount) {
+  campName = String(campName || '');
+  grade = String(grade || '');
+  let fullCost = 7900;
+  let dailyCost = 1700;
 
-      if (campData.fileData && campData.fileData.base64) {
-        let folder;
-        const folderName = 'data_PookPik_Tutor_Slips';
-        const props = PropertiesService.getScriptProperties();
-        const folderId = props.getProperty('SLIP_FOLDER_ID');
-
-        if (folderId) {
-          try {
-            folder = DriveApp.getFolderById(folderId);
-          } catch (e) {
-            folder = null;
-          }
-        }
-        if (!folder) {
-          const folders = DriveApp.getFoldersByName(folderName);
-          if (folders.hasNext()) {
-            folder = folders.next();
-          } else {
-            folder = DriveApp.createFolder(folderName);
-          }
-          props.setProperty('SLIP_FOLDER_ID', folder.getId());
-        }
-        const content = Utilities.base64Decode(campData.fileData.base64);
-        const blob = Utilities.newBlob(content, campData.fileData.mimeType, 'camp_slip_' + Date.now() + '_' + campData.fileData.fileName);
-        const file = folder.createFile(blob);
-        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-        slipUrl = file.getUrl();
-      }
-
-      let sheet = db.getSheetByName('ลงทะเบียนค่าย');
-      if (!sheet) {
-        sheet = db.insertSheet('ลงทะเบียนค่าย');
-        sheet.appendRow(['Timestamp', 'ชื่อค่าย', 'ปีการศึกษา', 'ระดับชั้น', 'ห้องเรียน', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'เบอร์โทรศัพท์ผู้ปกครอง', 'สถานะ', 'โรงเรียน', 'โรคประจำตัว/แพ้อาหาร', 'Size เสื้อ', 'สลิป']);
-        sheet.getRange("A1:M1").setFontWeight("bold").setBackground("#e0e7ff");
-        sheet.setFrozenRows(1);
-      }
-
-      const data = sheet.getDataRange().getValues();
-      let rowIndex = -1;
-      for (let i = 1; i < data.length; i++) {
-        if (data[i][1] === (campData.camp_name || '') && data[i][2] === (campData.camp_year || '') && data[i][5] === (campData.std_name || '')) {
-          rowIndex = i + 1;
-          break;
-        }
-      }
-
-      const rowData = [
-        campData.timestamp || new Date().toLocaleString('th-TH'),
-        campData.camp_name || '',
-        campData.camp_year || '',
-        campData.std_grade || '',
-        campData.class_section || '',
-        campData.std_name || '',
-        campData.std_nickname || '',
-        campData.parent_contact || '',
-        campData.status || 'รอตรวจสอบ',
-        campData.std_school || '',
-        campData.medical_condition || '',
-        campData.shirt_size || '',
-        slipUrl
-      ];
-
-      if (rowIndex > -1) {
-        // If slip wasn't provided, try to keep the old slip if we are just updating data
-        if (slipUrl === '-' && data[rowIndex - 1][12]) {
-          rowData[12] = data[rowIndex - 1][12];
-        }
-        sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
-      } else {
-        sheet.appendRow(rowData);
-      }
-
-      return { success: true };
-    } catch (e) {
-      Logger.log('ERROR in saveCampStudentData: ' + e.message);
-      return { success: false, error: e.message };
-    }
-  }
-
-
-  function getCampsFilterOptions() {
-    try {
-      const db = getDb();
-      const sheet = db.getSheetByName('ลงทะเบียนค่าย');
-      if (!sheet) return { campNames: [], academicYears: [] };
-
-      const data = sheet.getDataRange().getValues();
-      if (data.length <= 1) return { campNames: [], academicYears: [] };
-
-      const campNamesSet = new Set();
-      const yearsSet = new Set();
-
-      for (let i = 1; i < data.length; i++) {
-        const campName = (data[i][1] || '').toString().trim();
-        const year = (data[i][2] || '').toString().trim();
-
-        if (campName) campNamesSet.add(campName);
-        if (year) yearsSet.add(year);
-      }
-
-      return {
-        campNames: Array.from(campNamesSet).sort(),
-        academicYears: Array.from(yearsSet).sort().reverse()
-      };
-    } catch (e) {
-      Logger.log('ERROR in getCampsFilterOptions: ' + e.message);
-      return { campNames: [], academicYears: [] };
-    }
-  }
-
-  function getCampsData(academicYear, campName) {
-    try {
-      const db = getDb();
-      const sheet = db.getSheetByName('ลงทะเบียนค่าย');
-      if (!sheet) return [];
-
-      const data = sheet.getDataRange().getValues();
-      if (data.length <= 1) return [];
-
-      const headers = data[0];
-      const results = [];
-
-      for (let i = 1; i < data.length; i++) {
-        const row = data[i];
-        const item = {
-          timestamp: row[0],
-          camp_name: row[1],
-          camp_year: row[2],
-          std_grade: row[3],
-          class_section: row[4],
-          std_name: row[5],
-          std_nickname: row[6],
-          parent_phone: row[7],
-          status: row[8],
-          std_school: row[9] || '',
-          medical_condition: row[10] || '',
-          shirt_size: row[11] || '',
-          slip_url: row[12] || '',
-          full: parseFloat(row[13]) || 0,
-          paid: parseFloat(row[14]) || 0,
-          outstanding: parseFloat(row[15]) || 0,
-          pay_r1_date: row[16] ? cleanSheetDate(row[16]) : '',
-          pay_r1_time: row[17] || '',
-          pay_r1_amount: parseFloat(row[18]) || 0,
-          pay_r1_channel: row[19] || '',
-          pay_r2_date: row[20] ? cleanSheetDate(row[20]) : '',
-          pay_r2_time: row[21] || '',
-          pay_r2_amount: parseFloat(row[22]) || 0,
-          pay_r2_channel: row[23] || '',
-          pay_r3_date: row[24] ? cleanSheetDate(row[24]) : '',
-          pay_r3_time: row[25] || '',
-          pay_r3_amount: parseFloat(row[26]) || 0,
-          pay_r3_channel: row[27] || ''
-        };
-
-        // Auto-fill full amount if not set based on camp name
-        if (!item.full || item.full === 0) {
-          var cName = (item.camp_name || '').toString();
-          var cGrade = (item.std_grade || '').toString();
-          if (cName.indexOf('วางแผนติด') >= 0 || cName.indexOf('ตุลาคม') >= 0) {
-            item.full = 4400;
-          } else if (cName.indexOf('ผ่าน') >= 0 && cName.indexOf('Gifted') >= 0) {
-            item.full = 4400;
-          } else if (cName.indexOf('ผ่าน') >= 0 && cName.indexOf('Smart') >= 0) {
-            item.full = 4400;
-          } else if (cName.indexOf('ผ่าน') >= 0 && (cName.indexOf('LP') >= 0 || cName.indexOf('FP') >= 0)) {
-            item.full = 4400;
-          } else if (cName.indexOf('ผ่านฉลุยสอบติด') >= 0 || cName.indexOf('สานฝันฉันต้องติด') >= 0) {
-            if (cGrade.indexOf('ป.6') >= 0) item.full = 7900;
-            else if (cGrade.indexOf('ม.3') >= 0) item.full = 8900;
-          } else if (cName.indexOf('ค่าย') >= 0) {
-            item.full = 4400;
-          }
-        }
-        // Recalculate outstanding = full - paid
-        if (item.full > 0) {
-          var calcOutst = item.full - (item.paid || 0);
-          if (calcOutst < 0) calcOutst = 0;
-          if (!item.outstanding || item.outstanding === 0) {
-            item.outstanding = calcOutst;
-          }
-        }
-
-        let match = true;
-        if (academicYear && academicYear !== 'all' && String(item.camp_year) !== String(academicYear)) {
-          match = false;
-        }
-        if (campName && campName !== 'all' && String(item.camp_name) !== String(campName)) {
-          match = false;
-        }
-
-        if (match) {
-          results.push(item);
-        }
-      }
-
-      return results.reverse();
-    } catch (e) {
-      Logger.log('ERROR in getCampsData: ' + e.message);
-      return { error: e.message };
-    }
-  }
-
-
-  function updateCampStatus(timestamp, newStatus) {
-    try {
-      const db = getDb();
-      const sheet = db.getSheetByName('ลงทะเบียนค่าย');
-      if (!sheet) return { success: false, error: 'ไม่พบชีตลงทะเบียนค่าย' };
-
-      const data = sheet.getDataRange().getValues();
-      if (data.length <= 1) return { success: false, error: 'ไม่มีข้อมูลในชีต' };
-
-      for (let i = 1; i < data.length; i++) {
-        // Column A (index 0) is timestamp
-        let rowTs = data[i][0] instanceof Date ? data[i][0].toISOString() : String(data[i][0]);
-        if (rowTs === String(timestamp) || String(data[i][0]) === String(timestamp)) {
-          // Status is Column I (index 8)
-          sheet.getRange(i + 1, 9).setValue(newStatus);
-          return { success: true };
-        }
-      }
-
-      return { success: false, error: 'ไม่พบข้อมูลนักเรียนที่ต้องการอัปเดต' };
-    } catch (e) {
-      Logger.log('ERROR in updateCampStatus: ' + e.message);
-      return { success: false, error: e.message };
-    }
-  }
-
-  function saveCampPayment(timestamp, paymentData) {
-    try {
-      const db = getDb();
-      const sheet = db.getSheetByName('ลงทะเบียนค่าย');
-      if (!sheet) return { success: false, error: 'ไม่พบชีตลงทะเบียนค่าย' };
-
-      const data = sheet.getDataRange().getValues();
-      if (data.length <= 1) return { success: false, error: 'ไม่มีข้อมูลในชีต' };
-
-      for (let i = 1; i < data.length; i++) {
-        let rowTs = data[i][0] instanceof Date ? data[i][0].toISOString() : String(data[i][0]);
-        if (rowTs === String(timestamp) || String(data[i][0]) === String(timestamp)) {
-          const rIndex = i + 1;
-          const rowUpdates = [
-            [
-              paymentData.full || 0,
-              paymentData.paid || 0,
-              paymentData.outstanding || 0,
-              paymentData.pay_r1_date || '',
-              paymentData.pay_r1_time || '',
-              paymentData.pay_r1_amount || '',
-              paymentData.pay_r1_channel || '',
-              paymentData.pay_r2_date || '',
-              paymentData.pay_r2_time || '',
-              paymentData.pay_r2_amount || '',
-              paymentData.pay_r2_channel || '',
-              paymentData.pay_r3_date || '',
-              paymentData.pay_r3_time || '',
-              paymentData.pay_r3_amount || '',
-              paymentData.pay_r3_channel || ''
-            ]
-          ];
-          sheet.getRange(rIndex, 14, 1, 15).setValues(rowUpdates);
-
-          // Ensure headers exist if this is the first time
-          const headers = data[0];
-          if (!headers[13] || headers[13] !== 'ยอดเต็ม') {
-            const headerUpdates = [['ยอดเต็ม', 'ชำระแล้ว', 'ค้างชำระ',
-              'วันที่ชำระงวด 1', 'ยอดเงินงวด 1', 'ช่องทางงวด 1',
-              'วันที่ชำระงวด 2', 'ยอดเงินงวด 2', 'ช่องทางงวด 2',
-              'วันที่ชำระงวด 3', 'ยอดเงินงวด 3', 'ช่องทางงวด 3']];
-            sheet.getRange(1, 14, 1, 12).setValues(headerUpdates);
-          }
-
-          return { success: true };
-        }
-      }
-
-      return { success: false, error: 'ไม่พบข้อมูลนักเรียนที่ต้องการอัปเดต' };
-    } catch (e) {
-      Logger.log('ERROR in saveCampPayment: ' + e.message);
-      return { success: false, error: e.message };
-    }
-  }
-
-
-  function syncSheet3CourseNames() {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet3 = ss.getSheetByName('\u0e0a\u0e35\u0e153');
-    if (!sheet3) return 'Sheet3 not found';
-
-    var debugSheet = ss.getSheetByName('DebugLog');
-    if (!debugSheet) {
-      debugSheet = ss.insertSheet('DebugLog');
+  if (campName.includes('เตรียมความพร้อม') || campName.includes('เมษายน')) {
+    fullCost = 4400;
+    dailyCost = 1700;
+  } else if (campName.includes('วางแผนติดspeed') || campName.includes('ตุลาคม') || campName.includes('สานฝันปั้นน้อง')) {
+    if (grade.includes('ม.3')) {
+      fullCost = 8900;
+      dailyCost = 1900;
     } else {
-      debugSheet.clear();
+      fullCost = 7900;
+      dailyCost = 1700;
     }
-    var debugData = [['Row', 'CourseA', 'DateVal', 'DayOfWeek', 'Term', 'TimeStr', 'Branch', 'Grade', 'SheetName', 'SheetExists', 'TotalCols', 'MatchedCourse', 'Reason']];
+  } else {
+    if (grade.includes('ม.3')) {
+      fullCost = 8900;
+      dailyCost = 1900;
+    }
+  }
 
-    var dataRange = sheet3.getDataRange();
-    var values = dataRange.getValues();
+  if (campType === 'daily') {
+    const count = parseInt(dailyCount) || 1;
+    return { full: dailyCost * count, dailyRate: dailyCost, baseFull: fullCost, isDaily: true, count: count };
+  } else {
+    return { full: fullCost, dailyRate: dailyCost, baseFull: fullCost, isDaily: false, count: 0 };
+  }
+}
 
-    var midTermStart = new Date(2026, 4, 18).getTime();
-    var midTermEnd = new Date(2026, 6, 19, 23, 59, 59).getTime();
-    var finalStart = new Date(2026, 6, 20).getTime();
-    var finalEnd = new Date(2026, 8, 25, 23, 59, 59).getTime();
+// --- Save / Register student for camp ---
+function saveCampStudentData(campData) {
+  try {
+    const db = getDb();
+    let slipUrl = '-';
 
-    var gradeSheetRow1Cache = {};
-    var dayNames = ['\u0e2d\u0e32\u0e17\u0e34\u0e15\u0e22\u0e4c', '\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c', '\u0e2d\u0e31\u0e07\u0e04\u0e32\u0e23', '\u0e1e\u0e38\u0e18', '\u0e1e\u0e24\u0e2b\u0e31\u0e2a\u0e1a\u0e14\u0e35', '\u0e28\u0e38\u0e01\u0e23\u0e4c', '\u0e40\u0e2a\u0e32\u0e23\u0e4c'];
-
-    var changes = 0;
-
-    for (var i = 1; i < values.length; i++) {
-      var row = values[i];
-      var courseColA = (row[0] || '').toString().trim();
-      if (courseColA.indexOf('\u0e2b\u0e25\u0e31\u0e01') === -1) continue;
-
-      var dateVal = row[12];
-      if (!dateVal) {
-        debugData.push([i + 1, courseColA, 'NO_DATE', '', '', '', '', '', '', '', '', '', 'Skipped: no date in Col M']);
-        continue;
-      }
-
-      var parsedDate = null;
-      if (dateVal instanceof Date) {
-        parsedDate = dateVal;
-      } else {
-        var parts = dateVal.toString().split('/');
-        if (parts.length === 3) {
-          parsedDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+    if (campData.fileData && campData.fileData.base64) {
+      let folder;
+      const folderName = 'data_PookPik_Tutor_Slips';
+      const props = PropertiesService.getScriptProperties();
+      const folderId = props.getProperty('SLIP_FOLDER_ID');
+      
+      if (folderId) {
+        try {
+          folder = DriveApp.getFolderById(folderId);
+        } catch(e) {
+          folder = null;
         }
       }
-
-      if (!parsedDate || isNaN(parsedDate.getTime())) {
-        debugData.push([i + 1, courseColA, dateVal, '', '', '', '', '', '', '', '', '', 'Skipped: invalid date']);
-        continue;
-      }
-
-      var dTime = parsedDate.getTime();
-      var dayIndex = parsedDate.getDay();
-      var dayName = dayNames[dayIndex];
-
-      var term = '';
-      if (dTime >= midTermStart && dTime <= midTermEnd) {
-        term = 'MIDTERM';
-      } else if (dTime >= finalStart && dTime <= finalEnd) {
-        term = 'FINAL';
-      }
-      if (!term) {
-        debugData.push([i + 1, courseColA, dateVal, dayName, 'NO_TERM', '', '', '', '', '', '', '', 'Skipped: date outside range']);
-        continue;
-      }
-
-      var startTimeRaw = row[3];
-      var endTimeRaw = row[4];
-      var startHr = '', startMin = '', endHr = '', endMin = '';
-
-      if (startTimeRaw instanceof Date) {
-        startHr = startTimeRaw.getHours().toString();
-        startMin = startTimeRaw.getMinutes().toString().padStart(2, '0');
-      } else if (startTimeRaw) {
-        var sParts = startTimeRaw.toString().split(':');
-        startHr = sParts[0] || '';
-        startMin = (sParts[1] || '00').padStart(2, '0');
-      }
-
-      if (endTimeRaw instanceof Date) {
-        endHr = endTimeRaw.getHours().toString();
-        endMin = endTimeRaw.getMinutes().toString().padStart(2, '0');
-      } else if (endTimeRaw) {
-        var eParts = endTimeRaw.toString().split(':');
-        endHr = eParts[0] || '';
-        endMin = (eParts[1] || '00').padStart(2, '0');
-      }
-
-      var timeStr = '';
-      if (startHr) {
-        timeStr = startHr + '.' + startMin;
-        if (endHr) {
-          timeStr += '-' + endHr + '.' + endMin;
-        }
-      }
-
-      var branchColN = (row[13] || '').toString().trim();
-      var branchNum = '';
-      var branchM = branchColN.match(/\u0e2a\u0e32\u0e02\u0e32\s*(\d)/);
-      if (branchM) {
-        branchNum = branchM[1];
-      } else if (branchColN.indexOf('1') !== -1) branchNum = '1';
-      else if (branchColN.indexOf('2') !== -1) branchNum = '2';
-      else if (branchColN.indexOf('3') !== -1) branchNum = '3';
-
-      if (!branchNum) {
-        debugData.push([i + 1, courseColA, dateVal, dayName, term, timeStr, 'NO_BRANCH', '', '', '', '', '', 'Branch: ' + branchColN]);
-        continue;
-      }
-
-      var gradeM = courseColA.match(/(\u0e2d\u0e19\u0e38\u0e1a\u0e32\u0e25|\u0e1b\.\d|\u0e21\.\d)/);
-      var grade = gradeM ? gradeM[1] : '';
-      if (!grade) {
-        debugData.push([i + 1, courseColA, dateVal, dayName, term, timeStr, branchNum, 'NO_GRADE', '', '', '', '', 'Cannot extract grade']);
-        continue;
-      }
-
-      var sheetName = grade + '/' + branchNum;
-
-      if (!gradeSheetRow1Cache[sheetName]) {
-        var gSheet = ss.getSheetByName(sheetName);
-        if (gSheet) {
-          var lastCol = gSheet.getLastColumn();
-          if (lastCol >= 1) {
-            gradeSheetRow1Cache[sheetName] = gSheet.getRange(1, 1, 1, lastCol).getValues()[0];
-          } else {
-            gradeSheetRow1Cache[sheetName] = [];
-          }
+      if (!folder) {
+        const folders = DriveApp.getFoldersByName(folderName);
+        if (folders.hasNext()) {
+          folder = folders.next();
         } else {
-          gradeSheetRow1Cache[sheetName] = null;
+          folder = DriveApp.createFolder(folderName);
         }
+        props.setProperty('SLIP_FOLDER_ID', folder.getId());
       }
+      const content = Utilities.base64Decode(campData.fileData.base64);
+      const blob = Utilities.newBlob(content, campData.fileData.mimeType, 'camp_slip_' + Date.now() + '_' + campData.fileData.fileName);
+      const file = folder.createFile(blob);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      slipUrl = file.getUrl();
+    }
 
-      var headerRow1 = gradeSheetRow1Cache[sheetName];
-      if (!headerRow1) {
-        debugData.push([i + 1, courseColA, dateVal, dayName, term, timeStr, branchNum, grade, sheetName, 'NO_SHEET', '', '', 'Sheet not found']);
-        continue;
-      }
-      if (headerRow1.length === 0) {
-        debugData.push([i + 1, courseColA, dateVal, dayName, term, timeStr, branchNum, grade, sheetName, 'EMPTY', '0', '', 'No columns']);
-        continue;
-      }
+    let sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) {
+      sheet = db.insertSheet('ลงทะเบียนค่าย');
+      sheet.appendRow([
+        'Timestamp', 'ชื่อค่าย', 'ปีการศึกษา', 'ระดับชั้น', 'ห้องเรียน', 
+        'ชื่อ-นามสกุล', 'ชื่อเล่น', 'เบอร์โทรผู้ปกครอง', 'สถานะ', 'โรงเรียน', 
+        'โรคประจำตัว/แพ้อาหาร', 'Size เสื้อ', 'สลิป',
+        'ยอดเต็ม', 'ยอดชำระ', 'ค้างชำระ',
+        'วันที่งวด 1', 'ยอดเงินงวด 1', 'ช่องทางงวด 1',
+        'วันที่งวด 2', 'ยอดเงินงวด 2', 'ช่องทางงวด 2',
+        'วันที่งวด 3', 'ยอดเงินงวด 3', 'ช่องทางงวด 3'
+      ]);
+      sheet.getRange("A1:Y1").setFontWeight("bold").setBackground("#e0e7ff");
+      sheet.setFrozenRows(1);
+    }
 
-      var foundCourseName = '';
-      var lastReason = 'No match';
-      var subjectPart = courseColA.split(grade)[0].replace('\u0e2b\u0e25\u0e31\u0e01', '').replace(/\(\u0e2a\u0e1e\u0e10\)/, '').trim();
-
-      for (var c = 10; c < headerRow1.length; c++) {
-        var headerText = (headerRow1[c] || '').toString().trim();
-        if (!headerText) continue;
-        if (headerText.indexOf('\u0e2b\u0e25\u0e31\u0e01') === -1) { lastReason = 'col' + (c + 1) + ':no \u0e2b\u0e25\u0e31\u0e01'; continue; }
-        if (headerText.toUpperCase().indexOf(term) === -1) { lastReason = 'col' + (c + 1) + ':no ' + term; continue; }
-        if (subjectPart && headerText.indexOf(subjectPart) === -1) { lastReason = 'col' + (c + 1) + ':subj miss ' + subjectPart; continue; }
-        if (headerText.indexOf(dayName) === -1) { lastReason = 'col' + (c + 1) + ':day miss ' + dayName; continue; }
-
-        var timeMatched = false;
-        if (timeStr && headerText.indexOf(timeStr) !== -1) {
-          timeMatched = true;
-        } else if (startHr && headerText.indexOf(startHr + '.') !== -1) {
-          timeMatched = true;
-        }
-        if (!timeMatched && timeStr) { lastReason = 'col' + (c + 1) + ':time miss ' + timeStr; continue; }
-
-        foundCourseName = headerText;
-        lastReason = 'MATCHED col' + (c + 1);
+    // Ensure headers exist up to Y (Col 25)
+    const headers = sheet.getRange(1, 1, 1, 25).getValues()[0];
+    if (!headers[13] || headers[13] !== 'ยอดเต็ม') {
+      const headerUpdates = [['ยอดเต็ม', 'ยอดชำระ', 'ค้างชำระ', 
+        'วันที่งวด 1', 'ยอดเงินงวด 1', 'ช่องทางงวด 1',
+        'วันที่งวด 2', 'ยอดเงินงวด 2', 'ช่องทางงวด 2',
+        'วันที่งวด 3', 'ยอดเงินงวด 3', 'ช่องทางงวด 3']];
+      sheet.getRange(1, 14, 1, 12).setValues(headerUpdates);
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(campData.timestamp) ||
+         (data[i][1] === (campData.camp_name || '') && data[i][2] === (campData.camp_year || '') && data[i][5] === (campData.std_name || ''))) {
+        rowIndex = i + 1;
         break;
       }
+    }
 
-      debugData.push([i + 1, courseColA, dateVal, dayName, term, timeStr, branchNum, grade, sheetName, 'YES', headerRow1.length, foundCourseName, lastReason]);
+    const priceInfo = getCampPrice(campData.camp_name, campData.std_grade, campData.camp_type, campData.daily_count);
+    const fullCost = parseFloat(campData.full) || priceInfo.full;
+    const paidAmount = parseFloat(campData.paid) || parseFloat(campData.amount_paid) || 0;
+    const outstanding = Math.max(0, fullCost - paidAmount);
+    const todayStr = new Date().toISOString().split('T')[0];
 
-      if (foundCourseName && foundCourseName !== courseColA) {
-        sheet3.getRange(i + 1, 1).setValue(foundCourseName);
-        changes++;
+    const rowData = [
+      campData.timestamp || new Date().toLocaleString('th-TH'),
+      campData.camp_name || '',
+      campData.camp_year || '',
+      campData.std_grade || '',
+      campData.class_section || '',
+      campData.std_name || '',
+      campData.std_nickname || '',
+      campData.parent_contact || campData.parent_phone || '',
+      campData.status || (outstanding <= 0 ? 'ชำระครบแล้ว' : (paidAmount > 0 ? 'มัดจำแล้ว' : 'รอตรวจสอบ')),
+      campData.std_school || '',
+      campData.medical_condition || '',
+      campData.shirt_size || '',
+      slipUrl,
+      fullCost,
+      paidAmount,
+      outstanding,
+      campData.pay_r1_date || (paidAmount > 0 ? todayStr : ''),
+      campData.pay_r1_amount || (paidAmount > 0 ? paidAmount : ''),
+      campData.pay_r1_channel || (paidAmount > 0 ? 'โอนเงิน (แนบสลิป)' : ''),
+      campData.pay_r2_date || '',
+      campData.pay_r2_amount || '',
+      campData.pay_r2_channel || '',
+      campData.pay_r3_date || '',
+      campData.pay_r3_amount || '',
+      campData.pay_r3_channel || ''
+    ];
+
+    if (rowIndex > -1) {
+      if (slipUrl === '-' && data[rowIndex - 1][12]) {
+         rowData[12] = data[rowIndex - 1][12];
+      }
+      sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
+    } else {
+      sheet.appendRow(rowData);
+    }
+    
+    return { success: true };
+  } catch (e) {
+    Logger.log('ERROR in saveCampStudentData: ' + e.message);
+    return { success: false, error: e.message };
+  }
+}
+
+// --- Get Camps Filter Options ---
+function getCampsFilterOptions() {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return { campNames: [], academicYears: [] };
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return { campNames: [], academicYears: [] };
+    
+    const campNamesSet = new Set();
+    const yearsSet = new Set();
+    
+    for (let i = 1; i < data.length; i++) {
+      const campName = (data[i][1] || '').toString().trim();
+      const year = (data[i][2] || '').toString().trim();
+      if (campName) campNamesSet.add(campName);
+      if (year) yearsSet.add(year);
+    }
+    
+    return {
+      campNames: Array.from(campNamesSet).sort(),
+      academicYears: Array.from(yearsSet).sort().reverse()
+    };
+  } catch (e) {
+    Logger.log('ERROR in getCampsFilterOptions: ' + e.message);
+    return { campNames: [], academicYears: [] };
+  }
+}
+
+// --- Get Camps Data for Employee Dashboard ---
+function getCampsData(academicYear, campName) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return [];
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return [];
+    
+    const results = [];
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const cName = row[1] || '';
+      const cGrade = row[3] || '';
+      const defaultPrice = getCampPrice(cName, cGrade, 'full', 1);
+      
+      let full = parseFloat(row[13]);
+      if (isNaN(full) || full <= 0) {
+        full = defaultPrice.full;
+      }
+      const paid = parseFloat(row[14]) || 0;
+      const outstanding = Math.max(0, full - paid);
+
+      const item = {
+        timestamp: row[0],
+        camp_name: cName,
+        camp_year: row[2],
+        std_grade: cGrade,
+        class_section: row[4],
+        std_name: row[5],
+        std_nickname: row[6],
+        parent_phone: row[7],
+        status: row[8] || (outstanding <= 0 ? 'ชำระครบแล้ว' : (paid > 0 ? 'มัดจำแล้ว' : 'รอตรวจสอบ')),
+        std_school: row[9] || '',
+        medical_condition: row[10] || '',
+        shirt_size: row[11] || '',
+        slip_url: row[12] || '',
+        full: full,
+        paid: paid,
+        outstanding: outstanding,
+        pay_r1_date: row[16] ? cleanSheetDate(row[16]) : '',
+        pay_r1_amount: parseFloat(row[17]) || 0,
+        pay_r1_channel: row[18] || '',
+        pay_r2_date: row[19] ? cleanSheetDate(row[19]) : '',
+        pay_r2_amount: parseFloat(row[20]) || 0,
+        pay_r2_channel: row[21] || '',
+        pay_r3_date: row[22] ? cleanSheetDate(row[22]) : '',
+        pay_r3_amount: parseFloat(row[23]) || 0,
+        pay_r3_channel: row[24] || ''
+      };
+      
+      let match = true;
+      if (academicYear && academicYear !== 'all' && String(item.camp_year) !== String(academicYear)) {
+        match = false;
+      }
+      if (campName && campName !== 'all' && String(item.camp_name) !== String(campName)) {
+        match = false;
+      }
+      
+      if (match) {
+        results.push(item);
       }
     }
-
-    if (debugData.length > 0) {
-      debugSheet.getRange(1, 1, debugData.length, debugData[0].length).setValues(debugData);
-    }
-
-    if (changes > 0) {
-      SpreadsheetApp.getUi().alert('\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08', '\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\u0e0a\u0e37\u0e48\u0e2d\u0e04\u0e2d\u0e23\u0e4c\u0e2a\u0e40\u0e23\u0e35\u0e22\u0e1a\u0e23\u0e49\u0e2d\u0e22\u0e41\u0e25\u0e49\u0e27 ' + changes + ' \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23', SpreadsheetApp.getUi().ButtonSet.OK);
-    } else {
-      SpreadsheetApp.getUi().alert('\u0e41\u0e08\u0e49\u0e07\u0e40\u0e15\u0e37\u0e2d\u0e19', '\u0e44\u0e21\u0e48\u0e1e\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\n\u0e01\u0e23\u0e38\u0e13\u0e32\u0e14\u0e39\u0e0a\u0e35\u0e15 DebugLog \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e15\u0e23\u0e27\u0e08\u0e2a\u0e2d\u0e1a\u0e2a\u0e32\u0e40\u0e2b\u0e15\u0e38', SpreadsheetApp.getUi().ButtonSet.OK);
-    }
+    
+    return results.reverse();
+  } catch (e) {
+    Logger.log('ERROR in getCampsData: ' + e.message);
+    return {error: e.message};
   }
+}
 
-
-  // --- NEW BACKEND FUNCTIONS FOR PAYMENT SEARCH AND SLIP SUBMISSION ---
-  function searchStudentPayment(studentName) {
+// --- Update Camp Status ---
+function updateCampStatus(timestamp, newStatus) {
+  try {
     const db = getDb();
-    let results = {
-      regular: [],
-      camp: []
-    };
-    if (!studentName || studentName.trim() === '') return results;
-    const searchName = studentName.trim().toLowerCase();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return {success: false, error: 'ไม่พบชีทลงทะเบียนค่าย'};
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return {success: false, error: 'ไม่มีข้อมูลในชีท'};
+    
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(timestamp)) {
+        sheet.getRange(i + 1, 9).setValue(newStatus);
+        return {success: true};
+      }
+    }
+    
+    return {success: false, error: 'ไม่พบข้อมูลนักเรียนที่ต้องการอัปเดต'};
+  } catch (e) {
+    Logger.log('ERROR in updateCampStatus: ' + e.message);
+    return {success: false, error: e.message};
+  }
+}
 
-    const statusSheet = db.getSheetByName('StatusDB');
-    if (statusSheet) {
-      const data = statusSheet.getDataRange().getValues();
-      const headers = data[0];
-      const idIdx = headers.indexOf('ID');
-      const nameIdx = headers.indexOf('ชื่อ-นามสกุล');
-      const courseIdx = headers.indexOf('สาขาเรียน');
-      const costIdx = headers.indexOf('ค่าเรียน');
-      const paidIdx = headers.indexOf('ยอดจ่ายมา');
-      const remainIdx = headers.indexOf('คงเหลือ');
+// --- Delete Camp Student Record Directly ---
+function deleteCampStudentByTimestamp(timestamp) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return {success: false, error: 'ไม่พบชีทลงทะเบียนค่าย'};
+    
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(timestamp)) {
+        sheet.deleteRow(i + 1);
+        return {success: true};
+      }
+    }
+    return {success: false, error: 'ไม่พบรายการที่ต้องการลบ'};
+  } catch (e) {
+    Logger.log('ERROR in deleteCampStudentByTimestamp: ' + e.message);
+    return {success: false, error: e.message};
+  }
+}
 
-      if (nameIdx !== -1) {
-        for (let i = 1; i < data.length; i++) {
-          let row = data[i];
-          let name = String(row[nameIdx] || '').trim().toLowerCase();
-          if (name.includes(searchName)) {
-            results.regular.push({
+// --- Update Student Camp Data (Edit from Staff Manage Modal) ---
+function updateCampStudentData(timestamp, updatedData) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return {success: false, error: 'ไม่พบชีทลงทะเบียนค่าย'};
+    
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(timestamp)) {
+        const rIndex = i + 1;
+        const full = parseFloat(updatedData.full) || 0;
+        const paid = parseFloat(updatedData.paid) || 0;
+        const outstanding = Math.max(0, full - paid);
+
+        const rowUpdates = [
+          [
+            data[i][0], // Timestamp
+            updatedData.camp_name || data[i][1],
+            updatedData.camp_year || data[i][2],
+            updatedData.std_grade || data[i][3],
+            updatedData.class_section || data[i][4],
+            updatedData.std_name || data[i][5],
+            updatedData.std_nickname || data[i][6],
+            updatedData.parent_phone || data[i][7],
+            updatedData.status || data[i][8],
+            updatedData.std_school || data[i][9],
+            updatedData.medical_condition || data[i][10],
+            updatedData.shirt_size || data[i][11],
+            updatedData.slip_url || data[i][12],
+            full,
+            paid,
+            outstanding,
+            updatedData.pay_r1_date || '',
+            updatedData.pay_r1_amount || '',
+            updatedData.pay_r1_channel || '',
+            updatedData.pay_r2_date || '',
+            updatedData.pay_r2_amount || '',
+            updatedData.pay_r2_channel || '',
+            updatedData.pay_r3_date || '',
+            updatedData.pay_r3_amount || '',
+            updatedData.pay_r3_channel || ''
+          ]
+        ];
+        sheet.getRange(rIndex, 1, 1, 25).setValues(rowUpdates);
+        return {success: true};
+      }
+    }
+    return {success: false, error: 'ไม่พบรายการนักเรียน'};
+  } catch (e) {
+    Logger.log('ERROR in updateCampStudentData: ' + e.message);
+    return {success: false, error: e.message};
+  }
+}
+
+// --- Save Camp Payment ---
+function saveCampPayment(timestamp, paymentData) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return {success: false, error: 'ไม่พบชีทลงทะเบียนค่าย'};
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return {success: false, error: 'ไม่มีข้อมูลในชีท'};
+    
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(timestamp)) {
+        const rIndex = i + 1;
+        const rowUpdates = [
+          [
+            paymentData.full || 0,
+            paymentData.paid || 0,
+            paymentData.outstanding || 0,
+            paymentData.pay_r1_date || '',
+            paymentData.pay_r1_amount || '',
+            paymentData.pay_r1_channel || '',
+            paymentData.pay_r2_date || '',
+            paymentData.pay_r2_amount || '',
+            paymentData.pay_r2_channel || '',
+            paymentData.pay_r3_date || '',
+            paymentData.pay_r3_amount || '',
+            paymentData.pay_r3_channel || ''
+          ]
+        ];
+        sheet.getRange(rIndex, 14, 1, 12).setValues(rowUpdates);
+        
+        if (paymentData.status) {
+          sheet.getRange(rIndex, 9).setValue(paymentData.status);
+        }
+        
+        return {success: true};
+      }
+    }
+    
+    return {success: false, error: 'ไม่พบข้อมูลนักเรียนที่ต้องการอัปเดต'};
+  } catch (e) {
+    Logger.log('ERROR in saveCampPayment: ' + e.message);
+    return {success: false, error: e.message};
+  }
+}
+
+// --- Search Unpaid Student Payment (Both Regular & Camp) ---
+function searchStudentPayment(studentName) {
+  const db = getDb();
+  let results = {
+    regular: [],
+    camp: []
+  };
+  if (!studentName || studentName.trim() === '') return results;
+  const searchName = studentName.trim().toLowerCase();
+
+  const statusSheet = db.getSheetByName('StatusDB');
+  if (statusSheet) {
+    const data = statusSheet.getDataRange().getValues();
+    const headers = data[0];
+    const idIdx = headers.indexOf('ID');
+    const nameIdx = headers.indexOf('ชื่อ-นามสกุล');
+    const courseIdx = headers.indexOf('สาขาเรียน');
+    const costIdx = headers.indexOf('ค่าเรียน');
+    const paidIdx = headers.indexOf('ยอดจ่ายมา');
+    const remainIdx = headers.indexOf('คงเหลือ');
+    
+    if (nameIdx !== -1) {
+      for (let i = 1; i < data.length; i++) {
+        let row = data[i];
+        let name = String(row[nameIdx] || '').trim().toLowerCase();
+        if (name.includes(searchName)) {
+           let cost = costIdx !== -1 ? (parseFloat(row[costIdx]) || 0) : 0;
+           let paid = paidIdx !== -1 ? (parseFloat(row[paidIdx]) || 0) : 0;
+           let remaining = remainIdx !== -1 ? (parseFloat(row[remainIdx]) || 0) : (cost - paid);
+           results.regular.push({
               id: idIdx !== -1 ? (row[idIdx] || ('R' + i)) : ('R' + i),
               name: String(row[nameIdx] || ''),
               course: courseIdx !== -1 ? String(row[courseIdx] || '-') : '-',
-              cost: costIdx !== -1 ? (parseFloat(row[costIdx]) || 0) : 0,
-              paid: paidIdx !== -1 ? (parseFloat(row[paidIdx]) || 0) : 0,
-              remaining: remainIdx !== -1 ? (parseFloat(row[remainIdx]) || 0) : 0
-            });
-          }
+              cost: cost,
+              paid: paid,
+              remaining: remaining
+           });
         }
       }
-    }
-
-    const campSheet = db.getSheetByName('ลงทะเบียนค่าย');
-    if (campSheet) {
-      const data = campSheet.getDataRange().getValues();
-      const headers = data[0];
-      const nameIdx = headers.indexOf('ชื่อ-นามสกุล');
-      const campNameIdx = headers.indexOf('ชื่อค่าย');
-      const gradeIdx = headers.indexOf('ระดับชั้น');
-
-      if (nameIdx !== -1) {
-        for (let i = 1; i < data.length; i++) {
-          let row = data[i];
-          let name = String(row[nameIdx] || '').trim().toLowerCase();
-          if (name.includes(searchName)) {
-            let cName = campNameIdx !== -1 ? String(row[campNameIdx] || '') : '';
-            let cGrade = gradeIdx !== -1 ? String(row[gradeIdx] || '') : '';
-            let costFull = 0;
-            let costDaily = 0;
-            if (cName.includes('เมษายน')) {
-              costFull = 4400; costDaily = 1700;
-            } else if (cName.includes('ตุลาคม')) {
-              costFull = 4400; costDaily = 1700;
-            } else if (cName.includes('สานฝันปั้นน้อง')) {
-              if (cGrade.includes('ป.6')) { costFull = 7900; costDaily = 1700; }
-              else if (cGrade.includes('ม.3')) { costFull = 8900; costDaily = 1900; }
-            }
-
-            results.camp.push({
-              id: 'C' + i,
-              name: String(row[nameIdx] || ''),
-              campName: cName,
-              grade: cGrade,
-              costFull: costFull,
-              costDaily: costDaily
-            });
-          }
-        }
-      }
-    }
-
-    return results;
-  }
-
-  function submitPaymentSlipSearch(payload) {
-    try {
-      const db = getDb();
-      let slipUrl = '-';
-
-      if (payload.fileData && payload.fileData.base64) {
-        let folder;
-        const folderName = 'data_PookPik_Tutor_Slips';
-        const props = PropertiesService.getScriptProperties();
-        const folderId = props.getProperty('SLIP_FOLDER_ID');
-
-        if (folderId) {
-          try {
-            folder = DriveApp.getFolderById(folderId);
-          } catch (e) {
-            folder = null;
-          }
-        }
-        if (!folder) {
-          const folders = DriveApp.getFoldersByName(folderName);
-          if (folders.hasNext()) {
-            folder = folders.next();
-          } else {
-            folder = DriveApp.createFolder(folderName);
-          }
-          props.setProperty('SLIP_FOLDER_ID', folder.getId());
-        }
-        const content = Utilities.base64Decode(payload.fileData.base64);
-        const blob = Utilities.newBlob(content, payload.fileData.mimeType, 'payment_slip_' + Date.now() + '_' + payload.fileData.fileName);
-        const file = folder.createFile(blob);
-        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-        slipUrl = file.getUrl();
-      }
-
-      let sheet = db.getSheetByName('แจ้งชำระเงิน');
-      if (!sheet) {
-        sheet = db.insertSheet('แจ้งชำระเงิน');
-        sheet.appendRow(['Timestamp', 'ชื่อ-นามสกุล', 'รายการที่เลือก', 'ยอดรวมที่ต้องชำระ', 'ยอดที่โอน', 'ลิงก์สลิป', 'สถานะ']);
-        sheet.getRange("A1:G1").setFontWeight("bold").setBackground("#e0e7ff");
-        sheet.setFrozenRows(1);
-      }
-
-      sheet.appendRow([
-        payload.timestamp || new Date().toLocaleString('th-TH'),
-        payload.std_name || '',
-        payload.selected_items || '',
-        payload.total_amount || 0,
-        payload.transfer_amount || 0,
-        slipUrl,
-        'รอตรวจสอบ'
-      ]);
-
-      return { success: true };
-    } catch (e) {
-      Logger.log('ERROR in submitPaymentSlipSearch: ' + e.message);
-      return { success: false, error: e.message };
     }
   }
 
-  function verifySlipImage(url) {
-    try {
-      const props = PropertiesService.getScriptProperties();
-      const apiKey = props.getProperty('GEMINI_API_KEY');
-      if (!apiKey) {
-        return { success: false, error: 'ไม่พบ API Key สำหรับสแกนสลิป โปรดติดต่อแอดมินให้ตั้งค่า GEMINI_API_KEY ใน Script Properties' };
-      }
-
-      let fileId = '';
-      if (url.includes('id=')) {
-        fileId = url.split('id=')[1].split('&')[0];
-      } else if (url.includes('/d/')) {
-        fileId = url.split('/d/')[1].split('/')[0];
-      }
-
-      if (!fileId) return { success: false, error: 'ไม่สามารถดึง File ID จาก URL สลิปได้' };
-
-      const file = DriveApp.getFileById(fileId);
-      const mimeType = file.getMimeType();
-      const base64Data = Utilities.base64Encode(file.getBlob().getBytes());
-
-      const apiURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey;
-
-      const payload = {
-        contents: [{
-          parts: [
-            { text: 'Extract information from this bank transfer slip image. Return ONLY a JSON object with no markdown and no code block. The JSON keys must be exactly: amount (number), date (string in format DD/MM/YYYY), time (string in format HH:MM), channel (string, the name of the destination bank or channel). If you cannot find a value, use null.' },
-            { inline_data: { mime_type: mimeType, data: base64Data } }
-          ]
-        }],
-        generationConfig: {
-          temperature: 0,
-          response_mime_type: 'application/json'
-        }
-      };
-
-      const options = {
-        method: 'post',
-        contentType: 'application/json',
-        payload: JSON.stringify(payload),
-        muteHttpExceptions: true
-      };
-
-      const response = UrlFetchApp.fetch(apiURL, options);
-      const responseCode = response.getResponseCode();
-      const resultText = response.getContentText();
-
-      if (responseCode !== 200) {
-        return { success: false, error: 'Gemini API Error: ' + resultText };
-      }
-
-      const resultJson = JSON.parse(resultText);
-      if (!resultJson.candidates || resultJson.candidates.length === 0) {
-        return { success: false, error: 'ไม่สามารถอ่านสลิปได้' };
-      }
-
-      const textOutput = resultJson.candidates[0].content.parts[0].text;
-      const extractedData = JSON.parse(textOutput);
-
-      return { success: true, data: extractedData };
-    } catch (e) {
-      Logger.log('ERROR in verifySlipImage: ' + e.message);
-      return { success: false, error: e.message };
-    }
-  } function deleteCampStudentByTimestamp(timestampStr) {
-    try {
-      const ss = SpreadsheetApp.getActiveSpreadsheet();
-      const sheet = ss.getSheetByName('ลงทะเบียนค่าย');
-      if (!sheet) return { success: false, error: "ไม่พบชีต ลงทะเบียนค่าย" };
-
-      const data = sheet.getDataRange().getValues();
-      // Start from row 1 (index 1) assuming row 0 is header
+  const campSheet = db.getSheetByName('ลงทะเบียนค่าย');
+  if (campSheet) {
+    const data = campSheet.getDataRange().getValues();
+    if (data.length > 1) {
       for (let i = 1; i < data.length; i++) {
-        if (String(data[i][0]) === String(timestampStr)) {
-          sheet.deleteRow(i + 1);
-          return { success: true };
+        let row = data[i];
+        let name = String(row[5] || '').trim().toLowerCase(); // Col F = std_name
+        if (name.includes(searchName)) {
+           let cName = String(row[1] || '');
+           let cGrade = String(row[3] || '');
+           let defaultPrice = getCampPrice(cName, cGrade, 'full', 1);
+           
+           let full = parseFloat(row[13]);
+           if (isNaN(full) || full <= 0) full = defaultPrice.full;
+           let paid = parseFloat(row[14]) || 0;
+           let remaining = Math.max(0, full - paid);
+           let status = String(row[8] || '');
+
+           results.camp.push({
+              timestamp: row[0],
+              id: 'C' + i,
+              name: String(row[5] || ''),
+              nickname: String(row[6] || ''),
+              campName: cName,
+              year: String(row[2] || ''),
+              grade: cGrade,
+              room: String(row[4] || ''),
+              costFull: full,
+              paid: paid,
+              remaining: remaining,
+              status: status || (remaining <= 0 ? 'ชำระครบแล้ว' : 'ค้างชำระ')
+           });
         }
       }
-      return { success: false, error: "ไม่พบข้อมูลที่ต้องการลบ" };
-    } catch (e) {
-      return { success: false, error: e.message };
     }
-  }
-  function cleanupOldSessionsAndProperties() {
-    var props = PropertiesService.getScriptProperties();
-    var allProps = props.getProperties();
-    var count = 0;
-    for (var key in allProps) {
-      if (key.indexOf('active_session_tutor_') === 0) {
-        props.deleteProperty(key);
-        count++;
-      }
-    }
-    return 'Deleted ' + count + ' old session properties. You can now edit properties in the UI.';
   }
 
-  function setGeminiApiKeyProgrammatically() {
-    // แทนที่ 'ใส่_API_KEY_ที่นี่' ด้วย API Key ของคุณ
-    var myApiKey = 'ใส่_API_KEY_ที่นี่';
-    PropertiesService.getScriptProperties().setProperty('GEMINI_API_KEY', myApiKey);
+  return results;
+}
+
+// --- Submit Payment Slip from Search Screen (Updates existing student record) ---
+function confirmSearchPayment(payload) {
+  try {
+    const db = getDb();
+    let slipUrl = '-';
+
+    if (payload.fileData && payload.fileData.base64) {
+      let folder;
+      const folderName = 'data_PookPik_Tutor_Slips';
+      const props = PropertiesService.getScriptProperties();
+      const folderId = props.getProperty('SLIP_FOLDER_ID');
+      
+      if (folderId) {
+        try {
+          folder = DriveApp.getFolderById(folderId);
+        } catch(e) {
+          folder = null;
+        }
+      }
+      if (!folder) {
+        const folders = DriveApp.getFoldersByName(folderName);
+        if (folders.hasNext()) {
+          folder = folders.next();
+        } else {
+          folder = DriveApp.createFolder(folderName);
+        }
+        props.setProperty('SLIP_FOLDER_ID', folder.getId());
+      }
+      const content = Utilities.base64Decode(payload.fileData.base64);
+      const blob = Utilities.newBlob(content, payload.fileData.mimeType, 'payment_slip_' + Date.now() + '_' + payload.fileData.fileName);
+      const file = folder.createFile(blob);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      slipUrl = file.getUrl();
+    }
+
+    if (payload.camp_items && payload.camp_items.length > 0) {
+      const campSheet = db.getSheetByName('ลงทะเบียนค่าย');
+      if (campSheet) {
+        const data = campSheet.getDataRange().getValues();
+        payload.camp_items.forEach(item => {
+          for (let i = 1; i < data.length; i++) {
+            if (String(data[i][0]) === String(item.timestamp) || 
+               (data[i][5] === item.name && data[i][1] === item.campName)) {
+              const rIndex = i + 1;
+              const currentPaid = parseFloat(data[i][14]) || 0;
+              const transferAmt = parseFloat(item.amount) || 0;
+              const newPaid = currentPaid + transferAmt;
+              const fullCost = parseFloat(data[i][13]) || item.costFull || 0;
+              const newOutstanding = Math.max(0, fullCost - newPaid);
+              const todayStr = new Date().toISOString().split('T')[0];
+
+              campSheet.getRange(rIndex, 15).setValue(newPaid);
+              campSheet.getRange(rIndex, 16).setValue(newOutstanding);
+              
+              if (slipUrl !== '-') {
+                campSheet.getRange(rIndex, 13).setValue(slipUrl);
+              }
+              
+              const newStatus = (newOutstanding <= 0) ? 'ชำระครบแล้ว' : 'มัดจำแล้ว';
+              campSheet.getRange(rIndex, 9).setValue(newStatus);
+
+              const pay1Amt = parseFloat(data[i][17]) || 0;
+              if (pay1Amt === 0) {
+                campSheet.getRange(rIndex, 17).setValue(todayStr);
+                campSheet.getRange(rIndex, 18).setValue(transferAmt);
+                campSheet.getRange(rIndex, 19).setValue('โอนเงิน (สลิป)');
+              } else {
+                campSheet.getRange(rIndex, 20).setValue(todayStr);
+                campSheet.getRange(rIndex, 21).setValue(transferAmt);
+                campSheet.getRange(rIndex, 22).setValue('โอนเงิน (สลิป)');
+              }
+              break;
+            }
+          }
+        });
+      }
+    }
+
+    let sheet = db.getSheetByName('แจ้งชำระเงิน');
+    if (!sheet) {
+      sheet = db.insertSheet('แจ้งชำระเงิน');
+      sheet.appendRow(['Timestamp', 'ชื่อ-นามสกุล', 'รายการที่เลือก', 'ยอดรวมที่ต้องชำระ', 'ยอดที่โอน', 'ลิงก์สลิป', 'สถานะ']);
+      sheet.getRange("A1:G1").setFontWeight("bold").setBackground("#e0e7ff");
+      sheet.setFrozenRows(1);
+    }
+    
+    sheet.appendRow([
+      payload.timestamp || new Date().toLocaleString('th-TH'),
+      payload.std_name || '',
+      payload.selected_items || '',
+      payload.total_amount || 0,
+      payload.transfer_amount || 0,
+      slipUrl,
+      'รอตรวจสอบ'
+    ]);
+
+    return { success: true };
+  } catch (e) {
+    Logger.log('ERROR in confirmSearchPayment: ' + e.message);
+    return { success: false, error: e.message };
   }
+}

@@ -1,0 +1,99 @@
+      <div class="view-panel" id="camps_panel" style="display: none;">
+            <div class="toolbar" style="padding: 8px 12px; margin-bottom: 15px;">
+              <div class="filter-actions" style="flex-grow: 1; justify-content: flex-start; gap: 6px; flex-wrap: wrap; align-items: center;">
+                <div class="d-flex align-items-center" style="gap: 5px;">
+                  <label for="camps_year_select" style="margin-bottom:0; font-size: 0.85rem;">ปีการศึกษา:</label>
+                  <select id="camps_year_select" class="form-select form-select-sm" style="width: 120px;" onchange="loadCampsData()">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="2569">2569</option>
+                    <option value="2570">2570</option>
+                    <option value="2571">2571</option>
+                    <option value="2572">2572</option>
+                    <option value="2573">2573</option>
+                  </select>
+                </div>
+                
+                <div class="d-flex align-items-center" style="gap: 5px; margin-left: 10px;">
+                  <label for="camps_name_select" style="margin-bottom:0; font-size: 0.85rem;">ชื่อค่าย:</label>
+                  <select id="camps_name_select" class="form-select form-select-sm" style="width: 240px;" onchange="loadCampsData()">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="ค่ายเตรียมความพร้อม(เมษายน)">ค่ายเตรียมความพร้อม(เมษายน)</option>
+                    <option value="ค่ายวางแผนติดspeed(ตุลาคม)">ค่ายวางแผนติดspeed(ตุลาคม)</option>
+                    <option value="ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)">ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)</option>
+                    <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1</option>
+                    <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2</option>
+                  </select>
+                </div>
+                
+                <button class="btn btn-primary btn-sm ms-2" onclick="loadCampsData()" style="padding: 4px 10px; font-size: 0.8rem;">
+                  🔄 รีเฟรชข้อมูล
+                </button>
+              </div>
+              
+              <div class="panel-actions">
+                <a href="register.html" target="_blank" class="btn btn-success btn-sm" style="text-decoration: none; padding: 4px 10px; font-size: 0.8rem;">
+                  📋 เปิดหน้าลงทะเบียนค่าย
+                </a>
+              </div>
+            </div>
+            
+            <div class="table-container" style="max-height: calc(100vh - 180px); overflow-y: auto;">
+              <table class="table table-bordered table-hover custom-table" style="width: 100%;">
+                <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                  <tr>
+                    <th style="width: 110px;">วันที่สมัคร</th>
+                    <th style="width: 150px;">ชื่อค่าย</th>
+                    <th style="width: 70px;">ปี</th>
+                    <th style="width: 70px;">ชั้น</th>
+                    <th style="width: 90px;">ห้องเรียน</th>
+                    <th style="width: 160px;">ชื่อ-นามสกุล</th>
+                    <th style="width: 80px;">ชื่อเล่น</th>
+                    <th style="width: 110px;">เบอร์โทร</th>
+                    <th style="width: 130px;">โรงเรียน</th>
+                    <th style="width: 120px;">โรคประจำตัว</th>
+                    <th style="width: 70px;">เสื้อ</th>
+                    <th style="width: 70px;">สลิป</th>
+                    <th style="width: 90px; color:#dc2626;">ค้างชำระ</th>
+                    <th style="width: 80px;">จัดการ</th>
+                    <th style="width: 90px;">สถานะ</th>
+                    <th style="width: 50px;">ลบ</th>
+                  </tr>
+                </thead>
+                <tbody id="camps_table_body">
+                  <tr><td colspan="8" class="text-center">กำลังโหลดข้อมูล...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="view-panel" id="debtors_panel">
+            <div class="toolbar" style="margin-bottom: 15px;">
+              <div style="font-weight: 600; font-size: 1.2rem; color: var(--text-main);">🪙 ตรวจสอบและบันทึกค้างชำระเงินค่าเรียน</div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-primary" onclick="loadDebtors()">🔄 รีเซ็ตและดึงข้อมูลใหม่</button>
+              </div>
+            </div>
+            
+            <div class="glass-panel table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>นักเรียน (สาขา/ไลน์)</th>
+                    <th>ระดับชั้น / คอร์สเรียน</th>
+                    <th style="text-align: right;">ค่าเรียนทั้งหมด</th>
+                    <th style="text-align: right;">ส่วนลด</th>
+                    <th style="text-align: right;">ชำระแล้ว</th>
+                    <th style="text-align: right; color: var(--color-danger);">ยอดค้างชำระ</th>
+                    <th style="white-space: nowrap;">รูปแบบคลาส</th>
+                    <th style="white-space: nowrap;">วันที่ลงทะเบียน</th>
+                    <th>บันทึกยอดเงิน</th>
+                  </tr>
+                </thead>
+                <tbody id="debtors_tbody">
+                  <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 40px;">กำลังโหลดรายชื่อนักเรียนค้างชำระเงิน...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+      

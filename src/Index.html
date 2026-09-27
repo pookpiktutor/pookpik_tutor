@@ -998,14 +998,14 @@
 
               <div class="d-flex align-items-center" style="gap: 5px; margin-left: 10px;">
                 <label for="camps_name_select" style="margin-bottom:0; font-size: 0.85rem;">ชื่อค่าย:</label>
-                <select id="camps_name_select" class="form-select form-select-sm" style="width: 180px;"
-                  onchange="loadCampsData()">
-                  <option value="all">ทั้งหมด</option>
-                  <option value="ค่ายปิดเทอมตุลาคม">ค่ายปิดเทอมตุลาคม</option>
-                  <option value="ค่ายห้องพิเศษ">ค่ายห้องพิเศษ</option>
-                  <option value="ค่ายห้องปกติ">ค่ายห้องปกติ</option>
-                  <option value="ค่ายเมษายน">ค่ายเมษายน</option>
-                </select>
+                <select id="camps_name_select" class="form-select form-select-sm" style="width: 240px;" onchange="loadCampsData()">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="ค่ายเตรียมความพร้อม(เมษายน)">ค่ายเตรียมความพร้อม(เมษายน)</option>
+                    <option value="ค่ายวางแผนติดspeed(ตุลาคม)">ค่ายวางแผนติดspeed(ตุลาคม)</option>
+                    <option value="ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)">ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)</option>
+                    <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1</option>
+                    <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2</option>
+                  </select>
               </div>
 
               <button class="btn btn-primary btn-sm ms-2" onclick="loadCampsData()"
@@ -1031,17 +1031,25 @@
           <div class="table-container" style="max-height: calc(100vh - 180px); overflow-y: auto;">
             <table class="table table-bordered table-hover custom-table" style="width: 100%;">
               <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
-                <tr>
-                  <th style="width: 120px;">วันที่สมัคร</th>
-                  <th style="width: 150px;">ชื่อค่าย</th>
-                  <th style="width: 80px;">ปีที่สมัครค่าย</th>
-                  <th style="width: 100px;">ระดับชั้น</th>
-                  <th style="width: 100px;">ห้องเรียน</th>
-                  <th style="width: 180px;">ชื่อ-นามสกุล</th>
-                  <th style="width: 80px;">ชื่อเล่น</th>
-                  <th style="width: 120px;">เบอร์โทรศัพท์</th>
-                </tr>
-              </thead>
+                  <tr>
+                    <th style="width: 110px;">วันที่สมัคร</th>
+                    <th style="width: 150px;">ชื่อค่าย</th>
+                    <th style="width: 70px;">ปี</th>
+                    <th style="width: 70px;">ชั้น</th>
+                    <th style="width: 90px;">ห้องเรียน</th>
+                    <th style="width: 160px;">ชื่อ-นามสกุล</th>
+                    <th style="width: 80px;">ชื่อเล่น</th>
+                    <th style="width: 110px;">เบอร์โทร</th>
+                    <th style="width: 130px;">โรงเรียน</th>
+                    <th style="width: 120px;">โรคประจำตัว</th>
+                    <th style="width: 70px;">เสื้อ</th>
+                    <th style="width: 70px;">สลิป</th>
+                    <th style="width: 90px; color:#dc2626;">ค้างชำระ</th>
+                    <th style="width: 80px;">จัดการ</th>
+                    <th style="width: 90px;">สถานะ</th>
+                    <th style="width: 50px;">ลบ</th>
+                  </tr>
+                </thead>
               <tbody id="camps_table_body">
                 <tr>
                   <td colspan="8" class="text-center">กำลังโหลดข้อมูล...</td>
