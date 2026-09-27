@@ -130,7 +130,7 @@ function processBgTaskQueue() {
 
   } else {
 
-     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbz3O7i5vtnmOUZZv2iITeE6kftxH5JeYeB0VlDtzV5Of3rRGGq4HKJ2ZV41JTU7UOcNCQ/exec';
+     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
 
      fetch(GAS_API_URL, {
 
@@ -180,7 +180,7 @@ function processBgTaskQueue() {
     window.google.script = window.google.script || {};
   }
 
-  const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbz3O7i5vtnmOUZZv2iITeE6kftxH5JeYeB0VlDtzV5Of3rRGGq4HKJ2ZV41JTU7UOcNCQ/exec';
+  const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
 
   function createGSRunner() {
     let successHandler = null;
@@ -1120,50 +1120,60 @@ function loadTeacherDailySchedule() {
 
       
 
-      const start = new Date(startVal + 'T00:00:00');
-
-      const end = new Date(endVal + 'T23:59:59');
-
+      const startTs = new Date(startVal + 'T00:00:00').getTime();
+      const endTs = new Date(endVal + 'T23:59:59').getTime();
       
+      const parseDateStr = (dStr) => {
+        if (!dStr) return 0;
+        let s = dStr.toString().trim();
+        const parts = s.split('/');
+        if (parts.length === 3) {
+          let y = parseInt(parts[2], 10);
+          if (y < 100) y += (y > 50 ? 1900 : 2000);
+          if (y > 2400) y -= 543;
+          return new Date(y, parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime();
+        }
+        const partsDash = s.split('-');
+        if (partsDash.length === 3) {
+          let y = parseInt(partsDash[0], 10);
+          if (y > 2400) y -= 543;
+          return new Date(y, parseInt(partsDash[1], 10) - 1, parseInt(partsDash[2], 10)).getTime();
+        }
+        const thaiMonths = {
+          'ม.ค.':0, 'มกราคม':0, 'ก.พ.':1, 'กุมภาพันธ์':1, 'มี.ค.':2, 'มีนาคม':2,
+          'เม.ย.':3, 'เมษายน':3, 'พ.ค.':4, 'พฤษภาคม':4, 'มิ.ย.':5, 'มิถุนายน':5,
+          'ก.ค.':6, 'กรกฎาคม':6, 'ส.ค.':7, 'สิงหาคม':7, 'ก.ย.':8, 'กันยายน':8,
+          'ต.ค.':9, 'ตุลาคม':9, 'พ.ย.':10, 'พฤศจิกายน':10, 'ธ.ค.':11, 'ธันวาคม':11
+        };
+        const tokens = s.split(/\s+/);
+        let d = null, m = null, y = null;
+        for (let i = 0; i < tokens.length; i++) {
+          let t = tokens[i];
+          if (/^\d{1,2}$/.test(t) && d === null) d = parseInt(t, 10);
+          else if (thaiMonths[t] !== undefined) m = thaiMonths[t];
+          else if (/^\d{2,4}$/.test(t) && d !== null && m !== null) {
+            y = parseInt(t, 10);
+            if (y < 100) y += 2500;
+            if (y > 2400) y -= 543;
+          }
+        }
+        if (d !== null && m !== null && y !== null) return new Date(y, m, d).getTime();
+        return new Date(s).getTime() || 0;
+      };
 
       const filtered = logs.filter(c => {
-
         if (!c.date) return false;
-
-        const parts = c.date.split('/');
-
-        if (parts.length !== 3) return false;
-
-        let y = parseInt(parts[2]);
-
-        if (y > 2400) y -= 543; // แปลง พ.ศ. → ค.ศ.
-
-        const cDate = new Date(y, parseInt(parts[1]) - 1, parseInt(parts[0]));
-
-        return cDate >= start && cDate <= end;
-
+        const cTs = parseDateStr(c.date);
+        return cTs >= startTs && cTs <= endTs;
       });
 
-      
-
       filtered.sort((a, b) => {
-
-        const partsA = a.date.split('/');
-
-        const partsB = b.date.split('/');
-
-        const dateA = new Date(parseInt(partsA[2]), parseInt(partsA[1]) - 1, parseInt(partsA[0]));
-
-        const dateB = new Date(parseInt(partsB[2]), parseInt(partsB[1]) - 1, parseInt(partsB[0]));
-
-        if (dateA.getTime() !== dateB.getTime()) {
-
-          return dateA - dateB; // Ascending order: earliest date first
-
+        const timeA = parseDateStr(a.date);
+        const timeB = parseDateStr(b.date);
+        if (timeA !== timeB) {
+          return timeA - timeB; // Ascending order: earliest date first
         }
-
-        return a.timeStart.localeCompare(b.timeStart);
-
+        return (a.timeStart || '').localeCompare(b.timeStart || '');
       });
 
       
@@ -1197,19 +1207,8 @@ function loadTeacherDailySchedule() {
       
 
       // Get dates in sorted order (earliest first, since we sorted filtered in ascending order)
-
       const sortedDates = Object.keys(groupedByDate).sort((a, b) => {
-
-        const partsA = a.split('/');
-
-        const partsB = b.split('/');
-
-        const dateA = new Date(parseInt(partsA[2]), parseInt(partsA[1]) - 1, parseInt(partsA[0]));
-
-        const dateB = new Date(parseInt(partsB[2]), parseInt(partsB[1]) - 1, parseInt(partsB[0]));
-
-        return dateA - dateB;
-
+        return parseDateStr(a) - parseDateStr(b);
       });
 
       
@@ -3276,6 +3275,22 @@ function cleanTimeStr(timeStr) {
   return str;
 
 }
+
+
+
+function getActiveBranchNum(branchStr) {
+
+  const str = (branchStr || (typeof state !== 'undefined' && state.activeBranchFilter) || 'สาขา1').toString();
+
+  if (str.includes('สาขา3') || str.includes('3')) return '3';
+
+  if (str.includes('สาขา2') || str.includes('2')) return '2';
+
+  return '1';
+
+}
+
+
 
 
 
@@ -6429,25 +6444,6 @@ function updateRoundFilterDropdown() {
     });
   }
 
-  // 2. Add fallback rounds with year (/69) if empty or database not loaded
-  if (foundRounds.size === 0) {
-    const curYearBE = (new Date().getFullYear() + 543).toString().slice(-2);
-    const baseRounds = [
-      'MIDTERM 1/' + curYearBE,
-      'MIDTERM 2/' + curYearBE,
-      'FINAL 1/' + curYearBE,
-      'FINAL 2/' + curYearBE,
-      'ปิดเทอม ต.ค./' + curYearBE,
-      'Summer/' + curYearBE,
-      'MIDTERM 1',
-      'MIDTERM 2',
-      'FINAL 1',
-      'FINAL 2',
-      'ปิดเทอม ต.ค.',
-      'Summer'
-    ];
-    baseRounds.forEach(r => foundRounds.add(r));
-  }
 
   // 3. Render options into dropdown
   Array.from(foundRounds).forEach(r => {
@@ -8152,13 +8148,11 @@ function renderMonthlyGrid(data) {
 
   const container = document.getElementById('monthly_grid_content');
 
-  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  const targetBranchNum = getActiveBranchNum(state.activeBranchFilter);
 
   const filteredRooms = (data.rooms || []).filter(room => {
 
-    const roomBranchClean = (room.branch || '').replace(/\s+/g, '');
-
-    return roomBranchClean === branchFilter;
+    return getActiveBranchNum(room.branch) === targetBranchNum;
 
   });
 
@@ -8857,27 +8851,66 @@ function loadDailyGrid(isSilent = false) {
 
 function renderDailyAttendanceSummary() {
   const container = document.getElementById('daily_attendance_summary_container');
-  if (!container) return;
 
-  
+  let dashboardContainer = document.getElementById('dashboard_daily_attendance_summary_container');
 
-  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  if (!dashboardContainer) {
 
-  const filteredLogs = (state.classLogs || []).filter(log => {
+    const dashGrid = document.querySelector('#dashboard_panel .grid-cols-3');
 
-    const logBranchClean = (log.roomBranch || '').replace(/\s+/g, '');
+    if (dashGrid) {
 
-    return logBranchClean.includes(branchFilter);
+      dashboardContainer = document.createElement('div');
+
+      dashboardContainer.id = 'dashboard_daily_attendance_summary_container';
+
+      dashboardContainer.style.cssText = 'grid-column: 1 / -1; margin-bottom: 20px; background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); overflow-x: auto; padding: 15px;';
+
+      dashGrid.insertBefore(dashboardContainer, dashGrid.firstChild);
+
+    }
+
+  }
+
+  if (!container && !dashboardContainer) return;
+
+  const targetBranchNum = getActiveBranchNum(state.activeBranchFilter);
+
+  const activeBranchRooms = (state.rooms || []).filter(room => {
+
+    return getActiveBranchNum(room.branch) === targetBranchNum;
 
   });
 
-  
+  const filteredLogs = (state.classLogs || []).filter(log => {
+
+    if (!log) return false;
+
+    const rb = log.roomBranch || log.branch || '';
+
+    if (getActiveBranchNum(rb) === targetBranchNum || rb.includes('สาขา' + targetBranchNum) || rb.includes('สาขา ' + targetBranchNum)) {
+
+      return true;
+
+    }
+
+    if (activeBranchRooms.length > 0) {
+
+      return activeBranchRooms.some(room => matchRoomAndBranch(log.roomBranch, room.roomName, room.branch));
+
+    }
+
+    return targetBranchNum === '1';
+
+  });
 
   if (filteredLogs.length === 0) {
 
     const emptyHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">ไม่มีข้อมูลคลาสเรียนในสาขานี้สำหรับวันนี้</div>`;
 
     if (container) container.innerHTML = emptyHTML;
+
+    if (dashboardContainer) dashboardContainer.innerHTML = emptyHTML;
 
     return;
 
@@ -9218,10 +9251,9 @@ function renderDailyGrid() {
 
   renderDailyAttendanceSummary();
 
-  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  const targetBranchNum = getActiveBranchNum(state.activeBranchFilter);
   const filteredRooms = (state.rooms || []).filter(room => {
-    const roomBranchClean = (room.branch || '').replace(/\s+/g, '');
-    return roomBranchClean.includes(branchFilter);
+    return getActiveBranchNum(room.branch) === targetBranchNum;
   });
 
   if (filteredRooms.length === 0) {
@@ -16025,6 +16057,32 @@ function isCourseFullyEvaluated(c, evals) {
   return false;
 }
 
+// Month-based course keyword filter for evaluations
+// Returns a keyword filter string for the given month, or null if no filter (show all)
+function getEvalCourseFilterByMonth(month) {
+  switch (month) {
+    case 4: 
+    case 5:
+    case 6:
+      return 'summer';           // เมษายน-มิถุนายน → Summer
+    case 7:  
+    case 8:
+      return 'midterm 1';        // กรกฎาคม-สิงหาคม → MIDTERM 1/...
+    case 9:  
+      return 'final 1';          // กันยายน → FINAL 1/...
+    case 10: 
+      return 'ปิดเทอม ต.ค.';     // ตุลาคม → ปิดเทอม ต.ค./...
+    case 11:
+    case 12: 
+    case 1:
+      return 'midterm 2';        // พฤศจิกายน-มกราคม → MIDTERM 2/...
+    case 2:  
+    case 3:
+      return 'final 2';          // กุมภาพันธ์-มีนาคม → FINAL 2/...
+    default: return null;
+  }
+}
+
 function populateTeacherCourseDropdown() {
   const courseSelect = document.getElementById('eval_course');
   const studentSelect = document.getElementById('eval_student');
@@ -16082,7 +16140,13 @@ function initEvaluationForm() {
 
   const evalDateEl = document.getElementById('eval_date');
 
-  if (evalDateEl) evalDateEl.value = dateStr;
+  if (evalDateEl) {
+    evalDateEl.value = dateStr;
+    // Re-populate course dropdown when date changes (month-based filtering)
+    evalDateEl.addEventListener('change', function() {
+      populateTeacherCourseDropdown();
+    });
+  }
 
   
 
@@ -17033,7 +17097,7 @@ function deleteAdminEvaluation(evalId) {
 
             Swal.fire('สำเร็จ', 'ลบใบประเมินเรียบร้อยแล้ว', 'success');
 
-            loadAdminEvaluationsDashboard(); // Reload the list
+            loadAdminEvaluations(); // Reload the list
 
           } else {
 
@@ -19165,13 +19229,14 @@ function submitNewPayment() {
   }
   
   const paymentData = {
-    StudentID: studentId,
-    Amount: amount,
-    Date: document.getElementById('new_payment_date').value,
-    Channel: document.getElementById('new_payment_channel').value,
-    Receiver: document.getElementById('new_payment_receiver').value,
-    Round: document.getElementById('new_payment_round').value,
-    Note: document.getElementById('new_payment_note').value,
+    studentId: studentId,
+    amount: amount,
+    date: document.getElementById('new_payment_date').value,
+    time: document.getElementById('new_payment_time') ? document.getElementById('new_payment_time').value : '',
+    channel: document.getElementById('new_payment_channel').value,
+    receiver: document.getElementById('new_payment_receiver').value,
+    roundLabel: document.getElementById('new_payment_round').value,
+    note: document.getElementById('new_payment_note').value,
     LogUser: state.currentUser ? state.currentUser.username : 'Unknown'
   };
   
@@ -19192,7 +19257,7 @@ function submitNewPayment() {
       setLoading(false);
       showToast('การเชื่อมต่อล้มเหลว: ' + err.message, 'error');
     })
-    .addPayment(paymentData);
+    .addPaymentForStudent(paymentData, paymentData.LogUser);
 }
 
 function deletePayment(paymentId) {

@@ -3278,6 +3278,22 @@ function cleanTimeStr(timeStr) {
 
 
 
+function getActiveBranchNum(branchStr) {
+
+  const str = (branchStr || (typeof state !== 'undefined' && state.activeBranchFilter) || 'สาขา1').toString();
+
+  if (str.includes('สาขา3') || str.includes('3')) return '3';
+
+  if (str.includes('สาขา2') || str.includes('2')) return '2';
+
+  return '1';
+
+}
+
+
+
+
+
 function matchRoomAndBranch(roomBranch, roomName, branchName) {
 
   if (!roomBranch) return false;
@@ -8132,13 +8148,11 @@ function renderMonthlyGrid(data) {
 
   const container = document.getElementById('monthly_grid_content');
 
-  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  const targetBranchNum = getActiveBranchNum(state.activeBranchFilter);
 
   const filteredRooms = (data.rooms || []).filter(room => {
 
-    const roomBranchClean = (room.branch || '').replace(/\s+/g, '');
-
-    return roomBranchClean === branchFilter;
+    return getActiveBranchNum(room.branch) === targetBranchNum;
 
   });
 
@@ -8837,27 +8851,66 @@ function loadDailyGrid(isSilent = false) {
 
 function renderDailyAttendanceSummary() {
   const container = document.getElementById('daily_attendance_summary_container');
-  if (!container) return;
 
-  
+  let dashboardContainer = document.getElementById('dashboard_daily_attendance_summary_container');
 
-  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  if (!dashboardContainer) {
 
-  const filteredLogs = (state.classLogs || []).filter(log => {
+    const dashGrid = document.querySelector('#dashboard_panel .grid-cols-3');
 
-    const logBranchClean = (log.roomBranch || '').replace(/\s+/g, '');
+    if (dashGrid) {
 
-    return logBranchClean.includes(branchFilter);
+      dashboardContainer = document.createElement('div');
+
+      dashboardContainer.id = 'dashboard_daily_attendance_summary_container';
+
+      dashboardContainer.style.cssText = 'grid-column: 1 / -1; margin-bottom: 20px; background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); overflow-x: auto; padding: 15px;';
+
+      dashGrid.insertBefore(dashboardContainer, dashGrid.firstChild);
+
+    }
+
+  }
+
+  if (!container && !dashboardContainer) return;
+
+  const targetBranchNum = getActiveBranchNum(state.activeBranchFilter);
+
+  const activeBranchRooms = (state.rooms || []).filter(room => {
+
+    return getActiveBranchNum(room.branch) === targetBranchNum;
 
   });
 
-  
+  const filteredLogs = (state.classLogs || []).filter(log => {
+
+    if (!log) return false;
+
+    const rb = log.roomBranch || log.branch || '';
+
+    if (getActiveBranchNum(rb) === targetBranchNum || rb.includes('สาขา' + targetBranchNum) || rb.includes('สาขา ' + targetBranchNum)) {
+
+      return true;
+
+    }
+
+    if (activeBranchRooms.length > 0) {
+
+      return activeBranchRooms.some(room => matchRoomAndBranch(log.roomBranch, room.roomName, room.branch));
+
+    }
+
+    return targetBranchNum === '1';
+
+  });
 
   if (filteredLogs.length === 0) {
 
     const emptyHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">ไม่มีข้อมูลคลาสเรียนในสาขานี้สำหรับวันนี้</div>`;
 
     if (container) container.innerHTML = emptyHTML;
+
+    if (dashboardContainer) dashboardContainer.innerHTML = emptyHTML;
 
     return;
 
@@ -9198,10 +9251,9 @@ function renderDailyGrid() {
 
   renderDailyAttendanceSummary();
 
-  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  const targetBranchNum = getActiveBranchNum(state.activeBranchFilter);
   const filteredRooms = (state.rooms || []).filter(room => {
-    const roomBranchClean = (room.branch || '').replace(/\s+/g, '');
-    return roomBranchClean.includes(branchFilter);
+    return getActiveBranchNum(room.branch) === targetBranchNum;
   });
 
   if (filteredRooms.length === 0) {

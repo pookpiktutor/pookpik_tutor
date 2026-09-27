@@ -3282,6 +3282,22 @@ function cleanGMTString(dateStr) {
 }
 
 
+function getActiveBranchNum(branchStr) {
+
+  const str = (branchStr || (typeof state !== 'undefined' && state.activeBranchFilter) || 'สาขา1').toString();
+
+  if (str.includes('สาขา3') || str.includes('3')) return '3';
+
+  if (str.includes('สาขา2') || str.includes('2')) return '2';
+
+  return '1';
+
+}
+
+
+
+
+
 function matchRoomAndBranch(roomBranch, roomName, branchName) {
 
   if (!roomBranch) return false;
@@ -8274,13 +8290,11 @@ function renderMonthlyGrid(data) {
 
   const container = document.getElementById('monthly_grid_content');
 
-  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  const targetBranchNum = getActiveBranchNum(state.activeBranchFilter);
 
   const filteredRooms = (data.rooms || []).filter(room => {
 
-    const roomBranchClean = (room.branch || '').replace(/\s+/g, '');
-
-    return roomBranchClean === branchFilter;
+    return getActiveBranchNum(room.branch) === targetBranchNum;
 
   });
 
@@ -8986,13 +9000,35 @@ function renderDailyAttendanceSummary() {
 
   
 
-  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  const targetBranchNum = getActiveBranchNum(state.activeBranchFilter);
+
+  const activeBranchRooms = (state.rooms || []).filter(room => {
+
+    return getActiveBranchNum(room.branch) === targetBranchNum;
+
+  });
+
+
 
   const filteredLogs = (state.classLogs || []).filter(log => {
 
-    const logBranchClean = (log.roomBranch || '').replace(/\s+/g, '');
+    if (!log) return false;
 
-    return logBranchClean.includes(branchFilter);
+    const rb = log.roomBranch || log.branch || '';
+
+    if (getActiveBranchNum(rb) === targetBranchNum || rb.includes('สาขา' + targetBranchNum) || rb.includes('สาขา ' + targetBranchNum)) {
+
+      return true;
+
+    }
+
+    if (activeBranchRooms.length > 0) {
+
+      return activeBranchRooms.some(room => matchRoomAndBranch(log.roomBranch, room.roomName, room.branch));
+
+    }
+
+    return targetBranchNum === '1';
 
   });
 
@@ -9349,11 +9385,10 @@ function renderDailyGrid() {
 
   
 
-  const branchFilter = (state.activeBranchFilter || 'สาขา1').replace(/\s+/g, '');
+  const targetBranchNum = getActiveBranchNum(state.activeBranchFilter);
 
   const filteredRooms = (state.rooms || []).filter(room => {
-    const roomBranchClean = (room.branch || '').replace(/\s+/g, '');
-    return roomBranchClean.includes(branchFilter);
+    return getActiveBranchNum(room.branch) === targetBranchNum;
   });
   console.log("renderDailyGrid - activeBranchFilter:", state.activeBranchFilter);
   console.log("renderDailyGrid - branchFilter:", branchFilter);
