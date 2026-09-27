@@ -767,6 +767,10 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         </h3>
         <div style="display: flex; gap: 20px; margin-bottom: 14px; flex-wrap: wrap;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #1e293b;">
+            <input type="radio" name="camp_pay_mode" value="unpaid" onchange="toggleCampPayMode(); calculateCampCost();">
+            <span>ยังไม่ชำระเงิน</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #1e293b;">
             <input type="radio" name="camp_pay_mode" value="full" checked onchange="toggleCampPayMode(); calculateCampCost();">
             <span>ชำระเต็มจำนวน</span>
           </label>
@@ -776,19 +780,19 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           </label>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+        <div id="camp_pay_datetime_container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
           <div>
-            <label class="form-label">วันที่ชำระเงิน (วันที่โอน) <span>*</span></label>
+            <label class="form-label">วันที่ชำระเงิน (วันที่โอน)</label>
             <input type="date" id="camp_pay_date" class="form-input">
           </div>
           <div>
-            <label class="form-label">เวลาที่ชำระเงิน (เวลาที่โอน) <span>*</span></label>
+            <label class="form-label">เวลาที่ชำระเงิน (เวลาที่โอน)</label>
             <input type="time" id="camp_pay_time" class="form-input">
           </div>
         </div>
 
         <div id="camp_deposit_field_container" style="display: none; margin-bottom: 14px;">
-          <label class="form-label">ยอดเงินมัดจำ (ชำระครั้งแรก/ครั้งนี้) (บาท) <span>*</span></label>
+          <label class="form-label">ยอดเงินมัดจำ (ชำระครั้งแรก/ครั้งนี้) (บาท)</label>
           <input type="number" id="camp_deposit_amount_input" class="form-input" placeholder="ระบุยอดเงินชำระ เช่น 2000" oninput="calculateCampCost()">
         </div>
 
@@ -1580,8 +1584,19 @@ window.google.script.run = new Proxy({}, {
   }
 
   function toggleCampPayMode() {
-    const isDeposit = document.querySelector('input[name="camp_pay_mode"]:checked') && document.querySelector('input[name="camp_pay_mode"]:checked').value === 'deposit';
-    document.getElementById('camp_deposit_field_container').style.display = isDeposit ? 'block' : 'none';
+    const payModeEl = document.querySelector('input[name="camp_pay_mode"]:checked');
+    const payMode = payModeEl ? payModeEl.value : 'full';
+    const isDeposit = (payMode === 'deposit');
+    const isUnpaid = (payMode === 'unpaid');
+
+    const depositContainer = document.getElementById('camp_deposit_field_container');
+    if (depositContainer) depositContainer.style.display = isDeposit ? 'block' : 'none';
+
+    const dateTimeContainer = document.getElementById('camp_pay_datetime_container');
+    if (dateTimeContainer) dateTimeContainer.style.display = isUnpaid ? 'none' : 'grid';
+
+    const slipGroup = document.getElementById('camp_slip_upload_group');
+    if (slipGroup) slipGroup.style.display = isUnpaid ? 'none' : 'block';
   }
 
   let unpaidSlipFileData = null;
@@ -1802,7 +1817,9 @@ window.google.script.run = new Proxy({}, {
     let totalCost = (priceType === 'daily') ? (dailyRate * dailyDays) : baseFull;
     
     let payNow = totalCost;
-    if (payMode === 'deposit') {
+    if (payMode === 'unpaid') {
+      payNow = 0;
+    } else if (payMode === 'deposit') {
       const depInput = parseFloat(document.getElementById('camp_deposit_amount_input').value);
       payNow = !isNaN(depInput) && depInput > 0 ? depInput : 0;
     }
@@ -1860,7 +1877,9 @@ window.google.script.run = new Proxy({}, {
 
     let totalCost = (priceType === 'daily') ? (dailyRate * dailyDays) : baseFull;
     let payNow = totalCost;
-    if (payMode === 'deposit') {
+    if (payMode === 'unpaid') {
+      payNow = 0;
+    } else if (payMode === 'deposit') {
       const depInput = parseFloat(document.getElementById('camp_deposit_amount_input').value);
       payNow = !isNaN(depInput) && depInput > 0 ? depInput : 0;
     }
