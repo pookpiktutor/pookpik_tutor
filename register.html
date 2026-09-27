@@ -589,66 +589,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
     <form id="camp_form">
       <input type="hidden" id="camp_student_id" value="">
       
-      <div class="row-grid">
-        <div class="form-group">
-          <label class="form-label">เลือกค่ายที่สมัคร <span>*</span></label>
-          <select id="camp_name" class="form-select" required onchange="calculateCampCost()">
-            <option value="">-- เลือกค่าย --</option>
-            <option value="ค่ายเตรียมความพร้อม(เมษายน)">ค่ายเตรียมความพร้อม(เมษายน)</option>
-            <option value="ค่ายวางแผนติดspeed(ตุลาคม)">ค่ายวางแผนติดspeed(ตุลาคม)</option>
-            <option value="ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)">ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)</option>
-            <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1</option>
-            <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">ปีการศึกษา <span>*</span></label>
-          <select id="camp_year" class="form-select" required>
-            <option value="">-- เลือกปีการศึกษา --</option>
-            <!-- Generated via JS -->
-          </select>
-        </div>
-      </div>
-      
-      <div class="row-grid">
-        <div class="form-group">
-          <label class="form-label">ระดับชั้นเรียน <span>*</span></label>
-          <select id="camp_grade" class="form-select" required onchange="renderCampRooms(); calculateCampCost();">
-            <option value="">-- เลือกระดับชั้น --</option>
-            <option value="ป.6">ป.6</option>
-            <option value="ม.3">ม.3</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">ห้องเรียน <span>*</span></label>
-          <select id="camp_room" class="form-select" required>
-            <option value="">-- เลือกระดับชั้นก่อน --</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- รูปแบบการเรียนค่าย (เต็มค่าย / รายวัน) -->
-      <div class="row-grid" style="margin-top: 12px; margin-bottom: 16px;">
-        <div class="form-group" style="margin-bottom: 0;">
-          <label class="form-label">รูปแบบการเรียนค่าย <span>*</span></label>
-          <div style="display: flex; gap: 16px; margin-top: 6px; background: #ffffff; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: var(--radius-md);">
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; color: #1e293b;">
-              <input type="radio" name="camp_price_type" value="full" checked onchange="toggleCampPriceType(); calculateCampCost();">
-              <span>ลงเต็มค่าย</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; color: #1e293b;">
-              <input type="radio" name="camp_price_type" value="daily" onchange="toggleCampPriceType(); calculateCampCost();">
-              <span>ลงรายวัน</span>
-            </label>
-          </div>
-        </div>
-        <div class="form-group" id="camp_daily_days_container" style="display: none; margin-bottom: 0;">
-          <label class="form-label">จำนวนวันที่เรียน (วัน) <span>*</span></label>
-          <input type="number" id="camp_daily_days" class="form-input" min="1" max="30" value="1" oninput="calculateCampCost()">
-        </div>
-      </div>
-
+      <!-- 1. ชื่อ-นามสกุล นักเรียน * -->
       <div class="form-group">
         <label class="form-label">ชื่อ-นามสกุล นักเรียน <span>*</span></label>
         <div style="display: flex; gap: 8px;">
@@ -703,26 +644,92 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         </div>
       </div>
 
+      <!-- 2. ชื่อเล่นนักเรียน * -->
       <div class="form-group">
         <label class="form-label">ชื่อเล่นนักเรียน <span>*</span></label>
         <input type="text" id="camp_std_nickname" class="form-input" required placeholder="ชื่อเล่น">
       </div>
 
+      <!-- 3. เบอร์โทรศัพท์ผู้ปกครอง * -->
       <div class="form-group">
         <label class="form-label">เบอร์โทรศัพท์ผู้ปกครอง <span>*</span></label>
         <input type="tel" id="camp_parent_contact" class="form-input" required placeholder="0xx-xxx-xxxx" oninput="formatPhoneAsYouType(this)" maxlength="12">
       </div>
 
+      <!-- 4. โรงเรียน * -->
       <div class="form-group">
         <label class="form-label">โรงเรียน <span>*</span></label>
         <input type="text" id="camp_std_school" class="form-input" required placeholder="ระบุชื่อโรงเรียนปัจจุบัน" list="std_school_list">
       </div>
 
+      <!-- 5. ระดับชั้นเรียน * & 6. ปีที่ลงทะเบียน * -->
+      <div class="row-grid">
+        <div class="form-group">
+          <label class="form-label">ระดับชั้นเรียน <span>*</span></label>
+          <select id="camp_grade" class="form-select" required onchange="renderCampRooms(); calculateCampCost();">
+            <option value="">-- เลือกระดับชั้น --</option>
+            <option value="ป.6">ป.6</option>
+            <option value="ม.3">ม.3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ปีที่ลงทะเบียน <span>*</span></label>
+          <select id="camp_year" class="form-select" required>
+            <option value="">-- เลือกปีที่ลงทะเบียน --</option>
+            <!-- Generated via JS -->
+          </select>
+        </div>
+      </div>
+
+      <!-- 7. เลือกค่ายที่สมัคร * & 8. ห้องเรียน * -->
+      <div class="row-grid">
+        <div class="form-group">
+          <label class="form-label">เลือกค่ายที่สมัคร <span>*</span></label>
+          <select id="camp_name" class="form-select" required onchange="calculateCampCost()">
+            <option value="">-- เลือกค่าย --</option>
+            <option value="ค่ายเตรียมความพร้อม(เมษายน)">ค่ายเตรียมความพร้อม(เมษายน)</option>
+            <option value="ค่ายวางแผนติดspeed(ตุลาคม)">ค่ายวางแผนติดspeed(ตุลาคม)</option>
+            <option value="ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)">ค่ายสานฝันปั้นน้อง ห้องพิเศษ (มีนาคม)</option>
+            <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ1</option>
+            <option value="ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2">ค่ายสานฝันปั้นน้อง ห้องปกติ (มีนาคม) รอบ2</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ห้องเรียน <span>*</span></label>
+          <select id="camp_room" class="form-select" required>
+            <option value="">-- เลือกระดับชั้นก่อน --</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 9. รูปแบบการเรียนค่าย * (เต็มค่าย / รายวัน) -->
+      <div class="row-grid" style="margin-top: 12px; margin-bottom: 16px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">รูปแบบการเรียนค่าย <span>*</span></label>
+          <div style="display: flex; gap: 16px; margin-top: 6px; background: #ffffff; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: var(--radius-md);">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; color: #1e293b;">
+              <input type="radio" name="camp_price_type" value="full" checked onchange="toggleCampPriceType(); calculateCampCost();">
+              <span>ลงเต็มค่าย</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; color: #1e293b;">
+              <input type="radio" name="camp_price_type" value="daily" onchange="toggleCampPriceType(); calculateCampCost();">
+              <span>ลงรายวัน</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group" id="camp_daily_days_container" style="display: none; margin-bottom: 0;">
+          <label class="form-label">จำนวนวันที่เรียน (วัน) <span>*</span></label>
+          <input type="number" id="camp_daily_days" class="form-input" min="1" max="30" value="1" oninput="calculateCampCost()">
+        </div>
+      </div>
+
+      <!-- 10. โรคประจำตัว / แพ้ยา / แพ้อาหาร /ไม่รับประทานอาหารประเภทใด -->
       <div class="form-group">
         <label class="form-label" style="line-height: 1.4;">โรคประจำตัว / แพ้ยา / แพ้อาหาร /<br>ไม่รับประทานอาหารประเภทใด</label>
         <input type="text" id="camp_medical_condition" class="form-input" placeholder="หากไม่มีให้เว้นว่าง หรือระบุ -">
       </div>
 
+      <!-- 11. Size เสื้อค่าย (แจกฟรี 1 ตัว) * -->
       <div class="form-group">
         <label class="form-label">Size เสื้อค่าย (แจกฟรี 1 ตัว) <span>*</span></label>
         <select id="camp_shirt_size" class="form-select" required>
@@ -736,6 +743,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         </select>
       </div>
 
+      <!-- 12. สถานที่จัดงาน -->
       <div class="info-card" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-top: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
         <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -749,23 +757,9 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
           เปิดแผนที่นำทาง (Google Maps)
         </a>
-
-        <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 20px 0;">
-
-        <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-          ของใช้ที่ต้องนำมาสำหรับพักค่ายค้างคืนนะคะ
-        </h3>
-        <ul style="margin: 0; padding-left: 24px; color: #475569; font-size: 0.95rem; line-height: 1.6;">
-          <li style="margin-bottom: 6px;">ที่นอนปิคนิคขนาดไม่เกิน 3 ฟุต / หมอน / ผ้าห่ม</li>
-          <li style="margin-bottom: 6px;">เสื้อผ้า / ของใช้ส่วนตัว</li>
-          <li style="margin-bottom: 6px;">ยารักษาโรคประจำตัว</li>
-          <li style="margin-bottom: 6px;">อุปกรณ์เครื่องเขียน / ดินสอ / ปากกา / ยางลบ</li>
-          <li style="margin-bottom: 6px;">เงินค่าขนม</li>
-          <li style="margin-bottom: 0;"><strong>โทรศัพท์มือถือ</strong> งดนำอุปกรณ์อิเล็กทรอนิกส์ชนิดอื่นมานะคะ<br><span style="font-size: 0.85rem; color: #64748b;">(ทางคุณครูจะดูแลเรื่องการใช้โทรศัพท์ให้เด็ก ๆ ค่ะ)</span></li>
-        </ul>
       </div>
 
+      <!-- 13. รูปแบบการชำระเงินก่อนแนบสลิป -->
       <div class="info-card" id="camp_payment_option_card" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
         <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
@@ -815,6 +809,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         </div>
       </div>
 
+      <!-- 14. ยอดชำระสำหรับค่ายที่เลือก -->
       <div id="camp_cost_display" class="info-card" style="display: none; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
         <h3 style="color: #16a34a; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -833,6 +828,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         <p style="margin: 12px 0 0 0; font-size: 0.85rem; color: #166534;">* สามารถเลือกโอนเฉพาะยอดมัดจำ 1,000 บาท ก่อนได้ หรือโอนเต็มจำนวนตามยอดด้านบน</p>
       </div>
 
+      <!-- 15. รายละเอียดการโอนเงินมัดจำ (1,000 บาท) -->
       <div class="info-card" style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
         <h3 style="color: #b45309; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
@@ -846,6 +842,23 @@ p, span, div, h1, h2, h3, h4, h5, h6, label {
         </div>
       </div>
 
+      <!-- 16. ของใช้ที่ต้องนำมาสำหรับพักค่ายค้างคืนนะคะ -->
+      <div class="info-card" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+          ของใช้ที่ต้องนำมาสำหรับพักค่ายค้างคืนนะคะ
+        </h3>
+        <ul style="margin: 0; padding-left: 24px; color: #475569; font-size: 0.95rem; line-height: 1.6;">
+          <li style="margin-bottom: 6px;">ที่นอนปิคนิคขนาดไม่เกิน 3 ฟุต / หมอน / ผ้าห่ม</li>
+          <li style="margin-bottom: 6px;">เสื้อผ้า / ของใช้ส่วนตัว</li>
+          <li style="margin-bottom: 6px;">ยารักษาโรคประจำตัว</li>
+          <li style="margin-bottom: 6px;">อุปกรณ์เครื่องเขียน / ดินสอ / ปากกา / ยางลบ</li>
+          <li style="margin-bottom: 6px;">เงินค่าขนม</li>
+          <li style="margin-bottom: 0;"><strong>โทรศัพท์มือถือ</strong> งดนำอุปกรณ์อิเล็กทรอนิกส์ชนิดอื่นมานะคะ<br><span style="font-size: 0.85rem; color: #64748b;">(ทางคุณครูจะดูแลเรื่องการใช้โทรศัพท์ให้เด็ก ๆ ค่ะ)</span></li>
+        </ul>
+      </div>
+
+      <!-- 17. แนบหลักฐานการโอนเงิน (สลิป) (ข้ามได้ และส่งให้แอดมินภายหลัง) -->
       <div class="form-group" id="camp_slip_upload_group">
         <label class="form-label">แนบหลักฐานการโอนเงิน (สลิป) (ข้ามได้ และส่งให้แอดมินภายหลัง)</label>
         <div class="upload-area" onclick="document.getElementById('camp_file_input').click()">
