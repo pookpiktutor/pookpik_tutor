@@ -21231,7 +21231,7 @@ function deleteCampStudent(timestamp) {
             showConfirmButton: false,
             timer: 1500
           });
-          fetchCampsData(); // refresh table
+          loadCampsData(); // refresh table
         } else {
           Swal.fire('Error', res.error || 'ลบข้อมูลไม่สำเร็จ', 'error');
         }
