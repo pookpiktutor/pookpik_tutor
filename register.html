@@ -1603,14 +1603,16 @@
         var priceTd = document.createElement('td');
         priceTd.style.padding = '8px 4px';
         priceTd.style.textAlign = 'right';
-        priceTd.textContent = c.full ? '฿' + c.full.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '-';
+        var fullNum = c.full !== undefined && c.full !== null ? parseFloat(String(c.full).replace(/,/g, '').replace(/฿/g, '')) : NaN;
+        priceTd.textContent = !isNaN(fullNum) ? '฿' + fullNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-';
 
         var outstandingTd = document.createElement('td');
         outstandingTd.style.padding = '8px 4px';
         outstandingTd.style.textAlign = 'right';
         outstandingTd.style.fontWeight = '600';
         outstandingTd.style.color = '#ef4444';
-        outstandingTd.textContent = c.outstanding ? '฿' + c.outstanding.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '-';
+        var outNum = c.outstanding !== undefined && c.outstanding !== null ? parseFloat(String(c.outstanding).replace(/,/g, '').replace(/฿/g, '')) : NaN;
+        outstandingTd.textContent = !isNaN(outNum) ? '฿' + outNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-';
 
         tr.appendChild(checkTd);
         tr.appendChild(nameTd);

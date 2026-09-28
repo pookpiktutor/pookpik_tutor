@@ -15274,13 +15274,13 @@ function getAvailableCourses(grade, classType, branchLearn) {
       }
     } else {
       const headers = data[0];
-      let subjectIdx = 0, typeIdx = 0, branchIdx = 0, priceIdx = 0;
+      let subjectIdx = 0, typeIdx = 0, branchIdx = 0, priceIdx = -1;
       for (let c = 0; c < headers.length; c++) {
         const h = headers[c].toString().toLowerCase();
         if (h.includes('วิชา') || h.includes('subject')) subjectIdx = c;
         if (h.includes('ประเภท') || h.includes('type')) typeIdx = c;
         if (h.includes('สาขา') || h.includes('branch')) branchIdx = c;
-        if (h.includes('ราคา') || h.includes('price')) priceIdx = c;
+        if (h.includes('ราคา') || h.includes('price') || h.includes('ค่าเรียน') || h.includes('ยอด') || h.includes('fee')) priceIdx = c;
       }
       
       for (let r = 1; r < data.length; r++) {
@@ -15288,7 +15288,12 @@ function getAvailableCourses(grade, classType, branchLearn) {
         const courseName = row[subjectIdx];
         const courseType = row[typeIdx] || '';
         const courseBranch = row[branchIdx] || '';
-        const coursePrice = row[priceIdx] || 0;
+        let coursePrice = 0;
+        if (priceIdx !== -1) {
+          let rawP = row[priceIdx];
+          if (typeof rawP === 'string') rawP = rawP.replace(/,/g, '').replace(/฿/g, '').trim();
+          coursePrice = parseFloat(rawP) || 0;
+        }
         
         if (!courseName) continue;
         if (branchLearn && courseBranch && !courseBranch.includes(branchLearn.replace('สาขา', '').trim())) continue;
