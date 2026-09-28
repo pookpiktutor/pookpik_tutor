@@ -1792,21 +1792,27 @@ window.google.script.run = new Proxy({}, {
     let baseFull = 7900;
     let dailyRate = 1700;
 
-    if (campName.includes('เตรียมความพร้อม') || campName.includes('เมษายน')) {
-      baseFull = 4400;
-      dailyRate = 1700;
-    } else if (campName.includes('วางแผนติดspeed') || campName.includes('ตุลาคม') || campName.includes('สานฝันปั้นน้อง')) {
+    let isAprilOrOct = campName.includes('เตรียมความพร้อม') || 
+                       campName.includes('เมษายน') || 
+                       campName.includes('วางแผนติดspeed') || 
+                       campName.includes('วางแผนติด speed') || 
+                       campName.includes('ตุลาคม');
+
+    if (isAprilOrOct) {
       if (campGrade.includes('ม.3')) {
-        baseFull = 8900;
+        baseFull = 4900;
         dailyRate = 1900;
       } else {
-        baseFull = 7900;
+        baseFull = 4400;
         dailyRate = 1700;
       }
     } else {
       if (campGrade.includes('ม.3')) {
         baseFull = 8900;
         dailyRate = 1900;
+      } else {
+        baseFull = 7900;
+        dailyRate = 1700;
       }
     }
 
@@ -1862,13 +1868,18 @@ window.google.script.run = new Proxy({}, {
 
     let baseFull = 7900;
     let dailyRate = 1700;
-    if (campName.includes('เตรียมความพร้อม') || campName.includes('เมษายน')) {
-      baseFull = 4400; dailyRate = 1700;
-    } else if (campName.includes('วางแผนติดspeed') || campName.includes('ตุลาคม') || campName.includes('สานฝันปั้นน้อง')) {
-      if (campGrade.includes('ม.3')) { baseFull = 8900; dailyRate = 1900; }
-      else { baseFull = 7900; dailyRate = 1700; }
+    let isAprilOrOctSubmit = campName.includes('เตรียมความพร้อม') || 
+                             campName.includes('เมษายน') || 
+                             campName.includes('วางแผนติดspeed') || 
+                             campName.includes('วางแผนติด speed') || 
+                             campName.includes('ตุลาคม');
+
+    if (isAprilOrOctSubmit) {
+      if (campGrade.includes('ม.3')) { baseFull = 4900; dailyRate = 1900; }
+      else { baseFull = 4400; dailyRate = 1700; }
     } else {
       if (campGrade.includes('ม.3')) { baseFull = 8900; dailyRate = 1900; }
+      else { baseFull = 7900; dailyRate = 1700; }
     }
 
     let totalCost = (priceType === 'daily') ? (dailyRate * dailyDays) : baseFull;

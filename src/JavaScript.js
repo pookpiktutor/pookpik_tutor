@@ -37018,9 +37018,12 @@ function quickAddCampPayment() {
 // Manage / Edit Modal (ปุ่มจัดการ)
 function showCampPaymentModal(timestamp) {
   var item = null;
-  if (window.currentCampsData) {
+  if (typeof currentCampsData !== 'undefined' && currentCampsData) {
     item = currentCampsData.find(function(c) {
-      return String(c.timestamp) === String(timestamp);
+      if (String(c.timestamp) === String(timestamp)) return true;
+      var cTime = new Date(c.timestamp).getTime();
+      var tTime = new Date(timestamp).getTime();
+      return !isNaN(cTime) && !isNaN(tTime) && cTime === tTime;
     });
   }
   if (!item) {
@@ -37132,9 +37135,6 @@ function showCampPaymentModal(timestamp) {
     html += '</div></div>';
   }
 
-  if (item.slip_url && item.slip_url !== '-' && item.slip_url.trim() !== '') {
-    html += '<div style="margin-top: 10px;"><a href="' + item.slip_url + '" target="_blank" class="btn btn-sm btn-outline-primary">🔍 ดูสลิปหลักฐานการโอน</a></div>';
-  }
   html += '</div>';
 
   html += '<div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">';
@@ -37233,7 +37233,7 @@ function saveCampPaymentData() {
 
 function loadCampsData() {
   var tbody = document.getElementById('camps_table_body');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="16" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
+  if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
 
   if (!campsFiltersInitialized) {
     initCampsFilters(function() {
@@ -37273,7 +37273,7 @@ function doLoadCampsData() {
 
     renderCampsTable();
   }).withFailureHandler(function(err) {
-    if (tbody) tbody.innerHTML = '<tr><td colspan="16" class="text-center text-danger">ไม่สามารถโหลดข้อมูลได้: ' + (err.message || err) + '</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="text-center text-danger">ไม่สามารถโหลดข้อมูลได้: ' + (err.message || err) + '</td></tr>';
   }).getCampsData(year, name);
 }
 
@@ -37312,12 +37312,8 @@ function renderCampsTable() {
       totalOutstanding += outst;
     });
 
-    var summaryHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">';
-    summaryHtml += '<div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">👥 จำนวนนักเรียนค่ายทั้งหมด</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">' + totalStudents.toLocaleString() + ' คน</div></div>';
-    summaryHtml += '<div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">💰 ยอดรวมค่าเรียนตามจริง</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">฿' + totalFullFee.toLocaleString() + '</div></div>';
-    summaryHtml += '<div style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">✅ ยอดที่ชำระแล้ว</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">฿' + totalPaid.toLocaleString() + '</div></div>';
-    summaryHtml += '<div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">⏳ ยอดค้างชำระรวม</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">฿' + totalOutstanding.toLocaleString() + '</div></div>';
-    summaryHtml += '</div>';
+    var summaryHtml = '';
+    // The user requested to remove the summary cards section.
     summaryContainer.innerHTML = summaryHtml;
   }
 
@@ -37512,7 +37508,7 @@ function renderCampsTable() {
   }
 
   if (filteredData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="16" class="text-center text-muted" style="padding: 30px;">ไม่พบข้อมูลนักเรียนค่ายตามเงื่อนไขที่เลือก</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="15" class="text-center text-muted" style="padding: 30px;">ไม่พบข้อมูลนักเรียนค่ายตามเงื่อนไขที่เลือก</td></tr>';
     return;
   }
 
@@ -37559,10 +37555,10 @@ function renderCampsTable() {
   var campIndex = 0;
   for (var cName in grouped) {
     var palette = getCampPalette(cName, campIndex++);
-    html += "<tr style='background: " + palette.bg + "; color: " + palette.text + ";'><td colspan='16' style='font-weight:700; padding: 12px 14px; font-size: 1.05rem; text-shadow: 0 1px 2px rgba(255,255,255,0.5);'>🏫 ค่าย: " + cName + "</td></tr>";
+    html += "<tr style='background: " + palette.bg + "; color: " + palette.text + ";'><td colspan='15' style='font-weight:700; padding: 12px 14px; font-size: 1.05rem; text-shadow: 0 1px 2px rgba(255,255,255,0.5);'>🏫 ค่าย: " + cName + "</td></tr>";
     
     for (var cGroup in grouped[cName]) {
-      html += "<tr style='background-color: #f8fafc;'><td colspan='16' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge' style='margin-left: 8px; font-weight: 600; background-color: " + palette.badgeBg + "; color: " + palette.badgeText + "; border: 1px solid " + palette.badgeText + "33;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
+      html += "<tr style='background-color: #f8fafc;'><td colspan='15' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge' style='margin-left: 8px; font-weight: 600; background-color: " + palette.badgeBg + "; color: " + palette.badgeText + "; border: 1px solid " + palette.badgeText + "33;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
       
       grouped[cName][cGroup].forEach(function(item) {
         var full = parseFloat(item.full) || getCampDefaultFee(item.camp_name, item.std_grade);
@@ -37589,12 +37585,6 @@ function renderCampsTable() {
         html += "<td>" + (item.std_school || "-") + "</td>";
         html += "<td>" + (item.medical_condition || "-") + "</td>";
         html += "<td>" + (item.shirt_size || "-") + "</td>";
-        
-        if (item.slip_url && item.slip_url !== '-' && item.slip_url.trim() !== '') {
-          html += "<td><a href='" + item.slip_url + "' target='_blank' class='btn btn-sm btn-outline-primary' style='font-size:0.75rem; padding: 2px 5px;'>ดูสลิป</a></td>";
-        } else {
-          html += "<td>-</td>";
-        }
         
         // Outstanding Fee
         var outstColor = outst > 0 ? "color: #dc2626; font-weight: bold;" : "color: #16a34a;";
