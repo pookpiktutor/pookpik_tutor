@@ -442,10 +442,20 @@ function doGet(e) {
       }
       if (typeof fn !== 'function') throw new Error("Function '" + funcName + "' is not defined in Google Apps Script.");
       const result = fn.apply(null, args);
-      return ContentService.createTextOutput(JSON.stringify(result !== undefined ? result : null))
+      const jsonStr = JSON.stringify(result !== undefined ? result : null);
+      if (e.parameter.callback) {
+        return ContentService.createTextOutput(e.parameter.callback + '(' + jsonStr + ');')
+          .setMimeType(ContentService.MimeType.JAVASCRIPT);
+      }
+      return ContentService.createTextOutput(jsonStr)
         .setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
+      const errStr = JSON.stringify({ success: false, error: err.toString() });
+      if (e && e.parameter && e.parameter.callback) {
+        return ContentService.createTextOutput(e.parameter.callback + '(' + errStr + ');')
+          .setMimeType(ContentService.MimeType.JAVASCRIPT);
+      }
+      return ContentService.createTextOutput(errStr)
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
