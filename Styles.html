@@ -1,5 +1,5 @@
 <style>
-/* Version 59.0.0: ธีม Modern Executive — เขียวเข้ม · เทา · น้ำเงินเข้ม ดูทันสมัยระดับพรีเมียม */
+/* Version 58.0.0: ปรับธีมสีเป็นสีสันสดใส ฟ้า เขียว เหลือง สไตล์วัยรุ่นพรีเมียม */
 
 /* CSS Reset & Variable Definitions */
 
@@ -11,61 +11,57 @@
 
   
 
-  /* 🎨 Modern Executive Theme: Dark Green · Slate Gray · Deep Navy */
+  /* 🎨 Vibrant Youthful Theme: Electric Blue · Lime Green · Sunshine Yellow */
 
-  --bg-primary: #f0f2f5;           /* พื้นหลังเทาอ่อนนุ่มนวลสะอาดตา */
+  --bg-primary: #f3f7fa;           /* สีพื้นหลังสว่างอมฟ้านุ่มนวล */
 
-  --bg-sidebar: #0d1b2a;          /* น้ำเงินเข้มมาก Deep Navy พรีเมียม */
+  --bg-sidebar: #0b132b;          /* มิดไนท์บลูเข้มดูพรีเมียม */
 
-  --bg-panel: rgba(255, 255, 255, 0.88);  /* กระจกฝ้าโปร่งแสง */
+  --bg-panel: rgba(255, 255, 255, 0.85);  /* กระจกฝ้าโปร่งแสง */
 
-  --bg-panel-hover: rgba(255, 255, 255, 0.96);
+  --bg-panel-hover: rgba(255, 255, 255, 0.95);
 
-  --border-color: rgba(27, 58, 75, 0.10);  /* ขอบน้ำเงินเข้มบางเบา */
+  --border-color: rgba(0, 132, 255, 0.10);  /* ขอบฟ้าใสเบาบาง */
 
-  --border-color-hover: rgba(27, 58, 75, 0.22);
-
-  
-
-  --text-main: #2c3e50;           /* เทาน้ำเงินเข้มอ่านง่าย */
-
-  --text-muted: #7f8c8d;          /* เทากลางสบายตา */
-
-  --text-dark: #1a252f;           /* เข้มมากสำหรับหัวข้อ */
+  --border-color-hover: rgba(0, 132, 255, 0.20);
 
   
 
-  /* Accent Colors — เขียวเข้ม เทา น้ำเงินเข้ม */
+  --text-main: #1e293b;           /* สีตัวอักษรหลักเทาเข้มอ่านง่ายมาก */
 
-  --color-primary: #1b3a4b;       /* น้ำเงินเข้ม Dark Teal — สีแบรนด์หลัก */
+  --text-muted: #64748b;          /* สีตัวอักษรรองเทาสเลท */
 
-  --color-primary-hover: #152e3d; /* น้ำเงินเข้มขึ้นตอนชี้เมาส์ */
-
-  --color-success: #1a5632;       /* เขียวเข้ม Forest Green */
-
-  --color-success-hover: #145228;
-
-  --color-warning: #d4a017;       /* ทอง Amber อบอุ่น */
-
-  --color-danger: #c0392b;        /* แดงเข้มคลาสสิก */
-
-  --color-brown: #2c3e50;         /* เทาน้ำเงิน Charcoal */
-
-  --color-blue: #1b3a4b;          /* น้ำเงินเข้ม Dark Teal */
-
-  --color-grey: #7f8c8d;          /* เทาเข้มสไตล์ Executive */
-
-  --color-purple: #4a235a;        /* ม่วงเข้มสำหรับ accent */
+  --text-dark: #0f172a;           /* สีตัวอักษรเน้นเข้ม */
 
   
 
-  /* เงาโทนน้ำเงินเข้ม & มุมโค้งมน */
+  /* Accent Colors — โทนสีหลัก ฟ้า เขียว เหลือง */
 
-  --shadow-sm: 0 2px 8px 0 rgba(13, 27, 42, 0.06);
+  --color-primary: #0084ff;       /* ฟ้าไฟฟ้าสดใส — สีแบรนด์หลัก */
 
-  --shadow-md: 0 8px 16px -2px rgba(13, 27, 42, 0.10), 0 4px 8px -2px rgba(13, 27, 42, 0.04);
+  --color-primary-hover: #0066cc; /* ฟ้าเข้มขึ้นตอนชี้เมาส์ */
 
-  --shadow-lg: 0 16px 36px -4px rgba(13, 27, 42, 0.14), 0 10px 20px -6px rgba(13, 27, 42, 0.07);
+  --color-success: #10b981;       /* เขียวมะนาว/เขียวมินต์สดใส */
+
+  --color-warning: #facc15;       /* เหลืองแสงอาทิตย์สว่างสดใส */
+
+  --color-danger: #ff4b6b;        /* แดงอมชมพูทันสมัย */
+
+  --color-brown: #00c6ff;         /* สีฟ้าไอซ์บลู */
+
+  --color-blue: #0084ff;          /* ฟ้านีออน */
+
+  --color-grey: #94a3b8;          /* เทาสเลท */
+
+  
+
+  /* เงาโทนน้ำเงินอมฟ้า & มุมโค้งมน */
+
+  --shadow-sm: 0 2px 8px 0 rgba(0, 132, 255, 0.05);
+
+  --shadow-md: 0 8px 16px -2px rgba(0, 132, 255, 0.08), 0 4px 8px -2px rgba(0, 132, 255, 0.03);
+
+  --shadow-lg: 0 16px 36px -4px rgba(0, 132, 255, 0.12), 0 10px 20px -6px rgba(0, 132, 255, 0.06);
 
   --radius-sm: 8px;
 
@@ -99,21 +95,21 @@ body {
 
   background-color: var(--bg-primary);
 
-  background-image: radial-gradient(circle at 5% 5%, rgba(26, 86, 50, 0.08) 0%, transparent 45%),
+  background-image: radial-gradient(circle at 5% 5%, rgba(0, 132, 255, 0.10) 0%, transparent 45%),
 
-                    radial-gradient(circle at 95% 95%, rgba(27, 58, 75, 0.06) 0%, transparent 50%),
+                    radial-gradient(circle at 95% 95%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
 
-                    radial-gradient(circle at 80% 20%, rgba(44, 62, 80, 0.05) 0%, transparent 40%),
+                    radial-gradient(circle at 80% 20%, rgba(250, 204, 21, 0.06) 0%, transparent 40%),
 
-                    radial-gradient(circle at 20% 80%, rgba(13, 27, 42, 0.06) 0%, transparent 50%);
+                    radial-gradient(circle at 20% 80%, rgba(0, 198, 255, 0.08) 0%, transparent 50%);
 
   background-attachment: fixed;
 
   color: var(--text-main);
 
-  min-height: 100vh;
+  height: 100vh;
 
-  /* overflow: hidden; */
+  overflow: hidden;
 
   display: flex;
 
@@ -139,7 +135,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
 
-  background: rgba(27, 58, 75, 0.25);
+  background: rgba(0, 132, 255, 0.25);
 
   border-radius: 4px;
 
@@ -147,7 +143,7 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
 
-  background: rgba(27, 58, 75, 0.45);
+  background: rgba(0, 132, 255, 0.45);
 
 }
 
@@ -161,7 +157,7 @@ body {
 
   width: 100vw;
 
-  min-height: 100vh;
+  height: 100vh;
 
 }
 
@@ -196,12 +192,6 @@ body {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   overflow-y: auto;
-  position: sticky;
-  top: 12px;
-  height: calc(100vh - 24px);
-  margin: 12px;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(11, 19, 43, 0.15);
 
   scrollbar-width: none;
 
@@ -249,7 +239,7 @@ body {
 
   justify-content: center;
 
-  box-shadow: 0 3px 8px rgba(13, 27, 42, 0.3);
+  box-shadow: 0 3px 8px rgba(125, 171, 142, 0.3);
 
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
@@ -361,11 +351,11 @@ body {
 
 .nav-item.active {
 
-  background: linear-gradient(90deg, rgba(46, 125, 50, 0.15) 0%, rgba(46, 125, 50, 0.04) 100%);
+  background: linear-gradient(90deg, rgba(0, 132, 255, 0.15) 0%, rgba(0, 132, 255, 0.04) 100%);
 
-  color: #2e7d32; /* เขียวเข้ม */
+  color: var(--color-primary); /* ฟ้าไฟฟ้าเรืองแสง */
 
-  border-color: rgba(46, 125, 50, 0.30);
+  border-color: rgba(0, 132, 255, 0.30);
 
   font-weight: 600;
 
@@ -425,7 +415,7 @@ body {
 
   background: rgba(255, 255, 255, 0.08);
 
-  border-color: rgba(27, 58, 75, 0.3);
+  border-color: rgba(0, 132, 255, 0.3);
 
   transform: translateY(-1px);
 
@@ -580,12 +570,19 @@ body {
 /* Main Content Panel */
 
 .main-content {
+
   flex-grow: 1;
+
   min-width: 0;
-  min-height: 0;
+
   display: flex;
+
   flex-direction: column;
-  
+
+  height: 100vh;
+
+  overflow: hidden;
+
 }
 
 
@@ -660,13 +657,19 @@ body {
 /* Views Layout */
 
 .content-body {
+
   flex-grow: 1;
-  min-height: 0;
+
   padding: 32px;
-  overflow: visible;
+
+  overflow-y: auto;
+
   display: flex;
+
   flex-direction: column;
+
   gap: 12px;
+
 }
 
 
@@ -676,10 +679,8 @@ body {
   flex-direction: column;
   gap: 12px;
   animation: fadeIn 0.3s ease-out;
-  overflow: visible;
-  
-  
-  
+  overflow-y: auto;
+  max-height: calc(100vh - 120px);
   padding-right: 4px;
   padding-bottom: 20px;
 }
@@ -703,14 +704,14 @@ body {
 .view-panel::-webkit-scrollbar-thumb,
 .main-content::-webkit-scrollbar-thumb,
 .content-body::-webkit-scrollbar-thumb {
-  background: rgba(27, 58, 75, 0.25);
+  background: rgba(0, 132, 255, 0.25);
   border-radius: 10px;
   transition: background 0.2s;
 }
 .view-panel::-webkit-scrollbar-thumb:hover,
 .main-content::-webkit-scrollbar-thumb:hover,
 .content-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(27, 58, 75, 0.5);
+  background: rgba(0, 132, 255, 0.5);
 }
 
 
@@ -941,7 +942,7 @@ body {
 
   color: #fff;
 
-  box-shadow: 0 4px 12px rgba(27, 58, 75, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 132, 255, 0.25);
 
 }
 
@@ -949,7 +950,7 @@ body {
 
   transform: translateY(-2px) scale(1.02);
 
-  box-shadow: 0 6px 16px rgba(27, 58, 75, 0.40);
+  box-shadow: 0 6px 16px rgba(0, 132, 255, 0.40);
 
 }
 
@@ -1418,16 +1419,23 @@ body {
 }
 
 .modal, .modal-container {
+
   border-radius: var(--radius-lg);
+
   border: 1px solid var(--border-color-hover);
+
   box-shadow: var(--shadow-lg);
+
   width: 100%;
+
   max-width: 500px;
+
   max-height: 90vh;
-  overflow: hidden;
+
+  overflow-y: auto;
+
   animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  display: flex;
-  flex-direction: column;
+
 }
 
 
@@ -1554,9 +1562,9 @@ body {
 
 
 .modal-body {
+
   padding: 12px;
-  overflow-y: auto;
-  flex: 1;
+
 }
 
 
@@ -1670,15 +1678,11 @@ body {
 /* Toast Notifications */
 
 .toast-container {
-
   position: fixed;
-
-  top: 75px;
-
-  right: 24px;
-
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
-
   flex-direction: column;
 
   gap: 10px;
@@ -1748,10 +1752,6 @@ body {
 
 
 .toast-message {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 
   font-size: 0.9rem;
 
@@ -1769,51 +1769,15 @@ body {
 
 
 
-/* Loader Overlay */
+/* Loader Overlay - Disabled to show status only at top-right */
 
-.loader-overlay {
+.loader-overlay, .loader-overlay.active {
 
-  position: fixed;
+  display: none !important;
 
-  top: 0;
+  opacity: 0 !important;
 
-  left: 0;
-
-  width: 100vw;
-
-  height: 100vh;
-
-  background: rgba(240, 244, 241, 0.88);
-
-  backdrop-filter: blur(10px);
-
-  -webkit-backdrop-filter: blur(10px);
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
-
-  z-index: 2000;
-
-  opacity: 0;
-
-  pointer-events: none;
-
-  transition: opacity 0.3s ease;
-
-}
-
-
-
-.loader-overlay.active {
-
-  opacity: 1;
-
-  pointer-events: auto;
+  pointer-events: none !important;
 
 }
 
@@ -2269,7 +2233,7 @@ body {
 
   color: var(--color-primary-hover);
 
-  background: rgba(27, 58, 75, 0.06);
+  background: rgba(0, 132, 255, 0.06);
 
 }
 
@@ -2363,17 +2327,17 @@ body {
 
   height: 100vh;
 
-  background-color: #0d1b2a; /* Deep Navy เข้มลึก */
+  background-color: #0b0e1a; /* มิดไนท์บลูเข้มลึก */
 
   background-image: 
 
-    radial-gradient(circle at 20% 20%, rgba(27, 58, 75, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 20% 20%, rgba(0, 132, 255, 0.18) 0%, transparent 50%),
 
-    radial-gradient(circle at 80% 80%, rgba(26, 86, 50, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
 
     radial-gradient(circle at 50% 50%, rgba(11, 19, 43, 0.80) 0%, transparent 100%),
 
-    radial-gradient(circle at 70% 30%, rgba(212, 160, 23, 0.08) 0%, transparent 40%);
+    radial-gradient(circle at 70% 30%, rgba(250, 204, 21, 0.08) 0%, transparent 40%);
 
   backdrop-filter: blur(20px);
 
@@ -2407,7 +2371,7 @@ body {
 
   background: rgba(11, 19, 43, 0.75); /* มิดไนท์บลู glassmorphic */
 
-  border: 1px solid rgba(27, 58, 75, 0.25);
+  border: 1px solid rgba(0, 132, 255, 0.25);
 
   animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 
@@ -2451,7 +2415,7 @@ body {
 
   font-family: var(--font-heading);
 
-  background: linear-gradient(135deg, #1b3a4b 0%, #1a5632 50%, #d4a017 100%); /* ฟ้า -> เขียว -> เหลือง */
+  background: linear-gradient(135deg, #0084ff 0%, #10b981 50%, #facc15 100%); /* ฟ้า -> เขียว -> เหลือง */
 
   -webkit-background-clip: text;
 
@@ -2459,7 +2423,7 @@ body {
 
   margin-bottom: 12px;
 
-  filter: drop-shadow(0 2px 10px rgba(27, 58, 75, 0.35));
+  filter: drop-shadow(0 2px 10px rgba(0, 132, 255, 0.35));
 
 }
 
@@ -2483,7 +2447,7 @@ body {
 
   background: rgba(10, 14, 26, 0.5) !important;
 
-  border: 1px solid rgba(27, 58, 75, 0.25) !important;
+  border: 1px solid rgba(0, 132, 255, 0.25) !important;
 
   color: #ffffff !important;
 
@@ -2503,9 +2467,9 @@ body {
 
 .login-box .form-input:focus {
 
-  border-color: #1b3a4b !important;
+  border-color: #0084ff !important;
 
-  box-shadow: 0 0 0 3px rgba(27, 58, 75, 0.25) !important;
+  box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.25) !important;
 
   background: rgba(10, 14, 26, 0.7) !important;
 
@@ -2515,7 +2479,7 @@ body {
 
 .login-box .btn-primary {
 
-  background: linear-gradient(135deg, #1b3a4b 0%, #152e3d 100%) !important;
+  background: linear-gradient(135deg, #0084ff 0%, #0066cc 100%) !important;
 
   border: none !important;
 
@@ -2523,7 +2487,7 @@ body {
 
   font-weight: 600 !important;
 
-  box-shadow: 0 4px 15px rgba(27, 58, 75, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(0, 132, 255, 0.3) !important;
 
   transition: all 0.25s ease !important;
 
@@ -2535,9 +2499,9 @@ body {
 
   transform: translateY(-2px) !important;
 
-  box-shadow: 0 8px 20px rgba(27, 58, 75, 0.40) !important;
+  box-shadow: 0 8px 20px rgba(0, 132, 255, 0.40) !important;
 
-  background: linear-gradient(135deg, #1b3a4b 0%, #152e3d 100%) !important;
+  background: linear-gradient(135deg, #0084ff 0%, #0066cc 100%) !important;
 
 }
 
@@ -2587,7 +2551,7 @@ body {
 
   border-color: var(--color-primary);
 
-  box-shadow: 0 0 0 2px rgba(27, 58, 75, 0.18);
+  box-shadow: 0 0 0 2px rgba(0, 132, 255, 0.18);
 
 }
 
@@ -2643,7 +2607,7 @@ body {
 
 .calendar-month-tabs .month-tab:hover {
 
-  background: rgba(27, 58, 75, 0.12);
+  background: rgba(0, 132, 255, 0.12);
 
   color: var(--text-main);
 
@@ -2657,7 +2621,7 @@ body {
 
   color: #ffffff;
 
-  box-shadow: 0 4px 10px rgba(27, 58, 75, 0.25);
+  box-shadow: 0 4px 10px rgba(0, 132, 255, 0.25);
 
 }
 
@@ -2689,7 +2653,7 @@ body {
 
   padding: 10px 4px;
 
-  background: rgba(27, 58, 75, 0.10);
+  background: rgba(0, 132, 255, 0.10);
 
   border-radius: var(--radius-sm);
 
@@ -2721,7 +2685,7 @@ body {
 
   background: #ffffff;
 
-  border-color: rgba(27, 58, 75, 0.30);
+  border-color: rgba(0, 132, 255, 0.30);
 
   box-shadow: var(--shadow-sm);
 
@@ -2777,7 +2741,7 @@ body {
 
   flex-grow: 1;
 
-  overflow: hidden;
+  overflow-y: auto;
 
   max-height: 120px;
 
@@ -2797,7 +2761,7 @@ body {
 
   border-left: 3px solid transparent;
 
-  background: rgba(27, 58, 75, 0.10);
+  background: rgba(0, 132, 255, 0.10);
 
   color: var(--text-main);
 
@@ -2813,7 +2777,7 @@ body {
 
 .calendar-event-item.branch-1 {
 
-  background: rgba(27, 58, 75, 0.12);
+  background: rgba(0, 132, 255, 0.12);
 
   color: #1e40af;
 
@@ -2823,7 +2787,7 @@ body {
 
 .calendar-event-item.branch-2 {
 
-  background: rgba(26, 86, 50, 0.12);
+  background: rgba(16, 185, 129, 0.12);
 
   color: #065f46;
 
@@ -2833,7 +2797,7 @@ body {
 
 .calendar-event-item.branch-3 {
 
-  background: rgba(212, 160, 23, 0.12);
+  background: rgba(250, 204, 21, 0.12);
 
   color: #854d0e;
 
@@ -2843,7 +2807,7 @@ body {
 
 .calendar-event-item.branch-online {
 
-  background: rgba(27, 58, 75, 0.12);
+  background: rgba(0, 132, 255, 0.12);
 
   color: #1e40af;
 
@@ -3167,108 +3131,6 @@ body {
 
 
 
-/* Daily timetable grid overrides: arrange rooms in 1 column and classes horizontally */
-
-#rooms_grid_container {
-
-  display: flex !important;
-
-  flex-direction: column !important;
-
-  gap: 16px !important;
-
-  width: 100% !important;
-
-}
-
-#rooms_grid_container .room-card {
-
-  display: flex !important;
-
-  flex-direction: row !important;
-
-  align-items: stretch !important;
-
-  justify-content: flex-start !important;
-
-  gap: 12px !important;
-
-  min-height: auto !important;
-
-  width: 100% !important;
-
-  padding: 16px !important;
-
-}
-
-#rooms_grid_container .room-card .room-classes {
-
-  display: flex !important;
-
-  flex-direction: row !important;
-
-  flex-wrap: nowrap !important;
-
-  gap: 10px !important;
-
-  align-items: stretch !important;
-
-  flex-grow: 1 !important;
-
-  overflow-x: auto !important;
-
-  padding-bottom: 6px !important;
-
-}
-
-/* Custom scrollbar for horizontal scrolling classes */
-#rooms_grid_container .room-card .room-classes::-webkit-scrollbar {
-  height: 6px;
-}
-#rooms_grid_container .room-card .room-classes::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.03);
-  border-radius: 4px;
-}
-#rooms_grid_container .room-card .room-classes::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.12);
-  border-radius: 4px;
-}
-#rooms_grid_container .room-card .room-classes::-webkit-scrollbar-thumb:hover {
-  background: rgba(0,0,0,0.24);
-}
-
-#rooms_grid_container .room-card .scheduled-item {
-
-  min-width: 160px !important;
-
-  max-width: 320px !important;
-
-  width: max-content !important;
-
-  height: auto !important;
-
-  flex-shrink: 0 !important;
-
-  display: flex !important;
-
-  flex-direction: column !important;
-
-  justify-content: space-between !important;
-
-  margin-bottom: 0 !important;
-
-}
-
-#rooms_grid_container .room-card .room-empty-text {
-
-  width: 100% !important;
-
-  font-style: italic !important;
-
-  color: var(--text-muted) !important;
-
-}
-
 @keyframes pulse {
 
   0% { transform: scale(0.95); opacity: 0.5; }
@@ -3321,11 +3183,11 @@ body {
 
   max-height: 400px;
 
-  overflow: hidden;
+  overflow-y: auto;
 
   background: #ffffff;
 
-  border: 1px solid rgba(27, 58, 75, 0.20);
+  border: 1px solid rgba(0, 132, 255, 0.20);
 
   border-radius: var(--radius-sm, 10px);
 
@@ -3353,7 +3215,7 @@ body {
 
 .searchable-select-item.selected {
 
-  background-color: var(--color-primary, #1b3a4b);
+  background-color: var(--color-primary, #0084ff);
 
   color: #ffffff !important;
 
@@ -3391,7 +3253,7 @@ body {
 
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
 
-  border: 1px solid rgba(27, 58, 75, 0.08);
+  border: 1px solid rgba(0, 132, 255, 0.08);
 
   transition: all 0.25s ease;
 
@@ -3411,9 +3273,9 @@ body {
 
   transform: translateY(-5px);
 
-  box-shadow: 0 10px 25px rgba(27, 58, 75, 0.12);
+  box-shadow: 0 10px 25px rgba(0, 132, 255, 0.12);
 
-  border-color: rgba(27, 58, 75, 0.2);
+  border-color: rgba(0, 132, 255, 0.2);
 
   background: #ffffff;
 
@@ -3427,7 +3289,7 @@ body {
 
   align-items: center;
 
-  border-bottom: 1px dashed rgba(27, 58, 75, 0.12);
+  border-bottom: 1px dashed rgba(0, 132, 255, 0.12);
 
   padding-bottom: 10px;
 
@@ -3457,7 +3319,7 @@ body {
 
   color: var(--color-primary-hover);
 
-  background: rgba(27, 58, 75, 0.08);
+  background: rgba(0, 132, 255, 0.08);
 
   padding: 4px 10px;
 
@@ -3541,9 +3403,9 @@ body {
 
 .teacher-card-badge.regular {
 
-  background: rgba(26, 86, 50, 0.12);
+  background: rgba(16, 185, 129, 0.12);
 
-  color: #1a5632;
+  color: #10b981;
 
 }
 
@@ -3626,23 +3488,35 @@ body {
   /* Collapsible / responsive Sidebar */
 
   .sidebar {
+
     width: 100% !important;
+
     height: auto !important;
+
     min-height: auto;
+
     border-right: none;
+
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
     padding: 12px 16px;
+
     flex-direction: row !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
+
     align-items: center;
+
     justify-content: space-between;
+
     overflow-x: auto;
+
     overflow-y: hidden;
+
     position: sticky;
+
     top: 0;
+
     z-index: 1000;
+
   }
 
   .brand {
@@ -4105,79 +3979,106 @@ body {
 #search_panel .custom-table th, #search_panel .custom-table td, #receipts_panel .custom-table th, #receipts_panel .custom-table td { padding: 4px 6px !important; white-space: normal !important; font-size: 0.80rem !important; }
 #teacher_monthly_salary_panel .custom-table th, #teacher_monthly_salary_panel .custom-table td { padding: 4px 6px !important; white-space: nowrap !important; font-size: 0.70rem !important; }
 #teacher_yearly_summary_banner, #teacher_salary_result_card { padding: 10px !important; margin-bottom: 12px !important; }
-#staff_yearly_summary_banner, #teacher_yearly_summary_banner { display: none !important; }
 #staff_salary_summary_panel .custom-table th, #staff_salary_summary_panel .custom-table td { padding: 4px 6px !important; white-space: nowrap !important; font-size: 0.75rem !important; }
 /* Global Fix for Horizontal Scrolling and Table Compacting */
 html, body { overflow-x: hidden !important; max-width: 100vw !important; }
 .table-responsive { overflow-x: auto !important; }
 .custom-table th, .custom-table td { white-space: nowrap !important; padding: 1px 2px !important; font-size: 0.7rem !important; line-height: 1.15; }
 @media (max-width: 768px) { .custom-table th, .custom-table td { padding: 1px 2px !important; font-size: 0.6rem !important; } }
-/* Task Queue Widget CSS */
-.task-queue-widget {
-  position: fixed;
-  top: 12px;
-  right: 12px;
-  width: 240px;
-  max-width: calc(100vw - 24px);
-  background: transparent;
-  /* Removed blur and shadow to make it completely transparent */
-  border-radius: 12px;
-  z-index: 10000;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+
+
+/* ===== Global Font Scale Down by 1 Level ===== */
+html {
+  font-size: 88% !important;
 }
-.tq-header {
-  padding: 6px 10px;
-  background: rgba(13, 27, 42, 0.75);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  color: white;
-  font-weight: 600;
-  font-size: 0.72rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+body {
+  font-size: 0.85rem !important;
 }
-.tq-count {
-  background: rgba(255,255,255,0.2);
-  padding: 1px 5px;
-  border-radius: 8px;
-  font-size: 0.65rem;
+
+h1 { font-size: 1.4rem !important; }
+h2 { font-size: 1.25rem !important; }
+h3, .modal-title { font-size: 1.1rem !important; }
+h4, .section-label { font-size: 0.95rem !important; }
+h5, h6 { font-size: 0.85rem !important; }
+
+.sidebar-nav-link, .nav-item {
+  font-size: 0.82rem !important;
 }
-.tq-list {
-  max-height: 40px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+
+.btn {
+  font-size: 0.8rem !important;
 }
-.tq-item {
-  padding: 4px 8px;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.68rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-dark);
+
+.btn-sm {
+  font-size: 0.72rem !important;
 }
-.tq-item:last-child {
-  border-bottom: none;
+
+.form-label {
+  font-size: 0.78rem !important;
 }
-.tq-item.status-queued .tq-icon {
-  color: var(--text-light);
+
+.form-input, .form-select, select, input {
+  font-size: 0.8rem !important;
 }
-.tq-item.status-running .tq-icon {
-  color: var(--primary);
-  animation: spin 1.5s linear infinite;
+
+.custom-table, table {
+  font-size: 0.75rem !important;
 }
-.tq-item.status-success .tq-icon {
-  color: var(--success);
+
+.custom-table th, table th {
+  font-size: 0.75rem !important;
 }
-.tq-item.status-error .tq-icon {
-  color: var(--danger);
+
+.custom-table td, table td {
+  font-size: 0.75rem !important;
 }
-@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.text-muted, .text-sm {
+  font-size: 0.72rem !important;
+}
+
+.badge {
+  font-size: 0.7rem !important;
+}
+
+
+/* ===== Floating Always-Visible Scrollbar & Single Scroll Container ===== */
+::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-radius: 10px !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 132, 255, 0.45) !important;
+  border-radius: 10px !important;
+  border: 2px solid transparent !important;
+  background-clip: content-box !important;
+  box-shadow: inset 0 0 6px rgba(0, 132, 255, 0.3) !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 132, 255, 0.75) !important;
+}
+
+* {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(0, 132, 255, 0.45) rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Eliminate Double Scrollbars across all pages */
+.view-panel, .panel, #rooms_grid_container {
+  overflow-y: visible !important;
+  max-height: none !important;
+}
+
+.main-content {
+  overflow-y: scroll !important;
+}
 
 </style>

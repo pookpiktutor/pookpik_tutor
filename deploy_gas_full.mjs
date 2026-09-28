@@ -113,16 +113,19 @@ async function main() {
   projectFiles.forEach(f => console.log(`    - ${f.name} (${f.type})`));
 
   // 2. Read all local files
-  const codeContent = readFileSync(join(BASE_DIR, 'Code.txt'), 'utf8');
+  const codeContent = readFileSync(join(BASE_DIR, 'Code.js'), 'utf8');
   const jsContent = readFileSync(join(BASE_DIR, 'src', 'JavaScript.js'), 'utf8');
   const cssContent = readFileSync(join(BASE_DIR, 'src', 'Styles.css'), 'utf8');
   const indexContent = readFileSync(join(BASE_DIR, 'index.html'), 'utf8');
   
+  const registerContent = readFileSync(join(BASE_DIR, 'src', 'register.html'), 'utf8');
+  
   console.log(`\n📖 Local files:`);
-  console.log(`  Code.txt: ${codeContent.length} chars, ${codeContent.split('\n').length} lines`);
+  console.log(`  Code.js: ${codeContent.length} chars, ${codeContent.split('\n').length} lines`);
   console.log(`  JavaScript.js: ${jsContent.length} chars`);
   console.log(`  Styles.css: ${cssContent.length} chars`);
   console.log(`  index.html: ${indexContent.length} chars`);
+  console.log(`  register.html: ${registerContent.length} chars`);
 
   // 3. Update each file
   const updatedFiles = projectFiles.map(f => {
@@ -145,6 +148,10 @@ async function main() {
       console.log(`\n  ✏️  Updating Index.html (${f.source.length} → ${indexContent.length} chars)`);
       return { ...f, source: indexContent };
     }
+    if (f.name === 'register' && f.type === 'HTML') {
+      console.log(`\n  ✏️  Updating register.html (${f.source.length} → ${registerContent.length} chars)`);
+      return { ...f, source: registerContent };
+    }
     return f;
   });
 
@@ -154,8 +161,38 @@ async function main() {
   
   if (putRes.status === 200) {
     console.log('✅ ALL files deployed successfully!');
+    
+    // Create new version
+    console.log('\n🏷️  Creating new version in Apps Script...');
+    const verRes = await apiRequest('POST', `/v1/projects/${SCRIPT_ID}/versions`, {
+      description: `Auto-version ${new Date().toISOString()}`
+    }, token);
+
+    if (verRes.status === 200 && verRes.body.versionNumber) {
+      const newVersion = verRes.body.versionNumber;
+      console.log(`✅ Created Version ${newVersion}`);
+      
+      const DEPLOYMENT_ID = 'AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg';
+      console.log(`\n🚀 Updating Web App deployment ${DEPLOYMENT_ID} to Version ${newVersion}...`);
+      const depRes = await apiRequest('PUT', `/v1/projects/${SCRIPT_ID}/deployments/${DEPLOYMENT_ID}`, {
+        deploymentConfig: {
+          scriptId: SCRIPT_ID,
+          versionNumber: newVersion,
+          manifestFileName: 'appsscript',
+          description: `Deployed version ${newVersion}`
+        }
+      }, token);
+
+      if (depRes.status === 200) {
+        console.log(`🎉 Web App deployment successfully updated to Version ${newVersion}!`);
+      } else {
+        console.error('⚠️  Failed to update Web App deployment:', depRes.status, JSON.stringify(depRes.body).slice(0, 300));
+      }
+    } else {
+      console.error('⚠️  Failed to create version:', verRes.status, JSON.stringify(verRes.body).slice(0, 300));
+    }
+
     console.log('\n📌 Apps Script Editor:', `https://script.google.com/macros/d/${SCRIPT_ID}/edit`);
-    console.log('⚠️  Remember to: Deploy → Manage Deployments → Edit → New Version → Deploy');
   } else {
     console.error('❌ Deploy failed:', putRes.status);
     const errMsg = JSON.stringify(putRes.body).slice(0, 500);

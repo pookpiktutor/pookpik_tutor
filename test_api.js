@@ -1,12 +1,15 @@
-const url = "https://script.google.com/macros/s/AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA/exec?action=getTeacherCoursesAndStudents&logUser=tutor_0001";
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
 
-fetch(url, { redirect: 'follow' })
-  .then(res => res.text())
-  .then(text => {
-    try {
-      console.log(JSON.stringify(JSON.parse(text), null, 2));
-    } catch(e) {
-      console.log("Failed to parse:", text);
-    }
-  })
-  .catch(err => console.error(err));
+fetch(GAS_API_URL, {
+  redirect: 'follow',
+  method: 'POST',
+  body: JSON.stringify({ functionName: 'getDashboardData', arguments: [] }),
+  headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+}).then(res => res.text()).then(text => {
+  const match = text.match(/<title>(.*?)<\/title>/);
+  console.log("TITLE:", match ? match[1] : 'No title');
+  const bodyText = text.replace(/<[^>]+>/g, '').substring(0, 1000).replace(/\s+/g, ' ');
+  console.log("TEXT:", bodyText);
+}).catch(err => {
+  console.error("ERROR", err);
+});

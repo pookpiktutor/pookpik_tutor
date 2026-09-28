@@ -2452,7 +2452,12 @@ function bootApp() {
 
       }
 
-      switchPanel(initialPanel);
+      const savedPanel = sessionStorage.getItem('current_panel');
+      if (savedPanel) {
+        switchPanel(savedPanel);
+      } else {
+        switchPanel(initialPanel);
+      }
 
       
 
@@ -4690,7 +4695,7 @@ function switchPanel(panelName) {
 
   }
 
-
+  sessionStorage.setItem('current_panel', panelName);
 
   // Update sidebar active link
 

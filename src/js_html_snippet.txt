@@ -1,0 +1,137 @@
+t timeSlots = [
+
+    { label: '08.00', start: '08:00' },
+
+    { label: '09.00', start: '09:00' },
+
+    { label: '10.00', start: '10:00' },
+
+    { label: '11.00', start: '11:00' },
+
+    { label: '12.00', start: '12:00' },
+
+    { label: '13.00', start: '13:00' },
+
+    { label: '14.00', start: '14:00' },
+
+    { label: '15.00', start: '15:00' },
+
+    { label: '16.00', start: '16:00' },
+
+    { label: '17.00', start: '17:00' },
+
+    { label: '18.00', start: '18:00' },
+
+    { label: '19.00', start: '19:00' },
+
+    { label: '20.00', start: '20:00' }
+
+  ];
+
+  
+
+  html += `
+
+    <div style="margin-bottom: 16px; background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); padding: 12px;">
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+
+        <h4 style="margin: 0; font-size: 0.9rem; color: var(--color-primary-hover); font-weight: 700;">🏫 สรุปจำนวนนักเรียนแยกรายสัปดาห์ (วัน${dowName}) - ${branchFilter}</h4>
+
+        <div style="font-size: 0.6rem; color: var(--text-muted); display: flex; gap: 6px;">
+
+          <span>🟢สด</span><span>🔵ออน</span><span>🟡ลา</span><span>🔴ขาด</span><span>🟣ชด</span><span>⭐รวม</span>
+
+        </div>
+
+      </div>
+
+      <div style="overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color);">
+
+        <table style="width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.65rem; text-align: center; background: #fff;">
+
+          <thead>
+
+            <tr style="background: rgba(0,132,255,0.05); border-bottom: 1px solid var(--border-color);">
+
+              <th style="padding: 6px 8px; text-align: left; font-weight: 700; border-right: 1px solid var(--border-color); color: var(--color-primary-hover); white-space: nowrap; width: 110px;">ช่วงเวลา</th>
+
+  `;
+
+  
+
+  weekLabels.forEach(w => {
+
+    html += `<th style="padding: 6px 4px; font-weight: 700; border-right: 1px solid var(--border-color); white-space: nowrap; color: var(--text-main);">${w.label}</th>`;
+
+  });
+
+  
+
+  html += `</tr></thead><tbody>`;
+
+  
+
+  // Compute stats per week per time slot
+
+  timeSlots.forEach(slot => {
+
+    html += `<tr style="border-bottom: 1px solid var(--border-color); transition: background 0.15s;" onmouseover="this.style.background='rgba(0,132,255,0.02)'" onmouseout="this.style.background='none'">
+
+      <td style="padding: 6px 8px; text-align: left; font-weight: 700; border-right: 1px solid var(--border-color); white-space: nowrap; color: var(--text-main);">${slot.label}</td>`;
+
+    
+
+    weekLabels.forEach(w => {
+
+      const weekClasses = (w.classes || []).filter(c => {
+
+        const rb = (c.roomBranch || '').replace(/\s+/g, '');
+
+        return rb.includes(branchFilter);
+
+      });
+
+      
+
+      let live = 0, online = 0, leave = 0, absent = 0, makeup = 0, enrolled = 0;
+
+      weekClasses.forEach(c => {
+
+        const startClean = cleanTimeStr(c.timeStart);
+
+        const mappedStart = startClean ? startClean.substring(0, 2) + ':00' : '';
+
+        if (mappedStart === slot.start) {
+
+          live += parseInt(c.isPresentLive) || 0;
+
+          online += parseInt(c.isPresentOnline) || 0;
+
+          leave += parseInt(c.isLeave) || 0;
+
+          absent += parseInt(c.isAbsent) || 0;
+
+          makeup += parseInt(c.isMakeup) || 0;
+
+          
+
+          const courseName = c.subject;
+
+          const enrollData = (state.enrollments && state.enrollments[courseName]);
+
+          const enrolledCount = Array.isArray(enrollData) ? enrollData.length : (parseInt(enrollData) || 0);
+
+          enrolled += enrolledCount;
+
+        }
+
+      });
+
+      
+
+      const total = live + online + leave;
+
+      if (total > 0 || absent > 0 || makeup > 0 || enrolled > 0) {
+
+        html += `<td style="padding: 4px 3px; border-right: 1px solid var(--border-color); vertical-

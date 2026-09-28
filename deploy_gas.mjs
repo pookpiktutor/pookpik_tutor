@@ -13,10 +13,10 @@ const https = require('https');
 
 // ============ CONFIG ============
 const SCRIPT_ID = '1btIyBNvEsl4h7fyRhGkR94NXt2eDJEsL2tuw3CHuuzDDMFQNYiAC6MQZ';
-const DEPLOYMENT_ID = 'AKfycbyYjh5-6frv-AytBYl1EnWB46Vh5_VCkVVRg6XsU4A-KUJoR8nFh46XZ-ffvbtwiZHhhA';
+const DEPLOYMENT_ID = 'AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg';
 const SPREADSHEET_ID = '1QLEJgYWHfDQVwRZg7nTPc0ViTu7mpkBF26Fk6NocQaI';
 const BASE_DIR = process.cwd();
-const CODE_FILE = join(BASE_DIR, 'Code.txt');
+const CODE_FILE = join(BASE_DIR, 'Code.js');
 const INDEX_FILE = join(BASE_DIR, 'index.html');
 const JS_FILE = join(BASE_DIR, 'src', 'JavaScript.js');
 // ================================
