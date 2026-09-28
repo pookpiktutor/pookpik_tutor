@@ -37051,7 +37051,7 @@ function showCampPaymentModal(timestamp) {
     return opts;
   };
 
-  var defaultFull = item.full || getCampDefaultFee(item.camp_name, item.std_grade);
+  var defaultFull = getCampDefaultFee(item.camp_name, item.std_grade);
   var defaultPaid = item.paid || 0;
   var defaultOutst = Math.max(0, defaultFull - defaultPaid);
 
@@ -37301,10 +37301,7 @@ function renderCampsTable() {
     var totalOutstanding = 0;
 
     filteredData.forEach(function(item) {
-      var full = parseFloat(item.full);
-      if (isNaN(full) || full <= 0) {
-        full = getCampDefaultFee(item.camp_name, item.std_grade);
-      }
+      var full = getCampDefaultFee(item.camp_name, item.std_grade);
       var paid = parseFloat(item.paid) || 0;
       var outst = Math.max(0, full - paid);
       totalFullFee += full;
@@ -37459,8 +37456,7 @@ function renderCampsTable() {
         if (!finCamps[cname]) {
           finCamps[cname] = { full: 0, paid: 0, outst: 0 };
         }
-        var full = parseFloat(item.full);
-        if (isNaN(full) || full <= 0) full = getCampDefaultFee(item.camp_name, item.std_grade);
+        var full = getCampDefaultFee(item.camp_name, item.std_grade);
         var paid = parseFloat(item.paid) || 0;
         var outst = Math.max(0, full - paid);
         finCamps[cname].full += full;
@@ -37561,7 +37557,7 @@ function renderCampsTable() {
       html += "<tr style='background-color: #f8fafc;'><td colspan='15' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge' style='margin-left: 8px; font-weight: 600; background-color: " + palette.badgeBg + "; color: " + palette.badgeText + "; border: 1px solid " + palette.badgeText + "33;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
       
       grouped[cName][cGroup].forEach(function(item) {
-        var full = parseFloat(item.full) || getCampDefaultFee(item.camp_name, item.std_grade);
+        var full = getCampDefaultFee(item.camp_name, item.std_grade);
         var paid = parseFloat(item.paid) || 0;
         var outst = Math.max(0, full - paid);
         var escTs = (item.timestamp || '').toString().replace(/'/g, "\\'");
@@ -37585,6 +37581,14 @@ function renderCampsTable() {
         html += "<td>" + (item.std_school || "-") + "</td>";
         html += "<td>" + (item.medical_condition || "-") + "</td>";
         html += "<td>" + (item.shirt_size || "-") + "</td>";
+        
+        // Slip column
+        var slipUrl = (item.slip_image || "").trim();
+        if (slipUrl && slipUrl !== "-" && slipUrl.indexOf("http") === 0) {
+          html += "<td><a href='" + slipUrl + "' target='_blank' class='btn btn-sm btn-info' style='font-size:0.75rem; padding: 2px 6px;'>ดูสลิป</a></td>";
+        } else {
+          html += "<td>-</td>";
+        }
         
         // Outstanding Fee
         var outstColor = outst > 0 ? "color: #dc2626; font-weight: bold;" : "color: #16a34a;";
