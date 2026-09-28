@@ -6073,239 +6073,8 @@ function getGradeCourses(grade, branch, logUser) {
 // Sync back student records to grade sheets
 
 function syncToGradeSheet(student) {
-  computeCumulativePayment(student);
-
-  const db = getDb();
-
-  let sheetName = '';
-
-  
-
-  const uiClassType = student.classType || 'เดี่ยว';
-
-  const grade = student.grade || 'อนุบาล';
-
-  
-
-  let normalizedClassType = 'เดี่ยว';
-
-  if (uiClassType.includes('เดี่ยว')) {
-
-    normalizedClassType = 'เดี่ยว';
-
-    sheetName = `เดี่ยว ${grade}`;
-
-  } else if (uiClassType.includes('ย่อย')) {
-
-    if (uiClassType.includes('2-3')) normalizedClassType = 'ย่อย 2-3';
-
-    else if (uiClassType.includes('4-5')) normalizedClassType = 'ย่อย 4-5';
-
-    else if (uiClassType.includes('6-10')) normalizedClassType = 'ย่อย 6-10';
-
-    sheetName = normalizedClassType;
-
-  } else {
-
-    normalizedClassType = 'กลุ่มหลัก';
-
-    let suffix = '1';
-
-    if (student.branchLearn.includes('สาขา2')) suffix = '2';
-
-    else if (student.branchLearn.includes('สาขา3')) suffix = '3';
-
-    sheetName = `${grade}/${suffix}`;
-
-  }
-
-  
-
-  const sheet = getOrCreateSheet(sheetName);
-
-  if (!sheet) return;
-
-  
-
-  const lastRow = sheet.getLastRow();
-
-  let range = [];
-
-  const startRow = sheetName.includes('เดี่ยว') || sheetName.includes('ย่อย') ? 2 : 6;
-
-  
-
-  if (lastRow >= startRow) {
-
-    range = sheet.getRange(startRow, 2, lastRow - (startRow - 1), 10).getValues(); 
-
-  }
-
-  
-
-  let targetRowIndex = -1;
-
-  const courseName = student.round || '';
-
-  const matchName = (student.originalName || student.name).trim();
-
-  const matchRound = student.originalRound || student.round || '';
-
-  
-
-  for (let i = 0; i < range.length; i++) {
-
-    if (range[i][0].toString().trim() === matchName && (sheetName.includes('เดี่ยว') ? range[i][9].toString().trim() === matchRound : true)) {
-
-      targetRowIndex = i + startRow;
-
-      break;
-
-    }
-
-  }
-
-  
-
-  const rowDataClassType = normalizedClassType === 'เดี่ยว' ? `เดี่ยว ${student.grade}` : normalizedClassType;
-
-  const isPrivateSheet = sheetName.includes('เดี่ยว') || sheetName.includes('ย่อย');
-  const rowData = isPrivateSheet ? [
-    rowDataClassType, // 0
-    student.name, // 1
-    student.nickname, // 2
-    student.school, // 3
-    student.round || '', // 4: คอร์ส (คอร์สเรียน / วิชา)
-    student.contact || '', // 5
-    student.lineName || '', // 6
-    student.lineId || '', // 7
-    student.branchLearn, // 8
-    student.branchPay, // 9
-    student.round || '', // 10: รอบเรียน
-    student.paymentTimeNote || '', // 11
-    student.carriedForwardFee || 0, // 12
-    student.full || 0, // 13
-    student.paid || 0, // 14
-    student.full - student.paid, // 15
-    student.paymentDate || '', // 16
-    student.paymentChannel || '', // 17
-    student.staff || '', // 18
-    // งวด 1
-    student.payRound1_date || '',
-    parseFloat(student.payRound1_amount) || 0,
-    student.payRound1_channel || '',
-    student.payRound1_staff || '',
-    student.payRound1_time || '',
-    // งวด 2
-    student.payRound2_date || '',
-    parseFloat(student.payRound2_amount) || 0,
-    student.payRound2_channel || '',
-    student.payRound2_staff || '',
-    student.payRound2_time || '',
-    // งวด 3
-    student.payRound3_date || '',
-    parseFloat(student.payRound3_amount) || 0,
-    student.payRound3_channel || '',
-    student.payRound3_staff || '',
-    student.payRound3_time || '',
-    // class hours
-    student.classHours || '', // 34
-    student.classHoursLeft || '' // 35
-  ] : [
-    rowDataClassType,
-    student.name,
-    student.nickname,
-    student.school,
-    student.classSection || '',
-    student.contact || '', 
-    student.lineName || '',
-    student.lineId || '',
-    student.branchLearn,
-    student.branchPay,
-    student.round || '', 
-    student.paymentTimeNote || '',
-    student.carriedForwardFee || 0,
-    student.full || 0,
-    student.paid || 0,
-    student.full - student.paid,
-    student.paymentDate || '',
-    student.paymentChannel || '',
-    student.staff || '',
-    student.classHours || '',
-    student.classHoursLeft || ''
-  ];
-
-  
-
-  if (sheetName.includes('เดี่ยว') || sheetName.includes('ย่อย')) {
-
-    if (targetRowIndex === -1) {
-
-      sheet.appendRow(rowData);
-
-    } else {
-
-      sheet.getRange(targetRowIndex, 1, 1, 36).setValues([rowData]);
-
-    }
-
-  } else {
-    // --- Master Database Rewrite ---
-    const db = getDb();
-    const dbEnroll = db.getSheetByName('DB_Enrollments');
-    const dbStudents = db.getSheetByName('DB_Students');
-    
-    if (!dbEnroll || !dbStudents) return;
-
-    // 1. Sync Student Info
-    const stdData = dbStudents.getRange(2, 4, Math.max(1, dbStudents.getLastRow() - 1), 1).getValues();
-    let studentId = "";
-    let foundStudent = false;
-    
-    for (let i = 0; i < stdData.length; i++) {
-      if (stdData[i][0] && stdData[i][0].toString().trim() === student.name.trim()) {
-        foundStudent = true;
-        studentId = dbStudents.getRange(i + 2, 1).getValue();
-        break;
-      }
-    }
-    
-    if (!foundStudent) {
-      const newRowIdx = (dbStudents.getLastRow() || 1) + 1;
-      studentId = "STD-" + Utilities.formatString("%04d", newRowIdx - 1);
-      dbStudents.appendRow([
-        studentId, student.grade, student.branchLearn, student.name, student.nickname, 
-        student.contact, student.school, student.lineId
-      ]);
-    }
-
-    // 2. Sync Course Enrollments
-    try {
-      const selectedList = student.selectedCourses || [];
-      if (selectedList.length > 0) {
-        const today = new Date();
-        const selectedMap = {};
-        
-        selectedList.forEach(item => {
-          if (item && typeof item === 'object' && item.courseName) {
-            selectedMap[item.courseName.toString().trim()] = parseInt(item.sessions) || 9;
-          } else if (item) {
-            selectedMap[item.toString().trim()] = 9;
-          }
-        });
-
-        for (const courseName in selectedMap) {
-          const sessions = selectedMap[courseName];
-          dbEnroll.appendRow([
-            today, studentId, student.name, student.grade, student.branchLearn, 
-            courseName, sessions, student.paid, student.full
-          ]);
-        }
-      }
-    } catch (err) {
-      Logger.log("Error DB_Enrollments: " + err);
-    }
-  }
+  // Disabled by new architecture
+  return;
 }
 let cachedStatusValues_ = null;
 
@@ -6995,192 +6764,91 @@ function deleteStudentRegistration(id, logUser) {
 // ----------------------------------------------------
 
 function getGradeSheetData(grade, branch, logUser, searchTerm) {
-
   if (logUser) checkTeacherBlock(logUser);
-  migrateAllSheetsIfNeeded();
-
   try {
     const db = getDb();
+    const courseSheet = db.getSheetByName('DB_Courses');
+    if (!courseSheet) return { success: true, courses: [], students: [] };
     
-    // StatusDB mapping removed by request
-
-    const suffixes = ['1', '2', '3'];
+    const courseData = courseSheet.getDataRange().getValues();
+    if (courseData.length <= 1) return { success: true, courses: [], students: [] };
+    
     const allCourses = [];
-    const allStudents = [];
-    
     let gradesToFetch = [grade];
     if (grade === 'all') {
       gradesToFetch = ['อนุบาล', 'ป.1', 'ป.2', 'ป.3', 'ป.4', 'ป.5', 'ป.6', 'ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
     }
-    
     const term = (searchTerm || '').toLowerCase().trim();
-
-    gradesToFetch.forEach(g => {
-      suffixes.forEach(suffix => {
-        const sheetName = `${g}/${suffix}`;
-        const sheet = db.getSheetByName(sheetName);
-        if (!sheet) return;
-
-      const lastRow = sheet.getLastRow();
-      const lastCol = sheet.getLastColumn();
-      if (lastRow < 5) return;
-
-      const branchName = `สาขา${suffix}`;
-      const sheetCourses = [];
-
-      if (lastCol >= COURSE_START_COL) {
-        const fullHeader = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
-        let colOutstanding = -1, colPaid = -1;
-        for (let c = 0; c < fullHeader.length; c++) {
-            const val = fullHeader[c].toString().trim();
-            if (['คงเหลือ', 'ยอดค้าง'].includes(val)) colOutstanding = c + 1;
-            if (['ยอดจ่าย', 'จ่าย', 'ชำระแล้ว', 'ยอดชำระมา'].includes(val)) colPaid = c + 1;
-        }
-        let startCourseCol = COURSE_START_COL;
-        for (let c = COURSE_START_COL; c <= lastCol; c++) {
-            const val = fullHeader[c - 1] ? fullHeader[c - 1].toString().trim() : '';
-            if (val && !['ยอดจ่าย', 'คงเหลือ', 'ราคาเต็ม', 'จ่าย', 'ชำระแล้ว'].includes(val) && val.length > 2) {
-                if (c > colOutstanding && c > colPaid) {
-                    startCourseCol = c;
-                    break;
-                }
-            }
-        }
-        
-        if (startCourseCol <= lastCol) {
-          const numCols = lastCol - (startCourseCol - 1);
-          const headerRow1 = sheet.getRange(1, startCourseCol, 1, numCols).getValues()[0];
-          const headerRow2 = sheet.getRange(2, startCourseCol, 1, numCols).getValues()[0];
-          const headerRow3 = sheet.getRange(3, startCourseCol, 1, numCols).getValues()[0];
-          const headerRow4 = sheet.getRange(4, startCourseCol, 1, numCols).getValues()[0];
-  
-          for (let i = 0; i < headerRow1.length; i++) {
-            if (headerRow1[i]) {
-              const cName = headerRow1[i].toString().trim();
-              if (cName && !['ยอดจ่าย', 'คงเหลือ', 'ราคาเต็ม', 'จ่าย', 'ชำระแล้ว'].includes(cName)) {
-                sheetCourses.push({
-                  colIndex: startCourseCol + i,
-                  courseName: cName,
-                  price: parseFloat(headerRow2[i]) || 0,
-                  dayTime: headerRow3[i] ? headerRow3[i].toString().trim() : '',
-                  totalSessions: parseInt(headerRow4[i]) || 10,
-                  sheetName: sheetName,
-                  branch: branchName
-                });
-              }
-            }
-          }
-        }
-      }
-
-      allCourses.push(...sheetCourses);
-
-      if (lastRow >= 6) {
-        const studentData = sheet.getRange(6, 1, lastRow - 5, lastCol).getValues();
-        studentData.forEach((row, idx) => {
-          const name = row[1] ? row[1].toString().trim() : '';
-          if (!name) return;
-          const studentId = row[18] ? row[18].toString().trim() : '';
-          
-          if (term) {
-            const colA = (row[0] || '').toString().toLowerCase();
-            const colB = name.toLowerCase();
-            const colG = (row[6] || '').toString().toLowerCase();
-            if (!colA.includes(term) && !colB.includes(term) && !colG.includes(term)) {
-              return;
-            }
-          }
-
-          
-
-          const courseValues = {};
-
-          sheetCourses.forEach(c => {
-
-            const val = row[c.colIndex - 1];
-
-            courseValues[c.colIndex] = val !== '' ? parseFloat(val) : '';
-
-          });
-
-          
-
-          allStudents.push({
-
-            rowIndex: 6 + idx,
-
-            grade: row[0] ? row[0].toString().trim() : '',
-
-            name: name,
-
-            nickname: row[2] ? row[2].toString().trim() : '',
-
-            school: row[3] ? row[3].toString().trim() : '',
-
-            classSection: row[4] ? row[4].toString().trim() : '',
-
-            contact: row[5] ? row[5].toString().trim() : '',
-
-            lineName: row[6] ? row[6].toString().trim() : '',
-
-            lineId: row[7] ? row[7].toString().trim() : '',
-
-            branchLearn: row[8] ? row[8].toString().trim() : '',
-
-            branchPay: row[9] ? row[9].toString().trim() : '',
-
-            
-
-            full: parseFloat(row[10]) || 0, 
-            
-            studentId: studentId,
-
-            discount: parseFloat(row[11]) || 0, 
-
-            outstanding: parseFloat(row[12]) || 0, 
-
-            paid: parseFloat(row[13]) || 0, 
-
-            isCard: parseInt(row[14]) === 1 ? 1 : 0, 
-
-            paymentChannel: row[16] ? row[16].toString().trim() : 'กสิกร บัญชีบริษัท(สแกน)', // Column Q (17) -> index 16
-            staff: row[17] ? row[17].toString().trim() : '', // Column R (18) -> index 17
-            
-            courseValues: courseValues,
-
-            sheetName: sheetName,
-
-            branch: branchName
-
-          });
-
-        });
-
-      }
-
-    });
-    });
-
     
-
-    return {
-
-      success: true,
-
-      sheetName: `${grade}/merged`,
-
-      courses: allCourses,
-
-      students: allStudents
-
-    };
-
+    for (let i = 1; i < courseData.length; i++) {
+       const row = courseData[i];
+       const rowGrade = row[1];
+       const rowBranch = row[2];
+       if (gradesToFetch.includes(rowGrade) && (!branch || branch === 'all' || rowBranch === branch)) {
+           const cName = row[5] ? row[5].toString() : '';
+           if (term && !cName.toLowerCase().includes(term)) continue;
+           
+           allCourses.push({
+               colIndex: i, // use row index as colIndex
+               courseId: row[0],
+               grade: rowGrade,
+               branch: rowBranch,
+               name: cName,
+               price: row[6],
+               dayTime: row[7],
+               sessions: row[8],
+               count: row[9] || 0,
+               round: row[3] || '',
+               year: row[4] || ''
+           });
+       }
+    }
+    
+    const allStudents = [];
+    const enrollSheet = db.getSheetByName('DB_Enrollments');
+    if (enrollSheet) {
+      const enrollData = enrollSheet.getDataRange().getValues();
+      const studentMap = {}; 
+      
+      for (let i = 1; i < enrollData.length; i++) {
+        const row = enrollData[i];
+        const studentId = row[1];
+        const sName = row[2];
+        const sGrade = row[3];
+        const sBranch = row[4];
+        const courseName = row[5];
+        const sessions = row[6];
+        const paid = row[7];
+        const full = row[8];
+        
+        if (gradesToFetch.includes(sGrade) && (!branch || branch === 'all' || sBranch === branch)) {
+          if (!studentMap[studentId]) {
+             studentMap[studentId] = {
+                row: i + 1,
+                id: studentId,
+                name: sName,
+                grade: sGrade,
+                branch: sBranch,
+                courseValues: {},
+                paidStatus: paid >= full ? 'จ่ายแล้ว' : (paid > 0 ? 'มัดจำ' : 'ค้างชำระ')
+             };
+          }
+          
+          const cMatch = allCourses.find(c => c.name === courseName);
+          if (cMatch) {
+             studentMap[studentId].courseValues[cMatch.colIndex] = 'เรียน';
+          }
+        }
+      }
+      for (const key in studentMap) {
+         allStudents.push(studentMap[key]);
+      }
+    }
+    
+    return { success: true, courses: allCourses, students: allStudents };
   } catch (e) {
-
     return { success: false, error: e.message };
-
   }
-
 }
 
 function saveGradeSheetData(grade, branch, coursesUpdate, studentsUpdate, logUser) {
@@ -7477,63 +7145,28 @@ function addNewCourseColumn(grade, branch, courseName, price, dayTime, sessions,
 }
 
 function addNewCoursesBatch(grade, branch, courseList, logUser) {
-
   checkTeacherBlock(logUser);
-
   try {
-
     const db = getDb();
-
-    let suffix = '1';
-
-    if (branch.includes('สาขา2')) suffix = '2';
-
-    else if (branch.includes('สาขา3')) suffix = '3';
-
+    let sheet = db.getSheetByName('DB_Courses');
+    if (!sheet) {
+      sheet = db.insertSheet('DB_Courses');
+      sheet.appendRow(['CourseID', 'Grade', 'Branch', 'Round', 'Year', 'CourseName', 'Price', 'DayTime', 'Sessions', 'EnrolledCount']);
+    }
     
-
-    const sheetName = `${grade}/${suffix}`;
-
-    const sheet = db.getSheetByName(sheetName);
-
-    if (!sheet) throw new Error(`ไม่พบชีตห้องเรียน ${sheetName}`);
-
-    
-
-    const lastCol = sheet.getLastColumn();
-
-    
-
-    // Write each course in adjacent columns
-
     courseList.forEach((c, idx) => {
-
-      const targetCol = lastCol + 1 + idx;
-
-      sheet.getRange(1, targetCol).setValue(c.courseName + (c.dayTime ? ' ' + c.dayTime.trim() : ''));
-
-      sheet.getRange(2, targetCol).setValue(c.price);
-
-      sheet.getRange(3, targetCol).setValue(c.dayTime || '');
-
-      sheet.getRange(4, targetCol).setValue(parseInt(c.sessions) || 10);
-
-      
-
-      logActivity(logUser, 'เพิ่มคอร์สเรียนแยกห้อง', `ชีต ${sheetName} เพิ่มคอร์ส ${c.courseName} ราคา ${c.price} จำนวนครั้ง ${c.sessions} วัน/เวลา ${c.dayTime || ''}`);
-
+      const ts = new Date().getTime() + Math.random().toString(36).substring(2,5);
+      const courseId = `CRS-${ts}-${idx}`;
+      sheet.appendRow([
+         courseId, grade, branch || 'สาขา1', '', '', c.courseName, c.price, c.dayTime, parseInt(c.sessions) || 10, 0
+      ]);
     });
-
     
-
+    logActivity(logUser, 'เพิ่มกลุ่มวิชาหลัก', `เพิ่ม ${courseList.length} วิชา ลงในระดับชั้น ${grade}`);
     return { success: true };
-
   } catch (e) {
-
     return { success: false, error: e.message };
-
   }
-
 }
 
 function deleteCourseColumn(grade, branch, sheetName, colIndex, courseName, logUser) {
@@ -15537,9 +15170,9 @@ function submitPublicRegistration(studentData, fileData) {
 
       outstanding: outstandingAmount,
 
-      paymentDate: Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy'),
+      paymentDate: studentData.payMode === 'unpaid' ? '' : (studentData.payDate ? Utilities.formatDate(new Date(studentData.payDate), 'Asia/Bangkok', 'dd/MM/yyyy') : Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy')),
 
-      paymentChannel: slipUrl !== '-' ? 'โอนเงิน (สลิปแนบออนไลน์)' : 'รอชำระเงิน',
+      paymentChannel: studentData.payMode === 'unpaid' ? '' : 'TTB บัญชีบริษัท(สแกน)',
 
       staff: 'Online Registration',
 
@@ -15607,45 +15240,75 @@ function submitPublicRegistration(studentData, fileData) {
 function getAvailableCourses(grade, classType, branchLearn) {
   try {
     const db = getDb();
-    const learnSheet = db.getSheetByName('Data Learn');
-    if (!learnSheet) return { success: false, error: 'Data Learn not found' };
+    let sheetName = classType === 'กลุ่มหลัก' || classType === 'กลุ่มหลักตามตารางคอร์ส' ? 'DB_Courses' : 'Data Learn';
+    const learnSheet = db.getSheetByName(sheetName);
+    if (!learnSheet) return { success: false, error: sheetName + ' not found' };
 
     const data = learnSheet.getDataRange().getValues();
-    const headers = data[0];
-    
-    // Find column indexes
-    let subjectIdx = 0, typeIdx = 0, branchIdx = 0, priceIdx = 0;
-    for (let c = 0; c < headers.length; c++) {
-      const h = headers[c].toString().toLowerCase();
-      if (h.includes('วิชา') || h.includes('subject')) subjectIdx = c;
-      if (h.includes('ประเภท') || h.includes('type')) typeIdx = c;
-      if (h.includes('สาขา') || h.includes('branch')) branchIdx = c;
-      if (h.includes('ราคา') || h.includes('price')) priceIdx = c;
-    }
-
     const selectedCourses = [];
     
-    for (let r = 1; r < data.length; r++) {
-      const row = data[r];
-      const courseName = row[subjectIdx];
-      const courseType = row[typeIdx] || '';
-      const courseBranch = row[branchIdx] || '';
-      const coursePrice = row[priceIdx] || 0;
+    if (sheetName === 'DB_Courses') {
+      // DB_Courses schema: ['CourseID', 'Grade', 'Branch', 'Round', 'Year', 'CourseName', 'Price', 'DayTime', 'Sessions', 'EnrolledCount']
+      for (let r = 1; r < data.length; r++) {
+        const row = data[r];
+        const rowGrade = (row[1] || '').toString().trim();
+        const rowBranch = (row[2] || '').toString().trim();
+        const courseName = row[5];
+        const coursePrice = row[6] || 0;
+        const sessions = row[8] || 9;
+        const dayTime = row[7] || '';
+        
+        if (!courseName) continue;
+        if (grade && grade !== 'all' && rowGrade !== grade) continue;
+        
+        // Match branch (e.g. "สาขา2" in branchLearn should match "สาขา2" in rowBranch)
+        if (branchLearn && rowBranch && !branchLearn.replace(/\s+/g,'').includes(rowBranch.replace(/\s+/g,''))) continue;
+        
+        selectedCourses.push({
+          courseName: courseName.toString().trim() + (dayTime ? ' (' + dayTime + ')' : ''),
+          sessions: parseInt(sessions) || 9,
+          price: coursePrice,
+          full: coursePrice,
+          outstanding: coursePrice
+        });
+      }
+    } else {
+      const headers = data[0];
+      let subjectIdx = 0, typeIdx = 0, branchIdx = 0, priceIdx = -1;
+      for (let c = 0; c < headers.length; c++) {
+        const h = headers[c].toString().toLowerCase();
+        if (h.includes('วิชา') || h.includes('subject')) subjectIdx = c;
+        if (h.includes('ประเภท') || h.includes('type')) typeIdx = c;
+        if (h.includes('สาขา') || h.includes('branch')) branchIdx = c;
+        if (h.includes('ราคา') || h.includes('price') || h.includes('ค่าเรียน') || h.includes('ยอด') || h.includes('fee')) priceIdx = c;
+      }
       
-      if (!courseName) continue;
-      
-      // Filter by branch and classtype if needed (or allow cross-grade)
-      if (branchLearn && courseBranch && !courseBranch.includes(branchLearn.replace('สาขา', '').trim())) continue;
-      if (classType === 'กลุ่มหลัก' && courseType.includes('เดี่ยว')) continue;
-      
-      selectedCourses.push({
-        courseName: courseName.toString().trim(),
-        sessions: 9, // Default sessions
-        price: coursePrice
-      });
+      for (let r = 1; r < data.length; r++) {
+        const row = data[r];
+        const courseName = row[subjectIdx];
+        const courseType = row[typeIdx] || '';
+        const courseBranch = row[branchIdx] || '';
+        let coursePrice = 0;
+        if (priceIdx !== -1) {
+          let rawP = row[priceIdx];
+          if (typeof rawP === 'string') rawP = rawP.replace(/,/g, '').replace(/฿/g, '').trim();
+          coursePrice = parseFloat(rawP) || 0;
+        }
+        
+        if (!courseName) continue;
+        if (branchLearn && courseBranch && !courseBranch.includes(branchLearn.replace('สาขา', '').trim())) continue;
+        if (classType === 'กลุ่มหลัก' && courseType.includes('เดี่ยว')) continue;
+        
+        selectedCourses.push({
+          courseName: courseName.toString().trim(),
+          sessions: 9,
+          price: coursePrice,
+          full: coursePrice,
+          outstanding: coursePrice
+        });
+      }
     }
     
-    // Remove duplicates
     const uniqueCourses = [];
     const seen = new Set();
     for (let c of selectedCourses) {
@@ -15655,7 +15318,7 @@ function getAvailableCourses(grade, classType, branchLearn) {
       }
     }
 
-    return { success: true, selectedCourses: uniqueCourses };
+    return { success: true, selectedCourses: uniqueCourses, courses: uniqueCourses };
   } catch (err) {
     return { success: false, error: err.toString() };
   }
@@ -15664,19 +15327,31 @@ function getAvailableCourses(grade, classType, branchLearn) {
 function getStudentHorizontalData(name, grade, classType, branchLearn) {
   try {
     const db = getDb();
-    let sheetName = "";
     let isMainClass = (classType === "กลุ่มหลัก" || classType === "กลุ่มหลักตามตารางคอร์ส");
     
     if (isMainClass) {
-       let branchNum = "1";
-       if (branchLearn && branchLearn.includes("สาขา")) {
-           branchNum = branchLearn.replace("สาขา", "").trim();
-       }
-       sheetName = grade + "/" + branchNum;
-    } else {
-       sheetName = classType + " " + grade;
+        // Read from DB_Enrollments
+        const enrollSheet = db.getSheetByName('DB_Enrollments');
+        if (!enrollSheet) return { success: false, error: 'ไม่พบชีต DB_Enrollments' };
+        
+        const data = enrollSheet.getDataRange().getValues();
+        const studentCourses = [];
+        
+        for (let r = 1; r < data.length; r++) {
+            const row = data[r];
+            const sNameFull = (row[2] || '').toString().trim();
+            const courseName = (row[5] || '').toString().trim();
+            if (sNameFull === name.trim()) {
+                studentCourses.push({
+                    courseName: courseName,
+                    status: 'เรียน'
+                });
+            }
+        }
+        return { success: true, studentCourses: studentCourses };
     }
-
+    
+    let sheetName = classType + " " + grade;
     let sheet = db.getSheetByName(sheetName);
     if (!sheet && !isMainClass) {
         sheet = db.getSheetByName(grade + " " + classType);
@@ -15685,48 +15360,31 @@ function getStudentHorizontalData(name, grade, classType, branchLearn) {
     }
     
     if (!sheet) return { success: false, error: 'ไม่พบชีต: ' + sheetName };
-    if (!isMainClass) return { success: true, selectedCourses: [] }; // Only main groups have horizontal courses
-
-    const lastCol = sheet.getLastColumn();
-    const lastRow = sheet.getLastRow();
     
-    if (lastCol < COURSE_START_COL || lastRow < 6) {
-       return { success: true, selectedCourses: [] };
-    }
+    const data = sheet.getDataRange().getValues();
+    if (data.length < 5) return { success: true, studentCourses: [] };
     
-    const headers = sheet.getRange(1, COURSE_START_COL, 1, lastCol - (COURSE_START_COL - 1)).getValues()[0];
-    const dataRange = sheet.getRange(6, 2, lastRow - 5, lastCol - 1).getValues(); // Start from Col B (index 0)
+    const headers = data[0];
+    const studentCourses = [];
     
-    let selectedCourses = [];
-    let cleanTargetName = (name || '').replace(/\s+/g, '').trim();
-    
-    for (let i = 0; i < dataRange.length; i++) {
-       const rowName = (dataRange[i][0] || '').toString().replace(/\s+/g, '').trim(); // Col B is index 0
-       if (rowName === cleanTargetName) {
-          // Found student, check horizontal courses
-          // Course columns in dataRange start at index (COURSE_START_COL - 2)
-          const courseColIndexStart = COURSE_START_COL - 2;
-          
-          for (let j = 0; j < headers.length; j++) {
-             const cName = headers[j] ? headers[j].toString().trim() : '';
-             if (!cName) continue;
-             
-             const cellValue = dataRange[i][courseColIndexStart + j];
-             if (cellValue) {
-                const strVal = cellValue.toString().toLowerCase().trim();
-                if (strVal === '✅' || strVal === '✔' || strVal === 'x' || strVal === '✓') {
-                   selectedCourses.push({ courseName: cName, sessions: 10 }); // Default sessions
-                } else if (!isNaN(parseFloat(strVal))) {
-                   // If it's a number, it might be the number of sessions
-                   selectedCourses.push({ courseName: cName, sessions: parseFloat(strVal) });
-                }
-             }
-          }
-          break;
+    let nameCol = 3;
+    for (let r = 4; r < data.length; r++) {
+       if (data[r][nameCol] && data[r][nameCol].toString().trim() === name.trim()) {
+           for (let c = COURSE_START_COL; c <= data[r].length; c++) {
+               const cName = headers[c-1];
+               const cVal = data[r][c-1];
+               if (cName && cVal && cVal.toString().trim() !== '') {
+                   studentCourses.push({
+                       courseName: cName.toString().trim(),
+                       status: cVal.toString().trim()
+                   });
+               }
+           }
+           break;
        }
     }
     
-    return { success: true, selectedCourses: selectedCourses };
+    return { success: true, studentCourses: studentCourses };
   } catch (err) {
     return { success: false, error: err.toString() };
   }
@@ -17590,9 +17248,9 @@ function saveCampStudentData(campData) {
       fullCost,
       paidAmount,
       outstanding,
-      campData.pay_r1_date || (paidAmount > 0 ? todayStr : ''),
+      campData.pay_date !== undefined ? campData.pay_date : (paidAmount > 0 ? todayStr : ''),
       campData.pay_r1_amount || (paidAmount > 0 ? paidAmount : ''),
-      campData.pay_r1_channel || 'TTB บัญชีบริษัท(สแกน)',
+      campData.pay_r1_channel !== undefined ? campData.pay_r1_channel : (paidAmount > 0 ? 'TTB บัญชีบริษัท(สแกน)' : ''),
       campData.pay_r2_date || '',
       campData.pay_r2_amount || '',
       campData.pay_r2_channel || (campData.pay_r2_amount ? 'TTB บัญชีบริษัท(สแกน)' : ''),

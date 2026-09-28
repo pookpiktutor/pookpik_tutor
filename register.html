@@ -638,17 +638,41 @@
               style="max-width: 100%; width: 480px; height: auto; border-radius: 12px; border: 1px solid #cbd5e1; margin: 0 auto; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
           </div>
 
-          <div class="form-group">
-            <label class="form-label">จำนวนเงินที่โอน (บาท)</label>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <input type="number" id="transfer_amount" class="form-input" placeholder="ยอดเงินตามสลิป"
-                oninput="recalcSelectedFees()">
-              <label
-                style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; cursor: pointer; white-space: nowrap;">
-                <input type="checkbox" id="unpaid_checkbox" onchange="toggleUnpaid(this.checked)"
-                  style="width:18px;height:18px;accent-color:#0084ff;">
-                ยังไม่ได้ชำระ
+          <!-- รูปแบบการชำระเงินก่อนแนบสลิป สำหรับหน้าปกติ -->
+          <div class="info-card" id="regular_payment_option_card" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+              รูปแบบการชำระเงินก่อนแนบสลิป
+            </h3>
+            <div style="display: flex; gap: 20px; margin-bottom: 14px; flex-wrap: wrap;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #1e293b;">
+                <input type="radio" name="pay_mode" value="unpaid" checked onchange="toggleRegPayMode(); recalcSelectedFees();">
+                <span>ยังไม่ชำระเงิน</span>
               </label>
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #1e293b;">
+                <input type="radio" name="pay_mode" value="full" onchange="toggleRegPayMode(); recalcSelectedFees();">
+                <span>ชำระเต็มจำนวน</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #1e293b;">
+                <input type="radio" name="pay_mode" value="deposit" onchange="toggleRegPayMode(); recalcSelectedFees();">
+                <span>ชำระ 2 ครั้ง (ครั้งแรกมัดจำ)</span>
+              </label>
+            </div>
+
+            <div id="reg_pay_datetime_container" style="display: none; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+              <div>
+                <label class="form-label">วันที่ชำระเงิน (วันที่โอน)</label>
+                <input type="date" id="reg_pay_date" class="form-input">
+              </div>
+              <div>
+                <label class="form-label">เวลาที่ชำระเงิน (เวลาที่โอน)</label>
+                <input type="time" id="reg_pay_time" class="form-input">
+              </div>
+            </div>
+
+            <div id="reg_deposit_field_container" style="display: none; margin-bottom: 14px;">
+              <label class="form-label">ยอดเงินที่ชำระ (บาท)</label>
+              <input type="number" id="transfer_amount" class="form-input" placeholder="ยอดเงินตามสลิป" oninput="recalcSelectedFees()">
             </div>
           </div>
 
@@ -906,13 +930,13 @@
             <div style="display: flex; gap: 20px; margin-bottom: 14px; flex-wrap: wrap;">
               <label
                 style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #1e293b;">
-                <input type="radio" name="camp_pay_mode" value="unpaid"
+                <input type="radio" name="camp_pay_mode" value="unpaid" checked
                   onchange="toggleCampPayMode(); calculateCampCost();">
                 <span>ยังไม่ชำระเงิน</span>
               </label>
               <label
                 style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #1e293b;">
-                <input type="radio" name="camp_pay_mode" value="full" checked
+                <input type="radio" name="camp_pay_mode" value="full"
                   onchange="toggleCampPayMode(); calculateCampCost();">
                 <span>ชำระเต็มจำนวน</span>
               </label>
@@ -1206,23 +1230,35 @@
       recalcSelectedFees();
     }
 
-    function toggleUnpaid(isChecked) {
-      var transferInput = document.getElementById('transfer_amount');
-      var slipGroup = document.getElementById('slip_upload_group');
-      var fileInput = document.getElementById('file_input');
+    function toggleRegPayMode() {
+      const payModeEl = document.querySelector('input[name="pay_mode"]:checked');
+      const payMode = payModeEl ? payModeEl.value : 'full';
+      const isDeposit = (payMode === 'deposit');
+      const isUnpaid = (payMode === 'unpaid');
+      const isFull = (payMode === 'full');
 
-      if (isChecked) {
-        transferInput.disabled = true;
+      const transferInput = document.getElementById('transfer_amount');
+      const depositContainer = document.getElementById('reg_deposit_field_container');
+      const dateTimeContainer = document.getElementById('reg_pay_datetime_container');
+      const slipGroup = document.getElementById('slip_upload_group');
+      const fileInput = document.getElementById('file_input');
+
+      if (depositContainer) depositContainer.style.display = isUnpaid ? 'none' : 'block';
+      if (dateTimeContainer) dateTimeContainer.style.display = isUnpaid ? 'none' : 'grid';
+      if (slipGroup) slipGroup.style.display = isUnpaid ? 'none' : 'block';
+
+      if (isUnpaid) {
         transferInput.value = 0;
+        transferInput.disabled = true;
         fileInput.required = false;
-        slipGroup.style.display = 'none';
-        recalcSelectedFees();
-      } else {
+      } else if (isFull) {
+        const fullAmt = parseFloat(document.getElementById('full_amount').value) || 0;
+        transferInput.value = fullAmt > 0 ? fullAmt : '';
+        transferInput.disabled = true;
+        fileInput.required = false;
+      } else if (isDeposit) {
         transferInput.disabled = false;
-        transferInput.value = '';
         fileInput.required = false;
-        slipGroup.style.display = 'block';
-        recalcSelectedFees();
       }
     }
 
@@ -1279,8 +1315,14 @@
       document.getElementById('full_amount').value = netTotal;
 
       var transferInput = document.getElementById('transfer_amount');
-      if (isInitial) {
-        transferInput.value = total > 0 ? total : '';
+      const payModeEl = document.querySelector('input[name="pay_mode"]:checked');
+      const payMode = payModeEl ? payModeEl.value : 'full';
+      if (payMode === 'unpaid') {
+        transferInput.value = 0;
+      } else if (payMode === 'full') {
+        transferInput.value = netTotal > 0 ? netTotal : '';
+      } else if (isInitial && payMode === 'deposit') {
+        transferInput.value = netTotal > 0 ? netTotal : '';
       }
 
       var transferVal = parseFloat(transferInput.value) || 0;
@@ -1691,6 +1733,9 @@
         btnText.textContent = 'กำลังส่งข้อมูล...';
         showRegToast('กำลังส่งข้อมูลลงทะเบียน กรุณารอสักครู่...', 'warning');
 
+        const payModeEl = document.querySelector('input[name="pay_mode"]:checked');
+        const payMode = payModeEl ? payModeEl.value : 'full';
+
         const outstandingCourses = document.getElementById('selected_outstanding_courses').value;
         const studentData = {
           id: document.getElementById('student_id') ? document.getElementById('student_id').value : "",
@@ -1705,7 +1750,10 @@
           lineId: document.getElementById('line_id').value.trim(),
           amount: parseFloat(document.getElementById('transfer_amount').value) || 0,
           fullAmount: parseFloat(document.getElementById('full_amount').value) || 0,
-          branchLearn: document.getElementById('branch_learn').value
+          branchLearn: document.getElementById('branch_learn').value,
+          payMode: payMode,
+          payDate: document.getElementById('reg_pay_date') ? document.getElementById('reg_pay_date').value : '',
+          payTime: document.getElementById('reg_pay_time') ? document.getElementById('reg_pay_time').value : ''
         };
 
         console.log('[Register] Submitting studentData:', JSON.stringify(studentData));
@@ -2126,8 +2174,8 @@
         id: document.getElementById('camp_student_id') ? document.getElementById('camp_student_id').value : "",
         fileData: campSlipFileData,
         timestamp: fullDateTime,
-        pay_date: payDateVal,
-        pay_time: payTimeVal,
+        pay_date: payMode === 'unpaid' ? '' : payDateVal,
+        pay_time: payMode === 'unpaid' ? '' : payTimeVal,
         camp_name: campName,
         camp_year: document.getElementById('camp_year').value,
         std_grade: campGrade,
@@ -2144,7 +2192,7 @@
         paid: payNow,
         outstanding: remaining,
         amount_paid: payNow,
-        pay_r1_channel: "TTB บัญชีบริษัท(สแกน)",
+        pay_r1_channel: payMode === 'unpaid' ? '' : "TTB บัญชีบริษัท(สแกน)",
         status: (remaining <= 0) ? "ชำระครบแล้ว" : (payNow > 0 ? "มัดจำแล้ว" : "รอชำระเงิน")
       };
 

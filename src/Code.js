@@ -15170,9 +15170,9 @@ function submitPublicRegistration(studentData, fileData) {
 
       outstanding: outstandingAmount,
 
-      paymentDate: Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy'),
+      paymentDate: studentData.payMode === 'unpaid' ? '' : (studentData.payDate ? Utilities.formatDate(new Date(studentData.payDate), 'Asia/Bangkok', 'dd/MM/yyyy') : Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy')),
 
-      paymentChannel: slipUrl !== '-' ? 'โอนเงิน (สลิปแนบออนไลน์)' : 'รอชำระเงิน',
+      paymentChannel: studentData.payMode === 'unpaid' ? '' : 'TTB บัญชีบริษัท(สแกน)',
 
       staff: 'Online Registration',
 
@@ -17248,9 +17248,9 @@ function saveCampStudentData(campData) {
       fullCost,
       paidAmount,
       outstanding,
-      campData.pay_r1_date || (paidAmount > 0 ? todayStr : ''),
+      campData.pay_date !== undefined ? campData.pay_date : (paidAmount > 0 ? todayStr : ''),
       campData.pay_r1_amount || (paidAmount > 0 ? paidAmount : ''),
-      campData.pay_r1_channel || 'TTB บัญชีบริษัท(สแกน)',
+      campData.pay_r1_channel !== undefined ? campData.pay_r1_channel : (paidAmount > 0 ? 'TTB บัญชีบริษัท(สแกน)' : ''),
       campData.pay_r2_date || '',
       campData.pay_r2_amount || '',
       campData.pay_r2_channel || (campData.pay_r2_amount ? 'TTB บัญชีบริษัท(สแกน)' : ''),
