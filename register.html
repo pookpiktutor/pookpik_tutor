@@ -1237,7 +1237,9 @@
         if (cb.checked) {
           var idx = parseInt(cb.getAttribute('data-index'));
           if (!isNaN(idx) && courses[idx]) {
-            var price = courses[idx].outstanding;
+            var priceRaw = courses[idx].outstanding;
+            var price = priceRaw !== undefined && priceRaw !== null ? parseFloat(String(priceRaw).replace(/,/g, '').replace(/฿/g, '')) : 0;
+            if (isNaN(price)) price = 0;
             total += price;
             fullPrices.push(price);
             selectedNames.push(courses[idx].courseName);
