@@ -1329,6 +1329,7 @@ window.google.script.run = new Proxy({}, {
   let displayedCourses = window._outstandingCourses || [];
   
   const classType = document.getElementById('class_type').value;
+  const isMainGroup = (classType === 'กลุ่มหลัก' || classType === 'กลุ่มหลักตามตารางคอร์ส');
   if (isMainGroup) {
     const selectedRound = document.getElementById('course_round').value;
     
