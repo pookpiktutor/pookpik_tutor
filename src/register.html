@@ -489,7 +489,15 @@
             <div class="form-group">
               <label class="form-label">ชื่อ - นามสกุล นักเรียน <span>*</span></label>
               <div style="display: flex; gap: 8px;">
-                <input type="text" id="std_name" class="form-input" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว"
+                <select id="std_name_prefix" class="form-select" required style="width: 100px; flex-shrink: 0;">
+                  <option value="">-- คำนำหน้า --</option>
+                  <option value="ด.ช.">ด.ช.</option>
+                  <option value="ด.ญ.">ด.ญ.</option>
+                  <option value="นาย">นาย</option>
+                  <option value="น.ส.">น.ส.</option>
+                  <option value="นาง">นาง</option>
+                </select>
+                <input type="text" id="std_name" class="form-input" required placeholder="ชื่อ นามสกุล"
                   style="flex: 1;">
                 <button type="button" id="btn_search_student" class="btn btn-secondary"
                   style="padding: 0 15px; border-radius: 6px; white-space: nowrap; width: auto; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;">
@@ -678,7 +686,15 @@
           <div class="form-group">
             <label class="form-label">ชื่อ-นามสกุล นักเรียน <span>*</span></label>
             <div style="display: flex; gap: 8px;">
-              <input type="text" id="camp_std_name" class="form-input" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว"
+              <select id="camp_std_name_prefix" class="form-select" required style="width: 100px; flex-shrink: 0;">
+                <option value="">-- คำนำหน้า --</option>
+                <option value="ด.ช.">ด.ช.</option>
+                <option value="ด.ญ.">ด.ญ.</option>
+                <option value="นาย">นาย</option>
+                <option value="น.ส.">น.ส.</option>
+                <option value="นาง">นาง</option>
+              </select>
+              <input type="text" id="camp_std_name" class="form-input" required placeholder="ชื่อ นามสกุล"
                 style="flex: 1;">
               <button type="button" id="btn_search_student_camp" class="btn btn-secondary"
                 style="padding: 0 15px; border-radius: 6px; white-space: nowrap; width: auto; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;">
@@ -1079,6 +1095,40 @@
         };
       }
     });
+  </script>
+  <script>
+    // === Helper: รวมคำนำหน้า + ชื่อ / แยกคำนำหน้าจากชื่อเต็ม ===
+    const NAME_PREFIXES = ['ด.ช.', 'ด.ญ.', 'น.ส.', 'นาย', 'นาง', 'นางสาว'];
+
+    function combineFullName(prefixId, nameId) {
+      const prefix = document.getElementById(prefixId).value.trim();
+      const name = document.getElementById(nameId).value.trim();
+      if (!prefix || !name) return name || '';
+      return prefix + name;
+    }
+
+    function splitPrefixFromName(fullName) {
+      if (!fullName) return { prefix: '', name: '' };
+      const trimmed = fullName.trim();
+      // Sort by length desc to match longest first (e.g. 'นางสาว' before 'นาง')
+      const sorted = NAME_PREFIXES.slice().sort((a, b) => b.length - a.length);
+      for (const p of sorted) {
+        if (trimmed.startsWith(p)) {
+          // Map 'นางสาว' to 'น.ส.' for the dropdown
+          const dropdownVal = (p === 'นางสาว') ? 'น.ส.' : p;
+          return { prefix: dropdownVal, name: trimmed.slice(p.length).trim() };
+        }
+      }
+      return { prefix: '', name: trimmed };
+    }
+
+    function fillPrefixAndName(prefixId, nameId, fullName) {
+      const { prefix, name } = splitPrefixFromName(fullName);
+      const prefixEl = document.getElementById(prefixId);
+      const nameEl = document.getElementById(nameId);
+      if (prefixEl && prefix) prefixEl.value = prefix;
+      if (nameEl) nameEl.value = name || fullName;
+    }
   </script>
   <script>
 
@@ -1600,13 +1650,21 @@
 
       try {
         // Validate required fields
-        const name = document.getElementById('std_name').value.trim();
+        const namePrefix = document.getElementById('std_name_prefix').value.trim();
+        const nameOnly = document.getElementById('std_name').value.trim();
+        const name = namePrefix ? namePrefix + nameOnly : nameOnly;
         const nickname = document.getElementById('std_nickname').value.trim();
         const contact = document.getElementById('parent_contact').value.trim();
         const school = document.getElementById('std_school').value.trim();
 
-        if (!name) {
+        if (!namePrefix) {
+          showRegToast('กรุณาเลือกคำนำหน้าชื่อนักเรียน (ด.ช. / ด.ญ. / นาย / น.ส. / นาง)', 'error');
+          document.getElementById('std_name_prefix').focus();
+          return;
+        }
+        if (!nameOnly) {
           showRegToast('กรุณากรอกชื่อ-นามสกุลนักเรียน', 'error');
+          document.getElementById('std_name').focus();
           return;
         }
         if (!nickname) {
@@ -1891,7 +1949,7 @@
         if (itemType === 'camp') {
           campItems.push({
             timestamp: item.timestamp,
-            name: document.getElementById('camp_std_name').value.trim(),
+            name: combineFullName('camp_std_name_prefix', 'camp_std_name'),
             campName: item.campName,
             costFull: item.costFull,
             amount: payAmt
@@ -1899,7 +1957,7 @@
         } else {
           regularItems.push({
             id: item.id,
-            name: document.getElementById('camp_std_name').value.trim(),
+            name: combineFullName('camp_std_name_prefix', 'camp_std_name'),
             course: item.course,
             amount: payAmt
           });
@@ -1914,7 +1972,7 @@
         timestamp: payDate + ' ' + payTime,
         pay_date: payDate,
         pay_time: payTime,
-        std_name: document.getElementById('camp_std_name').value.trim(),
+        std_name: combineFullName('camp_std_name_prefix', 'camp_std_name'),
         selected_items: selectedNames.join(', '),
         total_amount: payAmt,
         transfer_amount: payAmt,
@@ -2069,7 +2127,7 @@
         camp_year: document.getElementById('camp_year').value,
         std_grade: campGrade,
         class_section: document.getElementById('camp_room').value,
-        std_name: document.getElementById('camp_std_name').value,
+        std_name: combineFullName('camp_std_name_prefix', 'camp_std_name'),
         std_nickname: document.getElementById('camp_std_nickname').value,
         parent_contact: document.getElementById('camp_parent_contact').value,
         std_school: document.getElementById('camp_std_school').value,
@@ -2291,8 +2349,7 @@
       const btnSearchStudent = document.getElementById('btn_search_student');
       if (btnSearchStudent) {
         btnSearchStudent.addEventListener('click', function () {
-          const nameInput = document.getElementById('std_name');
-          const name = nameInput ? nameInput.value.trim() : '';
+          const name = combineFullName('std_name_prefix', 'std_name');
           if (!name) {
             alert("กรุณากรอกชื่อ - นามสกุลที่ต้องการค้นหา");
             return;
@@ -2313,6 +2370,9 @@
                 if (data.id) {
                   const el = document.getElementById('student_id');
                   if (el) el.value = data.id;
+                }
+                if (data.Name) {
+                  fillPrefixAndName('std_name_prefix', 'std_name', data.Name);
                 }
                 if (data.Grade) {
                   const el = document.getElementById('std_grade');
@@ -2355,8 +2415,7 @@
       const btnSearchStudentCamp = document.getElementById('btn_search_student_camp');
       if (btnSearchStudentCamp) {
         btnSearchStudentCamp.addEventListener('click', function () {
-          const nameInput = document.getElementById('camp_std_name');
-          const name = nameInput.value.trim();
+          const name = combineFullName('camp_std_name_prefix', 'camp_std_name');
           if (!name) {
             alert("กรุณากรอกชื่อ-นามสกุลนักเรียนก่อนค้นหา");
             return;
