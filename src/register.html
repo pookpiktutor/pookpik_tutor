@@ -390,7 +390,7 @@
       <div class="success-icon">✓</div>
       <div class="success-title">ลงทะเบียนสำเร็จเรียบร้อย!</div>
       <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">
-        ข้อมูลการสมัครและหลักฐานการโอนเงินของท่านถูกส่งเข้าระบบแล้ว ขอบพระคุณครับ/ค่ะ
+        สมัครเรียบร้อยค่ะ 🙇‍♀️🙇<br>สามารถค้นหายอดชำระและแนบสลิปจากชื่อนักเรียนทีหลังได้นะคะ
       </p>
       <button class="btn" onclick="window.location.reload()">สมัครเรียนเพิ่มอีกคน</button>
     </div>
@@ -627,17 +627,6 @@
             <input type="hidden" id="full_amount" value="0">
           </div>
 
-          <!-- QR Payment Section -->
-          <div id="payment_qr_section"
-            style="margin-bottom: 20px; background: rgba(255, 255, 255, 0.9); border: 1px solid #cbd5e1; border-radius: var(--radius-md); padding: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); text-align: center;">
-            <h4 style="margin-bottom: 12px; color: var(--color-primary); font-size: 1.05rem; font-weight: 700;">
-              ช่องทางชำระเงินและแจ้งสลิปโอนเงินกับเจ้าหน้าที่</h4>
-            <img src="payment_contact_info.png"
-              onerror="this.src='https://raw.githubusercontent.com/pookpiktutor/pookpik_tutor/main/payment_contact_info.png'"
-              alt="ช่องทางชำระเงินและแจ้งสลิปโอนเงินกับเจ้าหน้าที่"
-              style="max-width: 100%; width: 480px; height: auto; border-radius: 12px; border: 1px solid #cbd5e1; margin: 0 auto; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-          </div>
-
           <!-- รูปแบบการชำระเงินก่อนแนบสลิป สำหรับหน้าปกติ -->
           <div class="info-card" id="regular_payment_option_card" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
             <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
@@ -674,6 +663,17 @@
               <label class="form-label">ยอดเงินที่ชำระ (บาท)</label>
               <input type="number" id="transfer_amount" class="form-input" placeholder="ยอดเงินตามสลิป" oninput="recalcSelectedFees()">
             </div>
+          </div>
+
+          <!-- QR Payment Section -->
+          <div id="payment_qr_section"
+            style="margin-bottom: 20px; background: rgba(255, 255, 255, 0.9); border: 1px solid #cbd5e1; border-radius: var(--radius-md); padding: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); text-align: center;">
+            <h4 style="margin-bottom: 12px; color: var(--color-primary); font-size: 1.05rem; font-weight: 700;">
+              ช่องทางชำระเงินและแจ้งสลิปโอนเงินกับเจ้าหน้าที่</h4>
+            <img src="payment_contact_info.png"
+              onerror="this.src='https://raw.githubusercontent.com/pookpiktutor/pookpik_tutor/main/payment_contact_info.png'"
+              alt="ช่องทางชำระเงินและแจ้งสลิปโอนเงินกับเจ้าหน้าที่"
+              style="max-width: 100%; width: 480px; height: auto; border-radius: 12px; border: 1px solid #cbd5e1; margin: 0 auto; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
           </div>
 
           <div class="form-group" id="slip_upload_group">
