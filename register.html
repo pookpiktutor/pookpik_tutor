@@ -1124,13 +1124,8 @@
             // Check if the response contains our specific JSON div
             const match = text.match(/<div id="json-response">([\s\S]*?)<\/div>/);
             if (match && match[1]) {
-               // Decode HTML entities
-               const decodedStr = match[1]
-                   .replace(/&amp;/g, "&")
-                   .replace(/&lt;/g, "<")
-                   .replace(/&gt;/g, ">")
-                   .replace(/&quot;/g, "\"")
-                   .replace(/&#039;/g, "'");
+               // Decode base64 string
+               const decodedStr = decodeURIComponent(escape(window.atob(match[1].trim())));
                return JSON.parse(decodedStr);
             }
             if (text.trim().startsWith('<')) {
