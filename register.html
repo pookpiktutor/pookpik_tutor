@@ -1110,10 +1110,10 @@
           const argsStr = JSON.stringify(args);
           let fetchPromise;
           if (argsStr.length < 2000) {
-            const url = GAS_API_URL + '?action=api&functionName=' + encodeURIComponent(prop) + '&args=' + encodeURIComponent(argsStr);
+            const url = GAS_API_URL + '?action=api&output=html&functionName=' + encodeURIComponent(prop) + '&args=' + encodeURIComponent(argsStr);
             fetchPromise = fetch(url, { redirect: 'follow', method: 'GET' });
           } else {
-            fetchPromise = fetch(GAS_API_URL, {
+            fetchPromise = fetch(GAS_API_URL + '?output=html', {
               redirect: 'follow',
               method: 'POST',
               body: JSON.stringify({ functionName: prop, arguments: args }),
@@ -1121,8 +1121,20 @@
             });
           }
           fetchPromise.then(response => response.text()).then(text => {
+            // Check if the response contains our specific JSON div
+            const match = text.match(/<div id="json-response">([\s\S]*?)<\/div>/);
+            if (match && match[1]) {
+               // Decode HTML entities
+               const decodedStr = match[1]
+                   .replace(/&amp;/g, "&")
+                   .replace(/&lt;/g, "<")
+                   .replace(/&gt;/g, ">")
+                   .replace(/&quot;/g, "\"")
+                   .replace(/&#039;/g, "'");
+               return JSON.parse(decodedStr);
+            }
             if (text.trim().startsWith('<')) {
-              throw new Error("Received HTML error from server. This may happen if you have multiple Google accounts logged in, or if your browser blocks cross-origin POST redirects. Response snippet: " + text.substring(0, 100));
+              throw new Error("Received HTML error from server. This may happen if you have multiple Google accounts logged in. Response snippet: " + text.substring(0, 100));
             }
             return JSON.parse(text);
           }).then(result => {

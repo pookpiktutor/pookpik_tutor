@@ -89,6 +89,15 @@ function computeCumulativePayment(student) {
 }
 
 
+function escapeHtml(unsafe) {
+    return (unsafe || '').toString()
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+ }
+
 function doPost(e) {
   try {
     const payload = JSON.parse(e.postData.contents);
@@ -112,9 +121,15 @@ function doPost(e) {
 
     const result = fn.apply(null, args);
 
+    if (e.parameter && e.parameter.output === 'html') {
+      return HtmlService.createHtmlOutput('<div id="json-response">' + escapeHtml(JSON.stringify(result !== undefined ? result : null)) + '</div>');
+    }
     return ContentService.createTextOutput(JSON.stringify(result !== undefined ? result : null))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
+    if (e.parameter && e.parameter.output === 'html') {
+      return HtmlService.createHtmlOutput('<div id="json-response">' + escapeHtml(JSON.stringify({ success: false, error: err.toString() })) + '</div>');
+    }
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
   }
@@ -442,9 +457,15 @@ function doGet(e) {
       }
       if (typeof fn !== 'function') throw new Error("Function '" + funcName + "' is not defined in Google Apps Script.");
       const result = fn.apply(null, args);
+      if (e.parameter.output === 'html') {
+        return HtmlService.createHtmlOutput('<div id="json-response">' + escapeHtml(JSON.stringify(result !== undefined ? result : null)) + '</div>');
+      }
       return ContentService.createTextOutput(JSON.stringify(result !== undefined ? result : null))
         .setMimeType(ContentService.MimeType.JSON);
     } catch (err) {
+      if (e && e.parameter && e.parameter.output === 'html') {
+        return HtmlService.createHtmlOutput('<div id="json-response">' + escapeHtml(JSON.stringify({ success: false, error: err.toString() })) + '</div>');
+      }
       return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
         .setMimeType(ContentService.MimeType.JSON);
     }
