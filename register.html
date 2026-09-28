@@ -1187,7 +1187,7 @@ window.google.script.run = new Proxy({}, {
     const grade = document.getElementById('std_grade').value.trim();
     const classType = document.getElementById('class_type').value.trim();
     const branchLearn = document.getElementById('branch_learn').value.trim();
-    const isMainGroup = (isMainGroup || classType === 'กลุ่มหลักตามตารางคอร์ส');
+    const isMainGroup = (classType === 'กลุ่มหลัก' || classType === 'กลุ่มหลักตามตารางคอร์ส');
 
     if (!grade || !classType || !branchLearn) {
       if (isFromButton) {
