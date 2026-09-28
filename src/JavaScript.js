@@ -36947,17 +36947,72 @@ function initCampsFilters(callback) {
 }
 
 function getCampDefaultFee(campName, grade) {
-  campName = String(campName || '');
-  grade = String(grade || '');
-  if (campName.includes('เตรียมความพร้อม') || campName.includes('เมษายน')) {
+  campName = String(campName || '').trim();
+  grade = String(grade || '').trim();
+  var isAprilOrOct = campName.includes('เตรียมความพร้อม') || 
+                     campName.includes('เมษายน') || 
+                     campName.includes('วางแผนติดspeed') || 
+                     campName.includes('วางแผนติด speed') || 
+                     campName.includes('ตุลาคม');
+  if (isAprilOrOct) {
+    if (grade.includes('ม.3')) return 4900;
     return 4400;
-  } else if (campName.includes('วางแผนติดspeed') || campName.includes('ตุลาคม') || campName.includes('สานฝันปั้นน้อง')) {
-    if (grade.includes('ม.3')) return 8900;
-    return 7900;
   } else {
+    // สานฝันปั้นน้อง (ห้องพิเศษ, ห้องปกติ รอบ 1, ห้องปกติ รอบ 2, มีนาคม)
     if (grade.includes('ม.3')) return 8900;
     return 7900;
   }
+}
+
+function quickAddCampPayment() {
+  var outst = parseFloat(document.getElementById('camp_pay_outstanding').value) || 0;
+  if (outst <= 0) {
+    Swal.fire('แจ้งเตือน', 'ชำระเงินครบเต็มจำนวนแล้ว', 'info');
+    return;
+  }
+  var today = new Date().toISOString().split('T')[0];
+  var nowTime = new Date().toTimeString().split(' ')[0].substring(0, 5);
+
+  var targetRound = 0;
+  for (var r = 1; r <= 3; r++) {
+    var amtInput = document.getElementById('camp_pay_r' + r + '_amount');
+    var amt = parseFloat(amtInput ? amtInput.value : 0) || 0;
+    if (amt === 0) {
+      targetRound = r;
+      break;
+    }
+  }
+
+  if (targetRound === 0) {
+    targetRound = 3;
+  }
+
+  var dInput = document.getElementById('camp_pay_r' + targetRound + '_date');
+  var tInput = document.getElementById('camp_pay_r' + targetRound + '_time');
+  var aInput = document.getElementById('camp_pay_r' + targetRound + '_amount');
+  var chSelect = document.getElementById('camp_pay_r' + targetRound + '_channel');
+
+  if (dInput) dInput.value = today;
+  if (tInput) tInput.value = nowTime;
+  if (aInput) aInput.value = outst;
+  if (chSelect && !chSelect.value) {
+    chSelect.value = 'โอนธนาคาร';
+  }
+
+  recalcPaidFromRounds();
+  
+  var newOutst = parseFloat(document.getElementById('camp_pay_outstanding').value) || 0;
+  if (newOutst <= 0) {
+    var statusSel = document.getElementById('camp_edit_status');
+    if (statusSel) statusSel.value = 'ชำระครบแล้ว';
+  }
+  
+  Swal.fire({
+    icon: 'success',
+    title: 'เติมยอดชำระงวดที่ ' + targetRound + ' เรียบร้อย (' + outst.toLocaleString() + ' บาท)',
+    showConfirmButton: false,
+    timer: 1200
+  });
 }
 
 // Manage / Edit Modal (ปุ่มจัดการ)
@@ -36978,8 +37033,8 @@ function showCampPaymentModal(timestamp) {
     modalEl = document.createElement('div');
     modalEl.className = 'modal-backdrop';
     modalEl.id = 'camp_payment_modal';
-    modalEl.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
-    modalEl.innerHTML = '<div class="custom-modal" style="background: #ffffff; border-radius: 16px; width: 90%; max-width: 750px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);"><div id="camp_payment_modal_content"></div></div>';
+    modalEl.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 15px;';
+    modalEl.innerHTML = '<div class="custom-modal" style="background: #ffffff; border-radius: 16px; width: 100%; max-width: 780px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);"><div id="camp_payment_modal_content"></div></div>';
     document.body.appendChild(modalEl);
   }
 
@@ -36999,7 +37054,7 @@ function showCampPaymentModal(timestamp) {
 
   var html = '<div style="padding: 24px;">';
   html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">';
-  html += '<h4 style="margin: 0; color: #1e293b; font-weight: 700;">⚙️ จัดการ & แก้ไขข้อมูลนักเรียนค่าย</h4>';
+  html += '<h4 style="margin: 0; color: #1e293b; font-weight: 700; font-size: 1.25rem;">⚙️ จัดการ & เพิ่มการชำระเงินนักเรียนค่าย</h4>';
   html += '<button onclick="closeCampPaymentModal()" style="background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8;">&times;</button>';
   html += '</div>';
 
@@ -37008,7 +37063,7 @@ function showCampPaymentModal(timestamp) {
   // 1. Student Info Section
   html += '<div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 14px; margin-bottom: 16px;">';
   html += '<h6 style="color: #2563eb; margin: 0 0 10px 0; font-weight: 700;">👤 ข้อมูลทั่วไปนักเรียน</h6>';
-  html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">';
+  html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">';
   html += '<div><label style="font-size:0.8rem; font-weight:600;">ชื่อ-นามสกุล</label><input type="text" id="camp_edit_std_name" class="form-control form-control-sm" value="' + (item.std_name || '') + '"></div>';
   html += '<div><label style="font-size:0.8rem; font-weight:600;">ชื่อเล่น</label><input type="text" id="camp_edit_std_nickname" class="form-control form-control-sm" value="' + (item.std_nickname || '') + '"></div>';
   html += '<div><label style="font-size:0.8rem; font-weight:600;">เบอร์โทรผู้ปกครอง</label><input type="text" id="camp_edit_parent_phone" class="form-control form-control-sm" value="' + (item.parent_phone || '') + '"></div>';
@@ -37020,12 +37075,12 @@ function showCampPaymentModal(timestamp) {
   // 2. Camp Details Section
   html += '<div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 14px; margin-bottom: 16px;">';
   html += '<h6 style="color: #2563eb; margin: 0 0 10px 0; font-weight: 700;">🏫 ข้อมูลค่าย & ห้องเรียน</h6>';
-  html += '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">';
+  html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">';
   html += '<div style="grid-column: span 2;"><label style="font-size:0.8rem; font-weight:600;">ชื่อค่าย</label><input type="text" id="camp_edit_camp_name" class="form-control form-control-sm" value="' + (item.camp_name || '') + '"></div>';
   html += '<div><label style="font-size:0.8rem; font-weight:600;">ปีการศึกษา</label><input type="text" id="camp_edit_camp_year" class="form-control form-control-sm" value="' + (item.camp_year || '') + '"></div>';
   html += '<div><label style="font-size:0.8rem; font-weight:600;">ระดับชั้น</label><input type="text" id="camp_edit_grade" class="form-control form-control-sm" value="' + (item.std_grade || '') + '"></div>';
-  html += '<div style="grid-column: span 2;"><label style="font-size:0.8rem; font-weight:600;">ห้องเรียน</label><input type="text" id="camp_edit_room" class="form-control form-control-sm" value="' + (item.class_section || '') + '"></div>';
-  html += '<div style="grid-column: span 2;"><label style="font-size:0.8rem; font-weight:600;">สถานะ</label>';
+  html += '<div><label style="font-size:0.8rem; font-weight:600;">ห้องเรียน</label><input type="text" id="camp_edit_room" class="form-control form-control-sm" value="' + (item.class_section || '') + '"></div>';
+  html += '<div><label style="font-size:0.8rem; font-weight:600;">สถานะ</label>';
   html += '<select id="camp_edit_status" class="form-select form-select-sm">';
   var statusOpts = ['รอตรวจสอบ', 'มัดจำแล้ว', 'ยืนยันแล้ว', 'ชำระครบแล้ว', 'ยกเลิก'];
   statusOpts.forEach(function(st) {
@@ -37036,7 +37091,11 @@ function showCampPaymentModal(timestamp) {
 
   // 3. Payment Section
   html += '<div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px; margin-bottom: 16px;">';
-  html += '<h6 style="color: #166534; margin: 0 0 10px 0; font-weight: 700;">💳 การชำระเงิน</h6>';
+  html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">';
+  html += '<h6 style="color: #166534; margin: 0; font-weight: 700;">💳 การชำระเงิน</h6>';
+  html += '<button type="button" class="btn btn-sm btn-outline-success" onclick="quickAddCampPayment()" style="font-size: 0.8rem; font-weight: 600;">➕ เพิ่มการชำระเงินด่วน (ส่วนที่เหลือ)</button>';
+  html += '</div>';
+
   html += '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px;">';
   html += '<div><label style="font-size:0.8rem; font-weight:600;">ยอดเต็ม (บาท)</label><input type="number" id="camp_pay_full" class="form-control form-control-sm" value="' + defaultFull + '" oninput="calcCampOutstanding()"></div>';
   html += '<div><label style="font-size:0.8rem; font-weight:600;">ชำระแล้ว (บาท)</label><input type="number" id="camp_pay_paid" class="form-control form-control-sm" value="' + defaultPaid + '" oninput="calcCampOutstanding()"></div>';
@@ -37044,9 +37103,24 @@ function showCampPaymentModal(timestamp) {
   html += '</div>';
 
   for (var r = 1; r <= 3; r++) {
-    var dateVal = item['pay_r' + r + '_date'] || '';
+    var rawDate = item['pay_r' + r + '_date'] ? String(item['pay_r' + r + '_date']).trim() : '';
     var amtVal = item['pay_r' + r + '_amount'] || '';
     var chVal = item['pay_r' + r + '_channel'] || '';
+    var dateVal = '';
+    var timeVal = '';
+    if (rawDate) {
+      if (rawDate.includes(' ')) {
+        var parts = rawDate.split(' ');
+        dateVal = parts[0];
+        timeVal = parts[1];
+      } else if (rawDate.includes('T')) {
+        var parts = rawDate.split('T');
+        dateVal = parts[0];
+        timeVal = parts[1].substring(0, 5);
+      } else {
+        dateVal = rawDate;
+      }
+    }
 
     html += '<div style="border: 1px solid #cbd5e1; background:#ffffff; border-radius: 8px; padding: 10px; margin-bottom: 8px;">';
     html += '<div style="font-weight: 600; font-size: 0.8rem; margin-bottom: 6px; color: #4338ca;">💳 งวดที่ ' + r + '</div>';
@@ -37100,6 +37174,15 @@ function saveCampPaymentData() {
   var paid = parseFloat(document.getElementById('camp_pay_paid').value) || 0;
   var outst = parseFloat(document.getElementById('camp_pay_outstanding').value) || 0;
 
+  var getCombinedDate = function(r) {
+    var dEl = document.getElementById('camp_pay_r' + r + '_date');
+    var tEl = document.getElementById('camp_pay_r' + r + '_time');
+    var d = dEl ? dEl.value : '';
+    var t = tEl ? tEl.value : '';
+    if (!d) return '';
+    return t ? (d + ' ' + t) : d;
+  };
+
   var updatedData = {
     std_name: document.getElementById('camp_edit_std_name').value.trim(),
     std_nickname: document.getElementById('camp_edit_std_nickname').value.trim(),
@@ -37115,13 +37198,13 @@ function saveCampPaymentData() {
     full: full,
     paid: paid,
     outstanding: outst,
-    pay_r1_date: document.getElementById('camp_pay_r1_date').value,
+    pay_r1_date: getCombinedDate(1),
     pay_r1_amount: document.getElementById('camp_pay_r1_amount').value,
     pay_r1_channel: document.getElementById('camp_pay_r1_channel').value,
-    pay_r2_date: document.getElementById('camp_pay_r2_date').value,
+    pay_r2_date: getCombinedDate(2),
     pay_r2_amount: document.getElementById('camp_pay_r2_amount').value,
     pay_r2_channel: document.getElementById('camp_pay_r2_channel').value,
-    pay_r3_date: document.getElementById('camp_pay_r3_date').value,
+    pay_r3_date: getCombinedDate(3),
     pay_r3_amount: document.getElementById('camp_pay_r3_amount').value,
     pay_r3_channel: document.getElementById('camp_pay_r3_channel').value
   };
@@ -37197,97 +37280,303 @@ function doLoadCampsData() {
 function renderCampsTable() {
   var tbody = document.getElementById('camps_table_body');
   if (!tbody) return;
-  
+
   var roomEl = document.getElementById('camps_room_select');
   var roomFilter = roomEl ? roomEl.value : 'all';
 
-  var filteredData = currentCampsData.filter(function(item) {
+  var filteredData = (currentCampsData || []).filter(function(item) {
     if (roomFilter !== 'all' && (item.class_section || '').trim() !== roomFilter) {
       return false;
     }
     return true;
   });
 
-  // Summary Container
+  // 1. SUMMARY CARDS CONTAINER
   var summaryContainer = document.getElementById('camps_summary_container');
-  if (!summaryContainer) {
-    summaryContainer = document.createElement('div');
-    summaryContainer.id = 'camps_summary_container';
-    summaryContainer.style.marginBottom = '15px';
-    var parentNode = tbody.closest('.table-container') || tbody.parentElement;
-    if (parentNode && parentNode.parentElement) {
-      parentNode.parentElement.insertBefore(summaryContainer, parentNode);
-    }
+  if (summaryContainer) {
+    summaryContainer.style.display = 'block';
+    var totalStudents = filteredData.length;
+    var totalFullFee = 0;
+    var totalPaid = 0;
+    var totalOutstanding = 0;
+
+    filteredData.forEach(function(item) {
+      var full = parseFloat(item.full);
+      if (isNaN(full) || full <= 0) {
+        full = getCampDefaultFee(item.camp_name, item.std_grade);
+      }
+      var paid = parseFloat(item.paid) || 0;
+      var outst = Math.max(0, full - paid);
+      totalFullFee += full;
+      totalPaid += paid;
+      totalOutstanding += outst;
+    });
+
+    var summaryHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">';
+    summaryHtml += '<div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">👥 จำนวนนักเรียนค่ายทั้งหมด</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">' + totalStudents.toLocaleString() + ' คน</div></div>';
+    summaryHtml += '<div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">💰 ยอดรวมค่าเรียนตามจริง</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">฿' + totalFullFee.toLocaleString() + '</div></div>';
+    summaryHtml += '<div style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">✅ ยอดที่ชำระแล้ว</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">฿' + totalPaid.toLocaleString() + '</div></div>';
+    summaryHtml += '<div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">⏳ ยอดค้างชำระรวม</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">฿' + totalOutstanding.toLocaleString() + '</div></div>';
+    summaryHtml += '</div>';
+    summaryContainer.innerHTML = summaryHtml;
   }
 
-  // Summary calculation with real prices
-  var totalStudents = filteredData.length;
-  var totalFullFee = 0;
-  var totalPaid = 0;
-  var totalOutstanding = 0;
-  var finCamps = {};
+  // 2. CROSSTAB & SUMMARY TABLES (Camp × Room, Shirt Sizes, Financial Summary)
+  var crosstabContainer = document.getElementById('camps_crosstab_container');
+  if (crosstabContainer) {
+    var allData = currentCampsData || [];
+    var campNames = {};
+    var roomNames = {};
+    var crossCounts = {};
+    
+    allData.forEach(function(item) {
+      var cname = (item.camp_name || 'ไม่ระบุค่าย').trim();
+      var room = (item.class_section || 'ไม่ระบุห้อง').toString().trim();
+      if (room === '' || room === '-') room = 'ไม่ระบุห้อง';
+      campNames[cname] = true;
+      roomNames[room] = true;
+      var key = cname + '||' + room;
+      crossCounts[key] = (crossCounts[key] || 0) + 1;
+    });
 
-  filteredData.forEach(function(item) {
-    var full = parseFloat(item.full);
-    if (isNaN(full) || full <= 0) {
-      full = getCampDefaultFee(item.camp_name, item.std_grade);
+    var sortedCamps = Object.keys(campNames).sort();
+    var sortedRooms = Object.keys(roomNames).sort(function(a, b) {
+      if (a === 'ไม่ระบุห้อง') return 1;
+      if (b === 'ไม่ระบุห้อง') return -1;
+      return a.localeCompare(b, 'th');
+    });
+
+    if (sortedCamps.length > 0) {
+      var ctHtml = '<div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">';
+      
+      // Table 1: สรุปจำนวนนักเรียนแยกตามค่ายและห้อง
+      ctHtml += '<div style="font-weight: 700; font-size: 1rem; margin-bottom: 10px; color: #1e293b;">📊 สรุปจำนวนนักเรียนแยกตามคอร์ส/ค่าย และห้องเรียน</div>';
+      ctHtml += '<div style="overflow-x: auto; margin-bottom: 24px;">';
+      ctHtml += '<table class="table table-bordered table-hover" style="width: 100%; font-size: 0.85rem; margin-bottom: 0; border-collapse: collapse;">';
+      ctHtml += '<thead><tr style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: white;">';
+      ctHtml += '<th style="padding: 8px 12px; text-align: left; font-weight: 600;">ชื่อค่าย / กิจกรรม</th>';
+      sortedRooms.forEach(function(room) {
+        ctHtml += '<th style="padding: 8px 10px; text-align: center; font-weight: 600; min-width: 70px;">' + room + '</th>';
+      });
+      ctHtml += '<th style="padding: 8px 10px; text-align: center; font-weight: 700; background: rgba(0,0,0,0.2); min-width: 70px;">รวม</th>';
+      ctHtml += '</tr></thead><tbody>';
+
+      var grandTotal = 0;
+      var roomTotals = {};
+      sortedCamps.forEach(function(cname, idx) {
+        var rowBg = idx % 2 === 0 ? 'background-color: #f8fafc;' : 'background-color: #ffffff;';
+        ctHtml += '<tr style="' + rowBg + '">';
+        ctHtml += '<td style="padding: 8px 12px; font-weight: 600; color: #1e293b;">' + cname + '</td>';
+        var rowTotal = 0;
+        sortedRooms.forEach(function(room) {
+          var key = cname + '||' + room;
+          var count = crossCounts[key] || 0;
+          rowTotal += count;
+          roomTotals[room] = (roomTotals[room] || 0) + count;
+          if (count > 0) {
+            ctHtml += '<td style="padding: 8px 10px; text-align: center; font-weight: 700; color: #2563eb;">' + count + '</td>';
+          } else {
+            ctHtml += '<td style="padding: 8px 10px; text-align: center; color: #94a3b8;">-</td>';
+          }
+        });
+        grandTotal += rowTotal;
+        ctHtml += '<td style="padding: 8px 10px; text-align: center; font-weight: 700; background-color: #eff6ff; color: #1d4ed8;">' + rowTotal + '</td>';
+        ctHtml += '</tr>';
+      });
+
+      ctHtml += '<tr style="background: #e0e7ff; font-weight: 700;">';
+      ctHtml += '<td style="padding: 8px 12px; color: #3730a3;">รวมทั้งหมด</td>';
+      sortedRooms.forEach(function(room) {
+        ctHtml += '<td style="padding: 8px 10px; text-align: center; color: #3730a3;">' + (roomTotals[room] || 0) + '</td>';
+      });
+      ctHtml += '<td style="padding: 8px 10px; text-align: center; background: #4f46e5; color: white; font-size: 0.95rem;">' + grandTotal + '</td>';
+      ctHtml += '</tr></tbody></table></div>';
+
+      // Table 2: สรุปจำนวนไซส์เสื้อแยกตามค่าย
+      var sizeNames = {};
+      var sizeCrossCounts = {};
+      allData.forEach(function(item) {
+        var cname = (item.camp_name || 'ไม่ระบุค่าย').trim();
+        var size = (item.shirt_size || 'ไม่ระบุไซส์').toString().trim();
+        if (size === '' || size === '-') size = 'ไม่ระบุไซส์';
+        sizeNames[size] = true;
+        var key = cname + '||' + size;
+        sizeCrossCounts[key] = (sizeCrossCounts[key] || 0) + 1;
+      });
+
+      var sortedSizes = Object.keys(sizeNames).sort(function(a, b) {
+        if (a === 'ไม่ระบุไซส์') return 1;
+        if (b === 'ไม่ระบุไซส์') return -1;
+        var order = {'S':1, 'M':2, 'L':3, 'XL':4, 'XXL':5, '2XL':5, 'XXXL':6, '3XL':6, '4XL':7};
+        var oa = order[a.toUpperCase()] || 99;
+        var ob = order[b.toUpperCase()] || 99;
+        if (oa !== ob) return oa - ob;
+        return a.localeCompare(b, 'en');
+      });
+
+      ctHtml += '<div style="font-weight: 700; font-size: 1rem; margin-bottom: 10px; color: #1e293b;">👕 สรุปจำนวนไซส์เสื้อแยกตามค่าย</div>';
+      ctHtml += '<div style="overflow-x: auto; margin-bottom: 24px;">';
+      ctHtml += '<table class="table table-bordered table-hover" style="width: 100%; font-size: 0.85rem; margin-bottom: 0; border-collapse: collapse;">';
+      ctHtml += '<thead><tr style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white;">';
+      ctHtml += '<th style="padding: 8px 12px; text-align: left; font-weight: 600;">ชื่อค่าย / กิจกรรม</th>';
+      sortedSizes.forEach(function(size) {
+        ctHtml += '<th style="padding: 8px 10px; text-align: center; font-weight: 600; min-width: 50px;">' + size + '</th>';
+      });
+      ctHtml += '<th style="padding: 8px 10px; text-align: center; font-weight: 700; background: rgba(0,0,0,0.2); min-width: 60px;">รวม</th>';
+      ctHtml += '</tr></thead><tbody>';
+
+      var sizeGrandTotal = 0;
+      var sizeTotals = {};
+      sortedCamps.forEach(function(cname, idx) {
+        var rowBg = idx % 2 === 0 ? 'background-color: #f8fafc;' : 'background-color: #ffffff;';
+        ctHtml += '<tr style="' + rowBg + '">';
+        ctHtml += '<td style="padding: 8px 12px; font-weight: 600; color: #1e293b;">' + cname + '</td>';
+        var rowTotal = 0;
+        sortedSizes.forEach(function(size) {
+          var key = cname + '||' + size;
+          var count = sizeCrossCounts[key] || 0;
+          rowTotal += count;
+          sizeTotals[size] = (sizeTotals[size] || 0) + count;
+          if (count > 0) {
+            ctHtml += '<td style="padding: 8px 10px; text-align: center; font-weight: 700; color: #059669;">' + count + '</td>';
+          } else {
+            ctHtml += '<td style="padding: 8px 10px; text-align: center; color: #94a3b8;">-</td>';
+          }
+        });
+        sizeGrandTotal += rowTotal;
+        ctHtml += '<td style="padding: 8px 10px; text-align: center; font-weight: 700; background-color: #ecfdf5; color: #047857;">' + rowTotal + '</td>';
+        ctHtml += '</tr>';
+      });
+
+      ctHtml += '<tr style="background: #d1fae5; font-weight: 700;">';
+      ctHtml += '<td style="padding: 8px 12px; color: #065f46;">รวมทั้งหมด</td>';
+      sortedSizes.forEach(function(size) {
+        ctHtml += '<td style="padding: 8px 10px; text-align: center; color: #065f46;">' + (sizeTotals[size] || 0) + '</td>';
+      });
+      ctHtml += '<td style="padding: 8px 10px; text-align: center; background: #059669; color: white; font-size: 0.95rem;">' + sizeGrandTotal + '</td>';
+      ctHtml += '</tr></tbody></table></div>';
+
+      // Table 3: สรุปยอดเงินแยกตามค่าย
+      var finCamps = {};
+      allData.forEach(function(item) {
+        var cname = (item.camp_name || 'ไม่ระบุค่าย').trim();
+        if (!finCamps[cname]) {
+          finCamps[cname] = { full: 0, paid: 0, outst: 0 };
+        }
+        var full = parseFloat(item.full);
+        if (isNaN(full) || full <= 0) full = getCampDefaultFee(item.camp_name, item.std_grade);
+        var paid = parseFloat(item.paid) || 0;
+        var outst = Math.max(0, full - paid);
+        finCamps[cname].full += full;
+        finCamps[cname].paid += paid;
+        finCamps[cname].outst += outst;
+      });
+
+      ctHtml += '<div style="font-weight: 700; font-size: 1rem; margin-bottom: 10px; color: #1e293b;">💰 สรุปยอดเงินแยกตามค่าย (ยอดเต็ม / ชำระแล้ว / ค้างชำระ)</div>';
+      ctHtml += '<div style="overflow-x: auto;">';
+      ctHtml += '<table class="table table-bordered table-hover" style="width: 100%; font-size: 0.85rem; margin-bottom: 0; border-collapse: collapse;">';
+      ctHtml += '<thead><tr style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: white;">';
+      ctHtml += '<th style="padding: 8px 12px; text-align: left; font-weight: 600;">ชื่อค่าย / กิจกรรม</th>';
+      ctHtml += '<th style="padding: 8px 10px; text-align: right; font-weight: 600;">ยอดเต็ม (บาท)</th>';
+      ctHtml += '<th style="padding: 8px 10px; text-align: right; font-weight: 600;">ชำระแล้ว (บาท)</th>';
+      ctHtml += '<th style="padding: 8px 10px; text-align: right; font-weight: 600;">ค้างชำระ (บาท)</th>';
+      ctHtml += '</tr></thead><tbody>';
+
+      var totFull = 0, totPaid = 0, totOutst = 0;
+      sortedCamps.forEach(function(cname, idx) {
+        var rowBg = idx % 2 === 0 ? 'background-color: #f8fafc;' : 'background-color: #ffffff;';
+        var fc = finCamps[cname] || { full: 0, paid: 0, outst: 0 };
+        totFull += fc.full;
+        totPaid += fc.paid;
+        totOutst += fc.outst;
+
+        ctHtml += '<tr style="' + rowBg + '">';
+        ctHtml += '<td style="padding: 8px 12px; font-weight: 600; color: #1e293b;">' + cname + '</td>';
+        ctHtml += '<td style="padding: 8px 10px; text-align: right; font-weight: 600; color: #0284c7;">฿' + fc.full.toLocaleString() + '</td>';
+        ctHtml += '<td style="padding: 8px 10px; text-align: right; font-weight: 600; color: #16a34a;">฿' + fc.paid.toLocaleString() + '</td>';
+        ctHtml += '<td style="padding: 8px 10px; text-align: right; font-weight: 700; ' + (fc.outst > 0 ? 'color: #dc2626;' : 'color: #16a34a;') + '">฿' + fc.outst.toLocaleString() + '</td>';
+        ctHtml += '</tr>';
+      });
+
+      ctHtml += '<tr style="background: #fef3c7; font-weight: 700;">';
+      ctHtml += '<td style="padding: 8px 12px; color: #92400e;">รวมทั้งหมด</td>';
+      ctHtml += '<td style="padding: 8px 10px; text-align: right; color: #0284c7;">฿' + totFull.toLocaleString() + '</td>';
+      ctHtml += '<td style="padding: 8px 10px; text-align: right; color: #16a34a;">฿' + totPaid.toLocaleString() + '</td>';
+      ctHtml += '<td style="padding: 8px 10px; text-align: right; color: #dc2626; font-size: 0.95rem;">฿' + totOutst.toLocaleString() + '</td>';
+      ctHtml += '</tr></tbody></table></div></div>';
+
+      crosstabContainer.innerHTML = ctHtml;
+    } else {
+      crosstabContainer.innerHTML = '';
     }
-    var paid = parseFloat(item.paid) || 0;
-    var outst = Math.max(0, full - paid);
-
-    totalFullFee += full;
-    totalPaid += paid;
-    totalOutstanding += outst;
-
-    var cName = (item.camp_name || 'ไม่ระบุ').trim();
-    if (!finCamps[cName]) {
-      finCamps[cName] = { full: 0, paid: 0, outst: 0, count: 0 };
-    }
-    finCamps[cName].full += full;
-    finCamps[cName].paid += paid;
-    finCamps[cName].outst += outst;
-    finCamps[cName].count += 1;
-  });
-
-  var summaryHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">';
-  summaryHtml += '<div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">👥 จำนวนนักเรียนค่ายทั้งหมด</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">' + totalStudents.toLocaleString() + ' คน</div></div>';
-  summaryHtml += '<div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">💰 ยอดรวมค่าเรียนตามจริง</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">฿' + totalFullFee.toLocaleString() + '</div></div>';
-  summaryHtml += '<div style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">✅ ยอดที่ชำระแล้ว</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">฿' + totalPaid.toLocaleString() + '</div></div>';
-  summaryHtml += '<div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">⏳ ยอดค้างชำระรวม</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">฿' + totalOutstanding.toLocaleString() + '</div></div>';
-  summaryHtml += '</div>';
-
-  summaryContainer.innerHTML = summaryHtml;
+  }
 
   if (filteredData.length === 0) {
     tbody.innerHTML = '<tr><td colspan="16" class="text-center text-muted" style="padding: 30px;">ไม่พบข้อมูลนักเรียนค่ายตามเงื่อนไขที่เลือก</td></tr>';
     return;
   }
 
-  // Render Table Rows
+  // 3. COLOR PALETTES FOR DIFFERENT CAMPS (คนละค่าย แถบสีคนละสีกัน)
+  var CAMP_PALETTES = [
+    // 0: ฟ้า (เตรียมความพร้อม เมษายน)
+    { bg: 'linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%)', text: '#1e3a8a', badgeBg: '#dbeafe', badgeText: '#1e40af', rowP6: '#eff6ff', rowM3: '#bfdbfe' },
+    // 1: ส้ม (วางแผนติดspeed ตุลาคม)
+    { bg: 'linear-gradient(135deg, #fdba74 0%, #fb923c 100%)', text: '#7c2d12', badgeBg: '#ffedd5', badgeText: '#9a3412', rowP6: '#fff7ed', rowM3: '#fed7aa' },
+    // 2: ชมพู (สานฝันปั้นน้อง ห้องพิเศษ)
+    { bg: 'linear-gradient(135deg, #f9a8d4 0%, #f472b6 100%)', text: '#831843', badgeBg: '#fce7f3', badgeText: '#9d174d', rowP6: '#fdf2f8', rowM3: '#fbcfe8' },
+    // 3: เขียว (สานฝันปั้นน้อง ห้องปกติ รอบ 1)
+    { bg: 'linear-gradient(135deg, #86efac 0%, #4ade80 100%)', text: '#14532d', badgeBg: '#dcfce7', badgeText: '#166534', rowP6: '#f0fdf4', rowM3: '#bbf7d0' },
+    // 4: แดง (สานฝันปั้นน้อง ห้องปกติ รอบ 2)
+    { bg: 'linear-gradient(135deg, #fca5a5 0%, #f87171 100%)', text: '#7f1d1d', badgeBg: '#fee2e2', badgeText: '#991b1b', rowP6: '#fef2f2', rowM3: '#fecaca' },
+    // สีอื่นๆ
+    { bg: 'linear-gradient(135deg, #7dd3fc 0%, #38bdf8 100%)', text: '#0c4a6e', badgeBg: '#e0f2fe', badgeText: '#075985', rowP6: '#f0f9ff', rowM3: '#bae6fd' },
+    { bg: 'linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%)', text: '#312e81', badgeBg: '#e0e7ff', badgeText: '#3730a3', rowP6: '#eef2ff', rowM3: '#c7d2fe' },
+    { bg: 'linear-gradient(135deg, #5eead4 0%, #2dd4bf 100%)', text: '#134e4a', badgeBg: '#ccfbf1', badgeText: '#115e59', rowP6: '#f0fdfa', rowM3: '#99f6e4' }
+  ];
+
+  var getCampPalette = function(campName, index) {
+    var name = String(campName || '').trim();
+    if (name.includes('เตรียมความพร้อม') || name.includes('เมษายน')) return CAMP_PALETTES[0];
+    if (name.includes('วางแผนติดspeed') || name.includes('วางแผนติด speed') || name.includes('ตุลาคม')) return CAMP_PALETTES[1];
+    if (name.includes('ห้องพิเศษ')) return CAMP_PALETTES[2];
+    if (name.includes('รอบ1') || name.includes('รอบ 1')) return CAMP_PALETTES[3];
+    if (name.includes('รอบ2') || name.includes('รอบ 2')) return CAMP_PALETTES[4];
+    return CAMP_PALETTES[index % CAMP_PALETTES.length];
+  };
+
+  // Render Table Rows grouped by Camp Name -> Class/Room
   var html = '';
   var grouped = {};
 
   filteredData.forEach(function(item) {
-    var cName = item.camp_name || 'ไม่ระบุ';
+    var cName = (item.camp_name || 'ไม่ระบุค่าย').trim();
     var cGroup = (item.std_grade || '-') + ' / ' + (item.class_section || '-');
     if (!grouped[cName]) grouped[cName] = {};
     if (!grouped[cName][cGroup]) grouped[cName][cGroup] = [];
     grouped[cName][cGroup].push(item);
   });
 
+  var campIndex = 0;
   for (var cName in grouped) {
-    html += "<tr style='background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);'><td colspan='16' style='font-weight:bold; color:#1e293b; padding: 10px; font-size: 1.05rem;'>🏫 ค่าย: " + cName + "</td></tr>";
+    var palette = getCampPalette(cName, campIndex++);
+    html += "<tr style='background: " + palette.bg + "; color: " + palette.text + ";'><td colspan='16' style='font-weight:700; padding: 12px 14px; font-size: 1.05rem; text-shadow: 0 1px 2px rgba(255,255,255,0.5);'>🏫 ค่าย: " + cName + "</td></tr>";
     
     for (var cGroup in grouped[cName]) {
-      html += "<tr style='background-color: #f8fafc;'><td colspan='16' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge bg-secondary' style='margin-left: 8px; font-weight: normal;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
+      html += "<tr style='background-color: #f8fafc;'><td colspan='16' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge' style='margin-left: 8px; font-weight: 600; background-color: " + palette.badgeBg + "; color: " + palette.badgeText + "; border: 1px solid " + palette.badgeText + "33;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
       
       grouped[cName][cGroup].forEach(function(item) {
         var full = parseFloat(item.full) || getCampDefaultFee(item.camp_name, item.std_grade);
         var paid = parseFloat(item.paid) || 0;
         var outst = Math.max(0, full - paid);
-        var escTs = (item.timestamp || '').toString().replace(/'/g, "\'");
+        var escTs = (item.timestamp || '').toString().replace(/'/g, "\\'");
+        
+        var gradeStr = String(item.std_grade || '').trim();
+        var rowBgColor = palette.rowP6; // default P6
+        if (gradeStr.includes('ม.3') || gradeStr.includes('ม3') || gradeStr === '3' || gradeStr.includes('มัธยม')) {
+          rowBgColor = palette.rowM3;
+        }
 
-        html += "<tr>";
+        html += "<tr style='background-color: " + rowBgColor + ";'>";
         var displayDate = item.timestamp ? String(item.timestamp).split('T')[0] : "-";
         html += "<td>" + displayDate + "</td>";
         html += "<td>" + (item.camp_name || "-") + "</td>";
@@ -37327,7 +37616,7 @@ function renderCampsTable() {
           html += "</td>";
         }
         
-        // Delete Button (ตรงลบ ให้กดแล้วสามารถลบข้อมูลออกจากฐานข้อมูลได้เลย)
+        // Delete Button
         html += "<td style='text-align:center;'><button class='btn btn-sm btn-danger' style='padding: 3px 8px; font-size: 0.75rem;' onclick=\"deleteCampStudent('" + escTs + "')\" title='ลบข้อมูล'>🗑️ ลบ</button></td>";
         
         html += "</tr>";

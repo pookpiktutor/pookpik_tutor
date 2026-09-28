@@ -21148,14 +21148,38 @@ function renderCampsTable() {
     grouped[cName][cGroup].push(item);
   });
   
+  // Color Palettes for different camps
+  var CAMP_PALETTES = [
+    { bg: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', text: '#ffffff', badgeBg: '#dbeafe', badgeText: '#1e40af' }, // Blue
+    { bg: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)', text: '#ffffff', badgeBg: '#ede9fe', badgeText: '#5b21b6' }, // Purple
+    { bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)', text: '#ffffff', badgeBg: '#d1fae5', badgeText: '#065f46' }, // Emerald
+    { bg: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', text: '#ffffff', badgeBg: '#fef3c7', badgeText: '#92400e' }, // Amber
+    { bg: 'linear-gradient(135deg, #e11d48 0%, #be123c 100%)', text: '#ffffff', badgeBg: '#ffe4e6', badgeText: '#9f1239' }, // Rose
+    { bg: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', text: '#ffffff', badgeBg: '#e0f2fe', badgeText: '#075985' }, // Sky
+    { bg: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)', text: '#ffffff', badgeBg: '#e0e7ff', badgeText: '#3730a3' }, // Indigo
+    { bg: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)', text: '#ffffff', badgeBg: '#ccfbf1', badgeText: '#115e59' }  // Teal
+  ];
+
+  var getCampPalette = function(campName, index) {
+    var name = String(campName || '').trim();
+    if (name.includes('เตรียมความพร้อม') || name.includes('เมษายน')) return CAMP_PALETTES[0];
+    if (name.includes('วางแผนติดspeed') || name.includes('วางแผนติด speed') || name.includes('ตุลาคม')) return CAMP_PALETTES[1];
+    if (name.includes('ห้องพิเศษ')) return CAMP_PALETTES[2];
+    if (name.includes('รอบ1')) return CAMP_PALETTES[3];
+    if (name.includes('รอบ2')) return CAMP_PALETTES[4];
+    return CAMP_PALETTES[index % CAMP_PALETTES.length];
+  };
+
+  var campIndex = 0;
   for(var cName in grouped) {
-    html += "<tr style='background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);'><td colspan='16' style='font-weight:bold; color:#1e293b; padding: 10px; font-size: 1.05rem;'>🏫 ค่าย: " + cName + "</td></tr>";
+    var palette = getCampPalette(cName, campIndex++);
+    html += "<tr style='background: " + palette.bg + "; color: " + palette.text + ";'><td colspan='16' style='font-weight:700; padding: 12px 14px; font-size: 1.05rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);'>🏫 ค่าย: " + cName + "</td></tr>";
     
     for(var cGroup in grouped[cName]) {
-      html += "<tr style='background-color: #f8fafc;'><td colspan='16' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge bg-secondary' style='margin-left: 8px; font-weight: normal;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
+      html += "<tr style='background-color: #f8fafc;'><td colspan='16' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge' style='margin-left: 8px; font-weight: 600; background-color: " + palette.badgeBg + "; color: " + palette.badgeText + "; border: 1px solid " + palette.badgeText + "33;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
       
       grouped[cName][cGroup].forEach(function(item, idx) {
-        html += "<tr>";
+        html += "<tr style='background-color: " + palette.badgeBg + "44;'>";
         var displayDate = item.timestamp ? String(item.timestamp).split('T')[0] : "-";
         html += "<td>" + displayDate + "</td>";
         html += "<td>" + (item.camp_name || "-") + "</td>";
@@ -21274,15 +21298,14 @@ function showCampPaymentModal(timestamp) {
   var defaultFull = item.full || '';
   if (!defaultFull || defaultFull === '0') {
     var cName = (item.camp_name || '');
-    var cGrade = (item.class_level || '');
-    if (cName.includes('เรียน') || cName.includes('ตุลาคม')) {
-      defaultFull = '4400';
-    } else if (cName.includes('สานฝันฉันต้องติด')) {
-      if (cGrade.includes('ม.6')) {
-        defaultFull = '7900';
-      } else if (cGrade.includes('ม.3')) {
-        defaultFull = '8900';
-      }
+    var cGrade = (item.std_grade || '');
+    var isAprilOrOct = cName.includes('เตรียมความพร้อม') || cName.includes('เมษายน') || cName.includes('วางแผนติดspeed') || cName.includes('วางแผนติด speed') || cName.includes('ตุลาคม');
+    if (isAprilOrOct) {
+      if (cGrade.includes('ม.3')) { defaultFull = '4900'; }
+      else { defaultFull = '4400'; }
+    } else {
+      if (cGrade.includes('ม.3')) { defaultFull = '8900'; }
+      else { defaultFull = '7900'; }
     }
   }
   document.getElementById('cp_full').value = defaultFull;

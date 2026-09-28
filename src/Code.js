@@ -17754,26 +17754,33 @@ function cleanEmptyRowsAndSyncPrivateSheets() {
 
 // --- Helper: Get standard camp price ---
 function getCampPrice(campName, grade, campType, dailyCount) {
-  campName = String(campName || '');
-  grade = String(grade || '');
+  campName = String(campName || '').trim();
+  grade = String(grade || '').trim();
   let fullCost = 7900;
   let dailyCost = 1700;
 
-  if (campName.includes('เตรียมความพร้อม') || campName.includes('เมษายน')) {
-    fullCost = 4400;
-    dailyCost = 1700;
-  } else if (campName.includes('วางแผนติดspeed') || campName.includes('ตุลาคม') || campName.includes('สานฝันปั้นน้อง')) {
+  let isAprilOrOct = campName.includes('เตรียมความพร้อม') || 
+                     campName.includes('เมษายน') || 
+                     campName.includes('วางแผนติดspeed') || 
+                     campName.includes('วางแผนติด speed') || 
+                     campName.includes('ตุลาคม');
+
+  if (isAprilOrOct) {
+    if (grade.includes('ม.3')) {
+      fullCost = 4900;
+      dailyCost = 1900;
+    } else {
+      fullCost = 4400;
+      dailyCost = 1700;
+    }
+  } else {
+    // สานฝันปั้นน้อง (ห้องพิเศษ, ห้องปกติ รอบ 1, ห้องปกติ รอบ 2, มีนาคม)
     if (grade.includes('ม.3')) {
       fullCost = 8900;
       dailyCost = 1900;
     } else {
       fullCost = 7900;
       dailyCost = 1700;
-    }
-  } else {
-    if (grade.includes('ม.3')) {
-      fullCost = 8900;
-      dailyCost = 1900;
     }
   }
 
