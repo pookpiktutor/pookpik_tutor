@@ -798,39 +798,30 @@ function showLoginScreen() {
 
 
 function handleLogin(e) {
-
   if (e && e.preventDefault) e.preventDefault();
-
   const user = document.getElementById('login_username').value.trim();
-
   const pass = document.getElementById('login_password').value;
-
-  
-
   if (!pass) {
-
     showToast('กรุณากรอกรหัสผ่าน', 'error');
-
     return;
-
   }
-
   
-
+  const btn = document.getElementById('login_submit_btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = 'กำลังตรวจสอบ... ⏳';
+  }
   setLoading(true, 'กำลังเข้าสู่ระบบ...');
-
   google.script.run
-
     .withSuccessHandler(res => {
-
+      if (btn) {
+        btn.disabled = false;
+        btn.innerText = 'เข้าสู่ระบบ';
+      }
       setLoading(false);
-
       if (res && res.success) {
-
         localStorage.setItem('pookpik_session', JSON.stringify(res.user));
-
         if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'none';
-
         document.getElementById('mobile_menu_btn')?.addEventListener('click', function() {
 
     const sidebar = document.getElementById('sidebar');
@@ -884,13 +875,14 @@ function handleLogin(e) {
     })
 
     .withFailureHandler(err => {
-
+      const btn = document.getElementById('login_submit_btn');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerText = 'เข้าสู่ระบบ';
+      }
       setLoading(false);
-
       showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message, 'error');
-
     })
-
     .verifyLogin(user, pass);
 
 }
@@ -8287,11 +8279,9 @@ function loadMonthlyGrid(isSilent = false) {
 
 
 function renderMonthlyGrid(data) {
-
+  const branchFilter = state.activeBranchFilter || 'สาขา1';
   const container = document.getElementById('monthly_grid_content');
-
   const targetBranchNum = getActiveBranchNum(state.activeBranchFilter);
-
   const filteredRooms = (data.rooms || []).filter(room => {
 
     return getActiveBranchNum(room.branch) === targetBranchNum;
@@ -9370,7 +9360,7 @@ function renderDailyAttendanceSummary() {
 
 
 function renderDailyGrid() {
-
+  const branchFilter = state.activeBranchFilter || 'สาขา1';
   const container = document.getElementById('rooms_grid_container');
 
   if (!container) return;
@@ -37017,6 +37007,7 @@ function quickAddCampPayment() {
 
 // Manage / Edit Modal (ปุ่มจัดการ)
 function showCampPaymentModal(timestamp) {
+  try {
   var item = null;
   if (typeof currentCampsData !== 'undefined' && currentCampsData) {
     item = currentCampsData.find(function(c) {
@@ -37027,7 +37018,7 @@ function showCampPaymentModal(timestamp) {
     });
   }
   if (!item) {
-    Swal.fire('Error', 'ไม่พบข้อมูลนักเรียนคนนี้ กรุณารีเฟรชข้อมูลแล้วลองใหม่', 'error');
+    Swal.fire('Error', 'ไม่พบข้อมูลนักเรียนคนนี้ (timestamp=' + timestamp + ', dataLen=' + (currentCampsData ? currentCampsData.length : 'null') + ') กรุณารีเฟรชข้อมูลแล้วลองใหม่', 'error');
     return;
   }
 
@@ -37145,6 +37136,10 @@ function showCampPaymentModal(timestamp) {
 
   contentEl.innerHTML = html;
   modalEl.style.display = 'flex';
+  } catch(e) {
+    alert('showCampPaymentModal error: ' + e.message);
+    console.error('showCampPaymentModal error:', e);
+  }
 }
 
 function closeCampPaymentModal() {
