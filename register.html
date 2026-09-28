@@ -1024,7 +1024,7 @@ window.google.script.run = new Proxy({}, {
       if (cb.checked) {
         var idx = parseInt(cb.getAttribute('data-index'));
         if (!isNaN(idx) && courses[idx]) {
-          var price = courses[idx].outstanding;
+          var price = courses[idx].price !== undefined ? courses[idx].price : (courses[idx].outstanding || 0);
           total += price;
           fullPrices.push(price);
           selectedNames.push(courses[idx].courseName);
@@ -1390,14 +1390,16 @@ window.google.script.run = new Proxy({}, {
       var priceTd = document.createElement('td');
       priceTd.style.padding = '8px 4px';
       priceTd.style.textAlign = 'right';
-      priceTd.textContent = c.full ? '฿' + c.full.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
+      const pVal = c.price !== undefined ? c.price : c.full;
+      priceTd.textContent = pVal ? '฿' + pVal.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
       
       var outstandingTd = document.createElement('td');
       outstandingTd.style.padding = '8px 4px';
       outstandingTd.style.textAlign = 'right';
       outstandingTd.style.fontWeight = '600';
       outstandingTd.style.color = '#ef4444';
-      outstandingTd.textContent = c.outstanding ? '฿' + c.outstanding.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
+      const outVal = c.price !== undefined ? c.price : c.outstanding;
+      outstandingTd.textContent = outVal ? '฿' + outVal.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
 
       tr.appendChild(checkTd);
       tr.appendChild(nameTd);
