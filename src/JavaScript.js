@@ -964,27 +964,37 @@ function handleLogin(e) {
 
 
 function handleLogout() {
+  const modalHTML = `
+    <div id="custom_logout_modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99999; display:flex; align-items:center; justify-content:center; animation: fadeIn 0.3s ease;">
+      <div style="background:var(--bg-panel, #fff); padding:30px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.2); text-align:center; max-width:400px; width:90%; border:1px solid var(--border-color, #eee);">
+        <div style="font-size:48px; margin-bottom:15px;">👋</div>
+        <h3 style="margin:0 0 10px 0; color:var(--text-main, #333); font-family:var(--font-heading, sans-serif);">ออกจากระบบ</h3>
+        <p style="margin:0 0 25px 0; color:var(--text-muted, #666); font-size:16px; font-family:var(--font-body, sans-serif);">คุณต้องการออกจากระบบใช่หรือไม่?</p>
+        <div style="display:flex; justify-content:center; gap:15px;">
+          <button id="btn_cancel_logout" style="padding:10px 24px; border:none; border-radius:8px; background:var(--bg-panel-hover, #f0f0f0); color:var(--text-main, #333); font-size:16px; cursor:pointer; font-family:var(--font-heading, sans-serif); font-weight:600;">ยกเลิก</button>
+          <button id="btn_confirm_logout" style="padding:10px 24px; border:none; border-radius:8px; background:var(--color-danger, #ef4444); color:#fff; font-size:16px; cursor:pointer; font-family:var(--font-heading, sans-serif); font-weight:600; box-shadow:0 4px 10px rgba(239,68,68,0.3);">ออกจากระบบ</button>
+        </div>
+      </div>
+    </div>
+  `;
 
-  if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
 
+  document.getElementById('btn_cancel_logout').addEventListener('click', () => {
+    document.getElementById('custom_logout_modal').remove();
+  });
+
+  document.getElementById('btn_confirm_logout').addEventListener('click', () => {
+    document.getElementById('custom_logout_modal').remove();
     if (state.heartbeatInterval) {
-
       clearInterval(state.heartbeatInterval);
-
       state.heartbeatInterval = null;
-
     }
-
     localStorage.removeItem('pookpik_session');
-
     state.currentUser = null;
-
     showLoginScreen();
-
     showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
-
-  }
-
+  });
 }
 
 
