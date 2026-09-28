@@ -37583,7 +37583,7 @@ function renderCampsTable() {
         html += "<td>" + (item.shirt_size || "-") + "</td>";
         
         // Slip column
-        var slipUrl = (item.slip_image || "").trim();
+        var slipUrl = (item.slip_url || "").trim();
         if (slipUrl && slipUrl !== "-" && slipUrl.indexOf("http") === 0) {
           html += "<td><a href='" + slipUrl + "' target='_blank' class='btn btn-sm btn-info' style='font-size:0.75rem; padding: 2px 6px;'>ดูสลิป</a></td>";
         } else {
