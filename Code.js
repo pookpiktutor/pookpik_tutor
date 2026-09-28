@@ -6115,8 +6115,34 @@ function getGradeCourses(grade, branch, logUser) {
 // Sync back student records to grade sheets
 
 function syncToGradeSheet(student) {
-  // Disabled by new architecture
-  return;
+  try {
+    const db = getDb();
+    const enrollSheet = db.getSheetByName('DB_Enrollments');
+    if (!enrollSheet) return;
+
+    // Check if already enrolled
+    const data = enrollSheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      if (row[1] == student.id && row[5] == student.round) {
+        return; // Already enrolled in this exact course
+      }
+    }
+
+    // Format: Timestamp, sId, sNameFull, sGrade, sBranch, sCourse
+    const timestamp = Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy HH:mm:ss');
+    const newRow = [
+      timestamp,
+      student.id || '',
+      student.name || '',
+      student.grade || '',
+      student.branchLearn || student.branchPay || '',
+      student.round || ''
+    ];
+    enrollSheet.appendRow(newRow);
+  } catch (err) {
+    Logger.log("Error in syncToGradeSheet (DB_Enrollments): " + err.toString());
+  }
 }
 let cachedStatusValues_ = null;
 
