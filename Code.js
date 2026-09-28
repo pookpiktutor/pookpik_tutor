@@ -428,6 +428,28 @@ function doGet(e) {
     }));
   }
 
+  if (e && e.parameter && e.parameter.action === 'api') {
+    try {
+      const funcName = e.parameter.functionName;
+      const args = e.parameter.args ? JSON.parse(e.parameter.args) : [];
+      let fn = null;
+      if (typeof this[funcName] === 'function') {
+        fn = this[funcName];
+      } else if (typeof globalThis !== 'undefined' && typeof globalThis[funcName] === 'function') {
+        fn = globalThis[funcName];
+      } else {
+        try { fn = eval(funcName); } catch (err) { }
+      }
+      if (typeof fn !== 'function') throw new Error("Function '" + funcName + "' is not defined in Google Apps Script.");
+      const result = fn.apply(null, args);
+      return ContentService.createTextOutput(JSON.stringify(result !== undefined ? result : null))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+
 
   if (e && e.parameter && e.parameter.action === 'getEvaluationsList') {
 
