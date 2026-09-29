@@ -18017,3 +18017,146 @@ function syncCourseNamesInDataLearn() {
 
   return { success: true, updatedCount: updatedCount };
 }
+
+/**
+ * ฟังก์ชันสำหรับไล่เปลี่ยนชื่อสลิปเก่าใน Google Drive ตามข้อมูลนักเรียนใน Sheet
+ * ค้นหาจาก:
+ * 1. Sheet 'ลงทะเบียนค่าย' (คอลัมน์ สลิป, ชื่อ-นามสกุล, ชื่อเล่น, ระดับชั้น)
+ * 2. Sheet 'แจ้งชำระเงิน' (คอลัมน์ ลิงก์สลิป, ชื่อ-นามสกุล)
+ * 3. Sheet 'StatusDB' (คอลัมน์ paymentTimeNote ที่มี ลิงก์สลิป, ชื่อ, ชื่อเล่น, ชั้น)
+ * 4. โฟลเดอร์ data_PookPik_Tutor_Slips โดยตรง (กรณีไฟล์เก่าขึ้นต้นด้วย slip_ หรือ camp_slip_ หรือ payment_slip_)
+ */
+function renameOldSlipFiles() {
+  const results = {
+    totalChecked: 0,
+    renamed: 0,
+    skipped: 0,
+    errors: []
+  };
+
+  const fileIdRegex = /\/d\/([a-zA-Z0-9_-]+)|id=([a-zA-Z0-9_-]+)/;
+  const processedFileIds = new Set();
+
+  function sanitize(str) {
+    if (!str) return '';
+    return String(str).trim().replace(/[\/\\?%*:|"<>\s]/g, '-');
+  }
+
+  function renameFile(fileId, name, nickname, grade, prefix = 'slip') {
+    if (!fileId || processedFileIds.has(fileId)) return;
+    processedFileIds.add(fileId);
+    results.totalChecked++;
+
+    try {
+      const file = DriveApp.getFileById(fileId);
+      const oldName = file.getName();
+
+      // ถ้ารวมชื่อเรียบร้อยแล้ว ไม่ต้องเปลี่ยนซ้ำ
+      const namePart = sanitize(name);
+      const nickPart = sanitize(nickname);
+      const gradePart = sanitize(grade);
+      const combined = [namePart, nickPart, gradePart].filter(Boolean).join('_');
+
+      if (!combined) {
+        results.skipped++;
+        return;
+      }
+
+      // ถ้าในชื่อไฟล์มีชื่อนักเรียนอยู่แล้ว ให้ข้าม
+      if (namePart && oldName.includes(namePart)) {
+        results.skipped++;
+        return;
+      }
+
+      // หานามสกุลไฟล์เดิม
+      let ext = '';
+      const dotIndex = oldName.lastIndexOf('.');
+      if (dotIndex !== -1) {
+        ext = oldName.substring(dotIndex);
+      }
+
+      // สร้างชื่อไฟล์ใหม่
+      const newName = `${prefix}_${combined}_${oldName}`;
+      file.setName(newName);
+      results.renamed++;
+      Logger.log(`Renamed [${fileId}]: "${oldName}" -> "${newName}"`);
+    } catch (e) {
+      results.errors.push(`File ${fileId}: ${e.message}`);
+    }
+  }
+
+  const db = getDb();
+
+  // 1. ตรวจสอบ Sheet 'ลงทะเบียนค่าย'
+  try {
+    const campSheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (campSheet) {
+      const values = campSheet.getDataRange().getValues();
+      for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        const grade = row[3] || '';
+        const name = row[5] || '';
+        const nickname = row[6] || '';
+        const slipUrl = String(row[12] || '');
+
+        const match = slipUrl.match(fileIdRegex);
+        if (match) {
+          const fileId = match[1] || match[2];
+          renameFile(fileId, name, nickname, grade, 'camp_slip');
+        }
+      }
+    }
+  } catch (err) {
+    results.errors.push('Error in ลงทะเบียนค่าย: ' + err.message);
+  }
+
+  // 2. ตรวจสอบ Sheet 'แจ้งชำระเงิน'
+  try {
+    const paySheet = db.getSheetByName('แจ้งชำระเงิน');
+    if (paySheet) {
+      const values = paySheet.getDataRange().getValues();
+      for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        const name = row[1] || '';
+        const slipUrl = String(row[5] || '');
+
+        const match = slipUrl.match(fileIdRegex);
+        if (match) {
+          const fileId = match[1] || match[2];
+          renameFile(fileId, name, '', '', 'payment_slip');
+        }
+      }
+    }
+  } catch (err) {
+    results.errors.push('Error in แจ้งชำระเงิน: ' + err.message);
+  }
+
+  // 3. ตรวจสอบ Sheet 'StatusDB'
+  try {
+    const statusSheet = db.getSheetByName('StatusDB');
+    if (statusSheet) {
+      const values = statusSheet.getDataRange().getValues();
+      for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        const name = row[1] || '';
+        const nickname = row[2] || '';
+        const grade = row[16] || row[17] || '';
+        const note = String(row[7] || ''); // paymentTimeNote
+
+        if (note.includes('http') || note.includes('drive.google.com')) {
+          const match = note.match(fileIdRegex);
+          if (match) {
+            const fileId = match[1] || match[2];
+            renameFile(fileId, name, nickname, grade, 'slip');
+          }
+        }
+      }
+    }
+  } catch (err) {
+    results.errors.push('Error in StatusDB: ' + err.message);
+  }
+
+  Logger.log('renameOldSlipFiles Result: ' + JSON.stringify(results));
+  return results;
+}
+

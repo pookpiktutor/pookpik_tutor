@@ -131,6 +131,46 @@ function updateTaskWidget() {
 
 
 
+function executeGASCall(funcName, args, successHandler, failureHandler) {
+  const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
+  const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random()) + '_' + Date.now();
+  let timeoutId;
+  
+  window[callbackName] = function(result) {
+    if (timeoutId) clearTimeout(timeoutId);
+    delete window[callbackName];
+    if (document.body.contains(script)) {
+      document.body.removeChild(script);
+    }
+    if (result && result.error) {
+      if (failureHandler) failureHandler(new Error(result.error));
+    } else {
+      if (successHandler) successHandler(result);
+    }
+  };
+
+  const script = document.createElement('script');
+  script.src = GAS_API_URL + '?action=api&functionName=' + encodeURIComponent(funcName) + '&args=' + encodeURIComponent(JSON.stringify(args)) + '&callback=' + callbackName;
+  script.onerror = function() {
+    if (timeoutId) clearTimeout(timeoutId);
+    delete window[callbackName];
+    if (document.body.contains(script)) {
+      document.body.removeChild(script);
+    }
+    if (failureHandler) failureHandler(new Error('JSONP Request failed (Network error or redirect blocking).'));
+  };
+
+  timeoutId = setTimeout(function() {
+    delete window[callbackName];
+    if (document.body.contains(script)) {
+      document.body.removeChild(script);
+    }
+    if (failureHandler) failureHandler(new Error('การเชื่อมต่อเซิร์ฟเวอร์ใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง'));
+  }, 25000);
+
+  document.body.appendChild(script);
+}
+
 function processBgTaskQueue() {
 
   updateTaskWidget();
@@ -192,43 +232,7 @@ function processBgTaskQueue() {
      finalRunner[nextTask.funcName](...nextTask.args);
 
   } else {
-     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
-     const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random()) + '_' + Date.now();
-     let timeoutId;
-     
-     window[callbackName] = function(result) {
-        if (timeoutId) clearTimeout(timeoutId);
-        delete window[callbackName];
-        if (document.body.contains(script)) {
-            document.body.removeChild(script);
-        }
-        if (result && result.error) {
-           completeTask('error', new Error(result.error));
-        } else {
-           completeTask('success', result);
-        }
-     };
-
-     const script = document.createElement('script');
-     script.src = GAS_API_URL + '?action=api&functionName=' + encodeURIComponent(nextTask.funcName) + '&args=' + encodeURIComponent(JSON.stringify(nextTask.args)) + '&callback=' + callbackName;
-     script.onerror = function() {
-        if (timeoutId) clearTimeout(timeoutId);
-        delete window[callbackName];
-        if (document.body.contains(script)) {
-            document.body.removeChild(script);
-        }
-        completeTask('error', new Error('JSONP Request failed (Network error or multi-account redirect blocking).'));
-     };
-     
-     timeoutId = setTimeout(function() {
-        delete window[callbackName];
-        if (document.body.contains(script)) {
-            document.body.removeChild(script);
-        }
-        completeTask('error', new Error('JSONP Request timeout (The server might have returned HTML instead of Javascript). กรุณาตรวจสอบการตั้งค่า Deployment (Web App) ของ Google Apps Script'));
-     }, 15000); // 15 seconds timeout
-     
-     document.body.appendChild(script);
+     executeGASCall(nextTask.funcName, nextTask.args, res => completeTask('success', res), err => completeTask('error', err));
   }
 
 }
@@ -318,35 +322,7 @@ window.google.script.run = new Proxy({}, {
           finalRunner[prop](...args);
 
         } else {
-
-          const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
-
-          const attemptFetch = (retriesLeft) => {
-            fetch(GAS_API_URL, {
-              redirect: 'follow',
-              method: 'POST',
-              body: JSON.stringify({ functionName: prop, arguments: args }),
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-            })
-            .then(response => response.json())
-            .then(result => {
-              if (result && result.error) {
-                if (failureHandler) failureHandler(new Error(result.error));
-              } else {
-                if (successHandler) successHandler(result);
-              }
-            })
-            .catch(err => {
-              if (retriesLeft > 0 && err.message === 'Failed to fetch') {
-                console.warn(`[Proxy] Failed to fetch for ${prop}, retrying... (${retriesLeft} left)`);
-                setTimeout(() => attemptFetch(retriesLeft - 1), 2000);
-              } else {
-                if (failureHandler) failureHandler(err);
-              }
-            });
-          };
-
-          attemptFetch(3); // Retry 3 times
+          executeGASCall(prop, args, successHandler, failureHandler);
         }
 
         return; // Don't push to queue
