@@ -15142,9 +15142,12 @@ function submitPublicRegistration(studentData, fileData) {
       // 2. Upload Slip File
 
       const content = Utilities.base64Decode(fileData.base64);
-
-      const blob = Utilities.newBlob(content, fileData.mimeType, 'slip_' + Date.now() + '_' + fileData.fileName);
-
+      let namePart = studentData.name || studentData.std_name || '';
+      let nickPart = studentData.nickname || studentData.std_nickname || '';
+      let gradePart = studentData.grade || studentData.classSection || studentData.classLevel || '';
+      let combinedName = [namePart, nickPart, gradePart].filter(Boolean).join('_').replace(/[\/\\?%*:|"<>\s]/g, '-');
+      let newFileName = 'slip_' + Date.now() + '_' + (combinedName ? combinedName + '_' : '') + fileData.fileName;
+      const blob = Utilities.newBlob(content, fileData.mimeType, newFileName);
       const file = folder.createFile(blob);
 
       file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
@@ -17211,7 +17214,12 @@ function saveCampStudentData(campData) {
         props.setProperty('SLIP_FOLDER_ID', folder.getId());
       }
       const content = Utilities.base64Decode(campData.fileData.base64);
-      const blob = Utilities.newBlob(content, campData.fileData.mimeType, 'camp_slip_' + Date.now() + '_' + campData.fileData.fileName);
+      let namePart = campData.std_name || campData.name || '';
+      let nickPart = campData.std_nickname || campData.nickname || '';
+      let gradePart = campData.grade || '';
+      let combinedName = [namePart, nickPart, gradePart].filter(Boolean).join('_').replace(/[\/\\?%*:|"<>\s]/g, '-');
+      let newFileName = 'camp_slip_' + Date.now() + '_' + (combinedName ? combinedName + '_' : '') + campData.fileData.fileName;
+      const blob = Utilities.newBlob(content, campData.fileData.mimeType, newFileName);
       const file = folder.createFile(blob);
       file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
       slipUrl = file.getUrl();
@@ -17663,7 +17671,12 @@ function confirmSearchPayment(payload) {
         props.setProperty('SLIP_FOLDER_ID', folder.getId());
       }
       const content = Utilities.base64Decode(payload.fileData.base64);
-      const blob = Utilities.newBlob(content, payload.fileData.mimeType, 'payment_slip_' + Date.now() + '_' + payload.fileData.fileName);
+      let namePart = payload.studentName || payload.std_name || payload.name || '';
+      let nickPart = payload.studentNickname || payload.std_nickname || payload.nickname || '';
+      let gradePart = payload.grade || payload.classSection || '';
+      let combinedName = [namePart, nickPart, gradePart].filter(Boolean).join('_').replace(/[\/\\?%*:|"<>\s]/g, '-');
+      let newFileName = 'payment_slip_' + Date.now() + '_' + (combinedName ? combinedName + '_' : '') + payload.fileData.fileName;
+      const blob = Utilities.newBlob(content, payload.fileData.mimeType, newFileName);
       const file = folder.createFile(blob);
       file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
       slipUrl = file.getUrl();
