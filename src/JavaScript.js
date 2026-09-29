@@ -37024,7 +37024,27 @@ function showCampPaymentModal(timestamp) {
   }
 
   var contentEl = document.getElementById('camp_payment_modal_content');
-  var channels = ['โอนเงิน (แนบสลิป)', 'โอนธนาคาร', 'QR พร้อมเพย์', 'เงินสด', 'อื่นๆ'];
+  var channels = [
+    'กรุงไทย พีปิ๊ก',
+    'กรุงเทพ พีปิ๊ก',
+    'SCB พี่ปิ๊ก',
+    'กรุงศรี พี่ปิ๊ก',
+    'TTB',
+    'กสิกร พี่ปิ๊ก',
+    'SCB คุณยาย',
+    'กรุงศรี คุณตา',
+    'กรุงศรี บัญชีบริษัท',
+    'กสิกร บัญชีบริษัท(กด)',
+    'กสิกร บัญชีบริษัท(สแกน)',
+    'TTB บัญชีบริษัท(กด)',
+    'TTB บัญชีบริษัท(สแกน)',
+    'เงินสด สาขา1',
+    'เงินสด สาขา2',
+    'เงินสด สาขา3',
+    'พี่ปิ๊ก โอน',
+    'พี่ต้น โอน',
+    'อื่นๆ'
+  ];
   var channelOptions = function(selected) {
     var opts = '<option value="">เลือกช่องทาง</option>';
     channels.forEach(function(ch) {
