@@ -194,10 +194,14 @@ function processBgTaskQueue() {
   } else {
      const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
      const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random()) + '_' + Date.now();
+     let timeoutId;
      
      window[callbackName] = function(result) {
+        if (timeoutId) clearTimeout(timeoutId);
         delete window[callbackName];
-        document.body.removeChild(script);
+        if (document.body.contains(script)) {
+            document.body.removeChild(script);
+        }
         if (result && result.error) {
            completeTask('error', new Error(result.error));
         } else {
@@ -208,10 +212,22 @@ function processBgTaskQueue() {
      const script = document.createElement('script');
      script.src = GAS_API_URL + '?action=api&functionName=' + encodeURIComponent(nextTask.funcName) + '&args=' + encodeURIComponent(JSON.stringify(nextTask.args)) + '&callback=' + callbackName;
      script.onerror = function() {
+        if (timeoutId) clearTimeout(timeoutId);
         delete window[callbackName];
-        document.body.removeChild(script);
+        if (document.body.contains(script)) {
+            document.body.removeChild(script);
+        }
         completeTask('error', new Error('JSONP Request failed (Network error or multi-account redirect blocking).'));
      };
+     
+     timeoutId = setTimeout(function() {
+        delete window[callbackName];
+        if (document.body.contains(script)) {
+            document.body.removeChild(script);
+        }
+        completeTask('error', new Error('JSONP Request timeout (The server might have returned HTML instead of Javascript). กรุณาตรวจสอบการตั้งค่า Deployment (Web App) ของ Google Apps Script'));
+     }, 15000); // 15 seconds timeout
+     
      document.body.appendChild(script);
   }
 
