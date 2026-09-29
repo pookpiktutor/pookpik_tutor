@@ -193,43 +193,27 @@ function processBgTaskQueue() {
      finalRunner[nextTask.funcName](...nextTask.args);
 
   } else {
-
      const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
-
-     fetch(GAS_API_URL, {
-
-        redirect: 'follow',
-
-        method: 'POST',
-
-        body: JSON.stringify({ functionName: nextTask.funcName, arguments: nextTask.args }),
-
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-
-     })
-
-     .then(response => response.json())
-
-     .then(result => {
-
+     const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random()) + '_' + Date.now();
+     
+     window[callbackName] = function(result) {
+        delete window[callbackName];
+        document.body.removeChild(script);
         if (result && result.error) {
-
            completeTask('error', new Error(result.error));
-
         } else {
-
            completeTask('success', result);
-
         }
+     };
 
-     })
-
-     .catch(err => {
-
-        completeTask('error', err);
-
-     });
-
+     const script = document.createElement('script');
+     script.src = GAS_API_URL + '?action=api&functionName=' + encodeURIComponent(nextTask.funcName) + '&args=' + encodeURIComponent(JSON.stringify(nextTask.args)) + '&callback=' + callbackName;
+     script.onerror = function() {
+        delete window[callbackName];
+        document.body.removeChild(script);
+        completeTask('error', new Error('JSONP Request failed (Network error or multi-account redirect blocking).'));
+     };
+     document.body.appendChild(script);
   }
 
 }
