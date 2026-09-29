@@ -172,17 +172,24 @@ function processBgTaskQueue() {
 
 
 
-function executeGASCall(funcName, args, successHandler, failureHandler) {
+function executeGASCall(funcName, args, successHandler, failureHandler, retryCount = 0) {
   const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
-  const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random()) + '_' + Date.now();
+  const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random()) + '_' + Date.now();
   let timeoutId;
-  
-  window[callbackName] = function(result) {
+  let isDone = false;
+
+  const cleanup = () => {
+    isDone = true;
     if (timeoutId) clearTimeout(timeoutId);
-    delete window[callbackName];
-    if (document.body.contains(script)) {
+    try { delete window[callbackName]; } catch (e) {}
+    if (script && document.body.contains(script)) {
       document.body.removeChild(script);
     }
+  };
+
+  window[callbackName] = function(result) {
+    if (isDone) return;
+    cleanup();
     if (result && result.error) {
       if (failureHandler) failureHandler(new Error(result.error));
     } else {
@@ -192,22 +199,28 @@ function executeGASCall(funcName, args, successHandler, failureHandler) {
 
   const script = document.createElement('script');
   script.src = GAS_API_URL + '?action=api&functionName=' + encodeURIComponent(funcName) + '&args=' + encodeURIComponent(JSON.stringify(args)) + '&callback=' + callbackName;
+  
   script.onerror = function() {
-    if (timeoutId) clearTimeout(timeoutId);
-    delete window[callbackName];
-    if (document.body.contains(script)) {
-      document.body.removeChild(script);
+    if (isDone) return;
+    cleanup();
+    if (retryCount < 2) {
+      setTimeout(() => {
+        executeGASCall(funcName, args, successHandler, failureHandler, retryCount + 1);
+      }, 1000 * (retryCount + 1));
+    } else {
+      if (failureHandler) failureHandler(new Error('JSONP Request failed (Network error or redirect blocking).'));
     }
-    if (failureHandler) failureHandler(new Error('JSONP Request failed (Network error or redirect blocking).'));
   };
 
   timeoutId = setTimeout(function() {
-    delete window[callbackName];
-    if (document.body.contains(script)) {
-      document.body.removeChild(script);
+    if (isDone) return;
+    cleanup();
+    if (retryCount < 1) {
+      executeGASCall(funcName, args, successHandler, failureHandler, retryCount + 1);
+    } else {
+      if (failureHandler) failureHandler(new Error('การเชื่อมต่อเซิร์ฟเวอร์ใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง'));
     }
-    if (failureHandler) failureHandler(new Error('การเชื่อมต่อเซิร์ฟเวอร์ใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง'));
-  }, 25000);
+  }, 45000);
 
   document.body.appendChild(script);
 }
