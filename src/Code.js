@@ -413,6 +413,24 @@ function getRegistryDef(sheetName) {
 }
 
 function doGet(e) {
+  if (e && e.parameter && e.parameter.action === 'api') {
+    const funcName = e.parameter.functionName;
+    const argsStr = e.parameter.args || '[]';
+    const callback = e.parameter.callback;
+    try {
+      const args = JSON.parse(argsStr);
+      let fn = null;
+      if (typeof this[funcName] === 'function') { fn = this[funcName]; }
+      else if (typeof globalThis !== 'undefined' && typeof globalThis[funcName] === 'function') { fn = globalThis[funcName]; }
+      else { try { fn = eval(funcName); } catch(err){} }
+      if (typeof fn !== 'function') throw new Error("Function '" + funcName + "' not found");
+      const result = fn.apply(null, args);
+      return ContentService.createTextOutput(callback + '(' + JSON.stringify(result !== undefined ? result : null) + ');').setMimeType(ContentService.MimeType.JAVASCRIPT);
+    } catch(err) {
+      return ContentService.createTextOutput(callback + '(' + JSON.stringify({ error: err.toString() }) + ');').setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+  }
+
   if (e && e.parameter && e.parameter.test == '1') {
     var res = getStudentData("ด.ช.ปัณณวิชญ์ พลบำรุง");
     var allSt = getStudentsListRaw();

@@ -305,40 +305,32 @@ window.google.script.run = new Proxy({}, {
 
           const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
 
-          fetch(GAS_API_URL, {
+          const attemptFetch = (retriesLeft) => {
+            fetch(GAS_API_URL, {
+              redirect: 'follow',
+              method: 'POST',
+              body: JSON.stringify({ functionName: prop, arguments: args }),
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .then(response => response.json())
+            .then(result => {
+              if (result && result.error) {
+                if (failureHandler) failureHandler(new Error(result.error));
+              } else {
+                if (successHandler) successHandler(result);
+              }
+            })
+            .catch(err => {
+              if (retriesLeft > 0 && err.message === 'Failed to fetch') {
+                console.warn(`[Proxy] Failed to fetch for ${prop}, retrying... (${retriesLeft} left)`);
+                setTimeout(() => attemptFetch(retriesLeft - 1), 2000);
+              } else {
+                if (failureHandler) failureHandler(err);
+              }
+            });
+          };
 
-            redirect: 'follow',
-
-            method: 'POST',
-
-            body: JSON.stringify({ functionName: prop, arguments: args }),
-
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-
-          })
-
-          .then(response => response.json())
-
-          .then(result => {
-
-            if (result && result.error) {
-
-              if (failureHandler) failureHandler(new Error(result.error));
-
-            } else {
-
-              if (successHandler) successHandler(result);
-
-            }
-
-          })
-
-          .catch(err => {
-
-            if (failureHandler) failureHandler(err);
-
-          });
-
+          attemptFetch(3); // Retry 3 times
         }
 
         return; // Don't push to queue
