@@ -413,6 +413,24 @@ function getRegistryDef(sheetName) {
 }
 
 function doGet(e) {
+  if (e && e.parameter && e.parameter.action === 'api') {
+    const funcName = e.parameter.functionName;
+    const argsStr = e.parameter.args || '[]';
+    const callback = e.parameter.callback;
+    try {
+      const args = JSON.parse(argsStr);
+      let fn = null;
+      if (typeof this[funcName] === 'function') { fn = this[funcName]; }
+      else if (typeof globalThis !== 'undefined' && typeof globalThis[funcName] === 'function') { fn = globalThis[funcName]; }
+      else { try { fn = eval(funcName); } catch(err){} }
+      if (typeof fn !== 'function') throw new Error("Function '" + funcName + "' not found");
+      const result = fn.apply(null, args);
+      return ContentService.createTextOutput(callback + '(' + JSON.stringify(result !== undefined ? result : null) + ');').setMimeType(ContentService.MimeType.JAVASCRIPT);
+    } catch(err) {
+      return ContentService.createTextOutput(callback + '(' + JSON.stringify({ error: err.toString() }) + ');').setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+  }
+
   if (e && e.parameter && e.parameter.test == '1') {
     var res = getStudentData("ด.ช.ปัณณวิชญ์ พลบำรุง");
     var allSt = getStudentsListRaw();
@@ -426,38 +444,6 @@ function doGet(e) {
       sheets: gradeSheets,
       lastCol: lastCol
     }));
-  }
-
-  if (e && e.parameter && e.parameter.action === 'api') {
-    try {
-      const funcName = e.parameter.functionName;
-      const args = e.parameter.args ? JSON.parse(e.parameter.args) : [];
-      let fn = null;
-      if (typeof this[funcName] === 'function') {
-        fn = this[funcName];
-      } else if (typeof globalThis !== 'undefined' && typeof globalThis[funcName] === 'function') {
-        fn = globalThis[funcName];
-      } else {
-        try { fn = eval(funcName); } catch (err) { }
-      }
-      if (typeof fn !== 'function') throw new Error("Function '" + funcName + "' is not defined in Google Apps Script.");
-      const result = fn.apply(null, args);
-      const jsonStr = JSON.stringify(result !== undefined ? result : null);
-      if (e.parameter.callback) {
-        return ContentService.createTextOutput(e.parameter.callback + '(' + jsonStr + ');')
-          .setMimeType(ContentService.MimeType.JAVASCRIPT);
-      }
-      return ContentService.createTextOutput(jsonStr)
-        .setMimeType(ContentService.MimeType.JSON);
-    } catch (err) {
-      const errStr = JSON.stringify({ success: false, error: err.toString() });
-      if (e && e.parameter && e.parameter.callback) {
-        return ContentService.createTextOutput(e.parameter.callback + '(' + errStr + ');')
-          .setMimeType(ContentService.MimeType.JAVASCRIPT);
-      }
-      return ContentService.createTextOutput(errStr)
-        .setMimeType(ContentService.MimeType.JSON);
-    }
   }
 
 
@@ -4607,7 +4593,6 @@ function getGeneralSettings() {
       "พี่ปิ๊ก โอน",
       "พี่ต้น โอน"
     ];
-
     
 
     const db = getDb();
@@ -15157,9 +15142,12 @@ function submitPublicRegistration(studentData, fileData) {
       // 2. Upload Slip File
 
       const content = Utilities.base64Decode(fileData.base64);
-
-      const blob = Utilities.newBlob(content, fileData.mimeType, 'slip_' + Date.now() + '_' + fileData.fileName);
-
+      let namePart = studentData.name || studentData.std_name || '';
+      let nickPart = studentData.nickname || studentData.std_nickname || '';
+      let gradePart = studentData.grade || studentData.classSection || studentData.classLevel || '';
+      let combinedName = [namePart, nickPart, gradePart].filter(Boolean).join('_').replace(/[\/\\?%*:|"<>\s]/g, '-');
+      let newFileName = 'slip_' + Date.now() + '_' + (combinedName ? combinedName + '_' : '') + fileData.fileName;
+      const blob = Utilities.newBlob(content, fileData.mimeType, newFileName);
       const file = folder.createFile(blob);
 
       file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
@@ -17226,7 +17214,12 @@ function saveCampStudentData(campData) {
         props.setProperty('SLIP_FOLDER_ID', folder.getId());
       }
       const content = Utilities.base64Decode(campData.fileData.base64);
-      const blob = Utilities.newBlob(content, campData.fileData.mimeType, 'camp_slip_' + Date.now() + '_' + campData.fileData.fileName);
+      let namePart = campData.std_name || campData.name || '';
+      let nickPart = campData.std_nickname || campData.nickname || '';
+      let gradePart = campData.grade || '';
+      let combinedName = [namePart, nickPart, gradePart].filter(Boolean).join('_').replace(/[\/\\?%*:|"<>\s]/g, '-');
+      let newFileName = 'camp_slip_' + Date.now() + '_' + (combinedName ? combinedName + '_' : '') + campData.fileData.fileName;
+      const blob = Utilities.newBlob(content, campData.fileData.mimeType, newFileName);
       const file = folder.createFile(blob);
       file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
       slipUrl = file.getUrl();
@@ -17474,8 +17467,22 @@ function updateCampStudentData(timestamp, updatedData) {
     if (!sheet) return {success: false, error: 'ไม่พบชีทลงทะเบียนค่าย'};
     
     const data = sheet.getDataRange().getValues();
+    const targetTsStr = String(timestamp || '').trim();
+    const targetTsTime = targetTsStr ? new Date(targetTsStr).getTime() : NaN;
+
     for (let i = 1; i < data.length; i++) {
-      if (String(data[i][0]) === String(timestamp)) {
+      const cellVal = data[i][0];
+      const cellStr = String(cellVal || '').trim();
+      let isMatch = (cellStr === targetTsStr);
+
+      if (!isMatch && !isNaN(targetTsTime) && cellVal) {
+        const cellTime = new Date(cellVal).getTime();
+        if (!isNaN(cellTime) && cellTime === targetTsTime) {
+          isMatch = true;
+        }
+      }
+
+      if (isMatch) {
         const rIndex = i + 1;
         const full = parseFloat(updatedData.full) || 0;
         const paid = parseFloat(updatedData.paid) || 0;
@@ -17514,7 +17521,7 @@ function updateCampStudentData(timestamp, updatedData) {
         return {success: true};
       }
     }
-    return {success: false, error: 'ไม่พบรายการนักเรียน'};
+    return {success: false, error: 'ไม่พบรายการนักเรียน (Timestamp: ' + targetTsStr + ')'};
   } catch (e) {
     Logger.log('ERROR in updateCampStudentData: ' + e.message);
     return {success: false, error: e.message};
@@ -17678,7 +17685,12 @@ function confirmSearchPayment(payload) {
         props.setProperty('SLIP_FOLDER_ID', folder.getId());
       }
       const content = Utilities.base64Decode(payload.fileData.base64);
-      const blob = Utilities.newBlob(content, payload.fileData.mimeType, 'payment_slip_' + Date.now() + '_' + payload.fileData.fileName);
+      let namePart = payload.studentName || payload.std_name || payload.name || '';
+      let nickPart = payload.studentNickname || payload.std_nickname || payload.nickname || '';
+      let gradePart = payload.grade || payload.classSection || '';
+      let combinedName = [namePart, nickPart, gradePart].filter(Boolean).join('_').replace(/[\/\\?%*:|"<>\s]/g, '-');
+      let newFileName = 'payment_slip_' + Date.now() + '_' + (combinedName ? combinedName + '_' : '') + payload.fileData.fileName;
+      const blob = Utilities.newBlob(content, payload.fileData.mimeType, newFileName);
       const file = folder.createFile(blob);
       file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
       slipUrl = file.getUrl();
@@ -18019,3 +18031,146 @@ function syncCourseNamesInDataLearn() {
 
   return { success: true, updatedCount: updatedCount };
 }
+
+/**
+ * ฟังก์ชันสำหรับไล่เปลี่ยนชื่อสลิปเก่าใน Google Drive ตามข้อมูลนักเรียนใน Sheet
+ * ค้นหาจาก:
+ * 1. Sheet 'ลงทะเบียนค่าย' (คอลัมน์ สลิป, ชื่อ-นามสกุล, ชื่อเล่น, ระดับชั้น)
+ * 2. Sheet 'แจ้งชำระเงิน' (คอลัมน์ ลิงก์สลิป, ชื่อ-นามสกุล)
+ * 3. Sheet 'StatusDB' (คอลัมน์ paymentTimeNote ที่มี ลิงก์สลิป, ชื่อ, ชื่อเล่น, ชั้น)
+ * 4. โฟลเดอร์ data_PookPik_Tutor_Slips โดยตรง (กรณีไฟล์เก่าขึ้นต้นด้วย slip_ หรือ camp_slip_ หรือ payment_slip_)
+ */
+function renameOldSlipFiles() {
+  const results = {
+    totalChecked: 0,
+    renamed: 0,
+    skipped: 0,
+    errors: []
+  };
+
+  const fileIdRegex = /\/d\/([a-zA-Z0-9_-]+)|id=([a-zA-Z0-9_-]+)/;
+  const processedFileIds = new Set();
+
+  function sanitize(str) {
+    if (!str) return '';
+    return String(str).trim().replace(/[\/\\?%*:|"<>\s]/g, '-');
+  }
+
+  function renameFile(fileId, name, nickname, grade, prefix = 'slip') {
+    if (!fileId || processedFileIds.has(fileId)) return;
+    processedFileIds.add(fileId);
+    results.totalChecked++;
+
+    try {
+      const file = DriveApp.getFileById(fileId);
+      const oldName = file.getName();
+
+      // ถ้ารวมชื่อเรียบร้อยแล้ว ไม่ต้องเปลี่ยนซ้ำ
+      const namePart = sanitize(name);
+      const nickPart = sanitize(nickname);
+      const gradePart = sanitize(grade);
+      const combined = [namePart, nickPart, gradePart].filter(Boolean).join('_');
+
+      if (!combined) {
+        results.skipped++;
+        return;
+      }
+
+      // ถ้าในชื่อไฟล์มีชื่อนักเรียนอยู่แล้ว ให้ข้าม
+      if (namePart && oldName.includes(namePart)) {
+        results.skipped++;
+        return;
+      }
+
+      // หานามสกุลไฟล์เดิม
+      let ext = '';
+      const dotIndex = oldName.lastIndexOf('.');
+      if (dotIndex !== -1) {
+        ext = oldName.substring(dotIndex);
+      }
+
+      // สร้างชื่อไฟล์ใหม่
+      const newName = `${prefix}_${combined}_${oldName}`;
+      file.setName(newName);
+      results.renamed++;
+      Logger.log(`Renamed [${fileId}]: "${oldName}" -> "${newName}"`);
+    } catch (e) {
+      results.errors.push(`File ${fileId}: ${e.message}`);
+    }
+  }
+
+  const db = getDb();
+
+  // 1. ตรวจสอบ Sheet 'ลงทะเบียนค่าย'
+  try {
+    const campSheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (campSheet) {
+      const values = campSheet.getDataRange().getValues();
+      for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        const grade = row[3] || '';
+        const name = row[5] || '';
+        const nickname = row[6] || '';
+        const slipUrl = String(row[12] || '');
+
+        const match = slipUrl.match(fileIdRegex);
+        if (match) {
+          const fileId = match[1] || match[2];
+          renameFile(fileId, name, nickname, grade, 'camp_slip');
+        }
+      }
+    }
+  } catch (err) {
+    results.errors.push('Error in ลงทะเบียนค่าย: ' + err.message);
+  }
+
+  // 2. ตรวจสอบ Sheet 'แจ้งชำระเงิน'
+  try {
+    const paySheet = db.getSheetByName('แจ้งชำระเงิน');
+    if (paySheet) {
+      const values = paySheet.getDataRange().getValues();
+      for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        const name = row[1] || '';
+        const slipUrl = String(row[5] || '');
+
+        const match = slipUrl.match(fileIdRegex);
+        if (match) {
+          const fileId = match[1] || match[2];
+          renameFile(fileId, name, '', '', 'payment_slip');
+        }
+      }
+    }
+  } catch (err) {
+    results.errors.push('Error in แจ้งชำระเงิน: ' + err.message);
+  }
+
+  // 3. ตรวจสอบ Sheet 'StatusDB'
+  try {
+    const statusSheet = db.getSheetByName('StatusDB');
+    if (statusSheet) {
+      const values = statusSheet.getDataRange().getValues();
+      for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        const name = row[1] || '';
+        const nickname = row[2] || '';
+        const grade = row[16] || row[17] || '';
+        const note = String(row[7] || ''); // paymentTimeNote
+
+        if (note.includes('http') || note.includes('drive.google.com')) {
+          const match = note.match(fileIdRegex);
+          if (match) {
+            const fileId = match[1] || match[2];
+            renameFile(fileId, name, nickname, grade, 'slip');
+          }
+        }
+      }
+    }
+  } catch (err) {
+    results.errors.push('Error in StatusDB: ' + err.message);
+  }
+
+  Logger.log('renameOldSlipFiles Result: ' + JSON.stringify(results));
+  return results;
+}
+

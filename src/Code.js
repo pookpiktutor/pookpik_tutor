@@ -17467,8 +17467,22 @@ function updateCampStudentData(timestamp, updatedData) {
     if (!sheet) return {success: false, error: 'ไม่พบชีทลงทะเบียนค่าย'};
     
     const data = sheet.getDataRange().getValues();
+    const targetTsStr = String(timestamp || '').trim();
+    const targetTsTime = targetTsStr ? new Date(targetTsStr).getTime() : NaN;
+
     for (let i = 1; i < data.length; i++) {
-      if (String(data[i][0]) === String(timestamp)) {
+      const cellVal = data[i][0];
+      const cellStr = String(cellVal || '').trim();
+      let isMatch = (cellStr === targetTsStr);
+
+      if (!isMatch && !isNaN(targetTsTime) && cellVal) {
+        const cellTime = new Date(cellVal).getTime();
+        if (!isNaN(cellTime) && cellTime === targetTsTime) {
+          isMatch = true;
+        }
+      }
+
+      if (isMatch) {
         const rIndex = i + 1;
         const full = parseFloat(updatedData.full) || 0;
         const paid = parseFloat(updatedData.paid) || 0;
@@ -17507,7 +17521,7 @@ function updateCampStudentData(timestamp, updatedData) {
         return {success: true};
       }
     }
-    return {success: false, error: 'ไม่พบรายการนักเรียน'};
+    return {success: false, error: 'ไม่พบรายการนักเรียน (Timestamp: ' + targetTsStr + ')'};
   } catch (e) {
     Logger.log('ERROR in updateCampStudentData: ' + e.message);
     return {success: false, error: e.message};

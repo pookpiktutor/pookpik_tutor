@@ -132,6 +132,59 @@ function updateTaskWidget() {
 
 
 
+function executeGASCall(funcName, args, successHandler, failureHandler, retryCount = 0) {
+  const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
+  const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random()) + '_' + Date.now();
+  let timeoutId;
+  let isDone = false;
+
+  const cleanup = () => {
+    isDone = true;
+    if (timeoutId) clearTimeout(timeoutId);
+    try { delete window[callbackName]; } catch (e) {}
+    if (script && document.body.contains(script)) {
+      document.body.removeChild(script);
+    }
+  };
+
+  window[callbackName] = function(result) {
+    if (isDone) return;
+    cleanup();
+    if (result && result.error) {
+      if (failureHandler) failureHandler(new Error(result.error));
+    } else {
+      if (successHandler) successHandler(result);
+    }
+  };
+
+  const script = document.createElement('script');
+  script.src = GAS_API_URL + '?action=api&functionName=' + encodeURIComponent(funcName) + '&args=' + encodeURIComponent(JSON.stringify(args)) + '&callback=' + callbackName;
+  
+  script.onerror = function() {
+    if (isDone) return;
+    cleanup();
+    if (retryCount < 2) {
+      setTimeout(() => {
+        executeGASCall(funcName, args, successHandler, failureHandler, retryCount + 1);
+      }, 1000 * (retryCount + 1));
+    } else {
+      if (failureHandler) failureHandler(new Error('JSONP Request failed (Network error or redirect blocking).'));
+    }
+  };
+
+  timeoutId = setTimeout(function() {
+    if (isDone) return;
+    cleanup();
+    if (retryCount < 1) {
+      executeGASCall(funcName, args, successHandler, failureHandler, retryCount + 1);
+    } else {
+      if (failureHandler) failureHandler(new Error('การเชื่อมต่อเซิร์ฟเวอร์ใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง'));
+    }
+  }, 45000);
+
+  document.body.appendChild(script);
+}
+
 function processBgTaskQueue() {
 
   updateTaskWidget();
@@ -193,27 +246,7 @@ function processBgTaskQueue() {
      finalRunner[nextTask.funcName](...nextTask.args);
 
   } else {
-     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
-     const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random()) + '_' + Date.now();
-     
-     window[callbackName] = function(result) {
-        delete window[callbackName];
-        document.body.removeChild(script);
-        if (result && result.error) {
-           completeTask('error', new Error(result.error));
-        } else {
-           completeTask('success', result);
-        }
-     };
-
-     const script = document.createElement('script');
-     script.src = GAS_API_URL + '?action=api&functionName=' + encodeURIComponent(nextTask.funcName) + '&args=' + encodeURIComponent(JSON.stringify(nextTask.args)) + '&callback=' + callbackName;
-     script.onerror = function() {
-        delete window[callbackName];
-        document.body.removeChild(script);
-        completeTask('error', new Error('JSONP Request failed (Network error or multi-account redirect blocking).'));
-     };
-     document.body.appendChild(script);
+     executeGASCall(nextTask.funcName, nextTask.args, res => completeTask('success', res), err => completeTask('error', err));
   }
 
 }
@@ -303,43 +336,7 @@ window.google.script.run = new Proxy({}, {
           finalRunner[prop](...args);
 
         } else {
-
-          const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
-
-          fetch(GAS_API_URL, {
-
-            redirect: 'follow',
-
-            method: 'POST',
-
-            body: JSON.stringify({ functionName: prop, arguments: args }),
-
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-
-          })
-
-          .then(response => response.json())
-
-          .then(result => {
-
-            if (result && result.error) {
-
-              if (failureHandler) failureHandler(new Error(result.error));
-
-            } else {
-
-              if (successHandler) successHandler(result);
-
-            }
-
-          })
-
-          .catch(err => {
-
-            if (failureHandler) failureHandler(err);
-
-          });
-
+          executeGASCall(prop, args, successHandler, failureHandler);
         }
 
         return; // Don't push to queue
@@ -37033,7 +37030,27 @@ function showCampPaymentModal(timestamp) {
   }
 
   var contentEl = document.getElementById('camp_payment_modal_content');
-  var channels = ['โอนเงิน (แนบสลิป)', 'โอนธนาคาร', 'QR พร้อมเพย์', 'เงินสด', 'อื่นๆ'];
+  var channels = [
+    'กรุงไทย พีปิ๊ก',
+    'กรุงเทพ พีปิ๊ก',
+    'SCB พี่ปิ๊ก',
+    'กรุงศรี พี่ปิ๊ก',
+    'TTB',
+    'กสิกร พี่ปิ๊ก',
+    'SCB คุณยาย',
+    'กรุงศรี คุณตา',
+    'กรุงศรี บัญชีบริษัท',
+    'กสิกร บัญชีบริษัท(กด)',
+    'กสิกร บัญชีบริษัท(สแกน)',
+    'TTB บัญชีบริษัท(กด)',
+    'TTB บัญชีบริษัท(สแกน)',
+    'เงินสด สาขา1',
+    'เงินสด สาขา2',
+    'เงินสด สาขา3',
+    'พี่ปิ๊ก โอน',
+    'พี่ต้น โอน',
+    'อื่นๆ'
+  ];
   var channelOptions = function(selected) {
     var opts = '<option value="">เลือกช่องทาง</option>';
     channels.forEach(function(ch) {
@@ -37164,66 +37181,110 @@ function recalcPaidFromRounds() {
 }
 
 function saveCampPaymentData() {
-  var ts = document.getElementById('camp_pay_timestamp').value;
-  var full = parseFloat(document.getElementById('camp_pay_full').value) || 0;
-  var paid = parseFloat(document.getElementById('camp_pay_paid').value) || 0;
-  var outst = parseFloat(document.getElementById('camp_pay_outstanding').value) || 0;
+  try {
+    var tsEl = document.getElementById('camp_pay_timestamp');
+    var ts = tsEl ? tsEl.value : '';
+    var full = parseFloat(document.getElementById('camp_pay_full')?.value) || 0;
+    var paid = parseFloat(document.getElementById('camp_pay_paid')?.value) || 0;
+    var outst = parseFloat(document.getElementById('camp_pay_outstanding')?.value) || 0;
 
-  var getCombinedDate = function(r) {
-    var dEl = document.getElementById('camp_pay_r' + r + '_date');
-    var tEl = document.getElementById('camp_pay_r' + r + '_time');
-    var d = dEl ? dEl.value : '';
-    var t = tEl ? tEl.value : '';
-    if (!d) return '';
-    return t ? (d + ' ' + t) : d;
-  };
+    var getVal = function(id) {
+      var el = document.getElementById(id);
+      return el ? el.value.trim() : '';
+    };
 
-  var updatedData = {
-    std_name: document.getElementById('camp_edit_std_name').value.trim(),
-    std_nickname: document.getElementById('camp_edit_std_nickname').value.trim(),
-    parent_phone: document.getElementById('camp_edit_parent_phone').value.trim(),
-    std_school: document.getElementById('camp_edit_std_school').value.trim(),
-    medical_condition: document.getElementById('camp_edit_medical').value.trim(),
-    shirt_size: document.getElementById('camp_edit_shirt').value.trim(),
-    camp_name: document.getElementById('camp_edit_camp_name').value.trim(),
-    camp_year: document.getElementById('camp_edit_camp_year').value.trim(),
-    std_grade: document.getElementById('camp_edit_grade').value.trim(),
-    class_section: document.getElementById('camp_edit_room').value.trim(),
-    status: document.getElementById('camp_edit_status').value,
-    full: full,
-    paid: paid,
-    outstanding: outst,
-    pay_r1_date: getCombinedDate(1),
-    pay_r1_amount: document.getElementById('camp_pay_r1_amount').value,
-    pay_r1_channel: document.getElementById('camp_pay_r1_channel').value,
-    pay_r2_date: getCombinedDate(2),
-    pay_r2_amount: document.getElementById('camp_pay_r2_amount').value,
-    pay_r2_channel: document.getElementById('camp_pay_r2_channel').value,
-    pay_r3_date: getCombinedDate(3),
-    pay_r3_amount: document.getElementById('camp_pay_r3_amount').value,
-    pay_r3_channel: document.getElementById('camp_pay_r3_channel').value
-  };
+    var getCombinedDate = function(r) {
+      var dEl = document.getElementById('camp_pay_r' + r + '_date');
+      var tEl = document.getElementById('camp_pay_r' + r + '_time');
+      var d = dEl ? dEl.value : '';
+      var t = tEl ? tEl.value : '';
+      if (!d) return '';
+      return t ? (d + ' ' + t) : d;
+    };
 
-  Swal.fire({
-    title: 'กำลังบันทึกข้อมูล...',
-    allowOutsideClick: false,
-    didOpen: () => { Swal.showLoading(); }
-  });
+    var updatedData = {
+      std_name: getVal('camp_edit_std_name'),
+      std_nickname: getVal('camp_edit_std_nickname'),
+      parent_phone: getVal('camp_edit_parent_phone'),
+      std_school: getVal('camp_edit_std_school'),
+      medical_condition: getVal('camp_edit_medical'),
+      shirt_size: getVal('camp_edit_shirt'),
+      camp_name: getVal('camp_edit_camp_name'),
+      camp_year: getVal('camp_edit_camp_year'),
+      std_grade: getVal('camp_edit_grade'),
+      class_section: getVal('camp_edit_room'),
+      status: getVal('camp_edit_status'),
+      full: full,
+      paid: paid,
+      outstanding: outst,
+      pay_r1_date: getCombinedDate(1),
+      pay_r1_amount: getVal('camp_pay_r1_amount'),
+      pay_r1_channel: getVal('camp_pay_r1_channel'),
+      pay_r2_date: getCombinedDate(2),
+      pay_r2_amount: getVal('camp_pay_r2_amount'),
+      pay_r2_channel: getVal('camp_pay_r2_channel'),
+      pay_r3_date: getCombinedDate(3),
+      pay_r3_amount: getVal('camp_pay_r3_amount'),
+      pay_r3_channel: getVal('camp_pay_r3_channel')
+    };
 
-  google.script.run
-    .withSuccessHandler(function(res) {
-      if (res && res.success) {
-        Swal.fire({ icon: 'success', title: 'บันทึกข้อมูลสำเร็จ', showConfirmButton: false, timer: 1500 });
-        closeCampPaymentModal();
-        loadCampsData();
-      } else {
-        Swal.fire('Error', res.error || 'บันทึกไม่สำเร็จ', 'error');
-      }
-    })
-    .withFailureHandler(function(err) {
-      Swal.fire('Error', err.message, 'error');
-    })
-    .updateCampStudentData(ts, updatedData);
+    console.log('saveCampPaymentData -> ts:', ts, 'updatedData:', updatedData);
+
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+      Swal.fire({
+        title: 'กำลังบันทึกข้อมูล...',
+        allowOutsideClick: false,
+        didOpen: function() { if (Swal.showLoading) Swal.showLoading(); }
+      });
+    } else if (typeof setLoading === 'function') {
+      setLoading(true, 'กำลังบันทึกข้อมูล...');
+    }
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        console.log('updateCampStudentData response:', res);
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+          if (res && res.success) {
+            Swal.fire({ icon: 'success', title: 'บันทึกข้อมูลสำเร็จ', showConfirmButton: false, timer: 1500 });
+            closeCampPaymentModal();
+            loadCampsData();
+          } else {
+            Swal.fire('ข้อผิดพลาด', (res && res.error) || 'บันทึกไม่สำเร็จ', 'error');
+          }
+        } else {
+          if (typeof setLoading === 'function') setLoading(false);
+          if (res && res.success) {
+            if (typeof showToast === 'function') showToast('บันทึกข้อมูลสำเร็จ', 'success');
+            else alert('บันทึกข้อมูลสำเร็จ');
+            closeCampPaymentModal();
+            loadCampsData();
+          } else {
+            var errMsg = (res && res.error) || 'บันทึกไม่สำเร็จ';
+            if (typeof showToast === 'function') showToast(errMsg, 'error');
+            else alert(errMsg);
+          }
+        }
+      })
+      .withFailureHandler(function(err) {
+        console.error('updateCampStudentData error:', err);
+        var errText = (err && (err.message || String(err))) || 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+          Swal.fire('Error', errText, 'error');
+        } else {
+          if (typeof setLoading === 'function') setLoading(false);
+          if (typeof showToast === 'function') showToast(errText, 'error');
+          else alert(errText);
+        }
+      })
+      .updateCampStudentData(ts, updatedData);
+  } catch (err) {
+    console.error('saveCampPaymentData catch error:', err);
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+      Swal.fire('Error', 'เกิดข้อผิดพลาดในการบันทึก: ' + err.message, 'error');
+    } else {
+      alert('เกิดข้อผิดพลาดในการบันทึก: ' + err.message);
+    }
+  }
 }
 
 function loadCampsData() {

@@ -37179,67 +37179,156 @@ function recalcPaidFromRounds() {
   calcCampOutstanding();
 }
 
-function saveCampPaymentData() {
-  var ts = document.getElementById('camp_pay_timestamp').value;
-  var full = parseFloat(document.getElementById('camp_pay_full').value) || 0;
-  var paid = parseFloat(document.getElementById('camp_pay_paid').value) || 0;
-  var outst = parseFloat(document.getElementById('camp_pay_outstanding').value) || 0;
-
-  var getCombinedDate = function(r) {
-    var dEl = document.getElementById('camp_pay_r' + r + '_date');
-    var tEl = document.getElementById('camp_pay_r' + r + '_time');
-    var d = dEl ? dEl.value : '';
-    var t = tEl ? tEl.value : '';
-    if (!d) return '';
-    return t ? (d + ' ' + t) : d;
-  };
-
-  var updatedData = {
-    std_name: document.getElementById('camp_edit_std_name').value.trim(),
-    std_nickname: document.getElementById('camp_edit_std_nickname').value.trim(),
-    parent_phone: document.getElementById('camp_edit_parent_phone').value.trim(),
-    std_school: document.getElementById('camp_edit_std_school').value.trim(),
-    medical_condition: document.getElementById('camp_edit_medical').value.trim(),
-    shirt_size: document.getElementById('camp_edit_shirt').value.trim(),
-    camp_name: document.getElementById('camp_edit_camp_name').value.trim(),
-    camp_year: document.getElementById('camp_edit_camp_year').value.trim(),
-    std_grade: document.getElementById('camp_edit_grade').value.trim(),
-    class_section: document.getElementById('camp_edit_room').value.trim(),
-    status: document.getElementById('camp_edit_status').value,
-    full: full,
-    paid: paid,
-    outstanding: outst,
-    pay_r1_date: getCombinedDate(1),
-    pay_r1_amount: document.getElementById('camp_pay_r1_amount').value,
-    pay_r1_channel: document.getElementById('camp_pay_r1_channel').value,
-    pay_r2_date: getCombinedDate(2),
-    pay_r2_amount: document.getElementById('camp_pay_r2_amount').value,
-    pay_r2_channel: document.getElementById('camp_pay_r2_channel').value,
-    pay_r3_date: getCombinedDate(3),
-    pay_r3_amount: document.getElementById('camp_pay_r3_amount').value,
-    pay_r3_channel: document.getElementById('camp_pay_r3_channel').value
-  };
-
-  Swal.fire({
-    title: 'กำลังบันทึกข้อมูล...',
-    allowOutsideClick: false,
-    didOpen: () => { Swal.showLoading(); }
-  });
-
-  google.script.run
-    .withSuccessHandler(function(res) {
-      if (res && res.success) {
-        Swal.fire({ icon: 'success', title: 'บันทึกข้อมูลสำเร็จ', showConfirmButton: false, timer: 1500 });
-        closeCampPaymentModal();
-        loadCampsData();
+function quickAddCampPayment() {
+  try {
+    var full = parseFloat(document.getElementById('camp_pay_full').value) || 0;
+    var paid = parseFloat(document.getElementById('camp_pay_paid').value) || 0;
+    var outst = Math.max(0, full - paid);
+    if (outst <= 0) {
+      if (typeof Swal !== 'undefined' && Swal.fire) {
+        Swal.fire('แจ้งเตือน', 'นักเรียนคนนี้ชำระครบถ้วนแล้ว ไม่มีค้างชำระ', 'info');
       } else {
-        Swal.fire('Error', res.error || 'บันทึกไม่สำเร็จ', 'error');
+        alert('นักเรียนคนนี้ชำระครบถ้วนแล้ว ไม่มีค้างชำระ');
       }
-    })
-    .withFailureHandler(function(err) {
-      Swal.fire('Error', err.message, 'error');
-    })
-    .updateCampStudentData(ts, updatedData);
+      return;
+    }
+
+    var now = new Date();
+    var dateStr = now.toISOString().split('T')[0];
+    var timeStr = now.toTimeString().substring(0, 5);
+
+    // Find first empty round (1 to 3)
+    for (var r = 1; r <= 3; r++) {
+      var amtInput = document.getElementById('camp_pay_r' + r + '_amount');
+      var curAmt = amtInput ? parseFloat(amtInput.value) || 0 : 0;
+      if (curAmt === 0) {
+        var dateInput = document.getElementById('camp_pay_r' + r + '_date');
+        var timeInput = document.getElementById('camp_pay_r' + r + '_time');
+        var chSelect = document.getElementById('camp_pay_r' + r + '_channel');
+
+        if (dateInput && !dateInput.value) dateInput.value = dateStr;
+        if (timeInput && !timeInput.value) timeInput.value = timeStr;
+        if (amtInput) amtInput.value = outst;
+        if (chSelect && !chSelect.value) chSelect.selectedIndex = 1;
+
+        recalcPaidFromRounds();
+        break;
+      }
+    }
+  } catch (err) {
+    console.error('quickAddCampPayment error:', err);
+  }
+}
+
+function saveCampPaymentData() {
+  try {
+    var getVal = function(id) {
+      var el = document.getElementById(id);
+      return el ? el.value.trim() : '';
+    };
+
+    var getNum = function(id) {
+      var el = document.getElementById(id);
+      return (el && el.value) ? (parseFloat(el.value) || 0) : 0;
+    };
+
+    var ts = getVal('camp_pay_timestamp');
+    var full = getNum('camp_pay_full');
+    var paid = getNum('camp_pay_paid');
+    var outst = getNum('camp_pay_outstanding');
+
+    var getCombinedDate = function(r) {
+      var dEl = document.getElementById('camp_pay_r' + r + '_date');
+      var tEl = document.getElementById('camp_pay_r' + r + '_time');
+      var d = dEl ? dEl.value : '';
+      var t = tEl ? tEl.value : '';
+      if (!d) return '';
+      return t ? (d + ' ' + t) : d;
+    };
+
+    var updatedData = {
+      std_name: getVal('camp_edit_std_name'),
+      std_nickname: getVal('camp_edit_std_nickname'),
+      parent_phone: getVal('camp_edit_parent_phone'),
+      std_school: getVal('camp_edit_std_school'),
+      medical_condition: getVal('camp_edit_medical'),
+      shirt_size: getVal('camp_edit_shirt'),
+      camp_name: getVal('camp_edit_camp_name'),
+      camp_year: getVal('camp_edit_camp_year'),
+      std_grade: getVal('camp_edit_grade'),
+      class_section: getVal('camp_edit_room'),
+      status: getVal('camp_edit_status'),
+      full: full,
+      paid: paid,
+      outstanding: outst,
+      pay_r1_date: getCombinedDate(1),
+      pay_r1_amount: getVal('camp_pay_r1_amount'),
+      pay_r1_channel: getVal('camp_pay_r1_channel'),
+      pay_r2_date: getCombinedDate(2),
+      pay_r2_amount: getVal('camp_pay_r2_amount'),
+      pay_r2_channel: getVal('camp_pay_r2_channel'),
+      pay_r3_date: getCombinedDate(3),
+      pay_r3_amount: getVal('camp_pay_r3_amount'),
+      pay_r3_channel: getVal('camp_pay_r3_channel')
+    };
+
+    console.log('saveCampPaymentData -> ts:', ts, 'updatedData:', updatedData);
+
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+      Swal.fire({
+        title: 'กำลังบันทึกข้อมูล...',
+        allowOutsideClick: false,
+        didOpen: function() { if (Swal.showLoading) Swal.showLoading(); }
+      });
+    } else if (typeof setLoading === 'function') {
+      setLoading(true, 'กำลังบันทึกข้อมูล...');
+    }
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        console.log('updateCampStudentData response:', res);
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+          if (res && res.success) {
+            Swal.fire({ icon: 'success', title: 'บันทึกข้อมูลสำเร็จ', showConfirmButton: false, timer: 1500 });
+            closeCampPaymentModal();
+            loadCampsData();
+          } else {
+            Swal.fire('ข้อผิดพลาด', (res && res.error) || 'บันทึกไม่สำเร็จ', 'error');
+          }
+        } else {
+          if (typeof setLoading === 'function') setLoading(false);
+          if (res && res.success) {
+            if (typeof showToast === 'function') showToast('บันทึกข้อมูลสำเร็จ', 'success');
+            else alert('บันทึกข้อมูลสำเร็จ');
+            closeCampPaymentModal();
+            loadCampsData();
+          } else {
+            var errMsg = (res && res.error) || 'บันทึกไม่สำเร็จ';
+            if (typeof showToast === 'function') showToast(errMsg, 'error');
+            else alert(errMsg);
+          }
+        }
+      })
+      .withFailureHandler(function(err) {
+        console.error('updateCampStudentData error:', err);
+        var errText = (err && (err.message || String(err))) || 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+          Swal.fire('Error', errText, 'error');
+        } else {
+          if (typeof setLoading === 'function') setLoading(false);
+          if (typeof showToast === 'function') showToast(errText, 'error');
+          else alert(errText);
+        }
+      })
+      .updateCampStudentData(ts, updatedData);
+  } catch (err) {
+    console.error('saveCampPaymentData catch error:', err);
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+      Swal.fire('Error', 'เกิดข้อผิดพลาดในการบันทึก: ' + err.message, 'error');
+    } else {
+      alert('เกิดข้อผิดพลาดในการบันทึก: ' + err.message);
+    }
+  }
 }
 
 function loadCampsData() {

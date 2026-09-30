@@ -131,6 +131,59 @@ function updateTaskWidget() {
 
 
 
+function executeGASCall(funcName, args, successHandler, failureHandler, retryCount = 0) {
+  const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
+  const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random()) + '_' + Date.now();
+  let timeoutId;
+  let isDone = false;
+
+  const cleanup = () => {
+    isDone = true;
+    if (timeoutId) clearTimeout(timeoutId);
+    try { delete window[callbackName]; } catch (e) {}
+    if (script && document.body.contains(script)) {
+      document.body.removeChild(script);
+    }
+  };
+
+  window[callbackName] = function(result) {
+    if (isDone) return;
+    cleanup();
+    if (result && result.error) {
+      if (failureHandler) failureHandler(new Error(result.error));
+    } else {
+      if (successHandler) successHandler(result);
+    }
+  };
+
+  const script = document.createElement('script');
+  script.src = GAS_API_URL + '?action=api&functionName=' + encodeURIComponent(funcName) + '&args=' + encodeURIComponent(JSON.stringify(args)) + '&callback=' + callbackName;
+  
+  script.onerror = function() {
+    if (isDone) return;
+    cleanup();
+    if (retryCount < 2) {
+      setTimeout(() => {
+        executeGASCall(funcName, args, successHandler, failureHandler, retryCount + 1);
+      }, 1000 * (retryCount + 1));
+    } else {
+      if (failureHandler) failureHandler(new Error('JSONP Request failed (Network error or redirect blocking).'));
+    }
+  };
+
+  timeoutId = setTimeout(function() {
+    if (isDone) return;
+    cleanup();
+    if (retryCount < 1) {
+      executeGASCall(funcName, args, successHandler, failureHandler, retryCount + 1);
+    } else {
+      if (failureHandler) failureHandler(new Error('การเชื่อมต่อเซิร์ฟเวอร์ใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง'));
+    }
+  }, 45000);
+
+  document.body.appendChild(script);
+}
+
 function processBgTaskQueue() {
 
   updateTaskWidget();
@@ -192,43 +245,7 @@ function processBgTaskQueue() {
      finalRunner[nextTask.funcName](...nextTask.args);
 
   } else {
-
-     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
-
-     fetch(GAS_API_URL, {
-
-        redirect: 'follow',
-
-        method: 'POST',
-
-        body: JSON.stringify({ functionName: nextTask.funcName, arguments: nextTask.args }),
-
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-
-     })
-
-     .then(response => response.json())
-
-     .then(result => {
-
-        if (result && result.error) {
-
-           completeTask('error', new Error(result.error));
-
-        } else {
-
-           completeTask('success', result);
-
-        }
-
-     })
-
-     .catch(err => {
-
-        completeTask('error', err);
-
-     });
-
+     executeGASCall(nextTask.funcName, nextTask.args, res => completeTask('success', res), err => completeTask('error', err));
   }
 
 }
@@ -318,43 +335,7 @@ window.google.script.run = new Proxy({}, {
           finalRunner[prop](...args);
 
         } else {
-
-          const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby6AJihwQhNODIuy9aMm4I-W9ow1kygpF10GA945oB2J9BhGai_fehpUV2dKJdoNKhyZg/exec';
-
-          fetch(GAS_API_URL, {
-
-            redirect: 'follow',
-
-            method: 'POST',
-
-            body: JSON.stringify({ functionName: prop, arguments: args }),
-
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-
-          })
-
-          .then(response => response.json())
-
-          .then(result => {
-
-            if (result && result.error) {
-
-              if (failureHandler) failureHandler(new Error(result.error));
-
-            } else {
-
-              if (successHandler) successHandler(result);
-
-            }
-
-          })
-
-          .catch(err => {
-
-            if (failureHandler) failureHandler(err);
-
-          });
-
+          executeGASCall(prop, args, successHandler, failureHandler);
         }
 
         return; // Don't push to queue
@@ -798,39 +779,30 @@ function showLoginScreen() {
 
 
 function handleLogin(e) {
-
   if (e && e.preventDefault) e.preventDefault();
-
   const user = document.getElementById('login_username').value.trim();
-
   const pass = document.getElementById('login_password').value;
-
-  
-
   if (!pass) {
-
     showToast('กรุณากรอกรหัสผ่าน', 'error');
-
     return;
-
   }
-
   
-
+  const btn = document.getElementById('login_submit_btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = 'กำลังตรวจสอบ... ⏳';
+  }
   setLoading(true, 'กำลังเข้าสู่ระบบ...');
-
   google.script.run
-
     .withSuccessHandler(res => {
-
+      if (btn) {
+        btn.disabled = false;
+        btn.innerText = 'เข้าสู่ระบบ';
+      }
       setLoading(false);
-
       if (res && res.success) {
-
         localStorage.setItem('pookpik_session', JSON.stringify(res.user));
-
         if(document.getElementById('login_overlay')) document.getElementById('login_overlay').style.display = 'none';
-
         document.getElementById('mobile_menu_btn')?.addEventListener('click', function() {
 
     const sidebar = document.getElementById('sidebar');
@@ -884,13 +856,14 @@ function handleLogin(e) {
     })
 
     .withFailureHandler(err => {
-
+      const btn = document.getElementById('login_submit_btn');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerText = 'เข้าสู่ระบบ';
+      }
       setLoading(false);
-
       showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message, 'error');
-
     })
-
     .verifyLogin(user, pass);
 
 }
@@ -972,27 +945,37 @@ function handleLogin(e) {
 
 
 function handleLogout() {
+  const modalHTML = `
+    <div id="custom_logout_modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99999; display:flex; align-items:center; justify-content:center; animation: fadeIn 0.3s ease;">
+      <div style="background:var(--bg-panel, #fff); padding:30px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.2); text-align:center; max-width:400px; width:90%; border:1px solid var(--border-color, #eee);">
+        <div style="font-size:48px; margin-bottom:15px;">👋</div>
+        <h3 style="margin:0 0 10px 0; color:var(--text-main, #333); font-family:var(--font-heading, sans-serif);">ออกจากระบบ</h3>
+        <p style="margin:0 0 25px 0; color:var(--text-muted, #666); font-size:16px; font-family:var(--font-body, sans-serif);">คุณต้องการออกจากระบบใช่หรือไม่?</p>
+        <div style="display:flex; justify-content:center; gap:15px;">
+          <button id="btn_cancel_logout" style="padding:10px 24px; border:none; border-radius:8px; background:var(--bg-panel-hover, #f0f0f0); color:var(--text-main, #333); font-size:16px; cursor:pointer; font-family:var(--font-heading, sans-serif); font-weight:600;">ยกเลิก</button>
+          <button id="btn_confirm_logout" style="padding:10px 24px; border:none; border-radius:8px; background:var(--color-danger, #ef4444); color:#fff; font-size:16px; cursor:pointer; font-family:var(--font-heading, sans-serif); font-weight:600; box-shadow:0 4px 10px rgba(239,68,68,0.3);">ออกจากระบบ</button>
+        </div>
+      </div>
+    </div>
+  `;
 
-  if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
 
+  document.getElementById('btn_cancel_logout').addEventListener('click', () => {
+    document.getElementById('custom_logout_modal').remove();
+  });
+
+  document.getElementById('btn_confirm_logout').addEventListener('click', () => {
+    document.getElementById('custom_logout_modal').remove();
     if (state.heartbeatInterval) {
-
       clearInterval(state.heartbeatInterval);
-
       state.heartbeatInterval = null;
-
     }
-
     localStorage.removeItem('pookpik_session');
-
     state.currentUser = null;
-
     showLoginScreen();
-
     showToast('ออกจากระบบเรียบร้อยแล้ว', 'info');
-
-  }
-
+  });
 }
 
 
@@ -2450,7 +2433,12 @@ function bootApp() {
 
       }
 
-      switchPanel(initialPanel);
+      const savedPanel = sessionStorage.getItem('current_panel');
+      if (savedPanel) {
+        switchPanel(savedPanel);
+      } else {
+        switchPanel(initialPanel);
+      }
 
       
 
@@ -4688,7 +4676,7 @@ function switchPanel(panelName) {
 
   }
 
-
+  sessionStorage.setItem('current_panel', panelName);
 
   // Update sidebar active link
 
@@ -8287,11 +8275,9 @@ function loadMonthlyGrid(isSilent = false) {
 
 
 function renderMonthlyGrid(data) {
-
+  const branchFilter = state.activeBranchFilter || 'สาขา1';
   const container = document.getElementById('monthly_grid_content');
-
   const targetBranchNum = getActiveBranchNum(state.activeBranchFilter);
-
   const filteredRooms = (data.rooms || []).filter(room => {
 
     return getActiveBranchNum(room.branch) === targetBranchNum;
@@ -9370,7 +9356,7 @@ function renderDailyAttendanceSummary() {
 
 
 function renderDailyGrid() {
-
+  const branchFilter = state.activeBranchFilter || 'สาขา1';
   const container = document.getElementById('rooms_grid_container');
 
   if (!container) return;
@@ -37017,14 +37003,18 @@ function quickAddCampPayment() {
 
 // Manage / Edit Modal (ปุ่มจัดการ)
 function showCampPaymentModal(timestamp) {
+  try {
   var item = null;
-  if (window.currentCampsData) {
+  if (typeof currentCampsData !== 'undefined' && currentCampsData) {
     item = currentCampsData.find(function(c) {
-      return String(c.timestamp) === String(timestamp);
+      if (String(c.timestamp) === String(timestamp)) return true;
+      var cTime = new Date(c.timestamp).getTime();
+      var tTime = new Date(timestamp).getTime();
+      return !isNaN(cTime) && !isNaN(tTime) && cTime === tTime;
     });
   }
   if (!item) {
-    Swal.fire('Error', 'ไม่พบข้อมูลนักเรียนคนนี้ กรุณารีเฟรชข้อมูลแล้วลองใหม่', 'error');
+    Swal.fire('Error', 'ไม่พบข้อมูลนักเรียนคนนี้ (timestamp=' + timestamp + ', dataLen=' + (currentCampsData ? currentCampsData.length : 'null') + ') กรุณารีเฟรชข้อมูลแล้วลองใหม่', 'error');
     return;
   }
 
@@ -37039,7 +37029,27 @@ function showCampPaymentModal(timestamp) {
   }
 
   var contentEl = document.getElementById('camp_payment_modal_content');
-  var channels = ['โอนเงิน (แนบสลิป)', 'โอนธนาคาร', 'QR พร้อมเพย์', 'เงินสด', 'อื่นๆ'];
+  var channels = [
+    'กรุงไทย พีปิ๊ก',
+    'กรุงเทพ พีปิ๊ก',
+    'SCB พี่ปิ๊ก',
+    'กรุงศรี พี่ปิ๊ก',
+    'TTB',
+    'กสิกร พี่ปิ๊ก',
+    'SCB คุณยาย',
+    'กรุงศรี คุณตา',
+    'กรุงศรี บัญชีบริษัท',
+    'กสิกร บัญชีบริษัท(กด)',
+    'กสิกร บัญชีบริษัท(สแกน)',
+    'TTB บัญชีบริษัท(กด)',
+    'TTB บัญชีบริษัท(สแกน)',
+    'เงินสด สาขา1',
+    'เงินสด สาขา2',
+    'เงินสด สาขา3',
+    'พี่ปิ๊ก โอน',
+    'พี่ต้น โอน',
+    'อื่นๆ'
+  ];
   var channelOptions = function(selected) {
     var opts = '<option value="">เลือกช่องทาง</option>';
     channels.forEach(function(ch) {
@@ -37048,7 +37058,7 @@ function showCampPaymentModal(timestamp) {
     return opts;
   };
 
-  var defaultFull = item.full || getCampDefaultFee(item.camp_name, item.std_grade);
+  var defaultFull = getCampDefaultFee(item.camp_name, item.std_grade);
   var defaultPaid = item.paid || 0;
   var defaultOutst = Math.max(0, defaultFull - defaultPaid);
 
@@ -37132,9 +37142,6 @@ function showCampPaymentModal(timestamp) {
     html += '</div></div>';
   }
 
-  if (item.slip_url && item.slip_url !== '-' && item.slip_url.trim() !== '') {
-    html += '<div style="margin-top: 10px;"><a href="' + item.slip_url + '" target="_blank" class="btn btn-sm btn-outline-primary">🔍 ดูสลิปหลักฐานการโอน</a></div>';
-  }
   html += '</div>';
 
   html += '<div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">';
@@ -37145,6 +37152,10 @@ function showCampPaymentModal(timestamp) {
 
   contentEl.innerHTML = html;
   modalEl.style.display = 'flex';
+  } catch(e) {
+    alert('showCampPaymentModal error: ' + e.message);
+    console.error('showCampPaymentModal error:', e);
+  }
 }
 
 function closeCampPaymentModal() {
@@ -37169,71 +37180,115 @@ function recalcPaidFromRounds() {
 }
 
 function saveCampPaymentData() {
-  var ts = document.getElementById('camp_pay_timestamp').value;
-  var full = parseFloat(document.getElementById('camp_pay_full').value) || 0;
-  var paid = parseFloat(document.getElementById('camp_pay_paid').value) || 0;
-  var outst = parseFloat(document.getElementById('camp_pay_outstanding').value) || 0;
+  try {
+    var tsEl = document.getElementById('camp_pay_timestamp');
+    var ts = tsEl ? tsEl.value : '';
+    var full = parseFloat(document.getElementById('camp_pay_full')?.value) || 0;
+    var paid = parseFloat(document.getElementById('camp_pay_paid')?.value) || 0;
+    var outst = parseFloat(document.getElementById('camp_pay_outstanding')?.value) || 0;
 
-  var getCombinedDate = function(r) {
-    var dEl = document.getElementById('camp_pay_r' + r + '_date');
-    var tEl = document.getElementById('camp_pay_r' + r + '_time');
-    var d = dEl ? dEl.value : '';
-    var t = tEl ? tEl.value : '';
-    if (!d) return '';
-    return t ? (d + ' ' + t) : d;
-  };
+    var getVal = function(id) {
+      var el = document.getElementById(id);
+      return el ? el.value.trim() : '';
+    };
 
-  var updatedData = {
-    std_name: document.getElementById('camp_edit_std_name').value.trim(),
-    std_nickname: document.getElementById('camp_edit_std_nickname').value.trim(),
-    parent_phone: document.getElementById('camp_edit_parent_phone').value.trim(),
-    std_school: document.getElementById('camp_edit_std_school').value.trim(),
-    medical_condition: document.getElementById('camp_edit_medical').value.trim(),
-    shirt_size: document.getElementById('camp_edit_shirt').value.trim(),
-    camp_name: document.getElementById('camp_edit_camp_name').value.trim(),
-    camp_year: document.getElementById('camp_edit_camp_year').value.trim(),
-    std_grade: document.getElementById('camp_edit_grade').value.trim(),
-    class_section: document.getElementById('camp_edit_room').value.trim(),
-    status: document.getElementById('camp_edit_status').value,
-    full: full,
-    paid: paid,
-    outstanding: outst,
-    pay_r1_date: getCombinedDate(1),
-    pay_r1_amount: document.getElementById('camp_pay_r1_amount').value,
-    pay_r1_channel: document.getElementById('camp_pay_r1_channel').value,
-    pay_r2_date: getCombinedDate(2),
-    pay_r2_amount: document.getElementById('camp_pay_r2_amount').value,
-    pay_r2_channel: document.getElementById('camp_pay_r2_channel').value,
-    pay_r3_date: getCombinedDate(3),
-    pay_r3_amount: document.getElementById('camp_pay_r3_amount').value,
-    pay_r3_channel: document.getElementById('camp_pay_r3_channel').value
-  };
+    var getCombinedDate = function(r) {
+      var dEl = document.getElementById('camp_pay_r' + r + '_date');
+      var tEl = document.getElementById('camp_pay_r' + r + '_time');
+      var d = dEl ? dEl.value : '';
+      var t = tEl ? tEl.value : '';
+      if (!d) return '';
+      return t ? (d + ' ' + t) : d;
+    };
 
-  Swal.fire({
-    title: 'กำลังบันทึกข้อมูล...',
-    allowOutsideClick: false,
-    didOpen: () => { Swal.showLoading(); }
-  });
+    var updatedData = {
+      std_name: getVal('camp_edit_std_name'),
+      std_nickname: getVal('camp_edit_std_nickname'),
+      parent_phone: getVal('camp_edit_parent_phone'),
+      std_school: getVal('camp_edit_std_school'),
+      medical_condition: getVal('camp_edit_medical'),
+      shirt_size: getVal('camp_edit_shirt'),
+      camp_name: getVal('camp_edit_camp_name'),
+      camp_year: getVal('camp_edit_camp_year'),
+      std_grade: getVal('camp_edit_grade'),
+      class_section: getVal('camp_edit_room'),
+      status: getVal('camp_edit_status'),
+      full: full,
+      paid: paid,
+      outstanding: outst,
+      pay_r1_date: getCombinedDate(1),
+      pay_r1_amount: getVal('camp_pay_r1_amount'),
+      pay_r1_channel: getVal('camp_pay_r1_channel'),
+      pay_r2_date: getCombinedDate(2),
+      pay_r2_amount: getVal('camp_pay_r2_amount'),
+      pay_r2_channel: getVal('camp_pay_r2_channel'),
+      pay_r3_date: getCombinedDate(3),
+      pay_r3_amount: getVal('camp_pay_r3_amount'),
+      pay_r3_channel: getVal('camp_pay_r3_channel')
+    };
 
-  google.script.run
-    .withSuccessHandler(function(res) {
-      if (res && res.success) {
-        Swal.fire({ icon: 'success', title: 'บันทึกข้อมูลสำเร็จ', showConfirmButton: false, timer: 1500 });
-        closeCampPaymentModal();
-        loadCampsData();
-      } else {
-        Swal.fire('Error', res.error || 'บันทึกไม่สำเร็จ', 'error');
-      }
-    })
-    .withFailureHandler(function(err) {
-      Swal.fire('Error', err.message, 'error');
-    })
-    .updateCampStudentData(ts, updatedData);
+    console.log('saveCampPaymentData -> ts:', ts, 'updatedData:', updatedData);
+
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+      Swal.fire({
+        title: 'กำลังบันทึกข้อมูล...',
+        allowOutsideClick: false,
+        didOpen: function() { if (Swal.showLoading) Swal.showLoading(); }
+      });
+    } else if (typeof setLoading === 'function') {
+      setLoading(true, 'กำลังบันทึกข้อมูล...');
+    }
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        console.log('updateCampStudentData response:', res);
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+          if (res && res.success) {
+            Swal.fire({ icon: 'success', title: 'บันทึกข้อมูลสำเร็จ', showConfirmButton: false, timer: 1500 });
+            closeCampPaymentModal();
+            loadCampsData();
+          } else {
+            Swal.fire('ข้อผิดพลาด', (res && res.error) || 'บันทึกไม่สำเร็จ', 'error');
+          }
+        } else {
+          if (typeof setLoading === 'function') setLoading(false);
+          if (res && res.success) {
+            if (typeof showToast === 'function') showToast('บันทึกข้อมูลสำเร็จ', 'success');
+            else alert('บันทึกข้อมูลสำเร็จ');
+            closeCampPaymentModal();
+            loadCampsData();
+          } else {
+            var errMsg = (res && res.error) || 'บันทึกไม่สำเร็จ';
+            if (typeof showToast === 'function') showToast(errMsg, 'error');
+            else alert(errMsg);
+          }
+        }
+      })
+      .withFailureHandler(function(err) {
+        console.error('updateCampStudentData error:', err);
+        var errText = (err && (err.message || String(err))) || 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+          Swal.fire('Error', errText, 'error');
+        } else {
+          if (typeof setLoading === 'function') setLoading(false);
+          if (typeof showToast === 'function') showToast(errText, 'error');
+          else alert(errText);
+        }
+      })
+      .updateCampStudentData(ts, updatedData);
+  } catch (err) {
+    console.error('saveCampPaymentData catch error:', err);
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+      Swal.fire('Error', 'เกิดข้อผิดพลาดในการบันทึก: ' + err.message, 'error');
+    } else {
+      alert('เกิดข้อผิดพลาดในการบันทึก: ' + err.message);
+    }
+  }
 }
 
 function loadCampsData() {
   var tbody = document.getElementById('camps_table_body');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="16" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
+  if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
 
   if (!campsFiltersInitialized) {
     initCampsFilters(function() {
@@ -37273,7 +37328,7 @@ function doLoadCampsData() {
 
     renderCampsTable();
   }).withFailureHandler(function(err) {
-    if (tbody) tbody.innerHTML = '<tr><td colspan="16" class="text-center text-danger">ไม่สามารถโหลดข้อมูลได้: ' + (err.message || err) + '</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="text-center text-danger">ไม่สามารถโหลดข้อมูลได้: ' + (err.message || err) + '</td></tr>';
   }).getCampsData(year, name);
 }
 
@@ -37301,10 +37356,7 @@ function renderCampsTable() {
     var totalOutstanding = 0;
 
     filteredData.forEach(function(item) {
-      var full = parseFloat(item.full);
-      if (isNaN(full) || full <= 0) {
-        full = getCampDefaultFee(item.camp_name, item.std_grade);
-      }
+      var full = getCampDefaultFee(item.camp_name, item.std_grade);
       var paid = parseFloat(item.paid) || 0;
       var outst = Math.max(0, full - paid);
       totalFullFee += full;
@@ -37312,12 +37364,8 @@ function renderCampsTable() {
       totalOutstanding += outst;
     });
 
-    var summaryHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">';
-    summaryHtml += '<div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">👥 จำนวนนักเรียนค่ายทั้งหมด</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">' + totalStudents.toLocaleString() + ' คน</div></div>';
-    summaryHtml += '<div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">💰 ยอดรวมค่าเรียนตามจริง</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">฿' + totalFullFee.toLocaleString() + '</div></div>';
-    summaryHtml += '<div style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">✅ ยอดที่ชำระแล้ว</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">฿' + totalPaid.toLocaleString() + '</div></div>';
-    summaryHtml += '<div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 14px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"><div style="font-size: 0.85rem; opacity: 0.9;">⏳ ยอดค้างชำระรวม</div><div style="font-size: 1.6rem; font-weight: bold; margin-top: 4px;">฿' + totalOutstanding.toLocaleString() + '</div></div>';
-    summaryHtml += '</div>';
+    var summaryHtml = '';
+    // The user requested to remove the summary cards section.
     summaryContainer.innerHTML = summaryHtml;
   }
 
@@ -37463,8 +37511,7 @@ function renderCampsTable() {
         if (!finCamps[cname]) {
           finCamps[cname] = { full: 0, paid: 0, outst: 0 };
         }
-        var full = parseFloat(item.full);
-        if (isNaN(full) || full <= 0) full = getCampDefaultFee(item.camp_name, item.std_grade);
+        var full = getCampDefaultFee(item.camp_name, item.std_grade);
         var paid = parseFloat(item.paid) || 0;
         var outst = Math.max(0, full - paid);
         finCamps[cname].full += full;
@@ -37512,7 +37559,7 @@ function renderCampsTable() {
   }
 
   if (filteredData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="16" class="text-center text-muted" style="padding: 30px;">ไม่พบข้อมูลนักเรียนค่ายตามเงื่อนไขที่เลือก</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="15" class="text-center text-muted" style="padding: 30px;">ไม่พบข้อมูลนักเรียนค่ายตามเงื่อนไขที่เลือก</td></tr>';
     return;
   }
 
@@ -37559,13 +37606,13 @@ function renderCampsTable() {
   var campIndex = 0;
   for (var cName in grouped) {
     var palette = getCampPalette(cName, campIndex++);
-    html += "<tr style='background: " + palette.bg + "; color: " + palette.text + ";'><td colspan='16' style='font-weight:700; padding: 12px 14px; font-size: 1.05rem; text-shadow: 0 1px 2px rgba(255,255,255,0.5);'>🏫 ค่าย: " + cName + "</td></tr>";
+    html += "<tr style='background: " + palette.bg + "; color: " + palette.text + ";'><td colspan='15' style='font-weight:700; padding: 12px 14px; font-size: 1.05rem; text-shadow: 0 1px 2px rgba(255,255,255,0.5);'>🏫 ค่าย: " + cName + "</td></tr>";
     
     for (var cGroup in grouped[cName]) {
-      html += "<tr style='background-color: #f8fafc;'><td colspan='16' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge' style='margin-left: 8px; font-weight: 600; background-color: " + palette.badgeBg + "; color: " + palette.badgeText + "; border: 1px solid " + palette.badgeText + "33;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
+      html += "<tr style='background-color: #f8fafc;'><td colspan='15' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge' style='margin-left: 8px; font-weight: 600; background-color: " + palette.badgeBg + "; color: " + palette.badgeText + "; border: 1px solid " + palette.badgeText + "33;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
       
       grouped[cName][cGroup].forEach(function(item) {
-        var full = parseFloat(item.full) || getCampDefaultFee(item.camp_name, item.std_grade);
+        var full = getCampDefaultFee(item.camp_name, item.std_grade);
         var paid = parseFloat(item.paid) || 0;
         var outst = Math.max(0, full - paid);
         var escTs = (item.timestamp || '').toString().replace(/'/g, "\\'");
@@ -37590,8 +37637,10 @@ function renderCampsTable() {
         html += "<td>" + (item.medical_condition || "-") + "</td>";
         html += "<td>" + (item.shirt_size || "-") + "</td>";
         
-        if (item.slip_url && item.slip_url !== '-' && item.slip_url.trim() !== '') {
-          html += "<td><a href='" + item.slip_url + "' target='_blank' class='btn btn-sm btn-outline-primary' style='font-size:0.75rem; padding: 2px 5px;'>ดูสลิป</a></td>";
+        // Slip column
+        var slipUrl = (item.slip_url || "").trim();
+        if (slipUrl && slipUrl !== "-" && slipUrl.indexOf("http") === 0) {
+          html += "<td><a href='" + slipUrl + "' target='_blank' class='btn btn-sm btn-info' style='font-size:0.75rem; padding: 2px 6px;'>ดูสลิป</a></td>";
         } else {
           html += "<td>-</td>";
         }
