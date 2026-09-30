@@ -37651,10 +37651,10 @@ function renderCampsTable() {
   var campIndex = 0;
   for (var cName in grouped) {
     var palette = getCampPalette(cName, campIndex++);
-    html += "<tr style='background: " + palette.bg + "; color: " + palette.text + ";'><td colspan='15' style='font-weight:700; padding: 12px 14px; font-size: 1.05rem; text-shadow: 0 1px 2px rgba(255,255,255,0.5);'>🏫 ค่าย: " + cName + "</td></tr>";
+    html += "<tr style='background: " + palette.bg + "; color: " + palette.text + ";'><td colspan='14' style='font-weight:700; padding: 12px 14px; font-size: 1.05rem; text-shadow: 0 1px 2px rgba(255,255,255,0.5);'>🏫 ค่าย: " + cName + "</td></tr>";
     
     for (var cGroup in grouped[cName]) {
-      html += "<tr style='background-color: #f8fafc;'><td colspan='15' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge' style='margin-left: 8px; font-weight: 600; background-color: " + palette.badgeBg + "; color: " + palette.badgeText + "; border: 1px solid " + palette.badgeText + "33;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
+      html += "<tr style='background-color: #f8fafc;'><td colspan='14' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge' style='margin-left: 8px; font-weight: 600; background-color: " + palette.badgeBg + "; color: " + palette.badgeText + "; border: 1px solid " + palette.badgeText + "33;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
       
       grouped[cName][cGroup].forEach(function(item) {
         var full = getCampDefaultFee(item.camp_name, item.std_grade);
@@ -37697,19 +37697,6 @@ function renderCampsTable() {
         // Manage Button (ปุ่มจัดการ)
         html += "<td><button class='btn btn-sm btn-warning' style='font-size:0.75rem; padding: 3px 8px; font-weight:600;' onclick=\"showCampPaymentModal('" + escTs + "')\">🪙 จัดการ</button></td>";
         
-        // Status Button (กดยืนยัน)
-        var currentStatus = (item.status || "").trim();
-        if (currentStatus === "ยืนยันแล้ว" || currentStatus === "ชำระครบแล้ว") {
-          html += "<td><span class='badge bg-success' style='padding: 6px 10px;'>" + currentStatus + "</span></td>";
-        } else {
-          html += "<td>";
-          if (currentStatus) {
-            html += "<span class='badge bg-warning text-dark' style='margin-bottom:4px; display:inline-block;'>" + currentStatus + "</span><br/>";
-          }
-          html += "<button class='btn btn-sm btn-success' style='font-size:0.75rem; padding: 3px 8px;' onclick=\"confirmCampStatus('" + escTs + "')\">กดยืนยัน</button>";
-          html += "</td>";
-        }
-        
         // Delete Button
         html += "<td style='text-align:center;'><button class='btn btn-sm btn-danger' style='padding: 3px 8px; font-size: 0.75rem;' onclick=\"deleteCampStudent('" + escTs + "')\" title='ลบข้อมูล'>🗑️ ลบ</button></td>";
         
@@ -37719,81 +37706,6 @@ function renderCampsTable() {
   }
   
   tbody.innerHTML = html;
-}
-
-function confirmCampStatus(timestamp) {
-  try {
-    var doConfirm = function() {
-      if (typeof Swal !== 'undefined' && Swal.fire) {
-        Swal.fire({
-          title: 'กำลังบันทึก...',
-          allowOutsideClick: false,
-          didOpen: function() { if (Swal.showLoading) Swal.showLoading(); }
-        });
-      } else if (typeof setLoading === 'function') {
-        setLoading(true, 'กำลังบันทึก...');
-      }
-
-      console.log('confirmCampStatus calling updateCampStatus with timestamp:', timestamp);
-      google.script.run
-        .withSuccessHandler(function(res) {
-          console.log('updateCampStatus response:', res);
-          if (res && res.success) {
-            if (typeof Swal !== 'undefined' && Swal.fire) {
-              Swal.fire({ icon: 'success', title: 'ยืนยันสถานะสำเร็จ', showConfirmButton: false, timer: 1200 });
-            } else {
-              if (typeof setLoading === 'function') setLoading(false);
-              if (typeof showToast === 'function') showToast('ยืนยันสถานะสำเร็จ', 'success');
-              else alert('ยืนยันสถานะสำเร็จ');
-            }
-            loadCampsData();
-          } else {
-            var errMsg = (res && res.error) || 'ยืนยันไม่สำเร็จ';
-            if (typeof Swal !== 'undefined' && Swal.fire) {
-              Swal.fire('ข้อผิดพลาด', errMsg, 'error');
-            } else {
-              if (typeof setLoading === 'function') setLoading(false);
-              if (typeof showToast === 'function') showToast(errMsg, 'error');
-              else alert(errMsg);
-            }
-          }
-        })
-        .withFailureHandler(function(err) {
-          console.error('updateCampStatus error:', err);
-          var errText = (err && (err.message || String(err))) || 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
-          if (typeof Swal !== 'undefined' && Swal.fire) {
-            Swal.fire('Error', errText, 'error');
-          } else {
-            if (typeof setLoading === 'function') setLoading(false);
-            if (typeof showToast === 'function') showToast(errText, 'error');
-            else alert(errText);
-          }
-        })
-        .updateCampStatus(timestamp, 'ยืนยันแล้ว');
-    };
-
-    if (typeof Swal !== 'undefined' && Swal.fire) {
-      Swal.fire({
-        title: 'ยืนยันสถานะ?',
-        text: 'คุณต้องการยืนยันสถานะเป็น "ยืนยันแล้ว" สำหรับนักเรียนคนนี้ใช่หรือไม่?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'ใช่, ยืนยันเลย',
-        cancelButtonText: 'ยกเลิก'
-      }).then(function(result) {
-        if (result.isConfirmed) {
-          doConfirm();
-        }
-      });
-    } else {
-      if (confirm('คุณต้องการยืนยันสถานะเป็น "ยืนยันแล้ว" สำหรับนักเรียนคนนี้ใช่หรือไม่?')) {
-        doConfirm();
-      }
-    }
-  } catch (err) {
-    console.error('confirmCampStatus error:', err);
-    alert('เกิดข้อผิดพลาด: ' + err.message);
-  }
 }
 
 function deleteCampStudent(timestamp) {
