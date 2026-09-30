@@ -134,8 +134,9 @@ async function main() {
   const newCodeContent = readFileSync(CODE_FILE, 'utf8');
   console.log(`  Code.txt: ${newCodeContent.length} chars, ${newCodeContent.split('\n').length} lines`);
 
-  // 3. Read new index.html if exists
+  // 3. Read new index.html & JavaScript.js
   const indexContent = readFileSync(INDEX_FILE, 'utf8');
+  const jsContent = readFileSync(JS_FILE, 'utf8');
 
   // 4. Update project files
   const updatedFiles = projectFiles.map(f => {
@@ -143,8 +144,13 @@ async function main() {
       console.log(`  ✏️  Replacing Code.gs (${f.source.length} → ${newCodeContent.length} chars)`);
       return { ...f, source: newCodeContent };
     }
-    if (f.type === 'HTML') {
-      console.log(`  ✏️  Replacing HTML file ${f.name}`);
+    if (f.name === 'JavaScript' && f.type === 'HTML') {
+      const wrappedJs = `<script>\n${jsContent}\n</script>`;
+      console.log(`  ✏️  Replacing JavaScript.html (${f.source.length} → ${wrappedJs.length} chars)`);
+      return { ...f, source: wrappedJs };
+    }
+    if (f.name === 'Index' && f.type === 'HTML') {
+      console.log(`  ✏️  Replacing Index.html (${f.source.length} → ${indexContent.length} chars)`);
       return { ...f, source: indexContent };
     }
     return f;

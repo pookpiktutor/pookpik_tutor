@@ -1731,12 +1731,23 @@ function cleanSheetTimestamp(val) {
     if (dateObj.getFullYear() <= 1900) return '';
 
     return Utilities.formatDate(dateObj, 'Asia/Bangkok', 'dd/MM/yyyy HH:mm:ss');
-
   }
-
   return str;
-
 }
+
+function cleanSheetDateTime(val) {
+  if (!val) return '';
+  if (val instanceof Date) {
+    if (val.getFullYear() <= 1900) return '';
+    return Utilities.formatDate(val, 'Asia/Bangkok', 'yyyy-MM-dd HH:mm');
+  }
+  const str = val.toString().trim();
+  if (str.indexOf('1899') !== -1 || str.indexOf('1900') !== -1 || str.indexOf('เวลาอินโดจีน') !== -1) {
+    return '';
+  }
+  return str;
+}
+
 
 var _dataLearnMigrated = false;
 
