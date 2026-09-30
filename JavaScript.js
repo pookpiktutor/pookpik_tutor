@@ -37179,18 +37179,63 @@ function recalcPaidFromRounds() {
   calcCampOutstanding();
 }
 
+function quickAddCampPayment() {
+  try {
+    var full = parseFloat(document.getElementById('camp_pay_full').value) || 0;
+    var paid = parseFloat(document.getElementById('camp_pay_paid').value) || 0;
+    var outst = Math.max(0, full - paid);
+    if (outst <= 0) {
+      if (typeof Swal !== 'undefined' && Swal.fire) {
+        Swal.fire('แจ้งเตือน', 'นักเรียนคนนี้ชำระครบถ้วนแล้ว ไม่มีค้างชำระ', 'info');
+      } else {
+        alert('นักเรียนคนนี้ชำระครบถ้วนแล้ว ไม่มีค้างชำระ');
+      }
+      return;
+    }
+
+    var now = new Date();
+    var dateStr = now.toISOString().split('T')[0];
+    var timeStr = now.toTimeString().substring(0, 5);
+
+    // Find first empty round (1 to 3)
+    for (var r = 1; r <= 3; r++) {
+      var amtInput = document.getElementById('camp_pay_r' + r + '_amount');
+      var curAmt = amtInput ? parseFloat(amtInput.value) || 0 : 0;
+      if (curAmt === 0) {
+        var dateInput = document.getElementById('camp_pay_r' + r + '_date');
+        var timeInput = document.getElementById('camp_pay_r' + r + '_time');
+        var chSelect = document.getElementById('camp_pay_r' + r + '_channel');
+
+        if (dateInput && !dateInput.value) dateInput.value = dateStr;
+        if (timeInput && !timeInput.value) timeInput.value = timeStr;
+        if (amtInput) amtInput.value = outst;
+        if (chSelect && !chSelect.value) chSelect.selectedIndex = 1;
+
+        recalcPaidFromRounds();
+        break;
+      }
+    }
+  } catch (err) {
+    console.error('quickAddCampPayment error:', err);
+  }
+}
+
 function saveCampPaymentData() {
   try {
-    var tsEl = document.getElementById('camp_pay_timestamp');
-    var ts = tsEl ? tsEl.value : '';
-    var full = parseFloat(document.getElementById('camp_pay_full')?.value) || 0;
-    var paid = parseFloat(document.getElementById('camp_pay_paid')?.value) || 0;
-    var outst = parseFloat(document.getElementById('camp_pay_outstanding')?.value) || 0;
-
     var getVal = function(id) {
       var el = document.getElementById(id);
       return el ? el.value.trim() : '';
     };
+
+    var getNum = function(id) {
+      var el = document.getElementById(id);
+      return (el && el.value) ? (parseFloat(el.value) || 0) : 0;
+    };
+
+    var ts = getVal('camp_pay_timestamp');
+    var full = getNum('camp_pay_full');
+    var paid = getNum('camp_pay_paid');
+    var outst = getNum('camp_pay_outstanding');
 
     var getCombinedDate = function(r) {
       var dEl = document.getElementById('camp_pay_r' + r + '_date');

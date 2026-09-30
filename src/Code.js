@@ -17528,6 +17528,78 @@ function updateCampStudentData(timestamp, updatedData) {
   }
 }
 
+// --- Update Camp Status Only (Quick Confirm Button) ---
+function updateCampStatus(timestamp, newStatus) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return {success: false, error: 'ไม่พบชีทลงทะเบียนค่าย'};
+    
+    const data = sheet.getDataRange().getValues();
+    const targetTsStr = String(timestamp || '').trim();
+    const targetTsTime = targetTsStr ? new Date(targetTsStr).getTime() : NaN;
+
+    for (let i = 1; i < data.length; i++) {
+      const cellVal = data[i][0];
+      const cellStr = String(cellVal || '').trim();
+      let isMatch = (cellStr === targetTsStr);
+
+      if (!isMatch && !isNaN(targetTsTime) && cellVal) {
+        const cellTime = new Date(cellVal).getTime();
+        if (!isNaN(cellTime) && cellTime === targetTsTime) {
+          isMatch = true;
+        }
+      }
+
+      if (isMatch) {
+        const rIndex = i + 1;
+        sheet.getRange(rIndex, 9).setValue(newStatus || 'ยืนยันแล้ว'); // Col 9 is Status
+        return {success: true};
+      }
+    }
+    return {success: false, error: 'ไม่พบรายการนักเรียน (Timestamp: ' + targetTsStr + ')'};
+  } catch (e) {
+    Logger.log('ERROR in updateCampStatus: ' + e.message);
+    return {success: false, error: e.message};
+  }
+}
+
+// --- Delete Camp Student by Timestamp ---
+function deleteCampStudentByTimestamp(timestamp) {
+  try {
+    const db = getDb();
+    const sheet = db.getSheetByName('ลงทะเบียนค่าย');
+    if (!sheet) return {success: false, error: 'ไม่พบชีทลงทะเบียนค่าย'};
+    
+    const data = sheet.getDataRange().getValues();
+    const targetTsStr = String(timestamp || '').trim();
+    const targetTsTime = targetTsStr ? new Date(targetTsStr).getTime() : NaN;
+
+    for (let i = 1; i < data.length; i++) {
+      const cellVal = data[i][0];
+      const cellStr = String(cellVal || '').trim();
+      let isMatch = (cellStr === targetTsStr);
+
+      if (!isMatch && !isNaN(targetTsTime) && cellVal) {
+        const cellTime = new Date(cellVal).getTime();
+        if (!isNaN(cellTime) && cellTime === targetTsTime) {
+          isMatch = true;
+        }
+      }
+
+      if (isMatch) {
+        const rIndex = i + 1;
+        sheet.deleteRow(rIndex);
+        return {success: true};
+      }
+    }
+    return {success: false, error: 'ไม่พบรายการนักเรียนที่ต้องการลบ (Timestamp: ' + targetTsStr + ')'};
+  } catch (e) {
+    Logger.log('ERROR in deleteCampStudentByTimestamp: ' + e.message);
+    return {success: false, error: e.message};
+  }
+}
+
 // --- Save Camp Payment ---
 function saveCampPayment(timestamp, paymentData) {
   try {
