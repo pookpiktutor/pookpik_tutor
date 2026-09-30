@@ -10312,143 +10312,132 @@ function isSameDate(sheetDateStr, inputDateStr) {
 
 
 function isDateWithinRange(sheetDateStr, startDateStr, endDateStr) {
-
   if (!sheetDateStr || !startDateStr || !endDateStr) return false;
 
-  
+  function parseAnyDate(dInput) {
+    if (!dInput) return null;
+    if (dInput instanceof Date) {
+      return isNaN(dInput.getTime()) ? null : new Date(dInput.getFullYear(), dInput.getMonth(), dInput.getDate());
+    }
+    let str = dInput.toString().trim();
+    if (str.includes('T')) str = str.split('T')[0];
+    if (str.includes(' ')) str = str.split(' ')[0];
 
-  const str = sheetDateStr.toString().trim();
+    // Handle DD/MM/YYYY or YYYY-MM-DD
+    let slashParts = str.split(/[/.-]/);
+    if (slashParts.length === 3) {
+      let p1 = parseInt(slashParts[0], 10);
+      let p2 = parseInt(slashParts[1], 10);
+      let p3 = parseInt(slashParts[2], 10);
 
-  let sheetDateObj = null;
+      if (isNaN(p1) || isNaN(p2) || isNaN(p3)) return null;
 
-  if (str.includes('/')) {
-
-    const sheetParts = str.split('/');
-
-    if (sheetParts.length === 3) {
-
-      const sDay = parseInt(sheetParts[0], 10);
-
-      const sMonth = parseInt(sheetParts[1], 10);
-
-      const sYear = parseInt(sheetParts[2], 10);
-
-      sheetDateObj = new Date(sYear, sMonth - 1, sDay);
-
+      // YYYY-MM-DD
+      if (p1 > 1000) {
+        let y = p1 > 2500 ? p1 - 543 : p1;
+        return new Date(y, p2 - 1, p3);
+      }
+      // DD/MM/YYYY
+      if (p3 > 1000) {
+        let y = p3 > 2500 ? p3 - 543 : p3;
+        return new Date(y, p2 - 1, p1);
+      }
     }
 
-  } else if (str.includes('-')) {
-
-    const sheetParts = str.split('-');
-
-    if (sheetParts.length === 3) {
-
-      const sYear = parseInt(sheetParts[0], 10);
-
-      const sMonth = parseInt(sheetParts[1], 10);
-
-      const sDay = parseInt(sheetParts[2], 10);
-
-      sheetDateObj = new Date(sYear, sMonth - 1, sDay);
-
+    let parsed = Date.parse(str);
+    if (!isNaN(parsed)) {
+      let d = new Date(parsed);
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
     }
-
+    return null;
   }
 
-  if (!sheetDateObj) {
+  const targetDate = parseAnyDate(sheetDateStr);
+  const startDate = parseAnyDate(startDateStr);
+  const endDate = parseAnyDate(endDateStr);
 
-    let cleanStr = str.replace(/\s*GMT[+-]\d+.*$/i, '').trim();
+  if (!targetDate || !startDate || !endDate) return false;
 
-    cleanStr = cleanStr.replace(/\s*GMT.*$/i, '').trim();
+  targetDate.setHours(0,0,0,0);
+  startDate.setHours(0,0,0,0);
+  endDate.setHours(23,59,59,999);
 
-    cleanStr = cleanStr.replace(/([+-]\d{2}:?\d{2}|Z)$/i, '').trim();
-
-    const parsed = Date.parse(cleanStr);
-
-    if (isNaN(parsed)) return false;
-
-    sheetDateObj = new Date(parsed);
-
-  }
-
-  
-
-  const startParts = startDateStr.split('-');
-
-  const endParts = endDateStr.split('-');
-
-  if (startParts.length !== 3 || endParts.length !== 3) return false;
-
-  
-
-  const startYear = parseInt(startParts[0], 10);
-
-  const startMonth = parseInt(startParts[1], 10);
-
-  const startDay = parseInt(startParts[2], 10);
-
-  const startDateObj = new Date(startYear, startMonth - 1, startDay);
-
-  
-
-  const endYear = parseInt(endParts[0], 10);
-
-  const endMonth = parseInt(endParts[1], 10);
-
-  const endDay = parseInt(endParts[2], 10);
-
-  const endDateObj = new Date(endYear, endMonth - 1, endDay);
-
-  
-
-  sheetDateObj.setHours(0,0,0,0);
-
-  startDateObj.setHours(0,0,0,0);
-
-  endDateObj.setHours(0,0,0,0);
-
-  
-
-  return sheetDateObj >= startDateObj && sheetDateObj <= endDateObj;
-
+  return targetDate >= startDate && targetDate <= endDate;
 }
 
-
-
 function loadRevenueLogs(isSilent = false) {
-
   if (window.isFetchingRevenue) return;
   window.isFetchingRevenue = true;
 
   const startDate = document.getElementById('log_start_date').value;
-
   const endDate = document.getElementById('log_end_date').value;
 
-  
-
   // Update date display label
-
   const displaySpan = document.getElementById('class_log_date_display');
-
   if (displaySpan) {
-
     displaySpan.innerText = `${formatDateToThaiShort(startDate)} - ${formatDateToThaiShort(endDate)}`;
-
   }
 
-  
-
   if (!isSilent) {
-
     setLoading(true, 'กำลังดึงรายการรายรับ...');
+  }
 
+  function getYMD(dInput) {
+    if (!dInput) return '';
+    if (dInput instanceof Date) {
+      if (isNaN(dInput.getTime())) return '';
+      return dInput.getFullYear() + '-' + String(dInput.getMonth()+1).padStart(2,'0') + '-' + String(dInput.getDate()).padStart(2,'0');
+    }
+    let s = dInput.toString().trim();
+    if (s.includes('T')) s = s.split('T')[0];
+    if (s.includes(' ')) s = s.split(' ')[0];
+    let matchYMD = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+    if (matchYMD) return `${matchYMD[1]}-${String(matchYMD[2]).padStart(2,'0')}-${String(matchYMD[3]).padStart(2,'0')}`;
+    let matchDMY = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+    if (matchDMY) return `${matchDMY[3]}-${String(matchDMY[2]).padStart(2,'0')}-${String(matchDMY[1]).padStart(2,'0')}`;
+    return s;
+  }
+
+  function formatCombinedDateTime(dVal, tVal) {
+    if (!dVal) return '-';
+    let rawStr = dVal.toString().trim();
+    let datePart = '';
+    let timePart = '';
+
+    if (dVal instanceof Date) {
+      let y = dVal.getFullYear();
+      let m = String(dVal.getMonth() + 1).padStart(2, '0');
+      let d = String(dVal.getDate()).padStart(2, '0');
+      datePart = `${y}-${m}-${d}`;
+      let hh = String(dVal.getHours()).padStart(2, '0');
+      let mm = String(dVal.getMinutes()).padStart(2, '0');
+      if (hh !== '00' || mm !== '00') timePart = `${hh}:${mm}`;
+    } else if (rawStr.includes('T')) {
+      let parts = rawStr.split('T');
+      datePart = parts[0];
+      if (parts[1]) timePart = parts[1].substring(0, 5);
+    } else if (rawStr.includes(' ')) {
+      let parts = rawStr.split(' ');
+      datePart = parts[0];
+      if (parts[1] && parts[1].includes(':')) timePart = parts[1].substring(0, 5);
+    } else {
+      datePart = rawStr;
+    }
+
+    if (!timePart && tVal) {
+      let cleanedT = typeof cleanTimeStr === 'function' ? cleanTimeStr(tVal) : tVal;
+      if (cleanedT && cleanedT !== '-') timePart = cleanedT;
+    }
+
+    if (timePart && timePart !== '00:00') {
+      return `${datePart} ${timePart}`;
+    }
+    return datePart || '-';
   }
 
   google.script.run
     .withSuccessHandler(studentsData => {
-      // Fetch PaymentsDB
       google.script.run.withSuccessHandler(paymentsRaw => {
-        // Fetch Camps data
         google.script.run.withSuccessHandler(campsData => {
           window.isFetchingRevenue = false;
           if (!isSilent) setLoading(false);
@@ -10460,28 +10449,25 @@ function loadRevenueLogs(isSilent = false) {
           
           let allPayments = [];
           
+          // 1. Process PaymentsDB (ทุกช่องทาง)
           if (Array.isArray(paymentsRaw) && paymentsRaw.length > 1) {
             for (let i = 1; i < paymentsRaw.length; i++) {
               let row = paymentsRaw[i];
               let pDateRaw = row[4];
-              let pDate = pDateRaw ? pDateRaw.toString().split('T')[0] : '';
-              if (pDateRaw instanceof Date || (typeof pDateRaw === 'string' && pDateRaw.includes('T'))) {
-                  let d = new Date(pDateRaw);
-                  if (!isNaN(d)) {
-                      pDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-                  }
-              }
+              let ymdDate = getYMD(pDateRaw);
               
-              if (isDateWithinRange(pDate, startDate, endDate)) {
+              if (isDateWithinRange(ymdDate, startDate, endDate)) {
                 let stdId = row[1] ? row[1].toString().trim() : '';
                 let std = studentMap[stdId] || {};
-                  let pChannel = (row[5] || '').toString().trim();
-                  if (pChannel.toLowerCase() === 'cash') pChannel = 'เงินสด';
-                  else if (pChannel.toLowerCase() === 'transfer') pChannel = 'โอนเงิน';
-                  else if (pChannel.toLowerCase() === 'card') pChannel = 'บัตรเครดิต';
-                  else if (pChannel.toLowerCase() === 'unpaid') pChannel = 'ยังไม่ชำระ';
+                let pChannel = (row[5] || '').toString().trim();
+                if (pChannel.toLowerCase() === 'cash') pChannel = 'เงินสด';
+                else if (pChannel.toLowerCase() === 'transfer') pChannel = 'โอนเงิน';
+                else if (pChannel.toLowerCase() === 'card') pChannel = 'บัตรเครดิต';
+                else if (pChannel.toLowerCase() === 'unpaid') pChannel = 'ยังไม่ชำระ';
 
-                
+                let timeNoteStr = row[2] ? new Date(row[2]).toLocaleTimeString('th-TH') : '';
+                let displayDateTime = formatCombinedDateTime(pDateRaw, timeNoteStr);
+
                 allPayments.push({
                   id: stdId,
                   paymentId: row[0],
@@ -10492,9 +10478,9 @@ function loadRevenueLogs(isSilent = false) {
                   round: row[7] || '',
                   full: std.full || 0,
                   paid: parseFloat(row[3]) || 0,
-                  paymentDate: pDate,
-                  paymentTimeNote: row[2] ? new Date(row[2]).toLocaleTimeString('th-TH') : '',
-                  paymentChannel: pChannel,
+                  paymentDate: ymdDate,
+                  paymentDateTimeDisplay: displayDateTime,
+                  paymentChannel: pChannel || '-',
                   staff: row[6] || '',
                   extraNote: row[8] || '',
                   isChecked: std.isChecked || false
@@ -10503,48 +10489,91 @@ function loadRevenueLogs(isSilent = false) {
             }
           }
           
+          // 2. Process CampsData (ทุกช่องทาง)
           if (Array.isArray(campsData)) {
             campsData.forEach(c => {
-               let lastDate = c.pay_r3_date || c.pay_r2_date || c.pay_r1_date || '';
-               if (isDateWithinRange(lastDate, startDate, endDate)) {
-                 let lastChannel = c.pay_r3_date ? c.pay_r3_channel : (c.pay_r2_date ? c.pay_r2_channel : c.pay_r1_channel);
-                  let matchedStudent = Object.values(studentMap).find(s => s.name === c.std_name) || {};
-                  let cBranch = matchedStudent.branchPay || matchedStudent.branchLearn || '';
-                 allPayments.push({
+              let matchedStudent = Object.values(studentMap).find(s => s.name === c.std_name) || {};
+              let cBranch = matchedStudent.branchPay || matchedStudent.branchLearn || '';
+              
+              const rounds = [
+                { num: 1, date: c.pay_r1_date, amount: parseFloat(c.pay_r1_amount) || 0, channel: c.pay_r1_channel },
+                { num: 2, date: c.pay_r2_date, amount: parseFloat(c.pay_r2_amount) || 0, channel: c.pay_r2_channel },
+                { num: 3, date: c.pay_r3_date, amount: parseFloat(c.pay_r3_amount) || 0, channel: c.pay_r3_channel }
+              ];
+              
+              let hasAnyInstallment = false;
+              rounds.forEach(r => {
+                if (r.date && r.amount > 0) {
+                  hasAnyInstallment = true;
+                  let ymdR = getYMD(r.date);
+                  if (isDateWithinRange(ymdR, startDate, endDate)) {
+                    allPayments.push({
+                      id: c.timestamp + '_r' + r.num,
+                      name: c.std_name,
+                      nickname: c.std_nickname,
+                      grade: c.std_grade,
+                      branch: cBranch,
+                      round: c.camp_name + ' (งวด ' + r.num + ')',
+                      full: c.full || 0,
+                      paid: r.amount,
+                      outstanding: c.outstanding || 0,
+                      paymentDate: ymdR,
+                      paymentDateTimeDisplay: formatCombinedDateTime(r.date, ''),
+                      paymentChannel: r.channel || '-',
+                      staff: '',
+                      extraNote: 'กิจกรรมค่าย',
+                      isCamp: true,
+                      campOriginalData: c
+                    });
+                  }
+                }
+              });
+              
+              if (!hasAnyInstallment && c.paid > 0) {
+                let lastDate = c.pay_r3_date || c.pay_r2_date || c.pay_r1_date || c.timestamp || '';
+                let ymdL = getYMD(lastDate);
+                if (isDateWithinRange(ymdL, startDate, endDate)) {
+                  let lastChannel = c.pay_r3_channel || c.pay_r2_channel || c.pay_r1_channel || '';
+                  allPayments.push({
                     id: c.timestamp,
                     name: c.std_name,
                     nickname: c.std_nickname,
                     grade: c.std_grade,
-                     branch: cBranch,
-                     round: c.camp_name,
+                    branch: cBranch,
+                    round: c.camp_name,
                     full: c.full || 0,
                     paid: c.paid || 0,
                     outstanding: c.outstanding || 0,
-                    paymentDate: lastDate,
-                    paymentChannel: lastChannel || '',
+                    paymentDate: ymdL,
+                    paymentDateTimeDisplay: formatCombinedDateTime(lastDate, ''),
+                    paymentChannel: lastChannel || '-',
                     staff: '',
                     extraNote: 'กิจกรรมค่าย',
-                    paymentTimeNote: '',
                     isCamp: true,
                     campOriginalData: c
-                 });
-               }
+                  });
+                }
+              }
             });
           }
+
+          // 3. Process StatusDB (Fallback students)
           if (Array.isArray(studentsData)) {
+            const paidStudentIds = new Set(allPayments.map(p => p.id ? p.id.toString().trim() : ''));
+
             studentsData.forEach(std => {
-              let regDateRaw = std.id;
-              let regDate = regDateRaw ? regDateRaw.toString().split('T')[0] : '';
-              if (regDateRaw instanceof Date || (typeof regDateRaw === 'string' && regDateRaw.includes('T'))) {
-                  let d = new Date(regDateRaw);
-                  if (!isNaN(d)) {
-                      regDate = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-                  }
-              }
-              let hasPayment = allPayments.some(p => p.id === std.id);
-              if (!hasPayment && isDateWithinRange(regDate, startDate, endDate)) {
+              const stdId = std.id ? std.id.toString().trim() : '';
+              let regYMD = getYMD(std.paymentDate);
+
+              const hasPayment = paidStudentIds.has(stdId);
+              if (hasPayment) return;
+
+              const inRange = regYMD ? isDateWithinRange(regYMD, startDate, endDate) : false;
+              const isUnpaidNoDate = !regYMD;
+
+              if (inRange || isUnpaidNoDate) {
                 allPayments.push({
-                  id: std.id,
+                  id: stdId,
                   paymentId: '',
                   name: std.name || 'ไม่พบชื่อ',
                   nickname: std.nickname || '',
@@ -10553,8 +10582,8 @@ function loadRevenueLogs(isSilent = false) {
                   round: std.round || '',
                   full: std.full || 0,
                   paid: parseFloat(std.paid) || 0,
-                  paymentDate: regDate,
-                  paymentTimeNote: std.paymentTimeNote || '',
+                  paymentDate: regYMD || '',
+                  paymentDateTimeDisplay: formatCombinedDateTime(std.paymentDate, std.paymentTimeNote),
                   paymentChannel: std.paymentChannel || 'ยังไม่ชำระเงิน',
                   staff: std.staff || '',
                   extraNote: std.extraNote || '',
@@ -10587,50 +10616,38 @@ function loadRevenueLogs(isSilent = false) {
     .getStudentsList(getLogUser());
 }
 
-
-
 function renderRevenueLogs() {
-
   const tbody = document.getElementById('revenue_logs_tbody');
-
   if (!tbody) return;
-
   tbody.innerHTML = '';
 
-  
-
   const startDate = document.getElementById('log_start_date').value;
-
   const endDate = document.getElementById('log_end_date').value;
 
   if (!startDate || !endDate) {
-
-    tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 40px;">กรุณาเลือกช่วงวันที่</td></tr>`;
-
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">กรุณาเลือกช่วงวันที่</td></tr>`;
     return;
-
   }
 
-  
-
+  // Filter students: Show ALL channels, filter by date & paid status if in 'paid' tab
   const filteredStudents = state.students.filter(s => {
-    if (!isDateWithinRange(s.paymentDate, startDate, endDate)) return false;
+    let pDate = s.paymentDate ? s.paymentDate.toString().split('T')[0].split(' ')[0] : '';
+    if (pDate && !isDateWithinRange(pDate, startDate, endDate)) return false;
+    
     if (state.activeRevenueTab === 'paid') {
       const p = parseFloat((s.paid || 0).toString().replace(/,/g, ''));
       const ch = (s.paymentChannel || '').trim();
-      const hasValidChannel = ch !== '' && ch !== '- เลือก -' && ch !== 'ยังไม่จ่าย';
-      if (p <= 0 || !hasValidChannel) return false;
+      const isExplicitUnpaid = (ch === 'ยังไม่จ่าย' || ch === 'ยังไม่ชำระ' || ch === 'unpaid');
+      if (p <= 0 || isExplicitUnpaid) return false;
     }
     return true;
   });
 
   if (filteredStudents.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลรายรับในช่วงวันที่เลือก</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 40px;">ไม่มีข้อมูลรายรับในช่วงวันที่เลือก</td></tr>';
     if (typeof renderRevenueSummary === 'function' && state.activeRevenueTab === 'paid') renderRevenueSummary();
     return;
   }
-
-  
 
   const channels = [
     "", "กรุงไทย พี่ปิ๊ก", "กรุงเทพ พี่ปิ๊ก", "SCB พี่ปิ๊ก", "กรุงศรี พี่ปิ๊ก", "TTB",
@@ -10639,88 +10656,51 @@ function renderRevenueLogs() {
     "TTB บัญชีบริษัท(สแกน)", "เงินสด", "พี่ปิ๊ก โอน", "พี่ต้น โอน"
   ];
 
-  
-
   filteredStudents.forEach(s => {
-
     const tr = document.createElement('tr');
 
-    
-
     let optionsHtml = '';
-
-    channels.forEach(ch => { const isMatch = (ch === s.paymentChannel || (ch === '' && !s.paymentChannel)); const display = ch === '' ? '- เลือก -' : ch; optionsHtml += `<option value="${ch}" ${isMatch ? 'selected' : ''}>${display}</option>`; });
-
-    
+    channels.forEach(ch => { 
+      const isMatch = (ch === s.paymentChannel || (ch === '' && !s.paymentChannel)); 
+      const display = ch === '' ? '- เลือก -' : ch; 
+      optionsHtml += `<option value="${ch}" ${isMatch ? 'selected' : ''}>${display}</option>`; 
+    });
 
     const channelSelect = `
-
       <select class="form-select table-select pr-channel-select" data-id="${s.id}" style="padding: 2px 4px; font-size: 0.75rem; width: 100px; max-width: 100px; height: 24px;">
-
         ${optionsHtml}
-
       </select>
-
     `;
-
-    
 
     const checkedCheckbox = `
-
       <input type="checkbox" class="pr-check-checkbox" data-id="${s.id}" ${s.isChecked ? 'checked' : ''} onchange="this.closest('tr').classList.toggle('checked-row', this.checked)" style="width: 18px; height: 18px; cursor: pointer; margin-right: 8px; flex-shrink: 0;">
-
     `;
 
-    
+    let dateTimeText = s.paymentDateTimeDisplay || s.paymentDate || '-';
 
     tr.innerHTML = `
-
       <td style="white-space:nowrap;"><div style="display: flex; align-items: center;">${checkedCheckbox}<div style="font-weight:600; white-space: normal; min-width: 150px;">${s.name}${s.nickname ? ` (${s.nickname})` : ''}${s.isChecked ? '<span style="font-size:0.7rem; color:green; background:#e8f5e9; padding:2px 6px; border-radius:4px; margin-left: 8px; border: 1px solid #a5d6a7;">เช็คแล้ว</span>' : ''}</div></div></td>
-
       <td style="white-space:nowrap; text-align: center; width: 1%;">${s.grade || '-'}</td>
-
       <td style="white-space:nowrap; width: 1%;">${s.branch || '-'}</td>
-
       <td style="white-space:nowrap; width: 1%;">${s.round || '-'}</td>
-
       <td style="white-space:nowrap; text-align: right; width: 1%;">${(s.full || 0).toLocaleString()}</td>
-
       <td style="white-space:nowrap; text-align: right; color: var(--color-success); font-weight: 600; width: 1%;">${(s.paid || 0).toLocaleString()}</td>
-
-      <td style="white-space:nowrap; width: 1%;">${cleanGMTString(s.paymentDate) || '-'}</td>
-
-      <td style="white-space:nowrap; width: 1%;">${cleanTimeStr(s.paymentTimeNote) || '-'}</td>
-
+      <td style="white-space:nowrap; width: 1%; font-weight: 500;">${dateTimeText}</td>
       <td style="white-space:nowrap; width: 1%;">${channelSelect}</td>
-
       <td style="white-space:nowrap; width: 1%;">${s.staff || '-'}</td>
-
       <td style="white-space:nowrap; width: 1%;">${s.extraNote || '-'}</td>
-
-      <td style="text-align: center; white-space:nowrap; width: 1%;"><span style="padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; ${s.paid > 0 ? 'background: #d4edda; color: #155724;' : 'background: #fff3cd; color: #856404;'}">${s.paid > 0 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}</span></td>
-
+      <td style="text-align: center; white-space:nowrap; width: 1%;"><span style="padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; ${s.paid > 0 ? 'background: #d4edda; color: #155724;' : 'background: #fff3cd; color: #856404;'}" >${s.paid > 0 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}</span></td>
     `;
 
     if (s.isChecked) {
-
       tr.classList.add('checked-row');
-
     }
 
     tbody.appendChild(tr);
-
   });
 
-  
-
-  // Trigger summary calculation
-
   renderRevenueSummary();
-
 }
-
-
-
 function saveRevenueLogs() {
 
   const rows = document.querySelectorAll('#revenue_logs_tbody tr');

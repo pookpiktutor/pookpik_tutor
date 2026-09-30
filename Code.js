@@ -17394,13 +17394,13 @@ function getCampsData(academicYear, campName) {
         full: full,
         paid: paid,
         outstanding: outstanding,
-        pay_r1_date: row[16] ? cleanSheetDate(row[16]) : '',
+        pay_r1_date: row[16] ? cleanSheetDateTime(row[16]) : '',
         pay_r1_amount: parseFloat(row[17]) || 0,
         pay_r1_channel: row[18] || '',
-        pay_r2_date: row[19] ? cleanSheetDate(row[19]) : '',
+        pay_r2_date: row[19] ? cleanSheetDateTime(row[19]) : '',
         pay_r2_amount: parseFloat(row[20]) || 0,
         pay_r2_channel: row[21] || '',
-        pay_r3_date: row[22] ? cleanSheetDate(row[22]) : '',
+        pay_r3_date: row[22] ? cleanSheetDateTime(row[22]) : '',
         pay_r3_amount: parseFloat(row[23]) || 0,
         pay_r3_channel: row[24] || ''
       };
