@@ -37722,58 +37722,155 @@ function renderCampsTable() {
 }
 
 function confirmCampStatus(timestamp) {
-  Swal.fire({
-    title: 'ยืนยันสถานะ?',
-    text: 'คุณต้องการยืนยันสถานะเป็น "ยืนยันแล้ว" สำหรับนักเรียนคนนี้ใช่หรือไม่?',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'ใช่, ยืนยันเลย',
-    cancelButtonText: 'ยกเลิก'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+  try {
+    var doConfirm = function() {
+      if (typeof Swal !== 'undefined' && Swal.fire) {
+        Swal.fire({
+          title: 'กำลังบันทึก...',
+          allowOutsideClick: false,
+          didOpen: function() { if (Swal.showLoading) Swal.showLoading(); }
+        });
+      } else if (typeof setLoading === 'function') {
+        setLoading(true, 'กำลังบันทึก...');
+      }
+
+      console.log('confirmCampStatus calling updateCampStatus with timestamp:', timestamp);
       google.script.run
         .withSuccessHandler(function(res) {
+          console.log('updateCampStatus response:', res);
           if (res && res.success) {
-            Swal.fire({ icon: 'success', title: 'ยืนยันสถานะสำเร็จ', showConfirmButton: false, timer: 1200 });
-            var itemIndex = currentCampsData.findIndex(function(item) { return String(item.timestamp) === String(timestamp); });
-            if (itemIndex > -1) currentCampsData[itemIndex].status = 'ยืนยันแล้ว';
-            renderCampsTable();
+            if (typeof Swal !== 'undefined' && Swal.fire) {
+              Swal.fire({ icon: 'success', title: 'ยืนยันสถานะสำเร็จ', showConfirmButton: false, timer: 1200 });
+            } else {
+              if (typeof setLoading === 'function') setLoading(false);
+              if (typeof showToast === 'function') showToast('ยืนยันสถานะสำเร็จ', 'success');
+              else alert('ยืนยันสถานะสำเร็จ');
+            }
+            loadCampsData();
           } else {
-            Swal.fire('Error', (res ? res.error : '') || 'ยืนยันไม่สำเร็จ', 'error');
+            var errMsg = (res && res.error) || 'ยืนยันไม่สำเร็จ';
+            if (typeof Swal !== 'undefined' && Swal.fire) {
+              Swal.fire('ข้อผิดพลาด', errMsg, 'error');
+            } else {
+              if (typeof setLoading === 'function') setLoading(false);
+              if (typeof showToast === 'function') showToast(errMsg, 'error');
+              else alert(errMsg);
+            }
           }
         })
-        .withFailureHandler(function(err) { Swal.fire('Error', err.message, 'error'); })
+        .withFailureHandler(function(err) {
+          console.error('updateCampStatus error:', err);
+          var errText = (err && (err.message || String(err))) || 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
+          if (typeof Swal !== 'undefined' && Swal.fire) {
+            Swal.fire('Error', errText, 'error');
+          } else {
+            if (typeof setLoading === 'function') setLoading(false);
+            if (typeof showToast === 'function') showToast(errText, 'error');
+            else alert(errText);
+          }
+        })
         .updateCampStatus(timestamp, 'ยืนยันแล้ว');
+    };
+
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+      Swal.fire({
+        title: 'ยืนยันสถานะ?',
+        text: 'คุณต้องการยืนยันสถานะเป็น "ยืนยันแล้ว" สำหรับนักเรียนคนนี้ใช่หรือไม่?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'ใช่, ยืนยันเลย',
+        cancelButtonText: 'ยกเลิก'
+      }).then(function(result) {
+        if (result.isConfirmed) {
+          doConfirm();
+        }
+      });
+    } else {
+      if (confirm('คุณต้องการยืนยันสถานะเป็น "ยืนยันแล้ว" สำหรับนักเรียนคนนี้ใช่หรือไม่?')) {
+        doConfirm();
+      }
     }
-  });
+  } catch (err) {
+    console.error('confirmCampStatus error:', err);
+    alert('เกิดข้อผิดพลาด: ' + err.message);
+  }
 }
 
 function deleteCampStudent(timestamp) {
-  Swal.fire({
-    title: 'ยืนยันการลบข้อมูล?',
-    text: 'คุณต้องการ "ลบ" ข้อมูลนักเรียนคนนี้ออกจากฐานข้อมูลค่ายใช่หรือไม่? (ลบแล้วจะไม่สามารถกู้คืนได้)',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#dc2626',
-    confirmButtonText: 'ใช่, ลบออกเลย',
-    cancelButtonText: 'ยกเลิก'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      Swal.fire({ title: 'กำลังลบข้อมูลออกจากฐานข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+  try {
+    var doDelete = function() {
+      if (typeof Swal !== 'undefined' && Swal.fire) {
+        Swal.fire({
+          title: 'กำลังลบข้อมูลออกจากฐานข้อมูล...',
+          allowOutsideClick: false,
+          didOpen: function() { if (Swal.showLoading) Swal.showLoading(); }
+        });
+      } else if (typeof setLoading === 'function') {
+        setLoading(true, 'กำลังลบข้อมูล...');
+      }
+
+      console.log('deleteCampStudent calling deleteCampStudentByTimestamp with timestamp:', timestamp);
       google.script.run
         .withSuccessHandler(function(res) {
+          console.log('deleteCampStudentByTimestamp response:', res);
           if (res && res.success) {
-            Swal.fire({ icon: 'success', title: 'ลบข้อมูลสำเร็จแล้ว', showConfirmButton: false, timer: 1500 });
+            if (typeof Swal !== 'undefined' && Swal.fire) {
+              Swal.fire({ icon: 'success', title: 'ลบข้อมูลสำเร็จแล้ว', showConfirmButton: false, timer: 1500 });
+            } else {
+              if (typeof setLoading === 'function') setLoading(false);
+              if (typeof showToast === 'function') showToast('ลบข้อมูลสำเร็จแล้ว', 'success');
+              else alert('ลบข้อมูลสำเร็จแล้ว');
+            }
             loadCampsData();
           } else {
-            Swal.fire('Error', (res ? res.error : '') || 'ลบข้อมูลไม่สำเร็จ', 'error');
+            var errMsg = (res && res.error) || 'ลบข้อมูลไม่สำเร็จ';
+            if (typeof Swal !== 'undefined' && Swal.fire) {
+              Swal.fire('ข้อผิดพลาด', errMsg, 'error');
+            } else {
+              if (typeof setLoading === 'function') setLoading(false);
+              if (typeof showToast === 'function') showToast(errMsg, 'error');
+              else alert(errMsg);
+            }
           }
         })
-        .withFailureHandler(function(err) { Swal.fire('Error', err.message, 'error'); })
+        .withFailureHandler(function(err) {
+          console.error('deleteCampStudentByTimestamp error:', err);
+          var errText = (err && (err.message || String(err))) || 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
+          if (typeof Swal !== 'undefined' && Swal.fire) {
+            Swal.fire('Error', errText, 'error');
+          } else {
+            if (typeof setLoading === 'function') setLoading(false);
+            if (typeof showToast === 'function') showToast(errText, 'error');
+            else alert(errText);
+          }
+        })
         .deleteCampStudentByTimestamp(timestamp);
+    };
+
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+      Swal.fire({
+        title: 'ยืนยันการลบข้อมูล?',
+        text: 'คุณต้องการ "ลบ" ข้อมูลนักเรียนคนนี้ออกจากฐานข้อมูลค่ายใช่หรือไม่? (ลบแล้วจะไม่สามารถกู้คืนได้)',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        confirmButtonText: 'ใช่, ลบออกเลย',
+        cancelButtonText: 'ยกเลิก'
+      }).then(function(result) {
+        if (result.isConfirmed) {
+          doDelete();
+        }
+      });
+    } else {
+      if (confirm('คุณต้องการ "ลบ" ข้อมูลนักเรียนคนนี้ออกจากฐานข้อมูลค่ายใช่หรือไม่?')) {
+        doDelete();
+      }
     }
-  });
+  } catch (err) {
+    console.error('deleteCampStudent error:', err);
+    alert('เกิดข้อผิดพลาด: ' + err.message);
+  }
 }
+
 
 
