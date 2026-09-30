@@ -37604,7 +37604,7 @@ function renderCampsTable() {
   }
 
   if (filteredData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="15" class="text-center text-muted" style="padding: 30px;">ไม่พบข้อมูลนักเรียนค่ายตามเงื่อนไขที่เลือก</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="16" class="text-center text-muted" style="padding: 30px;">ไม่พบข้อมูลนักเรียนค่ายตามเงื่อนไขที่เลือก</td></tr>';
     return;
   }
 
@@ -37651,10 +37651,10 @@ function renderCampsTable() {
   var campIndex = 0;
   for (var cName in grouped) {
     var palette = getCampPalette(cName, campIndex++);
-    html += "<tr style='background: " + palette.bg + "; color: " + palette.text + ";'><td colspan='14' style='font-weight:700; padding: 12px 14px; font-size: 1.05rem; text-shadow: 0 1px 2px rgba(255,255,255,0.5);'>🏫 ค่าย: " + cName + "</td></tr>";
+    html += "<tr style='background: " + palette.bg + "; color: " + palette.text + ";'><td colspan='16' style='font-weight:700; padding: 12px 14px; font-size: 1.05rem; text-shadow: 0 1px 2px rgba(255,255,255,0.5);'>🏫 ค่าย: " + cName + "</td></tr>";
     
     for (var cGroup in grouped[cName]) {
-      html += "<tr style='background-color: #f8fafc;'><td colspan='14' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge' style='margin-left: 8px; font-weight: 600; background-color: " + palette.badgeBg + "; color: " + palette.badgeText + "; border: 1px solid " + palette.badgeText + "33;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
+      html += "<tr style='background-color: #f8fafc;'><td colspan='16' style='font-weight:600; color:#334155; padding: 8px 10px 8px 30px; border-bottom: 2px solid #e2e8f0;'>📂 ชั้น/ห้อง: " + cGroup + " <span class='badge' style='margin-left: 8px; font-weight: 600; background-color: " + palette.badgeBg + "; color: " + palette.badgeText + "; border: 1px solid " + palette.badgeText + "33;'>" + grouped[cName][cGroup].length + " คน</span></td></tr>";
       
       grouped[cName][cGroup].forEach(function(item) {
         var full = getCampDefaultFee(item.camp_name, item.std_grade);
@@ -37694,6 +37694,23 @@ function renderCampsTable() {
         var outstColor = outst > 0 ? "color: #dc2626; font-weight: bold;" : "color: #16a34a;";
         html += "<td style='" + outstColor + "'>฿" + outst.toLocaleString() + "</td>";
         
+        // Status Column (ดึงสถานะมาแสดงเป็น Badge สวยงาม ไม่แสดงปุ่มกดยืนยัน)
+        var stText = (item.status || "").trim();
+        if (!stText) {
+          stText = (outst <= 0 && paid > 0) ? "ชำระครบแล้ว" : (paid > 0 ? "ชำระมัดจำแล้ว" : "รอชำระ");
+        }
+        var stBadgeStyle = "background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;";
+        if (stText.includes("ชำระครบ") || stText.includes("ครบ")) {
+          stBadgeStyle = "background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; font-weight: 600;";
+        } else if (stText.includes("มัดจำ") || stText.includes("ชำระมัดจำ")) {
+          stBadgeStyle = "background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-weight: 600;";
+        } else if (stText.includes("ยืนยัน") || stText.includes("ผ่าน")) {
+          stBadgeStyle = "background-color: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; font-weight: 600;";
+        } else if (stText.includes("ยกเลิก") || stText.includes("ค้าง")) {
+          stBadgeStyle = "background-color: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; font-weight: 600;";
+        }
+        html += "<td style='text-align:center;'><span class='badge' style='font-size:0.75rem; padding: 4px 8px; border-radius: 6px; display: inline-block; white-space: nowrap; " + stBadgeStyle + "'>" + stText + "</span></td>";
+
         // Manage Button (ปุ่มจัดการ)
         html += "<td><button class='btn btn-sm btn-warning' style='font-size:0.75rem; padding: 3px 8px; font-weight:600;' onclick=\"showCampPaymentModal('" + escTs + "')\">🪙 จัดการ</button></td>";
         
